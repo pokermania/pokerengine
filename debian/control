@@ -1,0 +1,16 @@
+Source: poker-engine
+Section: libs
+Priority: optional
+Maintainer: Loic Dachary (OuoU) <loic@debian.org>
+Build-Depends-Indep: debhelper (>= 4.0.0), python2.3, python, python2.3-pypoker-eval (>= 127.0), automaken
+Standards-Version: 3.6.1.1
+
+Package: python2.3-poker-engine
+Section: libs
+Architecture: all
+Depends: python2.3-pypoker-eval (>= 127.0)
+Description: multiplayer poker engine with abstract variants specifications
+ poker-engine is a python library that implements poker rules according
+ to variants and betting structures specified in configuration files.
+ It designed to be used by a multiplayer poker server, a poker AI or a
+ poker client.

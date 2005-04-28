@@ -1,0 +1,31 @@
+<?xml version='1.0'  encoding='iso-8859-1' ?>
+
+<bet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="bet.xsd"
+     name="2-4 no limit" table-stakes="yes" buy-in="200" max-buy-in="500" >
+
+    <description>No limit 2/4</description>
+
+    <chips values="1 2 5 10 20 25 100 5000" />
+
+    <blind small="1" big="2" />
+
+    <all_in method="side" /> 
+
+    <variants ids="omaha omaha8 holdem">
+      <round name="pre-flop" min="2" cap="8" />
+      <round name="flop" min="2" cap="8" />
+      <round name="turn" min="4" cap="8" />
+      <round name="river" min="4" cap="-1" />
+    </variants>
+
+    <variants ids="7stud 7stud8">
+      <round name="pre-flop" min="2" cap="8" />
+      <round name="third" min="2" cap="8" />
+      <round name="fourth" min="2" cap="8" />
+      <round name="fifth" min="4" cap="8" />
+      <round name="sixth" min="4" cap="8" />
+      <round name="seventh" min="4" cap="-1" />
+    </variants>
+</bet>
+

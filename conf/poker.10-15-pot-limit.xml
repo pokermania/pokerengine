@@ -1,0 +1,31 @@
+<?xml version='1.0'  encoding='iso-8859-1' ?>
+
+<bet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="bet.xsd"
+     name="pot limit" table-stakes="yes" buy-in="1000" max-buy-in="5000" >
+
+    <description>Pot limit 10/15</description>
+
+    <chips values="5 10 20 25 50 100 250 500 5000" />
+
+    <blind small="5" big="10" />
+
+    <all_in method="side" /> 
+
+    <variants ids="omaha omaha8 holdem">
+      <round name="pre-flop" min="10" max="pot" cap="3" />
+      <round name="flop" min="10" max="pot" cap="3" />
+      <round name="turn" min="15" max="pot" cap="3" />
+      <round name="river" min="15" max="pot" cap="3" />
+    </variants>
+
+    <variants ids="7stud 7stud8">
+      <round name="first" min="10" max="pot" cap="3" />
+      <round name="third" min="10" max="pot" cap="3" />
+      <round name="fourth" min="10" max="pot" cap="3" />
+      <round name="fifth" min="15" max="pot" cap="3" />
+      <round name="sixth" min="15" max="pot" cap="3" />
+      <round name="seventh" min="15" max="pot" cap="3" />
+    </variants>
+</bet>
+
