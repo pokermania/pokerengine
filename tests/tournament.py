@@ -28,7 +28,8 @@ import sys, os
 sys.path.insert(0, "..")
 
 import unittest
-from pokerengine.pokergame import PokerGameServer, equalizeGames, breakGames
+from pokerengine.pokergame import PokerGameServer
+from pokerengine.pokertournament import equalizeGames, breakGames, PokerTournament
 
 NGAMES = 5
 
@@ -332,10 +333,85 @@ class TestBreak(TestTournament):
         #
         self.assertEqual(breakGames(self.games[:]), [(4, 3, [400, 401, 402, 403, 404])])
         
+class TestCreate(unittest.TestCase):
+
+    def test1(self):
+        #
+        # One table sit-n-go
+        #
+        tourney = PokerTournament(name = 'Test create',
+                                       verbose = 3,
+                                       players_quota = 4,
+                                       dirs = [ '../conf' ],
+                                       seats_per_game = 4)
+
+        for serial in xrange(1,4):
+            self.failUnless(tourney.register(serial))
+            self.failUnless(tourney.unregister(serial))
+            self.failUnless(tourney.register(serial))
+        self.failUnless(tourney.register(4))
+        self.failIf(tourney.unregister(4))
+
+        self.assertEqual(len(tourney.games), 1)
+        game = tourney.games[0]
+        game.beginTurn(1)
+
+    def test2(self):
+        #
+        # Multi tables sit-n-go
+        #
+        seats_per_game = 10
+        games_count = 2
+        players_count = seats_per_game * games_count
+        tourney = PokerTournament(name = 'Test create',
+                                  verbose = 3,
+                                  players_quota = players_count,
+                                  dirs = [ '../conf' ],
+                                  seats_per_game = seats_per_game)
+
+        for serial in xrange(1,players_count + 1):
+            self.failUnless(tourney.register(serial))
+
+        self.assertEqual(len(tourney.games), games_count)
+        for game in tourney.games:
+            for serial in game.serialsAll():
+                game.botPlayer(serial)
+        turn = 1
+        running = True
+        while running:
+            for game in tourney.games:
+                if game.sitCount() > 1:
+                    game.beginTurn(turn)
+                    running = tourney.endTurn(game.id)
+                    if not running: break
+        for serial in tourney.winners:
+            print "%d\thas rank %d" % ( serial, tourney.getRank(serial) )
+
+
+class TestPrizes(unittest.TestCase):
+
+    def test1(self):
+        tourney = PokerTournament()
+        tourney.can_register = False
+
+        tourney.players = [1] * 10
+        self.assertEqual(tourney.prizes(5), [32, 12, 6])
+
+        tourney.players = [1] * 20
+        self.assertEqual(tourney.prizes(5), [57, 25, 12, 6])
+
+        tourney.players = [1] * 50
+        self.assertEqual(tourney.prizes(5), [129, 62, 31, 7, 7, 7, 7])
+                        
+        tourney.players = [1] * 200
+        self.assertEqual(tourney.prizes(5), [506, 250, 125, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7])
+                        
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestEqualize))
     suite.addTest(unittest.makeSuite(TestBreak))
+    suite.addTest(unittest.makeSuite(TestCreate))
+    suite.addTest(unittest.makeSuite(TestPrizes))
     unittest.TextTestRunner(verbosity=2).run(suite)
     
 if __name__ == '__main__':

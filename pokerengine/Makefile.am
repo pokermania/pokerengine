@@ -32,4 +32,5 @@ python_PYTHON = \
 	config.py \
 	pokercards.py \
 	pokerchips.py \
+	pokertournament.py \
 	pokergame.py

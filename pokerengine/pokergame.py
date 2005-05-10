@@ -38,6 +38,7 @@ from pokerengine.config import Config
 ABSOLUTE_MAX_PLAYERS = 10
 
 class PokerRandom:
+
   def __init__(self):
     self._file = open("/dev/urandom", 'r')
 
@@ -63,6 +64,7 @@ class PokerPlayer:
         self.remove_next_turn = False
         self.sit_out = True
         self.sit_out_next_turn = False
+        self.bot = False
         self.auto = False
         self.auto_blind_ante = False
         self.wait_for = False # False, "late", "big"
@@ -75,6 +77,7 @@ class PokerPlayer:
         self.seat = None
         self.hand = PokerCards()
         self.money = False
+        self.rebuy = 0
         self.bet = False
         self.dead = False
         self.talked_once = False
@@ -86,6 +89,7 @@ class PokerPlayer:
         other.remove_next_turn = self.remove_next_turn
         other.sit_out = self.sit_out
         other.sit_out_next_turn = self.sit_out_next_turn
+        other.bot = self.bot
         other.auto = self.auto
         other.auto_blind_ante = self.auto_blind_ante
         other.wait_for = self.wait_for
@@ -98,13 +102,14 @@ class PokerPlayer:
         other.seat = self.seat
         other.hand = self.hand.copy()
         other.money = self.money and self.money.copy()
+        other.rebuy = self.rebuy
         other.bet = self.bet and self.bet.copy()
         other.dead = self.pot and self.dead.copy()
         other.talked_once = self.talked_once
         return other
 
     def __str__(self):
-        return "serial = %d, name= %s, fold = %s, remove_next_turn = %s, sit_out = %s, sit_out_next_turn = %s, auto = %s, auto_blind_ante = %s, wait_for = %s, missed_blind = %s, blind = %s, buy_in_payed = %s, ante = %s, all_in = %s, side_pot_index = %d, seat = %d, hand = %s, money = %s, bet = %s, dead = %s, talked_once = %s" % (self.serial, self.name, self.fold, self.remove_next_turn, self.sit_out, self.sit_out_next_turn, self.auto, self.auto_blind_ante, self.wait_for, self.missed_blind, self.blind, self.buy_in_payed, self.ante, self.all_in, self.side_pot_index, self.seat, self.hand, self.money, self.bet, self.dead, self.talked_once)
+        return "serial = %d, name= %s, fold = %s, remove_next_turn = %s, sit_out = %s, sit_out_next_turn = %s, bot = %s, auto = %s, auto_blind_ante = %s, wait_for = %s, missed_blind = %s, blind = %s, buy_in_payed = %s, ante = %s, all_in = %s, side_pot_index = %d, seat = %d, hand = %s, money = %s, rebuy = %d, bet = %s, dead = %s, talked_once = %s" % (self.serial, self.name, self.fold, self.remove_next_turn, self.sit_out, self.sit_out_next_turn, self.bot, self.auto, self.auto_blind_ante, self.wait_for, self.missed_blind, self.blind, self.buy_in_payed, self.ante, self.all_in, self.side_pot_index, self.seat, self.hand, self.money, self.rebuy, self.bet, self.dead, self.talked_once)
 
     def beginTurn(self):
         self.bet.reset()
@@ -139,6 +144,9 @@ class PokerPlayer:
 
     def isSit(self):
         return not self.sit_out
+
+    def isBot(self):
+        return self.bot
 
     def isAuto(self):
         return self.auto
@@ -178,6 +186,8 @@ class PokerGame:
         self.ante_info = False
         self.bet_info = False
         self.chips_values = False
+        self.buy_in = 0
+        self.max_buy_in = 100000000
 
         self.max_players = ABSOLUTE_MAX_PLAYERS
         self.is_open = True
@@ -201,8 +211,9 @@ class PokerGame:
         
         self.is_directing = is_directing
         
-        self.output = None
+        self.prefix = ""
         self.verbose = 0
+        self.callbacks = []
 
         self.first_turn = True
         
@@ -285,6 +296,9 @@ class PokerGame:
         else:
             return self.is_open
 
+    def isInPosition(self, serial):
+        return self.isPlaying() and self.getSerialInPosition() == serial
+      
     def isPlaying(self, serial):
         return ( self.isRunning() and
                  self.serial2player.has_key(serial) and
@@ -328,9 +342,13 @@ class PokerGame:
         if self.is_directing and self.isBlindAnteRound():
             player.blind = None
             self.updateBlinds()
-            self.__talkedBlindAnte()
+            if self.getSerialInPosition() == serial:
+                self.__talkedBlindAnte()
+            else:
+                self.message("sitOut for player %d while paying the blinds although not in position", serial)
         if self.sitCount() < 2:
             self.first_turn = True
+            self.dealer_seat = self.playersAll()[0].seat
         return True
 
     def canceled(self, serial, amount):
@@ -348,6 +366,7 @@ class PokerGame:
             self.error("canceled unexpected while in state %s (ignored)" % self.state)
         
     def returnBlindAnte(self):
+        self.historyAdd("canceled", serial, pot)
         serials = self.serialsSit()
         if serials:
             serial = serials[0]
@@ -357,15 +376,14 @@ class PokerGame:
         else:
             serial = 0
             pot = 0
-        self.historyAdd("canceled", serial, pot)
             
     def sit(self, serial):
-        if self.isBroke(serial):
-            return False
         player = self.serial2player[serial]
+        if not player.isBuyInPayed() or self.isBroke(serial):
+            if self.verbose: self.error("sit: refuse to sit player %d because buy in == %s or broke == %s" % ( serial, player.buy_in_payed, self.isBroke(serial) ))
+            return False
         player.sit_out_next_turn = False
         player.sit_out = False
-        player.buy_in_payed = True
         if player.wait_for == "big":
             player.wait_for = False
         player.auto = False
@@ -391,8 +409,13 @@ class PokerGame:
         self.dealer_seat = seat
         
     def getPlayer(self, serial):
-        return self.serial2player[serial]
-    
+        return self.serial2player.get(serial, None)
+
+    def getPlayerMoney(self, serial):
+        player = self.getPlayer(serial)
+        if player:
+            return player.money.toint() + player.rebuy
+        
     def getSitOut(self, serial):
         return self.serial2player[serial].sit_out
         
@@ -424,16 +447,30 @@ class PokerGame:
         else:
             return False
 
+    def botPlayer(self, serial):
+        self.serial2player[serial].bot = True
+        self.autoBlindAnte(serial)
+        self.autoPlayer(serial)
+        
     def autoPlayer(self, serial):
         if self.verbose >= 2: self.message("autoPlayer: player %d" % serial)
-        self.serial2player[serial].auto = True
-        if self.isPlaying(serial):
+        player = self.getPlayer(serial)
+        player.auto = True
+        if self.isBlindAnteRound():
+            if player.isBot():
+                if self.getSerialInPosition() == serial: self.autoPayBlindAnte()
+            else:
+                self.sitOut(serial)
+        elif self.isPlaying(serial):
             self.__autoPlay()
         
     def removePlayer(self, serial):
         if self.isPlaying(serial):
             self.serial2player[serial].remove_next_turn = True
-            self.__autoPlay()
+            if self.isBlindAnteRound():
+                self.sitOut(serial)
+            else:
+                self.__autoPlay()
             return False
         else:
             self.__removePlayer(serial)
@@ -454,11 +491,14 @@ class PokerGame:
                 if seat in self.seats_left:
                     self.seats_left.remove(seat)
                 else:
-                    self.error("setSeats: seat %d not in seats_left", seat)
+                    self.error("setSeats: seat %d not in seats_left %s" % ( seat, self.seats_left ))
             seat += 1
+        if self.seats() != seats:
+            self.error("seatSeats: wanted %s but got %s" % ( seats, self.seats() ))
     
     def beginTurn(self, hand_serial):
         if self.isRunning():
+            self.error("beginTurn: already running")
             return
 
         self.hand_serial = hand_serial
@@ -521,6 +561,7 @@ class PokerGame:
                     self.dealer = self.player_list.index(previous_player.serial)
                     break
                 else:
+                    # the impossible has happened
                     self.dealer = len(self.player_list) - 1
                 break
         if self.dealer < 0:
@@ -670,6 +711,12 @@ class PokerGame:
                 else:
                     player.blind = None
             index += 1
+        if self.verbose > 2:
+            showblinds = lambda player: "%02d:%s:%s:%s" % ( player.serial, player.blind, player.missed_blind, player.wait_for )
+            self.message("updateBlinds: in game (blind:missed:wait) " + join(map(showblinds, self.playersInGame())))
+            players = self.playersAll()
+            players.sort(lambda a,b: int(a.seat - b.seat))
+            self.message("updateBlinds: all     (blind:missed:wait) " + join(map(showblinds, players)))
         
     def handsMap(self):
         pockets = {}
@@ -864,7 +911,6 @@ class PokerGame:
     def initRound(self):
         info = self.roundInfo()
         if self.verbose >= 2: self.message("new round %s" % info["name"])
-        self.historyAdd("round", self.state, self.board.copy(), self.handsMap())
         if not self.is_directing and self.isFirstRound():
             self.buildPlayerList(False)
             self.dealerFromDealerSeat()
@@ -940,6 +986,7 @@ class PokerGame:
             player.talked_once = False
             
         if self.verbose >= 2: self.message("dealer %d, in position %d, last to talk %d" % (self.dealer, self.position, self.last_to_talk))
+        self.historyAdd("round", self.state, self.board.copy(), self.handsMap())
         self.__autoPlay()
 
     def sortPlayerList(self):
@@ -1017,11 +1064,14 @@ class PokerGame:
 
     def isBroke(self, serial):
         player = self.getPlayer(serial)
-        money = player.money.toint()
-        return ( money <= 0 or
-                 ( not self.isTournament() and
-                   self.blind_info and
-                   money < ( self.blind_info["big"] + self.blind_info["small"] ) ) )
+        if player:
+          money = player.money.toint()
+          return ( money <= 0 or
+                   ( not self.isTournament() and
+                     self.blind_info and
+                     money < ( self.blind_info["big"] + self.blind_info["small"] ) ) )
+        else:
+          return False
         
     def endTurn(self):
         if self.verbose >= 2: self.message("---end turn--")
@@ -1032,6 +1082,12 @@ class PokerGame:
         self.dealer_seat = self.getPlayerDealer().seat
         
         self.historyAdd("end", self.winners[:], self.winner2share, self.showdown_stack)
+
+        for player in self.playersAll():
+            if player.rebuy > 0:
+                player.money.add(player.rebuy)
+                self.historyAdd("rebuy", player.serial, player.rebuy)
+                player.rebuy = 0
 
         #
         # Players who are broke automatically sit out.
@@ -1078,11 +1134,6 @@ class PokerGame:
         # Forget about him
         #
         del self.serial2player[serial]
-        #
-        # If there is noone left, go back to initial state
-        #
-        if self.empty():
-            self.reset()
 
     def isBlindAnteRound(self):
         return self.current_round == -1
@@ -1283,8 +1334,8 @@ class PokerGame:
         player = self.serial2player[serial]
         player.wait_for = "big"
         if self.is_directing:
-            self.historyAdd("wait_blind", serial)
             self.updateBlinds()
+            self.historyAdd("wait_blind", serial)
             self.__talkedBlindAnte()
         
     def blind(self, serial, amount = 0, dead = 0):
@@ -1311,6 +1362,8 @@ class PokerGame:
                 amount = money
             else:
                 dead = money - amount
+        if self.verbose >= 2: self.message("player %d pays blind %d/%d" % (serial, amount, dead))
+        self.historyAdd("blind", serial, amount, dead)
         if dead > 0:
             #
             # There is enough money to pay the amount, pay the dead, if any
@@ -1322,8 +1375,6 @@ class PokerGame:
         player.blind = True
         player.missed_blind = None
         player.wait_for = False
-        if self.verbose >= 2: self.message("player %d pays blind %d/%d" % (serial, amount, dead))
-        self.historyAdd("blind", serial, amount, dead)
 
     def ante(self, serial, amount = 0):
         if not self.ante_info:
@@ -1465,19 +1516,74 @@ class PokerGame:
             if self.verbose >= 2: self.message("new position (%d)" % self.position)
             self.__autoPlay()
 
+    def __botEval(self, serial):
+        ev = self.handEV(serial, 10)
+
+        if self.state == "pre-flop":
+            if ev < 100:
+                action = "check"
+            elif ev < 500:
+                action = "call"
+            else:
+                action = "raise"
+        elif self.state == "flop" or self.state == "third":
+            if ev < 200:
+                action = "check"
+            elif ev < 600:
+                action = "call"
+            else:
+                action = "raise"
+        elif self.state == "turn" or self.state == "fourth":
+            if ev < 300:
+                action = "check"
+            elif ev < 700:
+                action = "call"
+            else:
+                action = "raise"
+        else:
+            if ev < 400:
+                action = "check"
+            elif ev < 800:
+                action = "call"
+            else:
+                action = "raise"
+
+        return (action, ev)
+
     def __autoPlay(self):
         if not self.is_directing:
             return
         player = self.getPlayerInPosition()
-        if self.isBlindAnteRound():
-            self.sitOut(player.serial)
-        else:
+        serial = player.serial
+
+        if player.isBot():
+            (desired_action, ev) = self.__botEval(serial)
+            actions = self.possibleActions(serial)
+            while not desired_action in actions:
+                if desired_action == "check":
+                    desired_action = "fold"
+                elif desired_action == "call":
+                    desired_action = "check"
+                elif desired_action == "raise":
+                    desired_action = "call"
+
+            if desired_action == "fold":
+                self.fold(serial)
+            elif desired_action == "check":
+                self.check(serial)
+            elif desired_action == "call":
+                self.call(serial)
+            elif desired_action == "raise":
+                self.callNraise(serial, 0)
+            else:
+                self.error("__autoPlay: unexpected actions = %s" % actions)
+          
+        elif ( player.isSitOut() or player.isAuto() ):
             #
-            # A player that is sitting but not playing (sitOut) automatically
+            # A player who is sitting but not playing (sitOut) automatically
             # folds.
             #
-            if ( player.isSitOut() or player.isAuto() ):
-                self.fold(player.serial)
+            self.fold(serial)
 
     def hasLow(self):
         return "low" in self.win_orders
@@ -1553,6 +1659,8 @@ class PokerGame:
         self.__betting_structure.load(self.url % betting_structure)
         self.betting_structure = betting_structure
         self.betting_structure_name = self.getParam("/bet/description")
+        self.buy_in = int(self.getParam('/bet/@buy-in'))
+        self.max_buy_in = int(self.getParam('/bet/@max-buy-in'))
 
         chips_values = self.getParam("/bet/chips/@values")
         self.chips_values = [ int(x) for x in split(chips_values) ]
@@ -1648,7 +1756,7 @@ class PokerGame:
         
         info = self.roundInfo()
 
-        number_of_players = len(self.playersInGame())
+        number_of_players = len(self.playersNotFold())
 
         def number_to_deal():
             return len(info["board"]) + len(info["up"]) * number_of_players + len(info["down"]) * number_of_players
@@ -1670,14 +1778,14 @@ class PokerGame:
         for card in info["board"]:
             self.board.add(self.deck.pop(), True)
         for card in info["up"]:
-            for player in self.playersInGame():
+            for player in self.playersNotFold():
                 player.hand.add(self.deck.pop(), True)
         for card in info["down"]:
-            for player in self.playersInGame():
+            for player in self.playersNotFold():
                 player.hand.add(self.deck.pop(), False)
         if self.verbose >= 1:
           if len(info["up"]) > 0 or len(info["down"]) > 0:
-            for serial in self.serialsInGame():
+            for serial in self.serialsNotFold():
               self.message("player %d cards: " % serial + self.getHandAsString(serial))
           if len(info["board"]) > 0:
             self.message("board: " + self.getBoardAsString())
@@ -1737,6 +1845,7 @@ class PokerGame:
                                       'serial2share': { serial: pot_backup.toint() },
                                       'serials': [serial],
                                       'pot': pot_backup.toint() } ]
+            if self.verbose > 2: pprint(self.showdown_stack)
             self.pot2money(serial)
             self.setWinners([serial])
             return
@@ -1932,8 +2041,7 @@ class PokerGame:
                                    'side_pots': side_pots,
                                    'pot': pot_backup })
         self.showdown_stack = showdown_stack
-        if self.verbose > 2:
-            pprint(self.showdown_stack)
+        if self.verbose > 2: pprint(self.showdown_stack)
 
     def divideChips(self, amount, divider):
         unit = self.chips_values[0]
@@ -2371,6 +2479,15 @@ class PokerGame:
     def playersSitOut(self):
         return [ self.serial2player[serial] for serial in self.serialsSitOut() ]
 
+    def brokeCount(self):
+        return len(self.serialsBroke())
+
+    def serialsBroke(self):
+        return filter(lambda serial: self.isBroke(serial), self.serial2player.keys())
+
+    def playersBroke(self):
+        return [ self.serial2player[serial] for serial in self.serialsBroke() ]
+
     def sitCount(self):
         return len(self.serialsSit())
 
@@ -2541,17 +2658,43 @@ class PokerGame:
 
     def autoBlindAnte(self, serial):
         self.getPlayer(serial).auto_blind_ante = True
+        if self.isBlindAnteRound() and self.getSerialInPosition() == serial:
+          self.autoPayBlindAnte()
+        
+    def noAutoBlindAnte(self, serial):
+        self.getPlayer(serial).auto_blind_ante = False
         
     def payBuyIn(self, serial, amount):
+        amount = PokerChips(self.chips_values, amount)
+        if amount.toint() > self.maxBuyIn():
+          if self.verbose: self.error("payBuyIn: maximum buy in is %d and %d is too much" % ( self.maxBuyIn(), amount.toint()  ))
+          return False
         player = self.getPlayer(serial)
         player.money.set(amount)
-        player.buy_in_payed = True
+        if self.isTournament() or player.money.toint() >= self.buyIn():
+          player.buy_in_payed = True
+          return True
+        else:
+          if self.verbose: self.error("payBuyIn: minimum buy in is %d but %d is not enough" % ( self.buyIn(), player.money.toint() ))
+          return False
+
+    def rebuy(self, serial, amount):
+        player = self.getPlayer(serial)
+        if not player:
+          return False
+        if player.money.toint() + amount + player.rebuy > self.maxBuyIn():
+          return False
+        if self.isPlaying(serial):
+          player.rebuy += amount
+        else:
+          player.money.add(amount)
+        return True
         
     def buyIn(self):
-        return int(self.getParam('/bet/@buy-in'))
+        return self.buy_in
 
     def maxBuyIn(self):
-        return int(self.getParam('/bet/@max-buy-in'))
+        return self.max_buy_in
 
     def getParamList(self, name):
         if name[:4] == "/bet":
@@ -2587,7 +2730,15 @@ class PokerGame:
         else:
             return True
 
+    def registerCallback(self, callback):
+        self.callbacks.append(callback)
+
+    def unregisterCallback(self, callback):
+        self.callbacks.remove(callback)
+        
     def historyAdd(self, *args):
+        for callback in self.callbacks:
+            callback(*args)
         self.turn_history.append(args)
 
     def historyGet(self):
@@ -2659,7 +2810,7 @@ class PokerGame:
       self.message("ERROR: " + string)
       
     def message(self, string):
-      print "[PokerGame " + str(self.id) + "] " + string
+      print self.prefix + "[PokerGame " + str(self.id) + "] " + string
       
 class PokerGameServer(PokerGame):
     def __init__(self, url, dirs):
@@ -2669,124 +2820,3 @@ class PokerGameClient(PokerGame):
     def __init__(self, url, dirs):
         PokerGame.__init__(self, url, False, dirs) # is_directing == False
         
-def equalizeGames(games):
-    #
-    # Games less than 70% full are willing to steal players from other
-    # games. Games that are more than 70% full and that are not
-    # running are willing to provide players to others.
-    #
-    want_players = []
-    provide_players = []
-    for game in games:
-        threshold = int(game.max_players * .7)
-        count = game.allCount()
-        if count < threshold:
-            want_players.append([ game.id, game.max_players - count ])
-        elif not game.isRunning():
-            serials = game.serialsAllSorted()
-            provide_players.append((game.id, serials[:count - threshold]))
-
-    results = []
-
-    if len(want_players) <= 0:
-        return results
-
-    consumer_index = 0
-    for (id, serials) in provide_players:
-        want_players.sort(lambda a,b: int(a[1] - b[1]))
-        if want_players[0][1] == 0:
-            #
-            # All satisfied, stop looping
-            #
-            break
-
-        while len(serials) > 0:
-            distributed = False
-            for i in xrange(len(want_players)):
-                consumer = want_players[consumer_index]
-                consumer_index = ( consumer_index + 1 ) % len(want_players)
-                if consumer[1] > 0:
-                    consumer[1] -= 1
-                    serial = serials.pop(0)
-                    results.append(( id, consumer[0], serial ))
-                    distributed = True
-                    if len(serials) <= 0:
-                        break
-            if not distributed:
-                break
-
-#    if len(results) > 0:
-#        print "equalizeGames: "
-#        pprint(results)
-
-    return results
-
-def breakGames(games):
-    if len(games) < 2:
-        return []
-
-    games = games[:]
-    #
-    # Games not running first, then games running.
-    # Each is sorted with games that have least players first.
-    #
-    games.sort(lambda a,b: a.isRunning() - b.isRunning() or int(a.allCount() - b.allCount()) )
-
-    to_break = [ {
-        "id": game.id,
-        "seats_left": game.max_players - game.allCount(),
-        "serials": game.serialsAll(),
-        "to_add": [],
-        "running": game.isRunning() } for game in games ]
-
-    results = []
-    while True:
-        result = breakGame(to_break[0], to_break[1:])
-        to_break = filter(lambda game: game["seats_left"] > 0, to_break[1:])
-        if result == False:
-            break
-        results.extend(result)
-        if len(to_break) < 2:
-            break
-
-#    if len(results) > 0:
-#        print "breakGames: "
-#        pprint(results)
-
-    return results
-
-def breakGame(to_break, to_fill):
-    #
-    # Can't break a game in which players were moved or
-    # that are running.
-    #
-    if len(to_break["to_add"]) > 0 or to_break["running"]:
-        return False
-    
-    seats_left = sum([ game["seats_left"] for game in to_fill ])
-    serials = to_break["serials"]
-    id = to_break["id"]
-    #
-    # Don't break a game if there is not enough seats at the
-    # other games
-    #
-    if seats_left < len(serials):
-        return False
-
-    #
-    # Fill the largest games first, in the hope that the smallest
-    # games can be broken later.
-    #
-    to_fill.reverse()
-    result = []
-    for game in to_fill:
-        if game["seats_left"] > 0:
-            count = min(game["seats_left"], len(serials))
-            game["to_add"].extend(serials[:count])
-            game["seats_left"] -= count
-            result.append((id, game["id"], serials[:count]))
-            serials = serials[count:]
-            if len(serials) <= 0:
-                break;
-
-    return result

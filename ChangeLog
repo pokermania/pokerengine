@@ -1,3 +1,35 @@
+Thu May 05 14:29:47 2005  Loic Dachary  <loic@gnu.org>
+
+	* Release 1.0.1
+
+	* pokerengine/pokertournament.py: tournament logic imported
+	  from former tournament client
+
+	* tests/tournament.py: new tournament logic non regression tests
+	
+	* tests/blinds.py: new blind logic non regression tests
+
+Wed May 04 14:55:42 2005  Loic Dachary  <loic@gnu.org>
+
+	* pokerengine/pokergame.py (PokerGame.payBuyIn): do not set the
+	  buy in flag if the amount is less than the minimum. This check
+	  should also be done by the application and is added as a
+	  safeguard.
+
+	* pokerengine/pokergame.py (PokerGame.sitOut): reset dealer sit
+	  if only one player in game.
+
+	* pokerengine/pokergame.py (PokerGame.sit): refuse to sit if
+	  buy in is not yet payed.
+
+Tue May 03 13:31:42 2005  Loic Dachary  <loic@gnu.org>
+
+	* pokerengine/pokergame.py (PokerGame.isBroke): return False if
+	  the serial does not exist. The rationale being that a player not
+	  participating in the game cannot be broke. Allows for simpler
+	  tests from the application, avoiding a check to make sure the
+	  player is indeed seated at the table.
+
 Thu Apr 28 12:19:09 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.0

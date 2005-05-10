@@ -24,6 +24,10 @@
 #  Loic Dachary <loic@gnu.org>
 #
 
+#
+# poker-engine
+#
+
 import sys, os
 sys.path.insert(0, "..")
 

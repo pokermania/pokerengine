@@ -1,0 +1,209 @@
+#
+# Copyright (C) 2004 Mekensleep
+#
+# Mekensleep
+# 24 rue vieille du temple
+# 75004 Paris
+#       licensing@mekensleep.com
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# Authors:
+#  Loic Dachary <loic@gnu.org>
+#
+
+import sys, os
+sys.path.insert(0, "..")
+
+import unittest
+from pokerengine.pokergame import PokerGameServer
+
+class TestBlinds(unittest.TestCase):
+
+    def setUp(self):
+        self.game = PokerGameServer("poker.%s.xml", [ "../conf" ])
+        self.game.verbose = 3
+        self.game.setVariant("holdem")
+        self.game.setBettingStructure("2-4-limit")
+
+    def tearDown(self):
+        del self.game
+
+    def log(self, string):
+        print string
+
+    def make_new_player(self, serial, seat):
+        game = self.game
+        self.failUnless(game.addPlayer(serial, seat))
+        self.failUnless(game.payBuyIn(serial, game.buyIn()))
+        self.failUnless(game.sit(serial))
+        game.botPlayer(serial)
+        game.noAutoBlindAnte(serial)
+
+    def pay_blinds(self):
+        game = self.game
+        for serial in game.serialsAll():
+            game.autoBlindAnte(serial)
+        for serial in game.serialsAll():
+            game.noAutoBlindAnte(serial)
+
+    def check_blinds(self, descriptions):
+        players = self.game.playersAll()
+        players.sort(lambda a,b: int(a.seat - b.seat))
+        for player in players:
+            (blind, missed, wait) = descriptions.pop(0)
+            self.failUnless(blind == player.blind)
+            self.failUnless(missed == player.missed_blind)
+            self.failUnless(wait == player.wait_for)
+            
+    def test1(self):
+        for (serial, seat) in ((1, 0), (2, 1), (3, 2), (4, 3)):
+            self.make_new_player(serial, seat)
+        self.game.beginTurn(1)
+        # (blind, missed, wait)
+        self.check_blinds([(None, None, False), # 1
+                           ('small', None, False), # 2
+                           ('big', None, False), # 3
+                           (None, None, False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+
+        self.game.beginTurn(2)
+        # (blind, missed, wait)
+        self.check_blinds([(None, None, False), # 1
+                           (None, None, False), # 2
+                           ('small', None, False), # 3
+                           ('big', None, False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+
+        self.game.beginTurn(3)
+        # (blind, missed, wait)
+        self.check_blinds([('big', None, False), # 1
+                           (None, None, False), # 2
+                           (None, None, False), # 3
+                           ('small', None, False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+
+        self.game.beginTurn(4)
+        # (blind, missed, wait)
+        self.check_blinds([('small', None, False), # 1
+                           ('big', None, False), # 2
+                           (None, None, False), # 3
+                           (None, None, False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+        
+    def test2(self):
+        """
+        Two new players enter the game and both pay the big blind
+        """
+        for (serial, seat) in ((1, 0), (2, 1), (3, 2), (4, 8)):
+            self.make_new_player(serial, seat)
+        self.game.beginTurn(1)
+        # (blind, missed, wait)
+        self.check_blinds([(None, None, False), # 1
+                           ('small', None, False), # 2
+                           ('big', None, False), # 3
+                           (None, None, False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+
+        for (serial, seat) in ((10, 4), (11, 5)):
+            self.make_new_player(serial, seat)
+
+        self.game.beginTurn(2)
+        # (blind, missed, wait)
+        self.check_blinds([(None, None, False), # 1
+                           (None, None, False), # 2
+                           ('small', None, False), # 3
+                           ('big', 'n/a', False), # 10
+                           ('late', 'n/a', False), # 11
+                           (None, None, False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+
+    def test3(self):
+        """
+        Two new players enter the game between the small
+        and big blind. They are allowed to play during the
+        second turn because they cannot be awarded the button
+        as they arrive.
+        """
+        for (serial, seat) in ((1, 0), (2, 1), (3, 7), (4, 8)):
+            self.make_new_player(serial, seat)
+        self.game.beginTurn(1)
+        # (blind, missed, wait)
+        self.check_blinds([(None, None, False), # 1
+                           ('small', None, False), # 2
+                           ('big', None, False), # 3
+                           (None, None, False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+
+        for (serial, seat) in ((10, 4), (11, 5)):
+            self.make_new_player(serial, seat)
+
+        self.game.beginTurn(2)
+        # (blind, missed, wait)
+        self.check_blinds([(None, None, False), # 1
+                           (None, None, False), # 2
+                           (None, 'n/a', 'late'), # 10
+                           (None, 'n/a', 'late'), # 11
+                           ('small', None, False), # 3
+                           ('big', None, False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+
+        self.game.beginTurn(3)
+        # (blind, missed, wait)
+        self.check_blinds([('big', None, False), # 1
+                           (None, None, False), # 2
+                           ('late', 'n/a', False), # 10
+                           ('late', 'n/a', False), # 11
+                           (None, None, False), # 3
+                           ('small', None, False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+
+        self.game.beginTurn(4)
+        # (blind, missed, wait)
+        self.check_blinds([('small', None, False), # 1
+                           ('big', None, False), # 2
+                           (None, None, False), # 10
+                           (None, None, False), # 11
+                           (None, None, False), # 3
+                           (None, None, False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+
+def run():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestBlinds))
+    unittest.TextTestRunner(verbosity=2).run(suite)
+    
+if __name__ == '__main__':
+    run()

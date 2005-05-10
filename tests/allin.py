@@ -73,6 +73,7 @@ class TestAllIn(unittest.TestCase):
         self.assert_(self.game.addPlayer(i))
         player = self.game.serial2player[i]
         player.money = PokerChips(self.game.chips_values, initial_money)
+        player.buy_in_payed = True
         self.assert_(self.game.sit(i))
         player.auto_blind_ante = True
 
@@ -501,12 +502,12 @@ class TestHoldemPlayBoard(TestAllIn):
 
 def run():
     suite = unittest.TestSuite()
-#    suite.addTest(unittest.makeSuite(TestRaise))
-#    suite.addTest(unittest.makeSuite(TestHoldemAllIn))
-#    suite.addTest(unittest.makeSuite(TestCommonAllIn))
+    suite.addTest(unittest.makeSuite(TestRaise))
+    suite.addTest(unittest.makeSuite(TestHoldemAllIn))
+    suite.addTest(unittest.makeSuite(TestCommonAllIn))
     suite.addTest(unittest.makeSuite(TestAllInCase2))
-#    suite.addTest(unittest.makeSuite(TestOmaha8AllIn))
-#    suite.addTest(unittest.makeSuite(TestHoldemPlayBoard))
+    suite.addTest(unittest.makeSuite(TestOmaha8AllIn))
+    suite.addTest(unittest.makeSuite(TestHoldemPlayBoard))
     unittest.TextTestRunner(verbosity=2).run(suite)
     
 if __name__ == '__main__':

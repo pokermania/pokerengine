@@ -40,7 +40,7 @@ MAINTAINERCLEANFILES = \
 	INSTALL
 
 pkgsysconfdir = ${sysconfdir}/${PACKAGE}
-pkgsysconf_DATA = \
+dist_pkgsysconf_DATA = \
 	conf/poker.0-0-limit.xml \
 	conf/poker.10-15-limit.xml \
 	conf/poker.10-15-pot-limit.xml \

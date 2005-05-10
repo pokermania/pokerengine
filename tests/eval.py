@@ -56,6 +56,7 @@ class TestPosition(unittest.TestCase):
         self.assert_(self.game.addPlayer(i))
         player = self.game.serial2player[i]
         player.money = PokerChips(self.game.chips_values, initial_money)
+        player.buy_in_payed = True
         self.assert_(self.game.sit(i))
         player.auto_blind_ante = True
 
