@@ -234,13 +234,12 @@ class PokerTournament:
         self.state = state
         self.callback_new_state(self)
 
+    def isRegistered(self, serial):
+        return serial in self.players
+        
     def canRegister(self, serial):
         if self.can_register:
-            try:
-                self.players.index(serial)
-                return False
-            except:
-                return True
+            return not self.isRegistered(serial)
         else:
             return False
         

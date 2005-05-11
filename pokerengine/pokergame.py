@@ -957,8 +957,7 @@ class PokerGame:
             #
             # The first round takes the blinds/antes
             #
-            self.side_pots['contributions'][self.current_round] = self.side_pots['contributions'][self.current_round - 1]
-            del self.side_pots['contributions'][self.current_round - 1]
+            self.blindAnteMoveToFirstRound()
         else:
             self.side_pots['contributions'][self.current_round] = {}
 
@@ -1399,7 +1398,30 @@ class PokerGame:
         self.money2bet(serial, amount)
         self.bet2pot(serial)
         self.getPlayer(serial).ante = True
-    
+
+    def blindAnteMoveToFirstRound(self):
+          self.side_pots['contributions'][self.current_round] = self.side_pots['contributions'][self.current_round - 1]
+          del self.side_pots['contributions'][self.current_round - 1]
+      
+    def blindAnteRoundEnd(self):
+        if self.is_directing:
+            return
+
+        if self.inGameCount() < 2:
+            #
+            # All players are all-in except one, distribute all
+            # cards and figure out who wins.
+            #
+            if self.verbose >= 2: self.message("less than two players not all-in")
+            self.nextRound()
+            self.blindAnteMoveToFirstRound()
+            self.__makeSidePots()
+            self.bet2pot()
+
+            if self.verbose >= 2: self.message("money not yet distributed, assuming information is missing ...")
+        else:
+            self.nextRound()
+        
     def __talkedBlindAnte(self):
         if self.sitCount() < 2:
             self.returnBlindAnte()
@@ -1430,8 +1452,7 @@ class PokerGame:
                 #
                 if self.verbose >= 2: self.message("less than two players not all-in")
                 self.nextRound()
-                self.side_pots['contributions'][self.current_round] = self.side_pots['contributions'][self.current_round - 1]
-                del self.side_pots['contributions'][self.current_round - 1]
+                self.blindAnteMoveToFirstRound()
                 self.__makeSidePots()
                 self.bet2pot()
                 self.dealCards()
@@ -2134,8 +2155,13 @@ class PokerGame:
                                     board = board,
                                     fill_pockets = 1,
                                     iterations = iterations)
-        player_index = self.serialsNotFold().index(serial)
-        return eval["eval"][player_index]["ev"]
+        serials = self.serialsNotFold()
+        if serial in serials:
+          player_index = serials.index(serial)
+          return eval["eval"][player_index]["ev"]
+        else:
+          self.error("handEV: player %d is not holding cards in the hand" % serial)
+          return None
 
     def readableHandValueLong(self, side, value, cards):
         cards = self.eval.card2string(cards)
