@@ -200,6 +200,118 @@ class TestBlinds(unittest.TestCase):
                           )
         self.pay_blinds()
 
+    def test4(self):
+        """
+        Less than 6 players, player 4 missed the big and small blinds
+        and must pay the big blind when back in the game.
+        """
+        for (serial, seat) in ((1, 0), (2, 1), (3, 2), (4, 3)):
+            self.make_new_player(serial, seat)
+        self.game.beginTurn(1)
+        # (blind, missed, wait)
+        self.check_blinds([(None, None, False), # 1
+                           ('small', None, False), # 2
+                           ('big', None, False), # 3
+                           (None, None, False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+
+        self.game.sitOut(4)
+
+        self.game.beginTurn(2)
+        # (blind, missed, wait)
+        self.check_blinds([('big', None, False), # 1
+                           (None, None, False), # 2
+                           ('small', None, False), # 3
+                           (None, 'big', False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+        
+        self.game.beginTurn(3)
+        # (blind, missed, wait)
+        self.check_blinds([('small', None, False), # 1
+                           ('big', None, False), # 2
+                           (None, None, False), # 3
+                           (None, 'big', False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+
+        self.game.sit(4)
+        
+        self.game.beginTurn(4)
+        # (blind, missed, wait)
+        self.check_blinds([(None, None, False), # 1
+                           ('small', None, False), # 2
+                           ('big', None, False), # 3
+                           ('big', 'big', False), # 4
+                           ]
+                          )
+        self.pay_blinds()
+
+
+    def test5(self):
+        """
+        More than 5 players, player 4 missed the big and small blinds
+        and must pay the big and the small blind when back in the game.
+        """
+        for (serial, seat) in ((1, 0), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5)):
+            self.make_new_player(serial, seat)
+        self.game.beginTurn(1)
+        # (blind, missed, wait)
+        self.check_blinds([(None, None, False), # 1
+                           ('small', None, False), # 2
+                           ('big', None, False), # 3
+                           (None, None, False), # 4
+                           (None, None, False), # 5
+                           (None, None, False), # 6
+                           ]
+                          )
+        self.pay_blinds()
+
+        self.game.sitOut(4)
+
+        self.game.beginTurn(2)
+        # (blind, missed, wait)
+        self.check_blinds([(None, None, False), # 1
+                           (None, None, False), # 2
+                           ('small', None, False), # 3
+                           (None, 'big', False), # 4
+                           ('big', None, False), # 5
+                           (None, None, False), # 6
+                           ]
+                          )
+        self.pay_blinds()
+        
+        self.game.beginTurn(3)
+        # (blind, missed, wait)
+        self.check_blinds([(None, None, False), # 1
+                           (None, None, False), # 2
+                           (None, None, False), # 3
+                           (None, 'big', False), # 4
+                           ('small', None, False), # 5
+                           ('big', None, False), # 6
+                           ]
+                          )
+        self.pay_blinds()
+
+        self.game.sit(4)
+        
+        self.game.beginTurn(4)
+        # (blind, missed, wait)
+        self.check_blinds([('big', None, False), # 1
+                           (None, None, False), # 2
+                           (None, None, False), # 3
+                           ('big_and_dead', 'big', False), # 4
+                           (None, None, False), # 5
+                           ('small', None, False), # 6
+                           ]
+                          )
+        self.pay_blinds()
+
+
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestBlinds))

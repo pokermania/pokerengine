@@ -242,6 +242,9 @@ class PokerTournament:
             return not self.isRegistered(serial)
         else:
             return False
+
+    def canUnregister(self, serial):
+        return self.isRegistered(serial) and self.state == TOURNAMENT_STATE_REGISTERING
         
     def register(self, serial):
         if self.can_register:

@@ -101,7 +101,7 @@ class TestPosition(unittest.TestCase):
         #
         # Second turn, everyone folds games end prematurely
         #
-        game.beginTurn(1)
+        game.beginTurn(2)
         self.assertEqual(game.state, "pre-flop")
         self.assertEqual(game.dealer, player[2]) # dealer
         self.assertEqual(game.last_to_talk, player[4]) # big blind
@@ -113,7 +113,7 @@ class TestPosition(unittest.TestCase):
         # Third turn, a new player comes in during the turn, two
         # players in game. The new player is ignored.
         #
-        game.beginTurn(1)
+        game.beginTurn(3)
         self.make_new_player(6)
         player[6] = 5
         self.assertEqual(game.state, "pre-flop")
@@ -137,7 +137,7 @@ class TestPosition(unittest.TestCase):
         # Fourth turn, we now have six players in game, the
         # newcomer pays the big blind
         #
-        game.beginTurn(1)
+        game.beginTurn(4)
         self.assertEqual(game.state, "pre-flop")
         self.assertEqual(game.dealer, player[4]) # dealer
         self.assertEqual(game.last_to_talk, player[6]) # big blind
@@ -159,7 +159,7 @@ class TestPosition(unittest.TestCase):
         # Fifth turn, a player (the dealer) leaves in the middle
         # of the game, auto_play takes over.
         #
-        game.beginTurn(1)
+        game.beginTurn(5)
         self.assertEqual(game.state, "pre-flop")
         self.assertEqual(game.dealer, player[5]) # dealer
         self.assertEqual(game.last_to_talk, player[1]) # big blind
@@ -187,7 +187,7 @@ class TestPosition(unittest.TestCase):
         # previous turn.
         #
         player[6] -= 1
-        game.beginTurn(1)
+        game.beginTurn(6)
         self.assertEqual(game.state, "pre-flop")
         self.assertEqual(game.dealer, player[6]) # dealer
         self.assertEqual(game.last_to_talk, player[2]) # big blind
@@ -198,7 +198,7 @@ class TestPosition(unittest.TestCase):
         #
         # Seventh turn, the dealer passes to player[1] again
         #
-        game.beginTurn(1)
+        game.beginTurn(7)
         self.assertEqual(game.state, "pre-flop")
         self.assertEqual(game.dealer, player[1]) # dealer
         self.assertEqual(game.last_to_talk, player[3]) # big blind
@@ -206,6 +206,63 @@ class TestPosition(unittest.TestCase):
             self.assertEqual(game.position, player[serial])
             game.fold(serial)
         self.assertEqual(game.state, "end")
+
+    def test2(self):
+        """
+        getRequestedAction and setPlayerBlind tests
+        """
+        game = self.game
+        for serial in xrange(1,5):
+            self.failUnless(game.addPlayer(serial))
+            self.failUnless(game.payBuyIn(serial, game.maxBuyIn()))
+            self.failUnless(game.sit(serial))
+        self.failUnless(game.addPlayer(5))
+        self.assertEqual(game.getRequestedAction(5), "buy-in")
+        self.failUnless(game.payBuyIn(5, game.maxBuyIn()))
+        self.assertEqual(game.getRequestedAction(5), None)
+        game.getPlayer(5).money.set(1)
+        self.assertEqual(game.getRequestedAction(5), "rebuy")
+        self.failUnless(game.rebuy(5, game.buyIn()))
+        self.assertEqual(game.getRequestedAction(5), None)
+        self.failUnless(game.sit(5))
+        #
+        # turn 1
+        #
+        game.beginTurn(8)
+        self.assertEqual(game.state, "blindAnte")
+        self.assertEqual(game.getRequestedAction(2), "blind_ante")
+        (amount, dead, state) = game.blindAmount(2)
+        game.blind(2, amount, dead)
+        self.assertEqual(game.getRequestedAction(3), "blind_ante")
+        (amount, dead, state) = game.blindAmount(3)
+        game.blind(3, amount, dead)
+        self.assertEqual(game.getRequestedAction(4), "play")
+        for serial in xrange(1,6):
+            game.botPlayer(serial)
+        #
+        # turn 2,3,4
+        #
+        self.failUnless(game.sitOut(4))
+        game.beginTurn(9)
+        game.beginTurn(10)
+        game.beginTurn(11)
+        for serial in xrange(1,6):
+            game.interactivePlayer(serial)
+        #
+        # player 4 back in the game must pay the big blind
+        #
+        self.failUnless(game.sit(4))
+        game.beginTurn(12)
+        self.assertEqual(game.state, "blindAnte")
+        self.assertEqual(game.getRequestedAction(2), "blind_ante")
+        (amount, dead, state) = game.blindAmount(2)
+        game.blind(2, amount, dead)
+        self.assertEqual(game.getRequestedAction(3), "blind_ante")
+        (amount, dead, state) = game.blindAmount(3)
+        game.blind(3, amount, dead)
+        self.assertEqual(game.getRequestedAction(4), "blind_ante")
+        game.setPlayerBlind(4, "big_and_dead")
+        self.assertEqual(game.getRequestedAction(4), "blind_ante")        
 
 def run():
     suite = unittest.TestSuite()

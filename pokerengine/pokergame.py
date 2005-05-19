@@ -297,7 +297,7 @@ class PokerGame:
             return self.is_open
 
     def isInPosition(self, serial):
-        return self.isPlaying() and self.getSerialInPosition() == serial
+        return self.isPlaying(serial) and self.getSerialInPosition() == serial
       
     def isPlaying(self, serial):
         return ( self.isRunning() and
@@ -345,7 +345,7 @@ class PokerGame:
             if self.getSerialInPosition() == serial:
                 self.__talkedBlindAnte()
             else:
-                self.message("sitOut for player %d while paying the blinds although not in position", serial)
+                self.message("sitOut for player %d while paying the blinds although not in position" % serial)
         if self.sitCount() < 2:
             self.first_turn = True
             self.dealer_seat = self.playersAll()[0].seat
@@ -366,7 +366,6 @@ class PokerGame:
             self.error("canceled unexpected while in state %s (ignored)" % self.state)
         
     def returnBlindAnte(self):
-        self.historyAdd("canceled", serial, pot)
         serials = self.serialsSit()
         if serials:
             serial = serials[0]
@@ -376,6 +375,7 @@ class PokerGame:
         else:
             serial = 0
             pot = 0
+        self.historyAdd("canceled", serial, pot)
             
     def sit(self, serial):
         player = self.serial2player[serial]
@@ -418,7 +418,7 @@ class PokerGame:
         
     def getSitOut(self, serial):
         return self.serial2player[serial].sit_out
-        
+
     def comeBack(self, serial):
         if self.canComeBack(serial):
             player = self.serial2player[serial]
@@ -451,6 +451,11 @@ class PokerGame:
         self.serial2player[serial].bot = True
         self.autoBlindAnte(serial)
         self.autoPlayer(serial)
+
+    def interactivePlayer(self, serial):
+        self.serial2player[serial].bot = False
+        self.noAutoBlindAnte(serial)
+        self.noAutoPlayer(serial)
         
     def autoPlayer(self, serial):
         if self.verbose >= 2: self.message("autoPlayer: player %d" % serial)
@@ -463,7 +468,16 @@ class PokerGame:
                 self.sitOut(serial)
         elif self.isPlaying(serial):
             self.__autoPlay()
-        
+
+    def noAutoPlayer(self, serial):
+        if self.verbose >= 2: self.message("noAutoPlayer: player %d" % serial)
+        player = self.getPlayer(serial)
+        if player:
+            player.auto = True
+            return True
+        else:
+            return False
+
     def removePlayer(self, serial):
         if self.isPlaying(serial):
             self.serial2player[serial].remove_next_turn = True
@@ -849,20 +863,32 @@ class PokerGame:
             big = self.blind_info["big"]
             small = self.blind_info["small"]
             if player.blind == "big":
-                return (big, 0, False)
+                return (big, 0, player.blind)
             elif player.blind == "late":
-                return (big, 0, True)
+                return (big, 0, player.blind)
             elif player.blind == "small":
-                return (small, 0, False)
+                return (small, 0, player.blind)
             elif player.blind == "big_and_dead":
-                return (big, small, True)
+                return (big, small, player.blind)
             elif ( player.blind == None or player.blind == True ):
-                return (0, 0, False)
+                return (0, 0, player.blind)
             else:
                 self.error("blindAmount unexpected condition for player %d" % player.serial)
         else:
             return (0, 0, False)
-        
+
+    def smallBlind(self):
+        if self.blind_info:
+            return self.blind_info["small"]
+        else:
+            return None
+          
+    def bigBlind(self):
+        if self.blind_info:
+            return self.blind_info["big"]
+        else:
+            return None
+          
     def autoPayBlindAnte(self):
         if not self.is_directing:
             return
@@ -883,14 +909,14 @@ class PokerGame:
                 #
                 continue
             if self.blind_info:
-                (amount, dead, is_late) = self.blindAmount(serial)
+                (amount, dead, state) = self.blindAmount(serial)
                 if amount > 0:
                     self.historyAdd("position", self.position)
                     if player.isAutoBlindAnte():
                         self.payBlind(serial, amount, dead)
                         auto_payed = True
                     else:
-                        self.historyAdd("blind_request", serial, amount, dead, is_late)
+                        self.historyAdd("blind_request", serial, amount, dead, state)
                         auto_payed = False
                         break
             if self.ante_info and player.ante == False:
@@ -1214,7 +1240,29 @@ class PokerGame:
         if self.isBlindAnteRound():
             return False
         return self.highestBetNotFold() <= self.getPlayer(serial).bet.toint()
+
+    def setPlayerBlind(self, serial, blind):
+        if self.isBlindAnteRound() and self.isInPosition(serial):
+            self.getPlayer(serial).blind = blind
         
+    def getRequestedAction(self, serial):
+        if self.isInPosition(serial):
+            if self.isBlindAnteRound():
+                return "blind_ante"
+            else:
+                return "play"
+        else:
+            player = self.getPlayer(serial)
+            if player:
+                if not player.isBuyInPayed():
+                    return "buy-in"
+                elif self.isBroke(serial):
+                    return "rebuy"
+                else:
+                    return None
+            else:
+                return None
+                
     def possibleActions(self, serial):
         if self.canAct(serial) and not self.isBlindAnteRound():
             actions = []
@@ -1347,7 +1395,7 @@ class PokerGame:
             self.error("player %d cannot pay blind. state = %s, serial in position = %d (ignored)" % (serial, self.state, self.getSerialInPosition()))
             return False
         if self.is_directing and amount == 0:
-            (amount, dead, is_late) = self.blindAmount(serial)
+            (amount, dead, state) = self.blindAmount(serial)
         self.payBlind(serial, amount, dead)
         if self.is_directing:
             self.__talkedBlindAnte()
