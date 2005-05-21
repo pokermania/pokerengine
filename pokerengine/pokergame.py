@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2004 Mekensleep
+# Copyright (C) 2004,2005 Mekensleep
 #
 # Mekensleep
 # 24 rue vieille du temple
@@ -1567,10 +1567,11 @@ class PokerGame:
                 if self.verbose >= 2: self.message("next state")
                 self.nextRound()
                 if not self.isLastRound():
-                    self.dealCards()
                     if self.is_directing:
+                        self.dealCards()
                         self.initRound()
                     else:
+                      self.runCallbacks("end_round")
                       if self.verbose >= 2: self.message("round not initialized, waiting for more information ... ")
                 else:
                     self.endState()
@@ -2805,14 +2806,18 @@ class PokerGame:
             return True
 
     def registerCallback(self, callback):
-        self.callbacks.append(callback)
+        if not callback in self.callbacks:
+            self.callbacks.append(callback)
 
     def unregisterCallback(self, callback):
         self.callbacks.remove(callback)
-        
-    def historyAdd(self, *args):
+
+    def runCallbacks(self, *args):
         for callback in self.callbacks:
-            callback(*args)
+            callback(self.id, *args)
+      
+    def historyAdd(self, *args):
+        self.runCallbacks(*args)
         self.turn_history.append(args)
 
     def historyGet(self):
