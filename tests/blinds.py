@@ -27,6 +27,7 @@
 import sys, os
 sys.path.insert(0, "..")
 
+from pprint import pprint
 import unittest
 from pokerengine.pokergame import PokerGameServer
 
@@ -175,6 +176,17 @@ class TestBlinds(unittest.TestCase):
                            ]
                           )
         self.pay_blinds()
+        # players who did not pay the big blind are removed from
+        # the history by historyReduce
+        game_index = 0
+        player_list_index = 7
+        serial2chips_index = 9
+        history = self.game.turn_history
+        self.assertEqual(history[game_index][player_list_index], [1, 2, 10, 11, 3, 4])
+        self.assertEqual(history[game_index][serial2chips_index].keys(), [1, 2, 3, 4, 10, 11, 'values'])
+        self.game.historyReduce()
+        self.assertEqual(history[game_index][player_list_index], [1, 2, 3, 4])
+        self.assertEqual(history[game_index][serial2chips_index].keys(), [1, 2, 3, 4, 'values'])
 
         self.game.beginTurn(3)
         # (blind, missed, wait)

@@ -61,20 +61,20 @@ class PokerPlayer:
         self.name = "noname"
         self.game = game
         self.fold = False
-        self.remove_next_turn = False
-        self.sit_out = True
-        self.sit_out_next_turn = False
+        self.remove_next_turn = False ##
+        self.sit_out = True ##
+        self.sit_out_next_turn = False ##
         self.bot = False
-        self.auto = False
-        self.auto_blind_ante = False
-        self.wait_for = False # False, "late", "big"
+        self.auto = False ##
+        self.auto_blind_ante = False ##
+        self.wait_for = False # False, "late", "big" ##
         self.missed_blind = "n/a" # None, "n/a", "big", "small"
-        self.blind = "late" # True, None, "late", "big", "small", "big_and_dead"
-        self.buy_in_payed = False
+        self.blind = "late" # True, None, "late", "big", "small", "big_and_dead" ##
+        self.buy_in_payed = False ##
         self.ante = False
         self.side_pot_index = 0
         self.all_in = False
-        self.seat = None
+        self.seat = None ##
         self.hand = PokerCards()
         self.money = False
         self.rebuy = 0
@@ -461,7 +461,11 @@ class PokerGame:
         if self.verbose >= 2: self.message("autoPlayer: player %d" % serial)
         player = self.getPlayer(serial)
         player.auto = True
+        if not self.is_directing:
+          return
         if self.isBlindAnteRound():
+            # note that we can never get here on tournament tables
+            # because blind / antes are payed automatically
             if player.isBot():
                 if self.getSerialInPosition() == serial: self.autoPayBlindAnte()
             else:
@@ -1139,11 +1143,11 @@ class PokerGame:
                     self.sitOut(player.serial)
                     sitting_out.append(player.serial)
 
-        disconnected = self.serialsDisconnected()
+        disconnected = self.playersDisconnected()
         if len(disconnected) > 0:
-            self.historyAdd("leave", disconnected)
-        for serial in disconnected:
-            self.__removePlayer(serial)
+          self.historyAdd("leave", map(lambda player: (player.serial, player.seat), disconnected))
+        for player in disconnected:
+            self.__removePlayer(player.serial)
         self.historyAdd("finish", self.hand_serial)
 
     def __removePlayer(self, serial):
@@ -1384,6 +1388,7 @@ class PokerGame:
             self.updateBlinds()
             self.historyAdd("wait_blind", serial)
             self.__talkedBlindAnte()
+        return True
         
     def blind(self, serial, amount = 0, dead = 0):
         if not self.blind_info:
@@ -2699,13 +2704,13 @@ class PokerGame:
             fixed = int(info["fixed"])
             (min_bet, max_bet) = (fixed, fixed)
         elif info.has_key("pow_level"):
-            fixed = int(info["pow_level"]) * pow(2, self.getLevel())
+            fixed = int(info["pow_level"]) * pow(2, self.getLevel() - 1)
             (min_bet, max_bet) = (fixed, fixed)
         else:
             if info.has_key("min"):
                 min_bet = int(info["min"])
             elif info.has_key("min_pow_level"):
-                min_bet = int(info["min_pow_level"]) * pow(2, self.getLevel())
+                min_bet = int(info["min_pow_level"]) * pow(2, self.getLevel() - 1)
             else:
                 min_bet = 0
 
@@ -2853,7 +2858,8 @@ class PokerGame:
                 del self.turn_history[index - 1:index + 1]
                 #
                 # remove references to the player who finally
-                # decided to not be part of the turn
+                # decided to not be part of the turn, either because
+                # he sits out or because he waits for the big blind
                 #
                 game_event[player_list_index].remove(serial)
                 del game_event[serial2chips_index][serial]
@@ -2870,7 +2876,15 @@ class PokerGame:
                 else:
                     index += 1
             elif ( type == "wait_for" ):
+                (type, serial, wait_for) = event
                 del self.turn_history[index]
+                #
+                # remove references to the player who is
+                # not in the turn because they must wait for
+                # the late blind
+                #
+                game_event[player_list_index].remove(serial)
+                del game_event[serial2chips_index][serial]
             else:
                 index += 1
         #
