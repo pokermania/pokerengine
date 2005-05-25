@@ -1257,7 +1257,7 @@ class PokerGame:
                 return "play"
         else:
             player = self.getPlayer(serial)
-            if player:
+            if not self.isTournament() and player:
                 if not player.isBuyInPayed():
                     return "buy-in"
                 elif self.isBroke(serial):
