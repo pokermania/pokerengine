@@ -64,7 +64,7 @@ class PokerChips:
         return "PokerChips(%s) = %d" % (self.chips, self.toint())
 
     def __repr__(self):
-        return "%s(%s)" % (self.__class__, self.chips)
+        return "%s(%s)" % (self.__class__.__name__, self.chips)
 
     def copy(self):
         return PokerChips(self.values, self)

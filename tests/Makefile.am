@@ -36,7 +36,8 @@ EXTRA_DIST = \
 	positions.py \
 	tournament.py \
 	eval.py \
-  blinds.py \
+	blinds.py \
+	history.py \
 	buyin.py
 
 TESTS = run

@@ -84,7 +84,7 @@ class TestChips(unittest.TestCase):
         
         chips = PokerChips(values, 200)
         self.assertEqual(chips.__str__(), "PokerChips([6, 7, 4, 6, 4]) = 200")
-        self.assertEqual(chips.__repr__(), "pokerengine.pokerchips.PokerChips([6, 7, 4, 6, 4])")
+        self.assertEqual(chips.__repr__(), "PokerChips([6, 7, 4, 6, 4])")
 
     def test2(self):
         """
@@ -128,7 +128,7 @@ class TestChips(unittest.TestCase):
         
         chips = PokerChips(values, 200)
         self.assertEqual(chips.__str__(), "PokerChips([6, 7, 4, 6, 4, 0]) = 200")
-        self.assertEqual(chips.__repr__(), "pokerengine.pokerchips.PokerChips([6, 7, 4, 6, 4, 0])")
+        self.assertEqual(chips.__repr__(), "PokerChips([6, 7, 4, 6, 4, 0])")
 
 def run():
     suite = unittest.TestSuite()

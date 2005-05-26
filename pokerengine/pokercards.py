@@ -145,6 +145,18 @@ class PokerCards:
                 return False
         return True
         
+    def areHidden(self):
+        for card in self.cards:
+            if is_visible(card):
+                return False
+        return True
+
+    def areAllNocard(self):
+        for card in self.cards:
+            if card != PokerCards.NOCARD:
+                return False
+        return True
+        
     def setVisible(self, value, visible):
         for i in xrange(len(self.cards)):
             if self.cards[i] & PokerCards.VALUE_CARD_MASK == value:
@@ -173,3 +185,6 @@ class PokerCards:
 
     def len(self):
         return len(self.cards)
+
+    def loseNotVisible(self):
+        self.cards = map(lambda card: card & PokerCards.NOT_VISIBLE_CARD and PokerCards.NOCARD or card, self.cards)
