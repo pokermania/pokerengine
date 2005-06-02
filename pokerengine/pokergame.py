@@ -3078,11 +3078,12 @@ class PokerGame:
                 del self.turn_history[index]
                 #
                 # remove references to the player who is
-                # not in the turn because they must wait for
+                # not in the turn because he must wait for
                 # the late blind
                 #
-                game_event[player_list_index].remove(serial)
-                del game_event[serial2chips_index][serial]
+                if serial in game_event[player_list_index]:
+                    game_event[player_list_index].remove(serial)
+                    del game_event[serial2chips_index][serial]
             else:
                 index += 1
         #
