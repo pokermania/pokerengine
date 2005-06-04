@@ -29,6 +29,7 @@ from pprint import pprint
 import re
 import struct
 import random
+import os
 
 from pokereval import PokerEval
 
@@ -69,7 +70,8 @@ class PokerRandom(random.Random):
     lsize = struct.calcsize('l')
     return abs(struct.unpack('l', self._file.read(lsize))[0])/(0.+(~(1L<<((8*lsize)-1))))
 
-random._inst = PokerRandom()
+if os.name == "posix":
+  random._inst = PokerRandom()
 
 class PokerPlayer:
     def __init__(self, serial, game):
