@@ -90,7 +90,7 @@ class PokerPlayer:
         self.ante = False
         self.side_pot_index = 0
         self.all_in = False
-        self.seat = None ##
+        self.seat = -1 ##
         self.hand = PokerCards()
         self.money = False
         self.rebuy = 0
@@ -634,14 +634,14 @@ class PokerGame:
         else:
             return False
         
-    def addPlayer(self, serial, seat = 255):
+    def addPlayer(self, serial, seat = -1):
         if self.canAddPlayer(serial):
             player = PokerPlayer(serial, self)
             player.bet = PokerChips(self.chips_values)
             player.dead = PokerChips(self.chips_values)
             player.money = PokerChips(self.chips_values)
             if self.is_directing:
-                if seat != 255 and seat in self.seats_left:
+                if seat != -1 and seat in self.seats_left:
                     player.seat = seat
                     self.seats_left.remove(seat)
                 else:
@@ -1394,17 +1394,21 @@ class PokerGame:
         self.current_round = -2
         self.position = -1
         self.changeState("end")
+        self.runCallbacks("end_round_last")
         
     def roundInfo(self):
         return self.round_info[self.current_round]
 
     def betInfo(self):
         return self.bet_info[self.current_round]
-    
-    def canPlay(self, serial):
-        return ( self.isRunning() and
-                 serial in self.serialsInGame() and
-                 self.canAct(serial) )
+
+    def willAct(self, serial):
+        if ( self.isRunning() and
+             serial in self.serialsInGame() ):
+          player = self.getPlayer(serial)
+          return not player.talked_once or self.canCall(serial)
+        else:
+          return False
         
     def canAct(self, serial):
         return ( self.isRunning() and
@@ -2567,6 +2571,7 @@ class PokerGame:
         player.bet.add(amount)
         if player.money.toint() < 0:
             self.error("money2bet: %d money dropped under 0" % serial)
+        self.runCallbacks("money2bet", serial, amount)
         self.updatePots(serial, amount.toint())
         if player.money.toint() == 0:
             self.historyAdd("all-in", serial)
