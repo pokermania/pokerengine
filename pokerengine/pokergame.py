@@ -28,6 +28,7 @@ from string import split, join, lower
 from pprint import pprint
 import re
 import struct
+import random
 
 from pokereval import PokerEval
 
@@ -37,23 +38,38 @@ from pokerengine.config import Config
 
 ABSOLUTE_MAX_PLAYERS = 10
 
-class PokerRandom:
+class PokerRandom(random.Random):
+  def __init__(self, paranoid=False):
+    self._file = None
+    self._paranoid = paranoid
+    self.seed(None)
 
-  def __init__(self):
-    self._file = open("/dev/urandom", 'r')
+  def seed(self, ignore):
+    if self._file:
+      try:
+        close(self._file)
+      except:
+        pass
+    if self._paranoid:
+      fname = '/dev/random'
+    else:
+      fname = '/dev/urandom'
+    self._file = open(fname, 'r')
 
-  def __del__(self):
-    self._file.close()
-      
+  def getstate(self):
+    return None
+
+  def setstate(self, ignore):
+    pass
+
+  def jumpahead(self, ignore):
+    pass
+
   def random(self):
     lsize = struct.calcsize('l')
-    return abs(struct.unpack('l', self._file.read(lsize))[0])/(0.+(~(1L<<(8*lsize))))
+    return abs(struct.unpack('l', self._file.read(lsize))[0])/(0.+(~(1L<<((8*lsize)-1))))
 
-  def shuffle(self, deck):
-    for i in xrange(len(deck)-1, 0, -1):
-        # pick an element in deck[:i+1] with which to exchange deck[i]
-        j = int(self.random() * (i+1))
-        deck[i], deck[j] = deck[j], deck[i]
+random._inst = PokerRandom()
 
 class PokerPlayer:
     def __init__(self, serial, game):
@@ -408,7 +424,7 @@ class PokerGame:
         
         self.eval = PokerEval()
         if self.is_directing:
-          self.shuffler = PokerRandom()
+          self.shuffler = random
         self.reset()
 #        print "__init__ PokerGame %s" % self
 
@@ -717,7 +733,8 @@ class PokerGame:
         self.serial2best = {}
         self.side_pots = {
             'contributions': {},
-            'pots': [[0, 0]]
+            'pots': [[0, 0]],
+            'building': 0,
             }
         self.showdown_stack = []
         self.turn_history = []
@@ -1889,10 +1906,8 @@ class PokerGame:
         for name in self.getParamList("/poker/variant/round/@name"):
             board = self.getParamList("/poker/variant/round[@name='" + name + "']/deal[@card='board']")
             board_size += len(board)
-            down = self.getParamList("/poker/variant/round[@name='" + name + "']/deal[@card='down']")
-            hand_size += len(down)
-            up = self.getParamList("/poker/variant/round[@name='" + name + "']/deal[@card='up']")
-            hand_size += len(up)
+            cards = self.getParamList("/poker/variant/round[@name='" + name + "']/deal[@card='up' or @card='down']/@card")
+            hand_size += len(cards)
             position = self.getParam("/poker/variant/round[@name='" + name + "']/position/@type")
             info = {
                 "name": name,
@@ -1900,8 +1915,7 @@ class PokerGame:
                 "board": board,
                 "board_size": board_size,
                 "hand_size": hand_size,
-                "down": down,
-                "up": up,
+                "cards": cards,
                 }
             self.round_info.append(info)
             self.round_info_backup.append(info)
@@ -1966,7 +1980,7 @@ class PokerGame:
     def getBoardLength(self):
         return len(self.board.tolist(True))
 
-    def cardsDealtThisRoundCount(self):
+    def cardsDealtThisRoundCount(self, criterion = lambda x: True):
         if not self.isRunning():
             return -1
         
@@ -1974,28 +1988,14 @@ class PokerGame:
             return 0
         
         round_info = self.roundInfo()
-        return len(round_info["up"]) + len(round_info["down"])
+        return len(filter(criterion, round_info["cards"]))
         
     def upCardsDealtThisRoundCount(self):
-        if not self.isRunning():
-            return -1
-        
-        if self.isBlindAnteRound():
-            return 0
-        
-        round_info = self.roundInfo()
-        return len(round_info["up"])
+        return self.cardsDealtThisRoundCount(lambda x: x == "up")
         
     def downCardsDealtThisRoundCount(self):
-        if not self.isRunning():
-            return -1
-        
-        if self.isBlindAnteRound():
-            return 0
-        
-        round_info = self.roundInfo()
-        return len(round_info["down"])
-        
+        return self.cardsDealtThisRoundCount(lambda x: x == "down")
+
     def getMaxHandSize(self):
         return len(self.getParamList("/poker/variant/hand/position"))
 
@@ -2023,32 +2023,31 @@ class PokerGame:
         number_of_players = len(self.playersNotFold())
 
         def number_to_deal():
-            return len(info["board"]) + len(info["up"]) * number_of_players + len(info["down"]) * number_of_players
+            return len(info["board"]) + len(info["cards"]) * number_of_players
 
         if number_to_deal() > len(self.deck):
+            cards = info["cards"]
+            cards.reverse()
             while number_to_deal() > len(self.deck):
-                if len(info["up"]) > 0:
-                    info["up"].pop()
-                elif len(info["down"]) > 0:
-                    info["down"].pop()
+                if "up" in cards:
+                    cards.remove("up")
+                elif "down" in cards:
+                    cards.remove("down")
                 else:
                     raise UserWarning, "unable to deal %d cards" % number_to_deal()
                 info["hand_size"] -= 1
 
                 info["board"].append("board")
                 info["board_size"] += 1
-            
+            cards.reverse()
             
         for card in info["board"]:
             self.board.add(self.deck.pop(), True)
-        for card in info["up"]:
+        for card in info["cards"]:
             for player in self.playersNotFold():
-                player.hand.add(self.deck.pop(), True)
-        for card in info["down"]:
-            for player in self.playersNotFold():
-                player.hand.add(self.deck.pop(), False)
+                player.hand.add(self.deck.pop(), card == "up")
         if self.verbose >= 1:
-          if len(info["up"]) > 0 or len(info["down"]) > 0:
+          if len(info["cards"]) > 0:
             for serial in self.serialsNotFold():
               self.message("player %d cards: " % serial + self.getHandAsString(serial))
           if len(info["board"]) > 0:
@@ -2575,9 +2574,7 @@ class PokerGame:
 
     def updatePots(self, serial, amount):
         pot_index = len(self.side_pots['pots']) - 1
-        pot = self.side_pots['pots'][-1]
-        pot[0] += amount # pot amount
-        pot[1] += amount # pot total
+        self.side_pots['building'] += amount
         contributions = self.side_pots['contributions']
         round_contributions = contributions[self.current_round]
         if not round_contributions.has_key(pot_index):
@@ -2632,8 +2629,14 @@ class PokerGame:
         return True
 
     def __makeSidePots(self):
+        amount_index = 0
+        total_index = 1
+        last_pot_index = -1
         round_contributions = self.side_pots['contributions'][self.current_round]
         pots = self.side_pots['pots']
+        pots[last_pot_index][amount_index] += self.side_pots['building'] # amount
+        pots[last_pot_index][total_index] += self.side_pots['building'] # total
+        self.side_pots['building'] = 0
         current_pot_index = len(pots) - 1
         players = filter(lambda player: player.side_pot_index == current_pot_index, self.playersAllIn())
         if not players:
@@ -2654,7 +2657,7 @@ class PokerGame:
                 #
                 break
             new_pot_contributions = {}
-            pot = pots[-1]
+            pot = pots[last_pot_index]
             new_pot = [0, 0]
             new_pot_index = len(pots)
             contribution = pot_contributions[player.serial]
@@ -2662,18 +2665,18 @@ class PokerGame:
                 other_contribution = pot_contributions[serial]
                 pot_contributions[serial] = min(contribution, other_contribution)
                 remainder = other_contribution - pot_contributions[serial]
-                pot[0] -= remainder
-                pot[1] -= remainder
+                pot[amount_index] -= remainder
+                pot[total_index] -= remainder
                 other_player = self.getPlayer(serial)
                 if other_contribution > contribution:
                     new_pot_contributions[serial] = remainder
-                    new_pot[0] += remainder
+                    new_pot[amount_index] += remainder
                     other_player.side_pot_index = new_pot_index
                 elif ( other_contribution == contribution and
                        not other_player.isAllIn() ):
                     other_player.side_pot_index = new_pot_index
             round_contributions[new_pot_index] = new_pot_contributions
-            new_pot[1] = new_pot[0] + pot[1]
+            new_pot[total_index] = new_pot[amount_index] + pot[total_index]
             pots.append(new_pot)
 
     def getPots(self):
@@ -2944,7 +2947,7 @@ class PokerGame:
         
     def payBuyIn(self, serial, amount):
         amount = PokerChips(self.chips_values, amount)
-        if amount.toint() > self.maxBuyIn():
+        if not self.isTournament() and amount.toint() > self.maxBuyIn():
           if self.verbose: self.error("payBuyIn: maximum buy in is %d and %d is too much" % ( self.maxBuyIn(), amount.toint()  ))
           return False
         player = self.getPlayer(serial)

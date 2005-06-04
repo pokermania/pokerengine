@@ -162,7 +162,7 @@ class TestCommonAllIn(TestAllIn):
             self.assertEqual(game.position, player[serial])
             game.callNraise(serial, 1000)
         self.assertEqual(game.side_pots,
-                         {'pots': [
+                         {'building': 0, 'pots': [
             [50, 50],
             [80, 130],
             [150, 280]
@@ -237,7 +237,7 @@ class TestAllInCase2(TestAllIn):
         game.call(1)             # calls 30 => all in
 
         self.assertEqual(game.side_pots,
-                         {'pots':
+                         {'building': 0, 'pots':
                           [[217, 217],
                            [60, 277],
                            [100, 377]],
