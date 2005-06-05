@@ -157,6 +157,9 @@ class PokerTournament:
 
     def __init__(self, *args, **kwargs):
         self.name = kwargs.get('name', 'no name')
+        self.description_short = kwargs.get('description_short', 'nodescription_short')
+        self.description_long = kwargs.get('description_long', 'nodescription_long')
+        self.name = kwargs.get('name', 'no name')
         self.serial = kwargs.get('serial', 1)
         self.verbose = kwargs.get('verbose', 0)
         self.players_quota = kwargs.get('players_quota', 10)
@@ -164,7 +167,7 @@ class PokerTournament:
         self.betting_structure = kwargs.get('betting_structure', 'level-15-30-no-limit')
         self.dirs = kwargs.get('dirs', [])
         self.seats_per_game = kwargs.get('seats_per_game', 10)
-        self.sit_n_go = kwargs.get('sit_n_go', 'y') == 'y'
+        self.sit_n_go = kwargs.get('sit_n_go', 'y')
         self.register_time = kwargs.get('register_time', 0)
         self.start_time = kwargs.get('start_time', 0)
         self.breaks_interval = kwargs.get('breaks_interval', 60)
@@ -178,6 +181,7 @@ class PokerTournament:
         self.prefix = ""
         
         self.players = []
+        self.registered = 0
         self.winners = []
         self.state = TOURNAMENT_STATE_ANNOUNCED
         self.can_register = False
@@ -194,13 +198,12 @@ class PokerTournament:
         print self.prefix + "[PokerTournament %s] " % self.name + message
         
     def canRun(self):
-        return self.start_time < time.time() and self.sit_n_go and self.players_quota <= len(self.players)
+        return self.start_time < time.time() and self.sit_n_go == 'y' and self.players_quota <= self.registered
 
     def getRank(self, serial):
         try:
-            players_count = len(self.players)
             winners_count = len(self.winners)
-            rank_first = players_count - winners_count
+            rank_first = self.registered - winners_count
             return self.winners.index(serial) + rank_first + 1
         except:
             return -1
@@ -223,7 +226,7 @@ class PokerTournament:
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_RUNNING:
             self.start_time = time.time()
             self.createGames()
-            if self.sit_n_go or self.players_quota <= len(self.players):
+            if self.sit_n_go == 'y' or self.registered >= self.players_quota:
                 self.can_register = False
         elif self.state == TOURNAMENT_STATE_RUNNING and state == TOURNAMENT_STATE_COMPLETE:
             self.finish_time = time.time()
@@ -249,6 +252,7 @@ class PokerTournament:
     def register(self, serial):
         if self.can_register:
             self.players.append(serial)
+            self.registered += 1
             if self.state == TOURNAMENT_STATE_REGISTERING:
                 if self.canRun(): self.changeState(TOURNAMENT_STATE_RUNNING)
             elif self.state == TOURNAMENT_STATE_RUNNING:
@@ -260,6 +264,7 @@ class PokerTournament:
     def unregister(self, serial):
         if self.state == TOURNAMENT_STATE_REGISTERING:
             self.players.remove(serial)
+            self.registered -= 1
             return True
         else:
             return False
@@ -290,7 +295,7 @@ class PokerTournament:
         to_game.close()
     
     def createGames(self):
-        games_count = int(ceil(len(self.players) / float(self.seats_per_game)))
+        games_count = int(ceil(self.registered / float(self.seats_per_game)))
         self.players_quota = games_count * self.seats_per_game
         players = self.players[:]
         for id in xrange(1, games_count + 1):
@@ -329,14 +334,14 @@ class PokerTournament:
                 self.callback_remove_player(self, game_id, serial)
             if self.verbose > 2: self.message("winners %s" % self.winners)
 
-        if len(self.winners) + 1 == len(self.players):
+        if len(self.winners) + 1 == self.registered:
             game = self.games[0]
             player = game.playersAll()[0]
             self.winners.insert(0, player.serial)
             self.callback_remove_player(self, game.id, player.serial)
             money = player.money.toint()
             player.money.set(0)
-            expected = game.buyIn() * len(self.players)
+            expected = game.buyIn() * self.registered
             if money != expected:
                 self.message("ERROR winner has %d chips and should have %d chips" % ( money, expected ))
             if self.verbose: self.message("winners %s" % self.winners)
@@ -383,7 +388,7 @@ class PokerTournament:
             return None
 
     def prizesAlgorithm(self, buy_in):
-        candidates_count = len(self.players)
+        candidates_count = self.registered
         if candidates_count < 5:
             winners = 1
         elif candidates_count < 10:
