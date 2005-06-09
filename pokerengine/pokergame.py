@@ -1229,6 +1229,7 @@ class PokerGame:
             
         if self.verbose >= 2: self.message("dealer %d, in position %d, last to talk %d" % (self.dealer, self.position, self.last_to_talk))
         self.historyAdd("round", self.state, self.board.copy(), self.handsMap())
+        self.historyAdd("position", self.position)
         self.__autoPlay()
 
     def sortPlayerList(self):
@@ -1394,11 +1395,15 @@ class PokerGame:
         
     def nextRound(self):
         self.current_round += 1
+        if self.position != -1:
+          self.historyAdd("position", -1)
         self.position = -1
         self.changeState(self.roundInfo()["name"])
 
     def endState(self):
         self.current_round = -2
+        if self.position != -1:
+          self.historyAdd("position", -1)
         self.position = -1
         self.changeState("end")
         self.runCallbacks("end_round_last")
@@ -1746,6 +1751,7 @@ class PokerGame:
         else:
             self.updateBlinds()
             self.position = self.indexInGameAdd(self.position, 1)
+            self.historyAdd("position", self.position)
             self.autoPayBlindAnte()
 
     def __talked(self, serial):
@@ -1758,6 +1764,7 @@ class PokerGame:
 
             if self.notFoldCount() < 2:
                 self.position = self.indexNotFoldAdd(self.position, 1)
+                self.historyAdd("position", self.position)
                 if self.verbose >= 2: self.message("last player in game %d" % self.getSerialInPosition())
                 if self.isFirstRound():
                     self.updateStatsFlop(True)
@@ -1805,6 +1812,7 @@ class PokerGame:
                         if self.verbose >= 2: self.message("money not yet distributed, assuming information is missing ...")
         else:
             self.position = self.indexInGameAdd(self.position, 1)
+            self.historyAdd("position", self.position)
             if self.verbose >= 2: self.message("new position (%d)" % self.position)
             self.__autoPlay()
 
@@ -3067,7 +3075,7 @@ class PokerGame:
                 #
                 if index < 1 or self.turn_history[index-1][0] != "position":
                     pprint(self.turn_history)
-                    print "Ouch again"
+                    self.error("unable to update sitOut or wait_blind")
                 del self.turn_history[index - 1:index + 1]
                 #
                 # remove references to the player who finally
@@ -3106,12 +3114,12 @@ class PokerGame:
         #
         for index in xrange(0, min(index, len(self.turn_history))):
             event = self.turn_history[index]
-            if event[0] == "position":
+            if event[0] == "position" and event[1] >= 0:
                 try:
                     self.turn_history[index] = ( event[0], game_event[player_list_index].index(position2serial[event[1]]) )
                 except:
                     pprint(self.turn_history)
-                    print "Ouch"
+                    self.error("unable to update position")
 
     def error(self, string):
       self.message("ERROR: " + string)
