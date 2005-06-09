@@ -648,7 +648,12 @@ class PokerGame:
                     self.seats_left.remove(seat)
                 else:
                     player.seat = self.seats_left.pop(0)
-                if self.verbose >= 1: self.message("player %d get seat %d" % (serial, player.seat))
+            else:
+                if seat not in self.seats_left:
+                    self.error("the seat %d is not among the remaining seats %s" % ( seat, self.seats_left ))
+                player.seat = seat
+                self.seats_left.remove(seat)
+            if self.verbose >= 1: self.message("player %d get seat %d" % (serial, player.seat))
             self.serial2player[serial] = player
             return True
         else:
