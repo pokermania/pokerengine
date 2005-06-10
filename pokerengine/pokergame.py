@@ -1545,6 +1545,7 @@ class PokerGame:
             last_bet = self.highestBetNotFold() - highest_bet
             self.last_bet = max(self.last_bet, last_bet)
             self.round_cap_left -= 1
+            self.runCallbacks("round_cap_decrease", self.round_cap_left)
         return True
 
     def bet(self, serial, amount):
