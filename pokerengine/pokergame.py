@@ -1186,7 +1186,7 @@ class PokerGame:
             values = []
             for player in self.playersInGame():
                 values.append(self.eval.evaln(player.hand.getVisible()))
-                print "%s : %d" % ( player.hand.getVisible(), values[-1] )
+                if self.verbose > 2: print "%s : %d" % ( player.hand.getVisible(), values[-1] )
             if info["position"] == "low":
                 value = min(values)
             else:
