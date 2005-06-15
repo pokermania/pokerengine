@@ -1,6 +1,8 @@
-Thu May 05 14:29:47 2005  Loic Dachary  <loic@gnu.org>
+Wed Jun 15 21:26:12 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.1
+
+Thu May 05 14:29:47 2005  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokertournament.py: tournament logic imported
 	  from former tournament client
