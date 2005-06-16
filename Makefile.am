@@ -37,7 +37,8 @@ MAINTAINERCLEANFILES = \
 	install-sh \
 	missing \
 	Makefile.in \
-	INSTALL
+	INSTALL \
+	.in
 
 pkgsysconfdir = ${sysconfdir}/${PACKAGE}
 dist_pkgsysconf_DATA = \
