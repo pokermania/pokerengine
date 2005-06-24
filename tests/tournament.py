@@ -394,16 +394,16 @@ class TestPrizes(unittest.TestCase):
         tourney = PokerTournament()
         tourney.can_register = False
 
-        tourney.players = [1] * 10
+        tourney.registered = 10
         self.assertEqual(tourney.prizes(5), [32, 12, 6])
 
-        tourney.players = [1] * 20
+        tourney.registered = 20
         self.assertEqual(tourney.prizes(5), [57, 25, 12, 6])
 
-        tourney.players = [1] * 50
+        tourney.registered = 50
         self.assertEqual(tourney.prizes(5), [129, 62, 31, 7, 7, 7, 7])
                         
-        tourney.players = [1] * 200
+        tourney.registered = 200
         self.assertEqual(tourney.prizes(5), [506, 250, 125, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7])
                         
 def run():

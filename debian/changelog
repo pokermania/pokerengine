@@ -1,12 +1,12 @@
 poker-engine (1.0.2-1) unstable; urgency=low
 
+  * Fill ITP  (closes: #306788)
+
   * upstream update
 
- --
+ -- Loic Dachary (OuoU) <loic@debian.org>  Fri, 24 Jun 2005 11:08:55 +0200
 
 poker-engine (1.0.1-1) unstable; urgency=low
-
-  * Fill ITP  (closes: #306788)
 
   * upstream update
 

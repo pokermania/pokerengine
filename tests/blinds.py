@@ -65,9 +65,10 @@ class TestBlinds(unittest.TestCase):
         players.sort(lambda a,b: int(a.seat - b.seat))
         for player in players:
             (blind, missed, wait) = descriptions.pop(0)
-            self.failUnless(blind == player.blind)
-            self.failUnless(missed == player.missed_blind)
-            self.failUnless(wait == player.wait_for)
+            if(blind != player.blind or missed != player.missed_blind or wait != player.wait_for):
+                print "check_blinds FAILED actual %s != from expected %s" % ( (player.blind, player.missed_blind, player.wait_for), (blind, missed, wait) )
+                self.fail()
+            
             
     def test1(self):
         for (serial, seat) in ((1, 0), (2, 1), (3, 2), (4, 3)):

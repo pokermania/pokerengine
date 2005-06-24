@@ -82,6 +82,7 @@ class PokerPlayer:
         self.remove_next_turn = False ##
         self.sit_out = True ##
         self.sit_out_next_turn = False ##
+        self.sit_requested = False ##
         self.bot = False
         self.auto = False ##
         self.auto_blind_ante = False ##
@@ -107,6 +108,7 @@ class PokerPlayer:
         other.remove_next_turn = self.remove_next_turn
         other.sit_out = self.sit_out
         other.sit_out_next_turn = self.sit_out_next_turn
+        other.sit_requested = self.sit_requested
         other.bot = self.bot
         other.auto = self.auto
         other.auto_blind_ante = self.auto_blind_ante
@@ -127,7 +129,7 @@ class PokerPlayer:
         return other
 
     def __str__(self):
-        return "serial = %d, name= %s, fold = %s, remove_next_turn = %s, sit_out = %s, sit_out_next_turn = %s, bot = %s, auto = %s, auto_blind_ante = %s, wait_for = %s, missed_blind = %s, blind = %s, buy_in_payed = %s, ante = %s, all_in = %s, side_pot_index = %d, seat = %d, hand = %s, money = %s, rebuy = %d, bet = %s, dead = %s, talked_once = %s" % (self.serial, self.name, self.fold, self.remove_next_turn, self.sit_out, self.sit_out_next_turn, self.bot, self.auto, self.auto_blind_ante, self.wait_for, self.missed_blind, self.blind, self.buy_in_payed, self.ante, self.all_in, self.side_pot_index, self.seat, self.hand, self.money, self.rebuy, self.bet, self.dead, self.talked_once)
+        return "serial = %d, name= %s, fold = %s, remove_next_turn = %s, sit_out = %s, sit_out_next_turn = %s, sit_requested = %s, bot = %s, auto = %s, auto_blind_ante = %s, wait_for = %s, missed_blind = %s, blind = %s, buy_in_payed = %s, ante = %s, all_in = %s, side_pot_index = %d, seat = %d, hand = %s, money = %s, rebuy = %d, bet = %s, dead = %s, talked_once = %s" % (self.serial, self.name, self.fold, self.remove_next_turn, self.sit_out, self.sit_out_next_turn, self.sit_requested, self.bot, self.auto, self.auto_blind_ante, self.wait_for, self.missed_blind, self.blind, self.buy_in_payed, self.ante, self.all_in, self.side_pot_index, self.seat, self.hand, self.money, self.rebuy, self.bet, self.dead, self.talked_once)
 
     def beginTurn(self):
         self.bet.reset()
@@ -162,6 +164,9 @@ class PokerPlayer:
 
     def isSit(self):
         return not self.sit_out
+
+    def isSitRequested(self):
+        return self.sit_requested
 
     def isBot(self):
         return self.bot
@@ -533,6 +538,12 @@ class PokerGame:
              not ( self.isBlindAnteRound() and
                    self.getSerialInPosition() == serial ) ):
             player.sit_out_next_turn = True
+            player.sit_requested = False
+            return False
+        elif not self.is_directing:
+            player.sit_out_next_turn = True
+            player.sit_requested = False
+            player.wait_for = False
             return False
         else:
             return self.sitOut(serial)
@@ -545,6 +556,7 @@ class PokerGame:
             self.historyAdd("sitOut", serial)
         player.sit_out = True
         player.sit_out_next_turn = False
+        player.sit_requested = False
         player.wait_for = False
         if self.is_directing and self.isBlindAnteRound():
             player.blind = None
@@ -557,6 +569,28 @@ class PokerGame:
             self.first_turn = True
             self.dealer_seat = self.playersAll()[0].seat
         return True
+
+    def sit(self, serial):
+        player = self.serial2player[serial]
+        if not player.isBuyInPayed() or self.isBroke(serial):
+            if self.verbose: self.error("sit: refuse to sit player %d because buy in == %s or broke == %s" % ( serial, player.buy_in_payed, self.isBroke(serial) ))
+            return False
+        player.sit_out_next_turn = False
+        player.sit_requested = False
+        player.sit_out = False
+        if player.wait_for == "big":
+            player.wait_for = False
+        player.auto = False
+        if self.sitCount() < 2:
+            self.dealer_seat = player.seat
+        return True
+
+    def sitRequested(self, serial):
+        player = self.getPlayer(serial)
+        if player:
+          player.sit_out_next_turn = False
+          player.sit_requested = True
+          player.wait_for = False
 
     def canceled(self, serial, amount):
         if self.isBlindAnteRound():
@@ -584,20 +618,6 @@ class PokerGame:
             pot = 0
         self.historyAdd("canceled", serial, pot)
             
-    def sit(self, serial):
-        player = self.serial2player[serial]
-        if not player.isBuyInPayed() or self.isBroke(serial):
-            if self.verbose: self.error("sit: refuse to sit player %d because buy in == %s or broke == %s" % ( serial, player.buy_in_payed, self.isBroke(serial) ))
-            return False
-        player.sit_out_next_turn = False
-        player.sit_out = False
-        if player.wait_for == "big":
-            player.wait_for = False
-        player.auto = False
-        if self.sitCount() < 2:
-            self.dealer_seat = player.seat
-        return True
-
     def getSerialByNameNoCase(self, name):
         name = lower(name)
         for player in self.playersAll():
@@ -631,6 +651,7 @@ class PokerGame:
             player = self.serial2player[serial]
             player.remove_next_turn = False
             player.sit_out_next_turn = False
+            player.sit_requested = False
             player.auto = False
             return True
         else:
@@ -930,7 +951,7 @@ class PokerGame:
                         if self.sitCount() > 5:
                             player.blind = "big_and_dead"
                         else:
-                            player.blind = "big"
+                            player.blind = "late"
                         player.wait_for = False
                     elif player.missed_blind == "n/a":
                         player.blind = "late"
@@ -1158,6 +1179,8 @@ class PokerGame:
             self.buildPlayerList(False)
             self.dealerFromDealerSeat()
         self.round_cap_left = self.roundCap()
+        if self.verbose > 2:
+          self.message("round cap reset to %d" % self.round_cap_left)
         self.last_bet = 0
         self.first_betting_pass = True
         if info["position"] == "under-the-gun":
@@ -1527,8 +1550,10 @@ class PokerGame:
                        (serial, self.state))
             return False
 
-        if self.round_cap_left == 0:
+        if self.round_cap_left <= 0:
             self.error("round capped, can't raise (ignored)")
+            if self.round_cap_left < 0:
+              self.error("round cap below zero")
             return False
 
         (min_bet, max_bet, to_call) = self.betLimits(serial)
@@ -1540,12 +1565,14 @@ class PokerGame:
         if self.verbose >= 1: self.message("player %d raises %d" % (serial, amount.toint()))
         self.historyAdd("raise", serial, amount.chips[:])
         highest_bet = self.highestBetNotFold()
-        self.bet(serial, amount)
+        self.money2bet(serial, amount)
         if self.isRunning():
             last_bet = self.highestBetNotFold() - highest_bet
             self.last_bet = max(self.last_bet, last_bet)
             self.round_cap_left -= 1
+            if self.verbose > 2: self.message("round cap left %d" % self.round_cap_left)
             self.runCallbacks("round_cap_decrease", self.round_cap_left)
+        self.__talked(serial)
         return True
 
     def bet(self, serial, amount):

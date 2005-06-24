@@ -1,3 +1,15 @@
+Fri Jun 24 15:37:39 2005  Loic Dachary  <loic@gnu.org>
+
+	* Release 1.0.2
+	
+	* pokerengine/pokergame.py (PokerGame.callNraise): split
+	  self.bet call to avoid autoplayer infinite recursion
+
+Fri Jun 24 11:07:28 2005  Loic Dachary  <loic@gnu.org>
+
+	* pokerengine/pokergame.py (PokerGame.sitOutNextTurn): sit_request and
+	  for client usage, allow client to update sit_out_next_hand in advance.
+
 Wed Jun 15 21:26:12 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.1
