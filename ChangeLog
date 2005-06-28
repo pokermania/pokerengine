@@ -1,3 +1,10 @@
+Tue Jun 28 13:25:19 2005  Loic Dachary  <loic@gnu.org>
+
+	* Release 1.0.3
+	
+	* pokerengine/pokergame.py (PokerGame.isGameEndInformationValid): can the
+	  showdown of the previous game be displayed
+
 Fri Jun 24 15:37:39 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.2

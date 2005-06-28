@@ -2926,6 +2926,20 @@ class PokerGame:
     def playersNotFold(self):
         return [ self.serial2player[serial] for serial in self.serialsNotFold() ]
 
+    def playersWinner(self):
+        return map(lambda serial: self.serial2player[serial], self.winners)
+        
+    def isGameEndInformationValid(self):
+        #
+        # Only relevant for a game that has ended and for which we want to know
+        # if all players involved in the last hand are still seated.
+        #
+        if self.state != "end" or len(self.winners) <= 0:
+          return False
+        if filter(lambda serial: not self.serial2player.has_key(serial), self.winners):
+          return False
+        return True
+
     #
     # Game Parameters.
     #
