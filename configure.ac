@@ -41,6 +41,7 @@ AM_MAINTAINER_MODE
 # Generate files
 AC_CONFIG_FILES([tests/run], [chmod +x tests/run])
 AC_CONFIG_FILES([Makefile
+                 poker-engine.pc
                  pokerengine/Makefile
                  tests/Makefile])
 AC_OUTPUT

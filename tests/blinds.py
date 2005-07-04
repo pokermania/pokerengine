@@ -259,7 +259,7 @@ class TestBlinds(unittest.TestCase):
         self.check_blinds([(None, None, False), # 1
                            ('small', None, False), # 2
                            ('big', None, False), # 3
-                           ('big', 'big', False), # 4
+                           ('late', 'big', False), # 4
                            ]
                           )
         self.pay_blinds()

@@ -63,5 +63,8 @@ EXTRA_DIST = \
 	config/python.m4 \
 	examples/simple.py
 
+pkgconfigdir = ${libdir}/pkgconfig
+pkgconfig_DATA = poker-engine.pc
+
 clean-local:
 	rm -f */*.py[co]
