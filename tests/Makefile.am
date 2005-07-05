@@ -38,6 +38,7 @@ EXTRA_DIST = \
 	eval.py \
 	blinds.py \
 	history.py \
-	buyin.py
+	buyin.py \
+	sit.py
 
 TESTS = run

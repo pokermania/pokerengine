@@ -86,7 +86,7 @@ class PokerPlayer:
         self.bot = False
         self.auto = False ##
         self.auto_blind_ante = False ##
-        self.wait_for = False # False, "late", "big" ##
+        self.wait_for = False # False, "late", "big", "first_round" ##
         self.missed_blind = "n/a" # None, "n/a", "big", "small"
         self.blind = "late" # True, None, "late", "big", "small", "big_and_dead" ##
         self.buy_in_payed = False ##
@@ -580,6 +580,8 @@ class PokerGame:
         player.sit_out = False
         if player.wait_for == "big":
             player.wait_for = False
+        if self.isRunning() and self.isBlindAnteRound():
+            player.wait_for = "first_round"
         player.auto = False
         if self.sitCount() < 2:
             self.dealer_seat = player.seat
@@ -594,6 +596,7 @@ class PokerGame:
 
     def canceled(self, serial, amount):
         if self.isBlindAnteRound():
+            self.sitPlayersWaitingForFirstRound()
             self.endState()
             if self.sitCount() != 1:
                 self.error("%d players sit, expected exactly one" % self.sitCount())
@@ -1171,13 +1174,26 @@ class PokerGame:
 
         if auto_payed:
             self.__talkedBlindAnte()
-        
+
+    def sitPlayersWaitingForFirstRound(self):
+        #
+        # Players who sit while others are paying the blinds are
+        # waiting for the first round so that buildPlayerList
+        # does not include them. When the first round starts, this
+        # mark can be removed.
+        #
+        for player in self.playersSit():
+          if player.wait_for == "first_round":
+            player.wait_for = False
+      
     def initRound(self):
         info = self.roundInfo()
         if self.verbose >= 2: self.message("new round %s" % info["name"])
-        if not self.is_directing and self.isFirstRound():
+        if self.isFirstRound():
+          if not self.is_directing:
             self.buildPlayerList(False)
             self.dealerFromDealerSeat()
+          self.sitPlayersWaitingForFirstRound()
         self.round_cap_left = self.roundCap()
         if self.verbose > 2:
           self.message("round cap reset to %d" % self.round_cap_left)
