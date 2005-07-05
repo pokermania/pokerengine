@@ -3,7 +3,7 @@ Section: libs
 Priority: optional
 Maintainer: Loic Dachary (OuoU) <loic@debian.org>
 Build-Depends-Indep: debhelper (>= 4.0.0), python2.3, python, python2.3-pypoker-eval (>= 127.0), automake1.7 | automake1.9
-Standards-Version: 3.6.1.1
+Standards-Version: 3.6.2.1
 
 Package: python2.3-poker-engine
 Section: libs
