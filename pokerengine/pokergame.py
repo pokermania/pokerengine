@@ -565,9 +565,6 @@ class PokerGame:
                 self.__talkedBlindAnte()
             else:
                 self.message("sitOut for player %d while paying the blinds although not in position" % serial)
-        if self.sitCount() < 2:
-            self.first_turn = True
-            self.dealer_seat = self.playersAll()[0].seat
         return True
 
     def sit(self, serial):
@@ -584,6 +581,7 @@ class PokerGame:
             player.wait_for = "first_round"
         player.auto = False
         if self.sitCount() < 2:
+            self.first_turn = True
             self.dealer_seat = player.seat
         return True
 

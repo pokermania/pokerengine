@@ -1,3 +1,13 @@
+Wed Jul 13 14:21:11 2005  Loic Dachary  <loic@gnu.org>
+
+	* Release 1.0.4
+
+	* pokerengine/pokergame.py (PokerGame.sitOut): do not set the dealer
+	  seat if less than two players sit.
+
+	* pokerengine/pokergame.py (PokerGame.sit): set first_turn to True if
+	  less than two players. 
+
 Tue Jul 05 21:10:21 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.3
