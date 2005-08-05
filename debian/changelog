@@ -1,3 +1,9 @@
+poker-engine (1.0.6-1) unstable; urgency=low
+
+  * upstream version
+
+ -- Loic Dachary (OuoU) <loic@debian.org>  Fri,  5 Aug 2005 19:29:24 +0200
+
 poker-engine (1.0.5-1) unstable; urgency=low
 
   * upstream version
