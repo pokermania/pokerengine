@@ -179,7 +179,8 @@ class TestCommonAllIn(TestAllIn):
                  4: 40},
                 2:
                 {4: 150}
-                }
+                },
+            'total': {1: 50, 2: 10, 3: 10, 4: 200, 5: 10}
             }
                           })
         self.assertEqual(game.serial2player[1].side_pot_index, 1)
@@ -245,7 +246,9 @@ class TestAllInCase2(TestAllIn):
                           {0: {0: {1: 2, 2: 1, 3: 2, 5: 2}},
                            1: {0: {1: 70, 3: 70, 5: 70},
                                1: {1: 30, 3: 30},
-                               2: {3: 100}}}
+                               2: {3: 100}},
+                           'total': {1: 102, 2: 1, 3: 202, 5: 72}
+                           }
                           })
         self.assertEqual(game.serial2player[1].side_pot_index, 1) # 277
         self.assertEqual(game.serial2player[3].side_pot_index, 2) # 377
@@ -293,7 +296,13 @@ class TestHoldemAllIn(TestAllIn):
         game = self.game
         self.prepareGame(2)
         game.pot = PokerChips(game.chips_values, 3)
-        game.side_pots = {'pots': { 0: (3, 3) } }
+        game.side_pots = {
+            'pots': { 0: (3, 3) },
+            'contributions': {
+            'total': { 1: 2,
+                       2: 1 }
+            }
+            }
         game.serial2player[1].hand = self.make_cards(False, '7h', '3h')
         game.serial2player[2].hand = self.make_cards(False, '7d', '3s')
         game.board = self.make_cards(True, '6h', '4d', '7s', 'Kc', '7c')
@@ -327,24 +336,32 @@ class TestOmaha8AllIn(TestAllIn):
         5) A player is all in for an amount larger than all other
            bets and get it back.
         
-        player[1] is all-in with a side pot of 91 and loses but
-                  get the extra chips back (200 - 91) = 109
-        player[2] is all-in with a side pot of 51
-                  player[2] wins hi (Straight) => 51/2 = 25
-                  player[5] win lo (NoPair)     => 51/2 = 25 
-        player[3,4,5] are still playing for a pot of (91 - 51) = 40
+        player[1] is all-in with a side pot of 90 and loses but
+                  get the extra chips back (200 - 90) = 110
+        player[2] is all-in with a side pot of 50
+                  player[2] wins hi (Straight) => 50/2 = 25
+                  player[5] win lo (NoPair)     => 50/2 = 25 
+        player[3,4,5] are still playing for a pot of (90 - 50) = 40
                   player[3,4] tie for hi (Pair)=> (40 / 2) / 2 = 10 each
                   player[5] win lo (Nopair)     => (40 / 2) = 20
 
-        player[2] inherit 1 odd chip
         """
 
         game = self.game
         game.side_pots = {'pots': {
-             0: (51, 51),
-             1: (40, 91),
-             2: (109, 200)
-            }}
+            0: (50, 50),
+            1: (40, 90),
+            2: (110, 200)
+            },
+            'contributions': {
+            'total': { 1: 130,
+                       2: 10,
+                       3: 20,
+                       4: 20,
+                       5: 20
+                       }
+            }
+            }
         player = self.player
         game.board = self.make_cards(True, 'As', '4d', '5h', '7d', '9c')
 
@@ -379,14 +396,24 @@ class TestOmaha8AllIn(TestAllIn):
         self.assertEqual(self.bestWithStrings("low", 5),
                           ('NoPair', ['6s', '5h', '4d', '2s', 'As']))
 
+        
     def dealCardsTwo(self):
         """
         Simple situation, no all-in, player[3] with straight
         """
         game = self.game
         game.side_pots = {'pots': {
-             0: (91, 91)
-            }}
+            0: (100, 100)
+            },
+            'contributions': {
+            'total': { 1: 20,
+                       2: 20,
+                       3: 20,
+                       4: 20,
+                       5: 20
+                       }
+            }
+                          }
         player = self.player
         game.board = self.make_cards(True, 'As', '4d', '5h', '7d', '9c')
 
@@ -429,11 +456,9 @@ class TestOmaha8AllIn(TestAllIn):
         game.distributeMoney()
         self.assertEqual(len(game.winners), 4)
         self.assertEqual(game.pot.toint(), 0)
-        self.assertEqual(player[1].money.toint(), money + 109)
-        self.assertEqual(player[2].money.toint(), money + 25 + 1)
-        self.assertEqual(player[3].money.toint(), money + 10)
-        self.assertEqual(player[4].money.toint(), money + 10)
-        self.assertEqual(player[5].money.toint(), money + 25 + 20)
+        game_state = game.showdown_stack[0]
+        self.assertEqual(game_state['serial2delta'], {1: -20, 2: 15, 3: -10, 4: -10, 5: 25})
+        self.assertEqual(game_state['serial2share'], {1: 110, 2: 25, 3: 10, 4: 10, 5: 45})
 
     def test2_showdown(self):
         self.prepareGame(5)
@@ -478,8 +503,14 @@ class TestHoldemPlayBoard(TestAllIn):
         """
         game = self.game
         game.side_pots = {'pots': {
-             0: (91, 91)
-            }}
+             0: (10, 10),
+            },
+            'contributions': {
+            'total': { 1: 5,
+                       2: 5,
+                       }
+                          }
+                          }
         player = self.player
         game.board = self.make_cards(True, 'As', 'Ac', 'Ad', '7d', '7c')
 

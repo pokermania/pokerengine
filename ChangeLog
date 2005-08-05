@@ -1,6 +1,17 @@
-Sat Jul 16 11:11:09 2005  Loic Dachary  <loic@gnu.org>
+Wed Aug 03 14:09:54 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.5
+
+	* pokerengine/pokergame.py (PokerGame.getLatestPotContributions): helper
+	  function added.
+
+	* pokerengine/pokergame.py (PokerGame.updatePots): compute total pot
+	  contributions.
+
+	* pokerengine/pokergame.py (PokerGame.distributeMoney): compute total serial2share that
+	  replaces winner2share and serial2delta for each player (net win/loss).
+
+Sat Jul 16 11:11:09 2005  Loic Dachary  <loic@gnu.org>
 
 	* debian/control (Section): s/libs/python/ in sections.
 

@@ -343,10 +343,11 @@ def history2messages(game, history, serial2name = str, pocket_messages = False):
             messages.append("turn canceled%s" % returned_message)
 
         elif type == "end":
-            (type, winners, winner2share, showdown_stack) = event
-            if not showdown_stack[0].has_key('serial2best'):
+            (type, winners, showdown_stack) = event
+            game_state = showdown_stack[0]
+            if not game_state.has_key('serial2best'):
                 serial = winners[0]
-                messages.append("%s receives %d (everyone else folded)" % ( serial2name(serial), winner2share[serial] ))
+                messages.append("%s receives %d (everyone else folded)" % ( serial2name(serial), game_state['serial2share'][serial] ))
             else:
                 serial2displayed = {}
                 hands = showdown_stack[0]['serial2best']
@@ -451,7 +452,6 @@ class PokerGame:
         self.last_bet = 0
         self.winners = []
         self.side2winners = {}
-        self.winner2share = {}
         self.serial2best = {}
         self.showdown_stack = []
         self.side_pots = {}
@@ -608,15 +608,15 @@ class PokerGame:
             self.error("canceled unexpected while in state %s (ignored)" % self.state)
         
     def returnBlindAnte(self):
-        serials = self.serialsSit()
-        if serials:
-            serial = serials[0]
-            self.bet2pot()
-            pot = self.pot.toint()
-            self.pot2money(serial)
-        else:
-            serial = 0
-            pot = 0
+        serial = 0
+        pot = 0
+        for player in self.playersPlaying():
+            if player.bet.toint() > 0:
+                self.bet2pot()
+                pot = self.pot.toint()
+                serial = player.serial
+                self.pot2money(serial)
+        self.sitPlayersWaitingForFirstRound()
         self.historyAdd("canceled", serial, pot)
             
     def getSerialByNameNoCase(self, name):
@@ -758,13 +758,12 @@ class PokerGame:
         self.pot = PokerChips(self.chips_values)
         self.board = PokerCards()
         self.winners = []
-        self.winner2share = {}
         self.serial2best = {}
         self.side_pots = {
-            'contributions': {},
-            'pots': [[0, 0]],
-            'building': 0,
-            }
+          'contributions': { 'total': {} },
+          'pots': [[0, 0]],
+          'building': 0,
+          }
         self.showdown_stack = []
         self.turn_history = []
 
@@ -837,12 +836,21 @@ class PokerGame:
                 elif player.missed_blind == None:
                     self.dealer_seat = seat
                     break
-        
+
+    def sitCountBlindAnteRound(self):
+        sit_count = 0
+        for player in self.playersSit():
+          if player.wait_for != "first_round":
+            sit_count += 1
+        return sit_count
+      
     def updateBlinds(self):
         if not self.blind_info:
             return
 
-        if self.sitCount() <= 1:
+        sit_count = self.sitCountBlindAnteRound()
+        
+        if sit_count <= 1:
             #
             # Forget the missed blinds and all when there is less than
             # two players willing to join the game.
@@ -850,14 +858,15 @@ class PokerGame:
             for player in self.playersAll():
                 player.missed_blind = None
                 player.blind = None
-                player.wait_for = False
+                if player.wait_for != 'first_round':
+                    player.wait_for = False
             return
 
         seat2player = [None] * ABSOLUTE_MAX_PLAYERS
         blind_ok_count = 0
         for player in self.playersAll():
             seat2player[player.seat] = player
-            if player.isSit() and not player.isMissedBlind():
+            if player.isSit() and player.wait_for != 'first_round' and not player.isMissedBlind():
                 blind_ok_count += 1
 
         if self.seatsCount() == 2:
@@ -889,11 +898,13 @@ class PokerGame:
                     player.missed_blind = None
                 
         def updateMissed(players, index, what):
-            while ( index < ABSOLUTE_MAX_PLAYERS and
+            while ( ( index < ABSOLUTE_MAX_PLAYERS ) and
                     ( not players[index] or
-                      not players[index].isSit() ) ):
-                if players[index] and players[index].missed_blind == None:
-                    players[index].missed_blind = what
+                      not players[index].isSit() or
+                      players[index].wait_for == 'first_round' ) ):
+                player = players[index]
+                if player and player.wait_for != 'first_round' and player.missed_blind == None:
+                    player.missed_blind = what
                 index += 1
             return index
 
@@ -911,7 +922,7 @@ class PokerGame:
                 done = True
             elif ( ( not player.wait_for and
                      player.missed_blind == None ) or
-                   self.sitCount() == 2 ):
+                   sit_count == 2 ):
                 player.blind = "small"
                 done = True
             elif player.missed_blind != None:
@@ -949,7 +960,7 @@ class PokerGame:
                         player.blind = None
                     elif ( player.missed_blind == "big" or
                            player.missed_blind == "small" ):
-                        if self.sitCount() > 5:
+                        if sit_count > 5:
                             player.blind = "big_and_dead"
                         else:
                             player.blind = "late"
@@ -1361,7 +1372,7 @@ class PokerGame:
 
         self.dealer_seat = self.getPlayerDealer().seat
         
-        self.historyAdd("end", self.winners[:], self.winner2share, self.showdown_stack)
+        self.historyAdd("end", self.winners[:], self.showdown_stack)
 
         for player in self.playersAll():
             if player.rebuy > 0:
@@ -1740,7 +1751,7 @@ class PokerGame:
             self.nextRound()
         
     def __talkedBlindAnte(self):
-        if self.sitCount() < 2:
+        if self.sitCountBlindAnteRound() < 2:
             self.returnBlindAnte()
             self.endState()
             return
@@ -2142,9 +2153,9 @@ class PokerGame:
 
     def isWinnerBecauseFold(self):
         return moneyDistributed() and self.showdown_stack[0].has_key('foldwin')
-    
+
     #
-    # Split the pot
+    # Split the pots
     #
     def distributeMoney(self):
         if self.moneyDistributed():
@@ -2153,18 +2164,25 @@ class PokerGame:
 
         pot_backup = self.pot.copy()
         side_pots = self.getPots()
+
+        serial2delta = {}
+        for (serial, share) in side_pots['contributions']['total'].iteritems():
+          serial2delta[serial] = - share
+          
         if self.notFoldCount() < 2:
             #
             # Special and simplest case : the winner has it because 
             # everyone folded. Don't bother to evaluate.
             #
             (serial,) = self.serialsNotFold()
-            self.winner2share[serial] = self.pot.toint()
+            serial2delta[serial] += self.pot.toint()
             self.showdown_stack = [ { 'type': 'game_state',
                                       'player_list': self.player_list,
                                       'side_pots': side_pots,
                                       'pot': pot_backup,
-                                      'foldwin': True },
+                                      'foldwin': True,
+                                      'serial2share': { serial: pot_backup.toint() },
+                                      'serial2delta': serial2delta },
                                     { 'type': 'resolve',
                                       'serial2share': { serial: pot_backup.toint() },
                                       'serials': [serial],
@@ -2174,9 +2192,9 @@ class PokerGame:
             self.setWinners([serial])
             return
 
-        player2side_pot = {}
+        serial2side_pot = {}
         for player in self.playersNotFold():
-            player2side_pot[player.serial] = side_pots['pots'][player.side_pot_index][1]
+            serial2side_pot[player.serial] = side_pots['pots'][player.side_pot_index][1]
         if self.verbose >= 2: self.message("distribute a pot of %d" % self.pot.toint())
         #
         # Keep track of the best hands (high and low) for information
@@ -2187,7 +2205,7 @@ class PokerGame:
         # Every player that received a share of the pot and the
         # amount.
         #
-        winner2share = {}
+        serial2share = {}
         #
         # List of winners for each side of the pot (hi or low),
         # regardless of the fact that low hands matter for this
@@ -2208,7 +2226,7 @@ class PokerGame:
         # While there is some money left at the table
         #
         while True:
-            potential_winners = filter(lambda player: player2side_pot[player.serial] > 0, self.playersNotFoldShowdownSorted())
+            potential_winners = filter(lambda player: serial2side_pot[player.serial] > 0, self.playersNotFoldShowdownSorted())
             #
             # Loop ends when there is no more money, i.e. no more
             # players with a side_pot greater than 0
@@ -2235,12 +2253,12 @@ class PokerGame:
                 winner = potential_winners[0]
                 frame['type'] = 'uncalled'
                 frame['serial'] = winner.serial
-                frame['uncalled'] = player2side_pot[winner.serial]
+                frame['uncalled'] = serial2side_pot[winner.serial]
                 showdown_stack.insert(0, frame)
-                if not winner2share.has_key(winner):
-                    winner2share[winner] = 0
-                winner2share[winner] += player2side_pot[winner.serial]
-                player2side_pot[winner.serial] = 0
+                serial2share.setdefault(winner.serial, 0)
+                serial2share[winner.serial] += serial2side_pot[winner.serial]
+                serial2delta[winner.serial] += serial2side_pot[winner.serial]
+                serial2side_pot[winner.serial] = 0
                 break
             
             frame.fromkeys(self.win_orders + [ 'pot', 'chips_left' ])
@@ -2269,8 +2287,7 @@ class PokerGame:
                 side_winners = [ potential_winners[i] for i in indices ]
                 for winner in side_winners:
                     if self.verbose >= 1: self.message(" => player %d %s (%s)" % ( winner.serial, self.bestCardsAsString(self.serial2best, winner.serial, side), side ))
-                    if not winner2share.has_key(winner):
-                        winner2share[winner] = 0
+                    serial2share.setdefault(winner.serial, 0)
                     frame['serial2share'][winner.serial] = 0
                 frame[side] = [ winner.serial for winner in side_winners ]
                 self.side2winners[side] += frame[side]
@@ -2281,7 +2298,7 @@ class PokerGame:
             # the winners. In other words, we must share the pot that
             # was on the table for the winner that was all-in first.
             #
-            pot = min([ player2side_pot[player.serial] for player in winners ])
+            pot = min([ serial2side_pot[player.serial] for player in winners ])
             frame['pot'] = pot
             if self.verbose >= 2: self.message("  and share a pot of %d" % pot)
             #
@@ -2304,7 +2321,8 @@ class PokerGame:
                 chips_left += remainder
                 frame['chips_left'] += remainder
                 for winner in winners:
-                    winner2share[winner] += share
+                    serial2share[winner.serial] += share
+                    serial2delta[winner.serial] += share
                     frame['serial2share'][winner.serial] += share
             #
             # The side pot of each winner is lowered by the amount
@@ -2313,23 +2331,12 @@ class PokerGame:
             # with the smallest side pot will be discarded).
             #
             for player in potential_winners:
-                player2side_pot[player.serial] -= pot
+                serial2side_pot[player.serial] -= pot
 
             showdown_stack.append(frame)
 
-        if len(winner2share) == 1:
-            #
-            # Special case that is the most frequent (single winner)
-            # and where we can avoid arithmethic on the chips
-            #
-            player = winner2share.keys()[0]
-            player.money.add(self.pot)
-        else:
-            #
-            # Divide and share the chips
-            #
-            for (player, share) in winner2share.iteritems():
-                player.money.add(share)
+        for (serial, share) in serial2share.iteritems():
+            self.getPlayer(serial).money.add(share)
 
         #
         # The chips left go to the player next to the dealer,
@@ -2339,10 +2346,9 @@ class PokerGame:
             next_to_dealer = self.indexAdd(self.dealer, 1)
             player = self.serial2player[self.player_list[next_to_dealer]]
             player.money.add(chips_left)
-            if winner2share.has_key(player):
-                winner2share[player] += chips_left
-            else:
-                winner2share[player] = chips_left
+            serial2share.setdefault(player.serial, 0)
+            serial2share[player.serial] += chips_left
+            serial2delta[player.serial] += chips_left
             showdown_stack.insert(0, { 'type': 'left_over',
                                        'chips_left': chips_left,
                                        'serial': player.serial })
@@ -2357,13 +2363,15 @@ class PokerGame:
         for side in self.side2winners.keys():
             self.side2winners[side] = uniq.fromkeys(self.side2winners[side]).keys()
             winners_serials += self.side2winners[side]
-        self.winner2share = dict([ ( winner.serial, share ) for ( winner, share ) in winner2share.iteritems() ])
         self.setWinners(uniq.fromkeys(winners_serials).keys())
         showdown_stack.insert(0, { 'type': 'game_state',
                                    'serial2best': self.serial2best,
                                    'player_list': self.player_list,
                                    'side_pots': side_pots,
-                                   'pot': pot_backup })
+                                   'pot': pot_backup,
+                                   'serial2share': serial2share,
+                                   'serial2delta': serial2delta
+                                   })
         self.showdown_stack = showdown_stack
         if self.verbose > 2: pprint(self.showdown_stack)
 
@@ -2638,12 +2646,12 @@ class PokerGame:
         pot_index = len(self.side_pots['pots']) - 1
         self.side_pots['building'] += amount
         contributions = self.side_pots['contributions']
+        contributions['total'].setdefault(serial, 0)
+        contributions['total'][serial] += amount
         round_contributions = contributions[self.current_round]
-        if not round_contributions.has_key(pot_index):
-            round_contributions[pot_index] = {}
+        round_contributions.setdefault(pot_index, {})
         pot_contributions = round_contributions[pot_index]
-        if not pot_contributions.has_key(serial):
-            pot_contributions[serial] = 0
+        pot_contributions.setdefault(serial, 0)
         pot_contributions[serial] += amount
 
     def playersInPotCount(self, side_pots):
@@ -2746,7 +2754,12 @@ class PokerGame:
 
     def getSidePotTotal(self):
         return self.side_pots['pots'][-1][1]
-    
+
+    def getLatestPotContributions(self):
+        contributions = self.side_pots['contributions']
+        last_round = max(filter(lambda x: x != 'total', contributions.keys()))
+        return contributions[last_round]
+        
     def indexInGameAdd(self, position, increment):
         return self.playerListIndexAdd(position, increment, PokerPlayer.isInGame)
 

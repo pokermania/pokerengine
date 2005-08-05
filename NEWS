@@ -1,5 +1,12 @@
 Release 1.0.5
 
+Showdown stacks summarizes total wins and losses explicitly (serial2share,
+serial2delta), the application does not need to recompute them.
+
+Fix bug occuring when a turn is cancelled because only one player
+payed the blind and other players sit at the table while the other
+player(s) declined to pay the blind.
+
 Release 1.0.4
 
 Fix dealer button bug in head to head situations.

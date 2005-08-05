@@ -63,11 +63,16 @@ class TestBlinds(unittest.TestCase):
     def check_blinds(self, descriptions):
         players = self.game.playersAll()
         players.sort(lambda a,b: int(a.seat - b.seat))
+        fail = False
         for player in players:
             (blind, missed, wait) = descriptions.pop(0)
             if(blind != player.blind or missed != player.missed_blind or wait != player.wait_for):
                 print "check_blinds FAILED actual %s != from expected %s" % ( (player.blind, player.missed_blind, player.wait_for), (blind, missed, wait) )
-                self.fail()
+                fail = True
+            else:
+                print "check_blinds %s == %s" % ( (player.blind, player.missed_blind, player.wait_for), (blind, missed, wait) )
+        if fail:
+            self.fail()
             
             
     def test1(self):
@@ -324,6 +329,44 @@ class TestBlinds(unittest.TestCase):
                           )
         self.pay_blinds()
 
+
+    def test0(self):
+        """
+        """
+        for (serial, seat) in ((1, 0), (2, 1), (3, 2), (4, 3), (5, 4)):
+            self.make_new_player(serial, seat)
+        self.game.sitOut(1)
+        self.game.sitOut(2)
+        self.game.sitOut(4)
+        self.game.beginTurn(1)
+        # (blind, missed, wait)
+        self.check_blinds([(None, None, False), # 1
+                           (None, 'small', False), # 2
+                           ('small', None, False), # 3
+                           (None, 'big', False), # 4
+                           ('big', None, False), # 5
+                           ]
+                          )
+
+        self.game.sit(1)
+        self.game.sit(2)
+        self.game.autoBlindAnte(3)
+        self.game.noAutoBlindAnte(3)
+        self.game.sit(4)
+
+        # (blind, missed, wait)
+        self.check_blinds([(None, None, 'first_round'), # 1
+                           (None, 'small', 'first_round'), # 2
+                           (True, None, False), # 3
+                           (None, 'big', 'first_round'), # 4
+                           ('big', None, False), # 5
+                           ]
+                          )
+
+        self.game.sitOut(5)
+
+        self.failUnless(self.game.state, "end")
+        self.failUnless(self.game.serial2player[3].money.toint(), self.game.buyIn())
 
 def run():
     suite = unittest.TestSuite()
