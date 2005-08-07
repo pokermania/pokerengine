@@ -1,5 +1,10 @@
 Wed Aug 03 14:09:54 2005  Loic Dachary  <loic@gnu.org>
 
+	* pokerengine/pokergame.py (PokerGame.is{Ante,Blind}Requested): predicate
+	  on the blind / ante status of a given player
+
+Wed Aug 03 14:09:54 2005  Loic Dachary  <loic@gnu.org>
+
 	* Release 1.0.5
 
 	* pokerengine/pokergame.py (PokerGame.getLatestPotContributions): helper

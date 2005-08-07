@@ -837,6 +837,18 @@ class PokerGame:
                     self.dealer_seat = seat
                     break
 
+    def isBlindRequested(self, serial):
+        return ( self.getSerialInPosition() == serial and
+                 self.isBlindAnteRound() and
+                 self.blind_info and
+                 not self.getPlayer(serial).isAutoBlindAnte() )
+          
+    def isAnteRequested(self, serial):
+        return ( self.getSerialInPosition() == serial and
+                 self.isBlindAnteRound() and
+                 self.ante_info and
+                 not self.getPlayer(serial).isAutoBlindAnte() )
+          
     def sitCountBlindAnteRound(self):
         sit_count = 0
         for player in self.playersSit():
