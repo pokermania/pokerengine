@@ -20,7 +20,7 @@ Mon Aug 15 2005  Loic Dachary  <loic@gnu.org>
 	* tests/conf: 1.0.5 configuration files from which upgrades can be
 	  applied.
 	
-	* pokerengine/config.py (Config.upgrade): XSL based upgrade system
+	* pokerengine/pokerengineconfig.py (Config.upgrade): XSL based upgrade system
 	  starting from version 1.0.5 and up.
 
 	* pokerengine/version.py.in: version class for comparison and

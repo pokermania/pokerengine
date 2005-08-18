@@ -28,7 +28,7 @@ import sys, os, shutil, stat
 sys.path.insert(0, "@top_srcdir@")
 
 import unittest
-from pokerengine.config import Config
+from pokerengine.pokerengineconfig import Config
 from pokerengine.version import version
 
 class TestUpgrades(unittest.TestCase):

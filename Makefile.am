@@ -79,7 +79,7 @@ clean-local:
 
 install-data-local:
 	mkdir -p "${DESTDIR}${pkgsysconfdir}"
-	pokerconfigupgrade --verbose=1 --upgrades=${srcdir}/upgrades --reference=${srcdir}/conf "${DESTDIR}${pkgsysconfdir}"
+	${top_builddir}/pokerconfigupgrade --verbose=1 --upgrades=${srcdir}/upgrades --reference=${srcdir}/conf "${DESTDIR}${pkgsysconfdir}"
 	chmod u+w "${DESTDIR}${pkgsysconfdir}"
 
 uninstall-local:

@@ -63,7 +63,7 @@ comments about actions taken.
 .B --module=<python_module>
 Use the 
 .B <python_module>.config
-module instead of the default pokerengine.config module.
+module instead of the default pokerengine.pokerengineconfig module.
 
 .TP
 .B --dry-run

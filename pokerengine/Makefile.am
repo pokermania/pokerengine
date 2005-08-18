@@ -29,7 +29,7 @@ MAINTAINERCLEANFILES = Makefile.in
 pythondir = ${pyexecdir}/pokerengine
 python_PYTHON = \
 	__init__.py \
-	config.py \
+	pokerengineconfig.py \
 	version.py \
 	pokercards.py \
 	pokerchips.py \

@@ -49,7 +49,7 @@ def main():
         sys.exit(2)
     upgrades = None
     configuration_file = None
-    module = "pokerengine"
+    module = "pokerengine.pokerengineconfig"
     reference = None
     verbose = 0
     dry_run = False
@@ -73,7 +73,7 @@ def main():
         sys.exit(3)
         
     if upgrades:
-        config_module = my_import(module + ".config")
+        config_module = my_import(module)
         config_class = config_module.__dict__['Config']
 
         files = []

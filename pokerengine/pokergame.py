@@ -35,7 +35,7 @@ from pokereval import PokerEval
 
 from pokerengine.pokercards import *
 from pokerengine.pokerchips import PokerChips
-from pokerengine.config import Config
+from pokerengine.pokerengineconfig import Config
 
 ABSOLUTE_MAX_PLAYERS = 10
 
