@@ -1,4 +1,4 @@
-#
+# -*- mode: python -*-
 # Copyright (C) 2004, 2005 Mekensleep
 #
 # Mekensleep
@@ -25,7 +25,7 @@
 #
 
 import sys, os
-sys.path.insert(0, "..")
+sys.path.insert(0, "@top_srcdir@")
 
 import unittest
 from pokerengine.pokergame import PokerGameServer, PokerGameClient, PokerGame
@@ -39,7 +39,7 @@ _initial_money = 10
 class TestPosition(unittest.TestCase):
 
     def setUp(self):
-        self.game = PokerGameServer("poker.%s.xml", [ "../conf" ])
+        self.game = PokerGameServer("poker.%s.xml", [ "@top_srcdir@/conf" ])
         self.game.verbose = 3
         self.game.setVariant("holdem")
         self.game.setBettingStructure("2-4-limit")

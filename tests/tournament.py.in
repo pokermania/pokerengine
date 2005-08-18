@@ -1,4 +1,4 @@
-#
+# -*- mode: python -*-
 # Copyright (C) 2004, 2005 Mekensleep
 #
 # Mekensleep
@@ -25,7 +25,7 @@
 #
 
 import sys, os
-sys.path.insert(0, "..")
+sys.path.insert(0, "@top_srcdir@")
 
 import unittest
 from pokerengine.pokergame import PokerGameServer
@@ -38,7 +38,7 @@ class TestTournament(unittest.TestCase):
     def setUp(self):
         self.games = []
         for i in xrange(NGAMES):
-            game = PokerGameServer("poker.%s.xml", [ "../conf" ])
+            game = PokerGameServer("poker.%s.xml", [ "@top_srcdir@/conf" ])
             game.verbose = 3
             game.setVariant("7stud")
             game.setBettingStructure("0-0-limit")
@@ -342,7 +342,7 @@ class TestCreate(unittest.TestCase):
         tourney = PokerTournament(name = 'Test create',
                                        verbose = 3,
                                        players_quota = 4,
-                                       dirs = [ '../conf' ],
+                                       dirs = [ '@top_srcdir@/conf' ],
                                        seats_per_game = 4)
 
         for serial in xrange(1,4):
@@ -366,7 +366,7 @@ class TestCreate(unittest.TestCase):
         tourney = PokerTournament(name = 'Test create',
                                   verbose = 3,
                                   players_quota = players_count,
-                                  dirs = [ '../conf' ],
+                                  dirs = [ '@top_srcdir@/conf' ],
                                   seats_per_game = seats_per_game)
 
         for serial in xrange(1,players_count + 1):

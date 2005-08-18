@@ -26,7 +26,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.54)
-AC_INIT(poker-engine, 1.0.6)
+AC_INIT(poker-engine, [esyscmd(perl -n -e "print if(s/^version_number = \"(.*)\".*/\1/s)" pokerengine/__init__.py)])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR([pokerengine/pokergame.py])
@@ -34,14 +34,32 @@ AC_CONFIG_SRCDIR([pokerengine/pokergame.py])
 # Checks for programs.
 AC_PROG_MAKE_SET
 
+AC_PATH_PROG(RSYNC, [rsync])
+
 AM_PATH_PYTHON([2.3])
 
 AM_MAINTAINER_MODE
 
+test x$prefix = xNONE && prefix="$ac_default_prefix"
+
+AC_SUBST(POKER_ENGINE_PKGDATADIR, [`eval echo $datadir/$PACKAGE`])
+
 # Generate files
-AC_CONFIG_FILES([tests/run], [chmod +x tests/run])
+AC_CONFIG_FILES([tests/run pokerconfigupgrade], [chmod 555 $ac_file])
 AC_CONFIG_FILES([Makefile
                  poker-engine.pc
+                 pokerconfigupgrade.8
                  pokerengine/Makefile
-                 tests/Makefile])
+                 tests/allin.py
+                 tests/blinds.py
+                 tests/buyin.py
+                 tests/chips.py
+                 tests/deal.py
+                 tests/eval.py
+                 tests/history.py
+                 tests/positions.py
+                 tests/sit.py
+                 tests/tournament.py
+                 tests/upgrades.py
+                 tests/Makefile], [chmod -w $ac_file])
 AC_OUTPUT

@@ -1,7 +1,5 @@
-<?xml version='1.0'  encoding='iso-8859-1' ?>
-
-  <poker xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="poker.xsd">
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<poker xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="poker.xsd" poker_engine_version="1.0.6">
 
     <variant type="stud" name="Stud 7" id="7stud">
 
@@ -9,7 +7,7 @@
 	<winner id="1" type="hand" order="high"/>
       </wins>
 
-      <board layout="straight" />
+      <board layout="straight"/>
 
       <players max="8"/>
 
@@ -24,50 +22,50 @@
       </community>
 
       <hand useMin="5" useMax="5">
-	<position card="p1" x="1" />
-	<position card="p2" x="2" />
-	<position card="p3" x="3" />
-	<position card="p4" x="4" />
-	<position card="p5" x="5" />
-	<position card="p6" x="6" />
-	<position card="p7" x="7" />
+	<position card="p1" x="1"/>
+	<position card="p2" x="2"/>
+	<position card="p3" x="3"/>
+	<position card="p4" x="4"/>
+	<position card="p5" x="5"/>
+	<position card="p6" x="6"/>
+	<position card="p7" x="7"/>
       </hand>
       
       <round name="third" id="1">
-	<deal card="down" id="p1" />
-	<deal card="down" id="p2" />
-	<deal card="up" id="p3" />
-	<position type="low" />
-	<action type="bet" />
+	<deal card="down" id="p1"/>
+	<deal card="down" id="p2"/>
+	<deal card="up" id="p3"/>
+	<position type="low"/>
+	<action type="bet"/>
       </round>
 
       <round name="fourth" id="2">
-	<deal card="up" id="p4" />
-	<position type="high" />
-	<action type="bet" />
+	<deal card="up" id="p4"/>
+	<position type="high"/>
+	<action type="bet"/>
       </round>
 
       <round name="fifth" id="3">
-	<deal card="up" id="p5" />
-	<position type="high" />
-	<action type="bet" />
+	<deal card="up" id="p5"/>
+	<position type="high"/>
+	<action type="bet"/>
       </round>
 
       <round name="sixth" id="4">
-	<deal card="up" id="p6" />
-	<position type="high" />
-	<action type="bet" />
+	<deal card="up" id="p6"/>
+	<position type="high"/>
+	<action type="bet"/>
       </round>
 
       <round name="seventh" id="5">
-	<deal card="down" id="p7" />
-	<position type="high" />
-	<action type="bet" />
+	<deal card="down" id="p7"/>
+	<position type="high"/>
+	<action type="bet"/>
       </round>
 
       <round name="showdown">
-	<position type="next-to-dealer" />
-	<action type="showdown" />
+	<position type="next-to-dealer"/>
+	<action type="showdown"/>
       </round>
     </variant>
 </poker>

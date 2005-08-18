@@ -1,4 +1,4 @@
-#
+# -*- mode: python -*-
 # Copyright (C) 2004, 2005 Mekensleep
 #
 # Mekensleep
@@ -25,10 +25,11 @@
 #
 
 import sys, os
-sys.path.insert(0, "..")
+sys.path.insert(0, "@top_srcdir@")
 
+from random import shuffle
 import unittest
-from pokerengine.pokergame import PokerGameServer, PokerGameClient, PokerGame
+from pokerengine.pokergame import PokerGameServer
 from pokerengine.pokerchips import PokerChips
 from pokerengine.pokercards import PokerCards
 from pokereval import PokerEval
@@ -36,12 +37,13 @@ from pokereval import PokerEval
 poker_eval = PokerEval()
 _initial_money = 10
 
-class TestPosition(unittest.TestCase):
+class TestDeal(unittest.TestCase):
 
     def setUp(self):
-        self.game = PokerGameServer("poker.%s.xml", [ "../conf" ])
-        self.game.setVariant("holdem")
-        self.game.setBettingStructure("2-4-limit")
+        self.game = PokerGameServer("poker.%s.xml", [ "@top_srcdir@/conf" ])
+        self.game.verbose = 3
+        self.game.setVariant("7stud")
+        self.game.setBettingStructure("0-0-limit")
 
     def tearDown(self):
         del self.game
@@ -49,10 +51,7 @@ class TestPosition(unittest.TestCase):
     def log(self, string):
         print string
 
-    def make_cards(self, *args):
-        return PokerCards(poker_eval.string2card(args))
-    
-    def make_new_player(self, i, initial_money = _initial_money):
+    def make_new_player(self, i, initial_money):
         self.assert_(self.game.addPlayer(i))
         player = self.game.serial2player[i]
         player.money = PokerChips(self.game.chips_values, initial_money)
@@ -60,41 +59,28 @@ class TestPosition(unittest.TestCase):
         self.assert_(self.game.sit(i))
         player.auto_blind_ante = True
 
-    def make_cards(self, *args):
-        return PokerCards(poker_eval.string2card(args))
-
     def test1(self):
         """
+        8 players, non fold, last card is a community card
         """
         game = self.game
-        player = {}
-        for serial in xrange(1,6):
-            self.make_new_player(serial)
-            player[serial] = game.serial2player[serial]
-
+        for serial in xrange(1,9):
+            self.make_new_player(serial, 200)
         game.beginTurn(1)
-        for serial in (2, 3, 4, 5):
-            player[serial].hand = self.make_cards('__', '__')
-        player[1].hand = self.make_cards('Ad', 'As')
-        self.assertEqual(game.handEV(1, 10000), 559)
-        player[1].hand = self.make_cards('2c', '7s')
-        self.assertEqual(game.handEV(1, 10000), 102)
+        while True:
+            if game.isLastRound():
+                self.assertEqual(len(game.board.tolist(True)) == 1)
 
-        game.board = self.make_cards('2c', '3c', '4s')
-        player[1].hand = self.make_cards('2s', '7s')
-        self.assertEqual(game.handEV(1, 10000), 172)
-
-        game.board = self.make_cards('2c', '3c', '4s', '4c')
-        player[1].hand = self.make_cards('2s', '7s')
-        self.assertEqual(game.handEV(1, 10000), 75)
-
-        game.board = self.make_cards('2c', '3c', '4s', '4c', 'Kc')
-        player[1].hand = self.make_cards('2s', '7s')
-        self.assertEqual(game.handEV(1, 10000), 5)
+            for x in xrange(1,9):
+                serial = game.getSerialInPosition()
+                self.assertEqual(game.check(serial), True)
+                    
+            if not game.isRunning():
+                break;
 
 def run():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestPosition))
+    suite.addTest(unittest.makeSuite(TestDeal))
     unittest.TextTestRunner(verbosity=2).run(suite)
     
 if __name__ == '__main__':

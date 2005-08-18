@@ -41,7 +41,8 @@ MAINTAINERCLEANFILES = \
 	.in
 
 pkgsysconfdir = ${sysconfdir}/${PACKAGE}
-dist_pkgsysconf_DATA = \
+
+nobase_dist_pkgdata_DATA = \
 	conf/poker.0-0-limit.xml \
 	conf/poker.10-15-limit.xml \
 	conf/poker.10-15-pot-limit.xml \
@@ -56,7 +57,8 @@ dist_pkgsysconf_DATA = \
 	conf/poker.level-15-30-no-limit.xml \
 	conf/poker.level-2-4-limit.xml \
 	conf/poker.omaha8.xml \
-	conf/poker.omaha.xml
+	conf/poker.omaha.xml \
+	upgrades/1.0.5-1.0.6.xsl
 
 EXTRA_DIST = \
 	bootstrap \
@@ -66,5 +68,19 @@ EXTRA_DIST = \
 pkgconfigdir = ${libdir}/pkgconfig
 pkgconfig_DATA = poker-engine.pc
 
+man_MANS = \
+	pokerconfigupgrade.8
+
+sbin_SCRIPTS = \
+	pokerconfigupgrade
+
 clean-local:
 	rm -f */*.py[co]
+
+install-data-local:
+	mkdir -p "${DESTDIR}${pkgsysconfdir}"
+	pokerconfigupgrade --verbose=1 --upgrades=${srcdir}/upgrades --reference=${srcdir}/conf "${DESTDIR}${pkgsysconfdir}"
+	chmod u+w "${DESTDIR}${pkgsysconfdir}"
+
+uninstall-local:
+	rm -fr "${DESTDIR}${pkgsysconfdir}"

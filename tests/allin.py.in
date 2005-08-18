@@ -1,4 +1,4 @@
-#
+# -*- mode: python -*-
 # Copyright (C) 2004, 2005 Mekensleep
 #
 # Mekensleep
@@ -26,7 +26,7 @@
 #
 
 import sys, os
-sys.path.insert(0, "..")
+sys.path.insert(0, "@top_srcdir@")
 
 import unittest
 from pokerengine.pokergame import PokerGameServer, PokerGame
@@ -45,7 +45,7 @@ class TestAllIn(unittest.TestCase):
             self.output_file = open(output, 'a')
         else:
             self.output_file = sys.stderr
-        self.game = PokerGameServer("poker.%s.xml", [ "../conf" ])
+        self.game = PokerGameServer("poker.%s.xml", [ "@top_srcdir@/conf" ])
         self.game.verbose = 3
         self.game.setVariant(variant)
         self.game.setBettingStructure(betting)

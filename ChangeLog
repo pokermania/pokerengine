@@ -1,11 +1,40 @@
-Wed Aug 03 14:09:54 2005  Loic Dachary  <loic@gnu.org>
+Tue Aug 16 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.6
+
+	* debian/python2.3-poker-engine.postinst: run pokerconfigupgrade after
+	  installation.
+
+	* pokerconfigupgrade.8.in: new
+
+	* pokerconfigupgrade.in: command line utility to upgrade configuration
+	  files
+
+Mon Aug 15 2005  Loic Dachary  <loic@gnu.org>
+
+	* upgrades: repository of XSL sheets upgrading confgiruation files
+
+	* tests/upgrades.py.in: apply all upgrades from the 1.0.5 files stored
+	  in tests/conf
+
+	* tests/conf: 1.0.5 configuration files from which upgrades can be
+	  applied.
+	
+	* pokerengine/config.py (Config.upgrade): XSL based upgrade system
+	  starting from version 1.0.5 and up.
+
+	* pokerengine/version.py.in: version class for comparison and
+	  upgrade matrix helper
+
+	* tests/*.py -> test/*.py.in: allow builds/tests in directory separated
+	  from tests.
+	
+Wed Aug 03 2005  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokergame.py (PokerGame.is{Ante,Blind}Requested): predicate
 	  on the blind / ante status of a given player
 
-Wed Aug 03 14:09:54 2005  Loic Dachary  <loic@gnu.org>
+Wed Aug 03 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.5
 
@@ -18,11 +47,11 @@ Wed Aug 03 14:09:54 2005  Loic Dachary  <loic@gnu.org>
 	* pokerengine/pokergame.py (PokerGame.distributeMoney): compute total serial2share that
 	  replaces winner2share and serial2delta for each player (net win/loss).
 
-Sat Jul 16 11:11:09 2005  Loic Dachary  <loic@gnu.org>
+Sat Jul 16 2005  Loic Dachary  <loic@gnu.org>
 
 	* debian/control (Section): s/libs/python/ in sections.
 
-Wed Jul 13 14:21:11 2005  Loic Dachary  <loic@gnu.org>
+Wed Jul 13 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.4
 
@@ -32,7 +61,7 @@ Wed Jul 13 14:21:11 2005  Loic Dachary  <loic@gnu.org>
 	* pokerengine/pokergame.py (PokerGame.sit): set first_turn to True if
 	  less than two players. 
 
-Tue Jul 05 21:10:21 2005  Loic Dachary  <loic@gnu.org>
+Tue Jul 05 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.3
 	
@@ -42,28 +71,28 @@ Tue Jul 05 21:10:21 2005  Loic Dachary  <loic@gnu.org>
 	  if a player sits while others are paying the blinds, he must not
 	  be included in the player list.
 
-Tue Jun 28 13:25:19 2005  Loic Dachary  <loic@gnu.org>
+Tue Jun 28 2005  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokergame.py (PokerGame.isGameEndInformationValid): can the
 	  showdown of the previous game be displayed
 
-Fri Jun 24 15:37:39 2005  Loic Dachary  <loic@gnu.org>
+Fri Jun 24 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.2
 	
 	* pokerengine/pokergame.py (PokerGame.callNraise): split
 	  self.bet call to avoid autoplayer infinite recursion
 
-Fri Jun 24 11:07:28 2005  Loic Dachary  <loic@gnu.org>
+Fri Jun 24 2005  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokergame.py (PokerGame.sitOutNextTurn): sit_request and
 	  for client usage, allow client to update sit_out_next_hand in advance.
 
-Wed Jun 15 21:26:12 2005  Loic Dachary  <loic@gnu.org>
+Wed Jun 15 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.1
 
-Thu May 05 14:29:47 2005  Loic Dachary  <loic@gnu.org>
+Thu May 05 2005  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokertournament.py: tournament logic imported
 	  from former tournament client
@@ -72,7 +101,7 @@ Thu May 05 14:29:47 2005  Loic Dachary  <loic@gnu.org>
 	
 	* tests/blinds.py: new blind logic non regression tests
 
-Wed May 04 14:55:42 2005  Loic Dachary  <loic@gnu.org>
+Wed May 04 2005  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokergame.py (PokerGame.payBuyIn): do not set the
 	  buy in flag if the amount is less than the minimum. This check
@@ -85,7 +114,7 @@ Wed May 04 14:55:42 2005  Loic Dachary  <loic@gnu.org>
 	* pokerengine/pokergame.py (PokerGame.sit): refuse to sit if
 	  buy in is not yet payed.
 
-Tue May 03 13:31:42 2005  Loic Dachary  <loic@gnu.org>
+Tue May 03 2005  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokergame.py (PokerGame.isBroke): return False if
 	  the serial does not exist. The rationale being that a player not
@@ -93,7 +122,7 @@ Tue May 03 13:31:42 2005  Loic Dachary  <loic@gnu.org>
 	  tests from the application, avoiding a check to make sure the
 	  player is indeed seated at the table.
 
-Thu Apr 28 12:19:09 2005  Loic Dachary  <loic@gnu.org>
+Thu Apr 28 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.0
 

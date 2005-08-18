@@ -1,6 +1,8 @@
 poker-engine (1.0.6-1) unstable; urgency=low
 
   * upstream version
+  
+  * depends on libxml2 and libxslt
 
  -- Loic Dachary (OuoU) <loic@debian.org>  Fri,  5 Aug 2005 19:29:24 +0200
 

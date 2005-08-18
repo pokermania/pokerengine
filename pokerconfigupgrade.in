@@ -1,0 +1,121 @@
+#!@PYTHON@
+# -*- encoding: iso-8859-1; mode: python -*-
+# Copyright (C) 2005 Mekensleep
+#
+# Mekensleep
+# 24 rue vieille du temple
+# 75004 Paris
+#       licensing@mekensleep.com
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Authors:
+#  Loic Dachary <loic@gnu.org>
+#
+import sys, os, getopt, stat
+sys.path.insert(0, "@top_srcdir@")
+
+def usage():
+    print """
+pokerconfigupgrade [--module=<python_module>] [--help] [--verbose=<level>] [--dry-run]
+                   [--upgrades=<directory>] [--reference=<directory>]
+                   [directory or file.xml] ...
+"""
+
+def my_import(name):
+    mod = __import__(name)
+    components = name.split('.')
+    for comp in components[1:]:
+        mod = getattr(mod, comp)
+    return mod
+    
+def main():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hvdumr", ["help", "verbose=", "dry-run", "upgrades=", "module=", "reference=" ])
+    except getopt.GetoptError:
+        usage()
+        sys.exit(2)
+    upgrades = None
+    configuration_file = None
+    module = "pokerengine"
+    reference = None
+    verbose = 0
+    dry_run = False
+    for o, a in opts:
+        if o in ("-h", "--help"):
+            usage()
+            sys.exit(0)
+        if o in ("-d", "--dry-run"):
+            dry_run = True
+        if o in ("-u", "--upgrades"):
+            upgrades = a
+        if o in ("-m", "--module"):
+            module = a
+        if o in ("-r", "--reference"):
+            reference = a
+        if o in ("-v", "--verbose"):
+            verbose = int(a)
+
+    if not upgrades and not reference:
+        print "must specify either --upgrades or --reference"
+        sys.exit(3)
+        
+    if upgrades:
+        config_module = my_import(module + ".config")
+        config_class = config_module.__dict__['Config']
+
+        files = []
+        for path in args:
+            if os.path.exists(path):
+                if os.path.isfile(path):
+                    files.append(path)
+                elif os.path.isdir(path):
+                    files_tmp = map(lambda file: path + "/" + file, os.listdir(path))
+                    files.extend(filter(lambda file: os.path.isfile(file), files_tmp))
+                else:
+                    raise Exception, "The type of the file " + path + " is unknown"
+            else:
+                raise Exception, "File not found " + path
+
+        files = filter(lambda file: ".xml" in file, files)
+        for file in files:
+            mode = os.stat(file)[stat.ST_MODE]
+            if not mode & stat.S_IWUSR:
+                os.chmod(file, mode | 0200)
+
+        config_class.upgrades_repository = upgrades
+        config_class.verbose = verbose
+        config_class.upgrade_dry_run = dry_run
+        config = config_class([''])
+        for file in files:
+            config.load(file)
+
+    if reference:
+        if ( len(args) != 1 or not os.path.isdir(args[0]) ):
+            print "--reference requires a single directory argument, target of the upgrade"
+            sys.exit(4)
+        target = args[0]
+        rsync_verbose = verbose and "-v" or ""
+        rsync_command = "@RSYNC@ --exclude CVS --delete -a " + rsync_verbose + " --ignore-existing " + reference + "/ " + target + "/"
+        if verbose:
+            print rsync_command
+        if not dry_run:
+            if os.system(rsync_command):
+                sys.exit(5)
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())
