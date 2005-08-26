@@ -1,3 +1,10 @@
+Fri Aug 26 2005  Loic Dachary  <loic@gnu.org>
+
+	* Release 1.0.7
+
+	* pokerengine/pokerengineconfig.py (Config.upgrade): ignore
+	  missing upgrade repository, as if it was empty, instead of crashing.
+
 Tue Aug 16 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.6

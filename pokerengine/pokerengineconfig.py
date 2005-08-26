@@ -96,21 +96,24 @@ class Config:
             return True
 
     def upgrade(self, version_attribute, file_version, software_version, upgrades_repository):
-        files = map(lambda file: upgrades_repository + "/" + file, os.listdir(upgrades_repository))
-        files = filter(lambda file: isfile(file) and ".xsl" in file, files)
-        for file in file_version.upgradeChain(software_version, files):
-            if self.verbose: print "Config::upgrade: " + self.path + " with " + file
-            styledoc = libxml2.parseFile(file)
-            style = libxslt.parseStylesheetDoc(styledoc)
-            result = style.applyStylesheet(self.doc, None)
-            if not self.upgrade_dry_run:
-                style.saveResultToFilename(self.path, result, compression = 0)
-            result.freeDoc()
-            # apparently deallocated by freeStylesheet
-            # styledoc.freeDoc()
-            style.freeStylesheet()
-            if not self.upgrade_dry_run:
-                self.reload()
+        if os.path.exists(upgrades_repository):
+            files = map(lambda file: upgrades_repository + "/" + file, os.listdir(upgrades_repository))
+            files = filter(lambda file: isfile(file) and ".xsl" in file, files)
+            for file in file_version.upgradeChain(software_version, files):
+                if self.verbose: print "Config::upgrade: " + self.path + " with " + file
+                styledoc = libxml2.parseFile(file)
+                style = libxslt.parseStylesheetDoc(styledoc)
+                result = style.applyStylesheet(self.doc, None)
+                if not self.upgrade_dry_run:
+                    style.saveResultToFilename(self.path, result, compression = 0)
+                result.freeDoc()
+                # apparently deallocated by freeStylesheet
+                # styledoc.freeDoc()
+                style.freeStylesheet()
+                if not self.upgrade_dry_run:
+                    self.reload()
+        else:
+            if self.verbose: print "Config::upgrade: %s is not a directory, ignored" % upgrades_repository
         if not self.upgrade_dry_run:
             self.headerSet("/child::*/@" + version_attribute, str(software_version))
             self.save()
