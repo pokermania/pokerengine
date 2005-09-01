@@ -2,7 +2,7 @@ Source: poker-engine
 Section: python
 Priority: optional
 Maintainer: Loic Dachary (OuoU) <loic@debian.org>
-Build-Depends-Indep: debhelper (>= 4.0.0), python2.3, python, python2.3-pypoker-eval (>= 127.0), python2.3-libxml2, python2.3-libxslt1, perl, automake1.7 | automake1.9
+Build-Depends-Indep: debhelper (>= 4.0.0), python2.3, python, python2.3-pypoker-eval (>= 127.0), python2.3-libxml2, python2.3-libxslt1, perl, automake1.7 | automake1.9, rsync
 Standards-Version: 3.6.2.1
 
 Package: python2.3-poker-engine
