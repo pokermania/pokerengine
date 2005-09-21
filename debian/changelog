@@ -1,6 +1,6 @@
 poker-engine (1.0.8-1) unstable; urgency=low
 
-  * upstream sync
+  * upstream sync, switch to cdbs
 
  -- Loic Dachary (OuoU) <loic@debian.org>  Thu,  1 Sep 2005 12:26:18 +0200
 

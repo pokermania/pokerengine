@@ -80,13 +80,6 @@ test $TEST || {
 echo "Running '$aclocal $ACLOCAL_FLAGS'"
 $aclocal $ACLOCAL_FLAGS || exit $?
 
-# optionally run autoheader
-autoheader --version < /dev/null > /dev/null 2>&1
-if test $? -eq 0; then
-	echo "Running 'autoheader'"
-	autoheader || exit $?
-fi
-
 echo "Running '$automake $AM_FLAGS'"
 $automake $AM_FLAGS || exit $?
 
