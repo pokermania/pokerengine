@@ -1,1 +1,3 @@
 debian/tmp/usr/lib/python@PYTHON_VERSION@
+debian/tmp/usr/sbin
+debian/tmp/usr/share
