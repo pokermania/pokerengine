@@ -83,8 +83,10 @@ install-data-local:
 install-data-hook:
 	if [ "${MAYBE_PYTHON_VERSION}" ] ; then \
 		cp ${DESTDIR}${pkgconfigdir}/poker-engine.pc ${DESTDIR}${pkgconfigdir}/poker-engine${MAYBE_PYTHON_VERSION}.pc ; \
-		cp -a $(DESTDIR)$(sbindir)/pokerconfigupgrade $(DESTDIR)$(sbindir)/pokerconfigupgrade${PYTHON_VERSION} ; \
+		cp -a ${DESTDIR}${sbindir}/pokerconfigupgrade ${DESTDIR}${sbindir}/pokerconfigupgrade${PYTHON_VERSION} ; \
 	fi
 
 uninstall-local:
 	rm -fr "${DESTDIR}${pkgsysconfdir}"
+	rm -f ${DESTDIR}${sbindir}/pokerconfigupgrade${MAYBE_PYTHON_VERSION}
+	rm -f ${DESTDIR}${pkgconfigdir}/poker-engine${MAYBE_PYTHON_VERSION}.pc
