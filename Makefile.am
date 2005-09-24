@@ -40,8 +40,6 @@ MAINTAINERCLEANFILES = \
 	INSTALL \
 	.in
 
-pkgsysconfdir = ${sysconfdir}/${PACKAGE}
-
 nobase_dist_pkgdata_DATA = \
 	conf/poker.0-0-limit.xml \
 	conf/poker.10-15-limit.xml \
@@ -79,8 +77,14 @@ clean-local:
 
 install-data-local:
 	mkdir -p "${DESTDIR}${pkgsysconfdir}"
-	${top_builddir}/pokerconfigupgrade --verbose=1 --upgrades=${srcdir}/upgrades --reference=${srcdir}/conf "${DESTDIR}${pkgsysconfdir}"
+	${PYTHON} ${top_builddir}/pokerconfigupgrade --verbose=1 --upgrades=${srcdir}/upgrades --reference=${srcdir}/conf "${DESTDIR}${pkgsysconfdir}"
 	chmod u+w "${DESTDIR}${pkgsysconfdir}"
+
+install-data-hook:
+	if [ "${MAYBE_PYTHON_VERSION}" ] ; then \
+		cp ${DESTDIR}${pkgconfigdir}/poker-engine.pc ${DESTDIR}${pkgconfigdir}/poker-engine${MAYBE_PYTHON_VERSION}.pc ; \
+		cp -a $(DESTDIR)$(sbindir)/pokerconfigupgrade $(DESTDIR)$(sbindir)/pokerconfigupgrade${PYTHON_VERSION} ; \
+	fi
 
 uninstall-local:
 	rm -fr "${DESTDIR}${pkgsysconfdir}"

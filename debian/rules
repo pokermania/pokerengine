@@ -6,3 +6,5 @@ include debian/rules.mk
 DEB_BUILDDIR_python2.3-poker-engine := python2.3-poker-engine
 DEB_BUILDDIR_python2.4-poker-engine := python2.4-poker-engine
 
+$(patsubst %,install/%,$(DEB_PYTHON_PACKAGES)) :: 
+	cp $(DEB_DESTDIR)/usr/share/man/man8/pokerconfigupgrade.8 $(DEB_DESTDIR)/usr/share/man/man8/pokerconfigupgrade$(python_version).8

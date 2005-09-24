@@ -1,0 +1,5 @@
+debian/tmp/usr/lib/python@PYTHON_VERSION@
+debian/tmp/usr/sbin/pokerconfigupgrade@PYTHON_VERSION@
+debian/tmp/usr/lib/pkgconfig/poker-engine@PYTHON_VERSION@.pc
+debian/tmp/usr/share/man/man*/*@PYTHON_VERSION@*
+debian/tmp/usr/share/poker-engine@PYTHON_VERSION@

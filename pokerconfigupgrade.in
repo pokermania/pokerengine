@@ -25,6 +25,7 @@
 #  Loic Dachary <loic@gnu.org>
 #
 import sys, os, getopt, stat
+sys.path = "@pythonpath@".split(":") + sys.path
 sys.path.insert(0, "@top_srcdir@")
 
 def usage():

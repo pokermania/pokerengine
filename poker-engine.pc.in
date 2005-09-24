@@ -2,11 +2,12 @@
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@
-pkgsysconfdir=@sysconfdir@/poker-engine
-pokerconfigupgrade=@sbindir@/pokerconfigupgrade
+pkgsysconfdir=@pkgsysconfdir@
+pokerconfigupgrade=@sbindir@/pokerconfigupgrade@MAYBE_PYTHON_VERSION@
+pythonpath=@pythonpath@
 
 Name: poker-engine
 Description: python library implementing poker rules
 Version: @PACKAGE_VERSION@
-Requires: pypoker-eval
+Requires: pypoker-eval@MAYBE_PYTHON_VERSION@
 Conflicts:

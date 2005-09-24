@@ -20,7 +20,14 @@ DH_VERBOSE=0
 
 case "$1" in
     configure)
-        /usr/sbin/pokerconfigupgrade --verbose=1 --upgrade=/usr/share/poker-engine/upgrades --reference=/usr/share/poker-engine/conf /etc/poker-engine
+        if [ "@PYTHON_VERSION@" = "2.3" ] && [ -d /etc/poker-engine ] ; then
+            echo "Moving /etc/poker-engine to /etc/poker-engine2.3"
+            mv /etc/poker-engine2.3 /etc/poker-engine2.3.old
+            mv /etc/poker-engine /etc/poker-engine2.3
+            rm -fr /etc/poker-engine2.3.old
+        fi
+
+        /usr/sbin/pokerconfigupgrade@PYTHON_VERSION@ --verbose=1 --upgrade=/usr/share/poker-engine@PYTHON_VERSION@/upgrades --reference=/usr/share/poker-engine@PYTHON_VERSION@/conf /etc/poker-engine@PYTHON_VERSION@
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

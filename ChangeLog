@@ -1,8 +1,14 @@
-Wed Sep 21 2005  Loic Dachary  <loic@gnu.org>
+Sat Sep 24 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.8
 
+	* pokerconfigupgrade.in: add python installation directory in python path
+
+Wed Sep 21 2005  Loic Dachary  <loic@gnu.org>
+
 	* bootstrap: do not run autoheader
+
+	* pokerclient2d/*.c: add getopt
 
 Fri Aug 26 2005  Loic Dachary  <loic@gnu.org>
 

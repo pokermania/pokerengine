@@ -51,7 +51,9 @@ DEB_DH_MAKESHLIBS_ARGS = -n
 
 common-configure-arch common-configure-indep:: $(patsubst %,config-status/%,$(DEB_PYTHON_PACKAGES)) 
 $(patsubst %,config-status/%,$(DEB_PACKAGES)):: $(DEB_SRCDIR)/configure
-	$(DEB_CONFIGURE_INVOKE) $(cdbs_configure_flags) $(DEB_CONFIGURE_EXTRA_FLAGS) $(DEB_CONFIGURE_USER_FLAGS)
+	if [ ! -f $(if $(DEB_BUILDDIR_$(cdbs_curpkg)),$(DEB_BUILDDIR_$(cdbs_curpkg)),$(DEB_BUILDDIR))/config.status ] ; then \
+		$(DEB_CONFIGURE_INVOKE) $(cdbs_configure_flags) $(DEB_CONFIGURE_EXTRA_FLAGS) $(DEB_CONFIGURE_USER_FLAGS) ; \
+	fi
 	mkdir -p config-status && touch config-status/$(cdbs_curpkg)
 
 $(DEB_SRCDIR)/config.status:: $(DEB_SRCDIR)/configure
@@ -61,21 +63,26 @@ $(DEB_SRCDIR)/configure:: $(DEB_SRCDIR)/bootstrap
 	sh bootstrap
 	chmod a+x $@
 
-DEB_PYTHON_FILES = dirs docs postinst install
-DEB_PYTHON_PACKAGE_FILES = $(foreach file,$(DEB_PYTHON_FILES),$(foreach package,$(DEB_PYTHON_PACKAGES),debian/$(package).$(file)))
+DEB_PYTHON_FILES = $(patsubst debian/python-%,%,$(shell ls debian/python-*{dirs,docs,postinst,install,templates,config,init} 2>/dev/null || echo))
+DEB_PYTHON_PACKAGE_FILES = $(foreach file,$(DEB_PYTHON_FILES),$(foreach version,$(DEB_PYTHON_VERSIONS),debian/python$(version)-$(file)))
 
 $(DEB_SRCDIR)/configure:: $(DEB_PYTHON_PACKAGE_FILES)
 
-$(DEB_PYTHON_PACKAGE_FILES):: $(patsubst %,debian/python.%,$(DEB_PYTHON_FILES))
-	python_file=debian/python`expr $@ : '.*\(\..*\)'` ; \
-	sed -e 's/@PYTHON_VERSION@/'$(python_version)'/g' < $$python_file > $@
+$(DEB_PYTHON_PACKAGE_FILES):: $(patsubst %,debian/python-%,$(DEB_PYTHON_FILES))
+	python_file=debian/python-`expr $@ : 'debian/python...-\(.*\)'` ; \
+	sed -e 's/@PYTHON_VERSION@/'$(python_version)'/g' < $$python_file > $@ 
+	if [ "`basename $@ .init`" != "$@" ] ; then \
+		package=`expr $@ : 'debian/python...-\(.*\).init'` ; \
+		cp $@ debian/python$(python_version)-$$package.$$package$(python_version).init ; \
+	fi
 
 clean:: $(DEB_SRCDIR)/config.status
 	for python_file in $(DEB_PYTHON_FILES) ; do \
-		if [ -f debian/python.$$python_file ] ; then \
-			rm -f debian/python?.?*$$python_file ; \
+		if [ -f debian/python-$$python_file ] ; then \
+			rm -f debian/python?.?-*$$python_file ; \
 		fi ; \
 	done
+	rm -f debian/python?.?-*.init
 	rm -fr config-status
 	$(MAKE) maintainer-clean
 

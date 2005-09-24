@@ -8,7 +8,6 @@ Standards-Version: 3.6.2.1
 Package: python2.3-poker-engine
 Section: python
 Architecture: all
-Conflicts: python2.4-poker-engine
 Depends: python, python2.3, python2.3-pypoker-eval (>= 127.0), python2.3-libxml2, python2.3-libxslt1, rsync
 Description: multiplayer poker engine with abstract variants specifications
  poker-engine is a python library that implements poker rules according
@@ -19,7 +18,6 @@ Description: multiplayer poker engine with abstract variants specifications
 Package: python2.4-poker-engine
 Section: python
 Architecture: all
-Conflicts: python2.3-poker-engine
 Depends: python, python2.4, python2.4-pypoker-eval (>= 127.0), python2.4-libxml2, python2.4-libxslt1, rsync
 Description: multiplayer poker engine with abstract variants specifications
  poker-engine is a python library that implements poker rules according
