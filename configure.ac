@@ -71,14 +71,7 @@ AC_SUBST(POKER_ENGINE_PKGDATADIR, [`eval echo $datadir/$VERSIONED_PACKAGE`])
 PYTHON_DEPENDENCIES="$PYTHON_DEPENDENCIES libxml2"
 PYTHON_DEPENDENCIES="$PYTHON_DEPENDENCIES libxslt"
 
-for module in $PYTHON_DEPENDENCIES ; do
-    AC_MSG_CHECKING([wether python module $module is available])
-    if $PYTHON -c "import $module" >/dev/null 2>&1 ; then       
-       AC_MSG_RESULT([yes])
-    else
-       AC_MSG_ERROR([failed])
-    fi
-done
+AM_PYTHON_DEPENDS([$PYTHON_DEPENDENCIES])
 
 # Generate files
 AC_CONFIG_FILES([tests/run pokerconfigupgrade], [chmod 555 $ac_file])

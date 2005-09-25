@@ -61,6 +61,7 @@ nobase_dist_pkgdata_DATA = \
 EXTRA_DIST = \
 	bootstrap \
 	config/python.m4 \
+	config/python-depends.m4 \
 	examples/simple.py
 
 pkgconfigdir = ${libdir}/pkgconfig
@@ -82,7 +83,7 @@ install-data-local:
 
 install-data-hook:
 	if [ "${MAYBE_PYTHON_VERSION}" ] ; then \
-		cp ${DESTDIR}${pkgconfigdir}/poker-engine.pc ${DESTDIR}${pkgconfigdir}/poker-engine${MAYBE_PYTHON_VERSION}.pc ; \
+		cp ${DESTDIR}${pkgconfigdir}/poker-engine.pc ${DESTDIR}${pkgconfigdir}/poker-engine${PYTHON_VERSION}.pc ; \
 		cp -a ${DESTDIR}${sbindir}/pokerconfigupgrade ${DESTDIR}${sbindir}/pokerconfigupgrade${PYTHON_VERSION} ; \
 	fi
 
