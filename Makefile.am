@@ -26,6 +26,10 @@
 # 
 ACLOCAL_AMFLAGS = -I config
 
+pkgdatadir=@pkgdatadir@
+pkgsysconfdir=@pkgsysconfdir@
+pythondir=@pythondir@
+
 SUBDIRS = pokerengine tests 
 
 MAINTAINERCLEANFILES = \
@@ -35,6 +39,7 @@ MAINTAINERCLEANFILES = \
 	config.sub \
 	configure \
 	install-sh \
+	mkinstalldirs \
 	missing \
 	Makefile.in \
 	INSTALL \
