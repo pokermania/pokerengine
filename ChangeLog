@@ -1,5 +1,20 @@
 Thu Sep 29 2005  Loic Dachary  <loic@gnu.org>
 
+	* Release 1.0.9
+
+	* pokerengine/pokergame.py (PokerGame.updateBlinds): change wait_for
+	  "late" to False when forbiding missed blind.
+
+	* tests/blinds.py.in (TestBlinds.test0): Two players came in and
+	 are waiting for the late blind because they attempted to enter
+	 either on the small blind or the dealer position.  Fake this
+	 situation instead of playing hands that will lead to the same
+	 because it introduces an complexity that is not necessary. This
+	 case can happen indeed although very rarely.
+
+	* pokerengine/pokergame.py (PokerPlayer.isMissedBlind): return false
+	  if "n/a"
+
 	* poker-engine/conf/*no-limit*: minimum bet does not vary
 
 Sat Sep 24 2005  Loic Dachary  <loic@gnu.org>

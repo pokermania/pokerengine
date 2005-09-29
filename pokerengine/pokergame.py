@@ -181,7 +181,7 @@ class PokerPlayer:
         return self.wait_for
 
     def isMissedBlind(self):
-        return self.missed_blind
+        return self.missed_blind and self.missed_blind != "n/a"
 
     def isBlind(self):
         return self.blind
@@ -878,7 +878,7 @@ class PokerGame:
         blind_ok_count = 0
         for player in self.playersAll():
             seat2player[player.seat] = player
-            if player.isSit() and player.wait_for != 'first_round' and not player.isMissedBlind():
+            if player.isSit() and player.wait_for != 'first_round' and player.missed_blind == None:
                 blind_ok_count += 1
 
         if self.seatsCount() == 2:
@@ -895,7 +895,8 @@ class PokerGame:
         # to someone despite the fact that there would be players willing
         # to pay for it. For instance, if all players are
         # new (missed_blind == "n/a") and only one player is ok with his
-        # blind AND is on the button. This player would have to pay the
+        # blind AND is on the button. Another case is when all players
+        # save one are waiting for the late blind. This player would have to pay the
         # small blind but then, there would be a need to walk the list
         # of players, starting from the dealer, once more to figure out
         # who has to pay the big blind. Furthermore, this case leads to
@@ -903,11 +904,12 @@ class PokerGame:
         # big blind and the dealer pays the small blind.
         #
         if blind_ok_count < 2:
-            if self.verbose > 2:
-                print "Forbid missed blinds"
+            if self.verbose > 2: self.message("Forbid missed blinds")
             for player in players:
                 if player and player.isSit():
                     player.missed_blind = None
+                    if player.wait_for == "late":
+                      player.wait_for = False
                 
         def updateMissed(players, index, what):
             while ( ( index < ABSOLUTE_MAX_PLAYERS ) and
