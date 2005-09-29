@@ -330,7 +330,7 @@ class TestBlinds(unittest.TestCase):
         self.pay_blinds()
 
 
-    def test0(self):
+    def test6(self):
         """
         """
         for (serial, seat) in ((1, 0), (2, 1), (3, 2), (4, 3), (5, 4)):
@@ -367,6 +367,52 @@ class TestBlinds(unittest.TestCase):
 
         self.failUnless(self.game.state, "end")
         self.failUnless(self.game.serial2player[3].money.toint(), self.game.buyIn())
+
+    def test0(self):
+        """
+        """
+#        for (serial, seat) in ((1, 0), (2, 1), (3, 2), (4, 3)):
+        for (serial, seat) in ((1, 0), (2, 7)):
+            self.make_new_player(serial, seat)
+        self.game.beginTurn(1)
+
+        for (serial, seat) in ((3, 2), (4, 3)):
+            self.make_new_player(serial, seat)
+
+        # (blind, missed, wait)
+        self.check_blinds([('big', None, False), # 1
+                           ('late', 'n/a', 'first_round'), # 2
+                           ('late', 'n/a', 'first_round'), # 3
+                           ('small', None, False) # 4
+                           ]
+                          )
+        self.pay_blinds()
+
+        self.failUnless(self.game.state, "end")
+
+        self.game.sitOut(1)
+
+        # (blind, missed, wait)
+        self.check_blinds([('big', None, False), # 1
+                   ('late', 'n/a', 'first_round'), # 2
+                   ('late', 'n/a', 'first_round'), # 3
+                   ('small', None, False) # 4
+                   ]
+                  )
+
+        self.game.beginTurn(1)
+
+        # (blind, missed, wait)
+        self.check_blinds([('big', None, False), # 1
+                           ('late', 'n/a', 'first_round'), # 2
+                           ('late', 'n/a', 'first_round'), # 3
+                           ('small', None, False) # 4
+                           ]
+                          )
+
+        self.failUnless(self.game.state, "end")
+
+
 
 def run():
     suite = unittest.TestSuite()
