@@ -12,16 +12,16 @@
     <variants ids="omaha omaha8 holdem">
       <round name="pre-flop" min="2" cap="8"/>
       <round name="flop" min="2" cap="8"/>
-      <round name="turn" min="4" cap="8"/>
-      <round name="river" min="4" cap="-1"/>
+      <round name="turn" min="2" cap="8"/>
+      <round name="river" min="2" cap="-1"/>
     </variants>
 
     <variants ids="7stud 7stud8">
       <round name="pre-flop" min="2" cap="8"/>
       <round name="third" min="2" cap="8"/>
       <round name="fourth" min="2" cap="8"/>
-      <round name="fifth" min="4" cap="8"/>
-      <round name="sixth" min="4" cap="8"/>
-      <round name="seventh" min="4" cap="-1"/>
+      <round name="fifth" min="2" cap="8"/>
+      <round name="sixth" min="2" cap="8"/>
+      <round name="seventh" min="2" cap="-1"/>
     </variants>
 </bet>
