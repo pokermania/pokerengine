@@ -1,6 +1,19 @@
-Thu Sep 29 2005  Loic Dachary  <loic@gnu.org>
+Fri Sep 30 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.9
+
+	* pokerengine/pokergame.py (PokerGame.buildPlayerList): exclude players with
+	  wait_for = "first_round". This is only meaningful when set before starting
+	  the game and allows the caller to exclude players for the next game while
+	  allowing it to join the game after the next game.
+
+	* pokerengine/pokergame.py (PokerGame.playersBeginTurn): do not reset wait_for if
+	  "first_round". It may be used to exclude players from the blind/ante round and
+	  will be reset to False when the blind/ante round is over.
+
+	* pokerengine/pokergame.py (PokerGame.initRound): s/sitPlayersWait/acceptPlayersWait/
+
+Thu Sep 29 2005  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokergame.py (PokerGame.updateBlinds): change wait_for
 	  "late" to False when forbiding missed blind.

@@ -86,7 +86,7 @@ class PokerPlayer:
         self.bot = False
         self.auto = False ##
         self.auto_blind_ante = False ##
-        self.wait_for = False # False, "late", "big", "first_round" ##
+        self.wait_for = False # True, False, "late", "big", "first_round" ##
         self.missed_blind = "n/a" # None, "n/a", "big", "small"
         self.blind = "late" # True, None, "late", "big", "small", "big_and_dead" ##
         self.buy_in_payed = False ##
@@ -594,7 +594,7 @@ class PokerGame:
 
     def canceled(self, serial, amount):
         if self.isBlindAnteRound():
-            self.sitPlayersWaitingForFirstRound()
+            self.acceptPlayersWaitingForFirstRound()
             self.endState()
             if self.sitCount() != 1:
                 self.error("%d players sit, expected exactly one" % self.sitCount())
@@ -616,7 +616,7 @@ class PokerGame:
                 pot = self.pot.toint()
                 serial = player.serial
                 self.pot2money(serial)
-        self.sitPlayersWaitingForFirstRound()
+        self.acceptPlayersWaitingForFirstRound()
         self.historyAdd("canceled", serial, pot)
             
     def getSerialByNameNoCase(self, name):
@@ -1198,7 +1198,7 @@ class PokerGame:
         if auto_payed:
             self.__talkedBlindAnte()
 
-    def sitPlayersWaitingForFirstRound(self):
+    def acceptPlayersWaitingForFirstRound(self):
         #
         # Players who sit while others are paying the blinds are
         # waiting for the first round so that buildPlayerList
@@ -1216,7 +1216,7 @@ class PokerGame:
           if not self.is_directing:
             self.buildPlayerList(False)
             self.dealerFromDealerSeat()
-          self.sitPlayersWaitingForFirstRound()
+          self.acceptPlayersWaitingForFirstRound()
         self.round_cap_left = self.roundCap()
         if self.verbose > 2:
           self.message("round cap reset to %d" % self.round_cap_left)
@@ -1301,6 +1301,7 @@ class PokerGame:
         map(PokerPlayer.beginTurn, self.playersAll())
         if not self.is_directing:
             for player in self.playersAll():
+              if player.wait_for != "first_round":
                 player.wait_for = False
         
     def buildPlayerList(self, with_wait_for):
@@ -1311,7 +1312,7 @@ class PokerGame:
         # The player list is the list of players seated, sorted by seat
         #
         if with_wait_for:
-            self.player_list = self.serialsSit()
+            self.player_list = filter(lambda x: self.serial2player[x].wait_for != "first_round", self.serialsSit())
         else:
             self.player_list = filter(lambda x: self.serial2player[x].isSit() and not self.serial2player[x].isWaitForBlind(), self.serial2player.keys())
         self.sortPlayerList()
