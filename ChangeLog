@@ -2,6 +2,9 @@ Thu Oct 13 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.10
 
+	* pokerconfigupgrade.in: do not prepend path components that are already present
+	  in sys.path. Prevents giving priority to standard path over PYTHONPATH.
+
 Fri Sep 30 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.9
