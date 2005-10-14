@@ -100,6 +100,7 @@ class PokerPlayer:
         self.bet = False
         self.dead = False
         self.talked_once = False
+        self.user_data = None
 
     def copy(self):
         other = PokerPlayer(self.serial, self.game)
@@ -126,10 +127,17 @@ class PokerPlayer:
         other.bet = self.bet and self.bet.copy()
         other.dead = self.pot and self.dead.copy()
         other.talked_once = self.talked_once
+        other.user_data = self.user_data
         return other
 
     def __str__(self):
-        return "serial = %d, name= %s, fold = %s, remove_next_turn = %s, sit_out = %s, sit_out_next_turn = %s, sit_requested = %s, bot = %s, auto = %s, auto_blind_ante = %s, wait_for = %s, missed_blind = %s, blind = %s, buy_in_payed = %s, ante = %s, all_in = %s, side_pot_index = %d, seat = %d, hand = %s, money = %s, rebuy = %d, bet = %s, dead = %s, talked_once = %s" % (self.serial, self.name, self.fold, self.remove_next_turn, self.sit_out, self.sit_out_next_turn, self.sit_requested, self.bot, self.auto, self.auto_blind_ante, self.wait_for, self.missed_blind, self.blind, self.buy_in_payed, self.ante, self.all_in, self.side_pot_index, self.seat, self.hand, self.money, self.rebuy, self.bet, self.dead, self.talked_once)
+        return "serial = %d, name= %s, fold = %s, remove_next_turn = %s, sit_out = %s, sit_out_next_turn = %s, sit_requested = %s, bot = %s, auto = %s, auto_blind_ante = %s, wait_for = %s, missed_blind = %s, blind = %s, buy_in_payed = %s, ante = %s, all_in = %s, side_pot_index = %d, seat = %d, hand = %s, money = %s, rebuy = %d, bet = %s, dead = %s, talked_once = %s, user_data = %s" % (self.serial, self.name, self.fold, self.remove_next_turn, self.sit_out, self.sit_out_next_turn, self.sit_requested, self.bot, self.auto, self.auto_blind_ante, self.wait_for, self.missed_blind, self.blind, self.buy_in_payed, self.ante, self.all_in, self.side_pot_index, self.seat, self.hand, self.money, self.rebuy, self.bet, self.dead, self.talked_once, self.user_data)
+
+    def setUserData(self, user_data):
+        self.user_data = user_data
+
+    def getUserData(self):
+        return self.user_data
 
     def beginTurn(self):
         self.bet.reset()
