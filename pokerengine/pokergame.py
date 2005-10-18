@@ -34,7 +34,6 @@ import os
 from pokereval import PokerEval
 
 from pokerengine.pokercards import *
-from pokerengine.pokerchips import PokerChips
 from pokerengine.pokerengineconfig import Config
 
 ABSOLUTE_MAX_PLAYERS = 10
@@ -95,10 +94,10 @@ class PokerPlayer:
         self.all_in = False
         self.seat = -1 ##
         self.hand = PokerCards()
-        self.money = False
+        self.money = 0
         self.rebuy = 0
-        self.bet = False
-        self.dead = False
+        self.bet = 0
+        self.dead = 0
         self.talked_once = False
         self.user_data = None
 
@@ -122,16 +121,16 @@ class PokerPlayer:
         other.all_in = self.all_in
         other.seat = self.seat
         other.hand = self.hand.copy()
-        other.money = self.money and self.money.copy()
+        other.money = self.money
         other.rebuy = self.rebuy
-        other.bet = self.bet and self.bet.copy()
-        other.dead = self.pot and self.dead.copy()
+        other.bet = self.bet
+        other.dead = self.dead
         other.talked_once = self.talked_once
         other.user_data = self.user_data
         return other
 
     def __str__(self):
-        return "serial = %d, name= %s, fold = %s, remove_next_turn = %s, sit_out = %s, sit_out_next_turn = %s, sit_requested = %s, bot = %s, auto = %s, auto_blind_ante = %s, wait_for = %s, missed_blind = %s, blind = %s, buy_in_payed = %s, ante = %s, all_in = %s, side_pot_index = %d, seat = %d, hand = %s, money = %s, rebuy = %d, bet = %s, dead = %s, talked_once = %s, user_data = %s" % (self.serial, self.name, self.fold, self.remove_next_turn, self.sit_out, self.sit_out_next_turn, self.sit_requested, self.bot, self.auto, self.auto_blind_ante, self.wait_for, self.missed_blind, self.blind, self.buy_in_payed, self.ante, self.all_in, self.side_pot_index, self.seat, self.hand, self.money, self.rebuy, self.bet, self.dead, self.talked_once, self.user_data)
+        return "serial = %d, name= %s, fold = %s, remove_next_turn = %s, sit_out = %s, sit_out_next_turn = %s, sit_requested = %s, bot = %s, auto = %s, auto_blind_ante = %s, wait_for = %s, missed_blind = %s, blind = %s, buy_in_payed = %s, ante = %s, all_in = %s, side_pot_index = %d, seat = %d, hand = %s, money = %d, rebuy = %d, bet = %d, dead = %d, talked_once = %s, user_data = %s" % (self.serial, self.name, self.fold, self.remove_next_turn, self.sit_out, self.sit_out_next_turn, self.sit_requested, self.bot, self.auto, self.auto_blind_ante, self.wait_for, self.missed_blind, self.blind, self.buy_in_payed, self.ante, self.all_in, self.side_pot_index, self.seat, self.hand, self.money, self.rebuy, self.bet, self.dead, self.talked_once, self.user_data)
 
     def setUserData(self, user_data):
         self.user_data = user_data
@@ -140,8 +139,8 @@ class PokerPlayer:
         return self.user_data
 
     def beginTurn(self):
-        self.bet.reset()
-        self.dead.reset()
+        self.bet = 0
+        self.dead = 0
         self.fold = False
         self.hand = PokerCards()
         self.side_pot_index = 0
@@ -339,7 +338,6 @@ def history2messages(game, history, serial2name = str, pocket_messages = False):
 
         elif type == "raise":
             (type, serial, amount) = event
-            amount = PokerChips(game.chips_values, amount).toint()
             messages.append("%s raise %d" % ( serial2name(serial), amount ) )
 
         elif type == "canceled":
@@ -406,7 +404,7 @@ class PokerGame:
         self.blind_info = False
         self.ante_info = False
         self.bet_info = False
-        self.chips_values = False
+        self.unit = 1
         self.buy_in = 0
         self.max_buy_in = 100000000
 
@@ -608,8 +606,8 @@ class PokerGame:
                 self.error("%d players sit, expected exactly one" % self.sitCount())
             elif amount > 0:
                 self.bet2pot()
-                if self.pot.toint() != amount:
-                    self.error("pot contains %d, expected %d" % ( self.pot.toint(), amount ))
+                if self.pot != amount:
+                    self.error("pot contains %d, expected %d" % ( self.pot, amount ))
                 else:
                     self.pot2money(serial)
         else:
@@ -619,9 +617,9 @@ class PokerGame:
         serial = 0
         pot = 0
         for player in self.playersPlaying():
-            if player.bet.toint() > 0:
+            if player.bet > 0:
                 self.bet2pot()
-                pot = self.pot.toint()
+                pot = self.pot
                 serial = player.serial
                 self.pot2money(serial)
         self.acceptPlayersWaitingForFirstRound()
@@ -650,7 +648,7 @@ class PokerGame:
     def getPlayerMoney(self, serial):
         player = self.getPlayer(serial)
         if player:
-            return player.money.toint() + player.rebuy
+            return player.money + player.rebuy
         
     def getSitOut(self, serial):
         return self.serial2player[serial].sit_out
@@ -669,9 +667,6 @@ class PokerGame:
     def addPlayer(self, serial, seat = -1):
         if self.canAddPlayer(serial):
             player = PokerPlayer(serial, self)
-            player.bet = PokerChips(self.chips_values)
-            player.dead = PokerChips(self.chips_values)
-            player.money = PokerChips(self.chips_values)
             if self.is_directing:
                 if seat != -1 and seat in self.seats_left:
                     player.seat = seat
@@ -763,7 +758,7 @@ class PokerGame:
 
         self.hand_serial = hand_serial
         if self.verbose >= 1: self.message("Dealing %s hand number %d" % ( self.getVariantName(), self.hand_serial ) )
-        self.pot = PokerChips(self.chips_values)
+        self.pot = 0
         self.board = PokerCards()
         self.winners = []
         self.serial2best = {}
@@ -792,7 +787,7 @@ class PokerGame:
                         self.hands_count, (self.time - self.time_of_first_hand),
                         self.variant, self.betting_structure,
                         self.player_list[:], self.dealer_seat,
-                        self.chipsMap())
+                        self.moneyMap())
         self.resetRound()
         self.initBlindAnte()
         if self.is_directing:
@@ -1010,12 +1005,11 @@ class PokerGame:
             pockets[player.serial] = player.hand.copy()
         return pockets
 
-    def chipsMap(self):
-        chips = {}
-        chips['values'] = self.chips_values
+    def moneyMap(self):
+        money = {}
         for player in self.playersNotFold():
-            chips[player.serial] = player.money.chips[:]
-        return chips
+            money[player.serial] = player.money
+        return money
 
     def isTournament(self):
         return self.hasLevel()
@@ -1379,7 +1373,7 @@ class PokerGame:
     def isBroke(self, serial):
         player = self.getPlayer(serial)
         if player:
-          money = player.money.toint()
+          money = player.money
           return ( money <= 0 or
                    ( not self.isTournament() and
                      self.blind_info and
@@ -1399,7 +1393,7 @@ class PokerGame:
 
         for player in self.playersAll():
             if player.rebuy > 0:
-                player.money.add(player.rebuy)
+                player.money += player.rebuy
                 self.historyAdd("rebuy", player.serial, player.rebuy)
                 player.rebuy = 0
 
@@ -1485,6 +1479,9 @@ class PokerGame:
     def betInfo(self):
         return self.bet_info[self.current_round]
 
+    def getChipUnit(self):
+        return self.unit
+      
     def willAct(self, serial):
         if ( self.isRunning() and
              serial in self.serialsInGame() ):
@@ -1505,7 +1502,7 @@ class PokerGame:
         if self.isBlindAnteRound():
             return False
         player = self.serial2player[serial]
-        return self.highestBetNotFold() > player.bet.toint()
+        return self.highestBetNotFold() > player.bet
 
     def canRaise(self, serial):
         """
@@ -1516,8 +1513,8 @@ class PokerGame:
             return False
         player = self.serial2player[serial]
         highest_bet = self.highestBetNotFold()
-        money = player.money.toint()
-        bet = player.bet.toint()
+        money = player.money
+        bet = player.bet
         #
         # Can raise if the round is not capped and the player has enough money to
         # raise. The player will be given an opportunity to raise if his bet is
@@ -1536,7 +1533,7 @@ class PokerGame:
         """
         if self.isBlindAnteRound():
             return False
-        return self.highestBetNotFold() <= self.getPlayer(serial).bet.toint()
+        return self.highestBetNotFold() <= self.getPlayer(serial).bet
 
     def setPlayerBlind(self, serial, blind):
         if self.isBlindAnteRound() and self.isInPosition(serial):
@@ -1584,7 +1581,7 @@ class PokerGame:
             return False
 
         player = self.serial2player[serial]
-        amount = min(self.highestBetNotFold() - player.bet.toint(), player.money.toint())
+        amount = min(self.highestBetNotFold() - player.bet, player.money)
         if self.verbose >= 2: self.message("player %d calls %d" % (serial, amount))
         self.historyAdd("call", serial, amount)
         self.bet(serial, amount)
@@ -1605,13 +1602,12 @@ class PokerGame:
             return False
 
         (min_bet, max_bet, to_call) = self.betLimits(serial)
-        amount = PokerChips(self.chips_values, amount)
-        if amount.toint() < min_bet:
-            amount.set(min_bet)
-        elif amount.toint() > max_bet:
-            amount.set(max_bet)
-        if self.verbose >= 1: self.message("player %d raises %d" % (serial, amount.toint()))
-        self.historyAdd("raise", serial, amount.chips[:])
+        if amount < min_bet:
+            amount = min_bet
+        elif amount > max_bet:
+            amount = max_bet
+        if self.verbose >= 1: self.message("player %d raises %d" % (serial, amount))
+        self.historyAdd("raise", serial, amount)
         highest_bet = self.highestBetNotFold()
         self.money2bet(serial, amount)
         if self.isRunning():
@@ -1705,7 +1701,7 @@ class PokerGame:
 
     def payBlind(self, serial, amount, dead):
         player = self.serial2player[serial]
-        money = player.money.toint()
+        money = player.money
         if money < amount + dead:
             if money < amount:
                 dead = 0
@@ -1743,7 +1739,7 @@ class PokerGame:
 
     def payAnte(self, serial, amount):
         player = self.serial2player[serial]
-        amount = min(amount, player.money.toint())
+        amount = min(amount, player.money)
         if self.verbose >= 2: self.message("player %d pays ante %d" % (serial, amount))
         self.historyAdd("ante", serial, amount)
         self.money2bet(serial, amount)
@@ -2034,10 +2030,8 @@ class PokerGame:
         self.betting_structure_name = self.getParam("/bet/description")
         self.buy_in = int(self.getParam('/bet/@buy-in'))
         self.max_buy_in = int(self.getParam('/bet/@max-buy-in'))
+        self.unit = int(self.getParam('/bet/@unit'))
 
-        chips_values = self.getParam("/bet/chips/@values")
-        self.chips_values = [ int(x) for x in split(chips_values) ]
-        
         self.bet_info = self.getParamProperties('/bet/variants[contains(@ids,"' + self.variant + '")]/round')
 
         self.blind_info = False
@@ -2185,7 +2179,7 @@ class PokerGame:
             self.error("distributeMoney must be called only once per turn")
             return
 
-        pot_backup = self.pot.copy()
+        pot_backup = self.pot
         side_pots = self.getPots()
 
         serial2delta = {}
@@ -2198,18 +2192,18 @@ class PokerGame:
             # everyone folded. Don't bother to evaluate.
             #
             (serial,) = self.serialsNotFold()
-            serial2delta[serial] += self.pot.toint()
+            serial2delta[serial] += self.pot
             self.showdown_stack = [ { 'type': 'game_state',
                                       'player_list': self.player_list,
                                       'side_pots': side_pots,
                                       'pot': pot_backup,
                                       'foldwin': True,
-                                      'serial2share': { serial: pot_backup.toint() },
+                                      'serial2share': { serial: pot_backup },
                                       'serial2delta': serial2delta },
                                     { 'type': 'resolve',
-                                      'serial2share': { serial: pot_backup.toint() },
+                                      'serial2share': { serial: pot_backup },
                                       'serials': [serial],
-                                      'pot': pot_backup.toint() } ]
+                                      'pot': pot_backup } ]
             if self.verbose > 2: pprint(self.showdown_stack)
             self.pot2money(serial)
             self.setWinners([serial])
@@ -2218,7 +2212,7 @@ class PokerGame:
         serial2side_pot = {}
         for player in self.playersNotFold():
             serial2side_pot[player.serial] = side_pots['pots'][player.side_pot_index][1]
-        if self.verbose >= 2: self.message("distribute a pot of %d" % self.pot.toint())
+        if self.verbose >= 2: self.message("distribute a pot of %d" % self.pot)
         #
         # Keep track of the best hands (high and low) for information
         # and for the showdown.
@@ -2359,7 +2353,7 @@ class PokerGame:
             showdown_stack.append(frame)
 
         for (serial, share) in serial2share.iteritems():
-            self.getPlayer(serial).money.add(share)
+            self.getPlayer(serial).money += share
 
         #
         # The chips left go to the player next to the dealer,
@@ -2368,7 +2362,7 @@ class PokerGame:
         if chips_left > 0:
             next_to_dealer = self.indexAdd(self.dealer, 1)
             player = self.serial2player[self.player_list[next_to_dealer]]
-            player.money.add(chips_left)
+            player.money += chips_left
             serial2share.setdefault(player.serial, 0)
             serial2share[player.serial] += chips_left
             serial2delta[player.serial] += chips_left
@@ -2376,7 +2370,7 @@ class PokerGame:
                                        'chips_left': chips_left,
                                        'serial': player.serial })
 
-        self.pot.reset()
+        self.pot = 0
         #
         # For convenience, build a single list of all winners, regardless
         # of the side of the pot they won. Remove duplicates in all lists.
@@ -2399,13 +2393,7 @@ class PokerGame:
         if self.verbose > 2: pprint(self.showdown_stack)
 
     def divideChips(self, amount, divider):
-        unit = self.chips_values[0]
-        in_units = amount / unit
-        if amount % unit != 0:
-            self.error("divideChips: %d is not a multiple of %d" % ( amount, unit ))
-        result = in_units / divider
-        remainder = in_units % divider
-        return (result * unit, remainder * unit)
+        return ( amount / divider, amount % divider )
     
     def showdown(self):
         if self.notFoldCount() < 2:
@@ -2628,7 +2616,7 @@ class PokerGame:
                     
     def betsNull(self):
         if self.isRunning():
-            return sum([ player.bet.toint() for player in self.playersNotFold()]) == 0
+            return sum([ player.bet for player in self.playersNotFold()]) == 0
         else:
             return False
         
@@ -2643,25 +2631,24 @@ class PokerGame:
             serials = [serial]
         for serial in serials:
             player = self.serial2player[serial]
-            self.pot.add(player.bet)
+            self.pot += player.bet
             if self.isBlindAnteRound():
-                player.dead.add(player.bet)
-            player.bet.reset()
+                player.dead += player.bet
+            player.bet = 0
 
     def money2bet(self, serial, amount):
         player = self.serial2player[serial]
-        amount = PokerChips(self.chips_values, amount)
 
-        if amount.toint() > player.money.toint():
-            self.error("money2bet: %d > %d" % (amount.toint(), player.money.toint()))
-            amount.set(player.money)
-        player.money.subtract(amount)
-        player.bet.add(amount)
-        if player.money.toint() < 0:
+        if amount > player.money:
+            self.error("money2bet: %d > %d" % (amount, player.money))
+            amount = player.money
+        player.money -= amount
+        player.bet += amount
+        if player.money < 0:
             self.error("money2bet: %d money dropped under 0" % serial)
         self.runCallbacks("money2bet", serial, amount)
-        self.updatePots(serial, amount.toint())
-        if player.money.toint() == 0:
+        self.updatePots(serial, amount)
+        if player.money == 0:
             self.historyAdd("all-in", serial)
             player.all_in = True
 
@@ -2691,14 +2678,14 @@ class PokerGame:
         
     def pot2money(self, serial):
         player = self.serial2player[serial]
-        player.money.add(self.pot)
-        self.pot.reset()
+        player.money += self.pot
+        self.pot = 0
 
     def highestBetNotFold(self):
-        return max([ player.bet.toint() for player in self.playersNotFold() ])
+        return max([ player.bet for player in self.playersNotFold() ])
 
     def highestBetInGame(self):
-        return max([ player.bet.toint() for player in self.playersInGame() ])
+        return max([ player.bet for player in self.playersInGame() ])
 
     def betsEqual(self):
         if self.notFoldCount() > 1 and self.inGameCount() > 0:
@@ -2714,9 +2701,9 @@ class PokerGame:
             # is different from the others, the bets are not equal.
             #
             players = self.playersInGame()
-            bet = players[0].bet.toint()
+            bet = players[0].bet
             for player in players:
-                player_bet = player.bet.toint()
+                player_bet = player.bet
                 if bet != player_bet:
                     return False
         return True
@@ -2734,7 +2721,7 @@ class PokerGame:
         players = filter(lambda player: player.side_pot_index == current_pot_index, self.playersAllIn())
         if not players:
             return
-        players.sort(lambda a,b: a.bet.toint() - b.bet.toint())
+        players.sort(lambda a,b: int(a.bet - b.bet))
         for player in players:
             pot_contributions = round_contributions[len(pots) - 1]
             if not pot_contributions.has_key(player.serial):
@@ -3004,8 +2991,8 @@ class PokerGame:
         info = self.betInfo()
         highest_bet = self.highestBetNotFold()
         player = self.serial2player[serial]
-        money = player.money.toint()
-        bet = player.bet.toint()
+        money = player.money
+        bet = player.bet
         to_call = highest_bet - bet
         if self.round_cap_left <= 0:
             return (0, 0, to_call)
@@ -3044,9 +3031,9 @@ class PokerGame:
         return (min_bet, max_bet, to_call)
 
     def potAndBetsAmount(self):
-        pot = self.pot and self.pot.toint() or 0
+        pot = self.pot
         for player in self.playersPlaying():
-            pot += player.bet.toint()
+            pot += player.bet
         return pot
 
     def autoBlindAnte(self, serial):
@@ -3058,29 +3045,28 @@ class PokerGame:
         self.getPlayer(serial).auto_blind_ante = False
         
     def payBuyIn(self, serial, amount):
-        amount = PokerChips(self.chips_values, amount)
-        if not self.isTournament() and amount.toint() > self.maxBuyIn():
-          if self.verbose: self.error("payBuyIn: maximum buy in is %d and %d is too much" % ( self.maxBuyIn(), amount.toint()  ))
+        if not self.isTournament() and amount > self.maxBuyIn():
+          if self.verbose: self.error("payBuyIn: maximum buy in is %d and %d is too much" % ( self.maxBuyIn(), amount ))
           return False
         player = self.getPlayer(serial)
-        player.money.set(amount)
-        if self.isTournament() or player.money.toint() >= self.buyIn():
+        player.money = amount
+        if self.isTournament() or player.money >= self.buyIn():
           player.buy_in_payed = True
           return True
         else:
-          if self.verbose: self.error("payBuyIn: minimum buy in is %d but %d is not enough" % ( self.buyIn(), player.money.toint() ))
+          if self.verbose: self.error("payBuyIn: minimum buy in is %d but %d is not enough" % ( self.buyIn(), player.money ))
           return False
 
     def rebuy(self, serial, amount):
         player = self.getPlayer(serial)
         if not player:
           return False
-        if player.money.toint() + amount + player.rebuy > self.maxBuyIn():
+        if player.money + amount + player.rebuy > self.maxBuyIn():
           return False
         if self.isPlaying(serial):
           player.rebuy += amount
         else:
-          player.money.add(amount)
+          player.money += amount
         return True
         
     def buyIn(self):

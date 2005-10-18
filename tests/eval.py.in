@@ -29,12 +29,11 @@ sys.path.insert(0, "@top_srcdir@")
 
 import unittest
 from pokerengine.pokergame import PokerGameServer, PokerGameClient, PokerGame
-from pokerengine.pokerchips import PokerChips
 from pokerengine.pokercards import PokerCards
 from pokereval import PokerEval
 
 poker_eval = PokerEval()
-_initial_money = 10
+_initial_money = 1000
 
 class TestPosition(unittest.TestCase):
 
@@ -55,7 +54,7 @@ class TestPosition(unittest.TestCase):
     def make_new_player(self, i, initial_money = _initial_money):
         self.assert_(self.game.addPlayer(i))
         player = self.game.serial2player[i]
-        player.money = PokerChips(self.game.chips_values, initial_money)
+        player.money = initial_money
         player.buy_in_payed = True
         self.assert_(self.game.sit(i))
         player.auto_blind_ante = True

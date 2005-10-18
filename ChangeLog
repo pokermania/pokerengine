@@ -1,6 +1,43 @@
-Fri Oct 14 2005  Loic Dachary  <loic@gnu.org>
+Tue Oct 18 2005  Loic Dachary  <loic@gnu.org>
 
-	* Release 1.0.10
+	* Release 1.0.10 
+	
+	* pokerengine/pokerchips.py (PokerChips.int2chips): if the amount is a multiple
+	  of a given chip, stick to it
+
+Mon Oct 17 2005  Loic Dachary  <loic@gnu.org>
+
+	* pokerengine/pokertournament.py (PokerTournament.movePlayer): also transfert user data.
+
+	* pokerengine/pokerchips.py (PokerChips.tostring): convert to 
+	  string representing the decimal amount
+	  (PokerChips.tofloat): convert to the float representing the 
+	  decimal amount instead of the cents amount
+
+	* pokerengine/pokerchips.py: the remainder field contains the rest
+	  of the chip stack. If the chips values do not include a chip of
+	  value 1, the amount that is lower than the smallest chip is stored
+	  in the remainder field.
+
+	* pokerengine/pokerchips.py (PokerChips.tolist): convert to standalone
+	  list
+
+	* conf/poker.*.xml: all amounts expressed in cents or 1/100
+
+	* pokerengine/pokergame.py (PokerGame.__init__): self.unit : smallest chip
+	  value fitting with the betting structure
+	  pokerengine/pokergame.py (PokerGame.getChipUnit): 
+
+	* Makefile.am (all-local): run upgrades if conf directory is writeable (that
+	  is, not when doing a distcheck)
+
+	* pokerengine/pokergame.py (PokerGame.moneyMap): convenience function
+	  replacing chipsMap
+
+	* pokerengine/pokergame.py: amounts are no longer stored in chips but
+	  in cents
+
+Fri Oct 14 2005  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokergame.py (PokerPlayer.getUserData): user_data field
 	  defined for the caller to store per-player data

@@ -288,6 +288,7 @@ class PokerTournament:
         to_game.sit(serial)
         to_game.autoBlindAnte(serial)
         to_player.name = from_player.name
+        to_player.setUserData(from_player.getUserData())
         if(from_player.isSitOut()): to_game.sitOut(serial)
         if(from_player.isBot()): to_game.botPlayer(serial)
         from_game.removePlayer(serial)
@@ -339,8 +340,8 @@ class PokerTournament:
             player = game.playersAll()[0]
             self.winners.insert(0, player.serial)
             self.callback_remove_player(self, game.id, player.serial)
-            money = player.money.toint()
-            player.money.set(0)
+            money = player.money
+            player.money = 0
             expected = game.buyIn() * self.registered
             if money != expected:
                 self.message("ERROR winner has %d chips and should have %d chips" % ( money, expected ))

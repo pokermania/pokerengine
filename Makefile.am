@@ -81,6 +81,11 @@ sbin_SCRIPTS = \
 clean-local:
 	rm -f */*.py[co]
 
+all-local:
+	if [ -w ${srcdir}/conf ] ; then \
+		${PYTHON} ${top_builddir}/pokerconfigupgrade --verbose=1 --upgrades=${srcdir}/upgrades ${srcdir}/conf ; \
+	fi
+
 install-data-local:
 	mkdir -p "${DESTDIR}${pkgsysconfdir}"
 	${PYTHON} ${top_builddir}/pokerconfigupgrade --verbose=1 --upgrades=${srcdir}/upgrades --reference=${srcdir}/conf "${DESTDIR}${pkgsysconfdir}"

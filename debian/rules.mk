@@ -35,6 +35,8 @@ ifneq (ccache,$(findstring ccache,$(DEB_BUILD_OPTIONS)))
         DEB_CONFIGURE_EXTRA_FLAGS += --without-ccache
 endif
 
+DEB_AUTO_PACKAGES ?= $(DEB_PACKAGES)
+
 is_debug_package=$(if $(findstring noopt,$(DEB_BUILD_OPTIONS)),yes,)
 
 DEB_MAKE_INSTALL_TARGET = install DESTDIR=$(DEB_DESTDIR)
@@ -49,21 +51,21 @@ DEB_PYTHON_PACKAGES := $(strip $(filter $(patsubst %,python%%,$(DEB_PYTHON_VERSI
 
 DEB_DH_MAKESHLIBS_ARGS = -n
 
-common-configure-arch common-configure-indep:: $(patsubst %,config-status/%,$(DEB_PYTHON_PACKAGES)) 
-$(patsubst %,config-status/%,$(DEB_PACKAGES)):: $(DEB_SRCDIR)/configure
+common-configure-arch common-configure-indep:: $(patsubst %,config-status/%,$(DEB_PYTHON_PACKAGES))
+$(patsubst %,config-status/%,$(DEB_AUTO_PACKAGES)):: $(DEB_SRCDIR)/configure
 	if [ ! -f $(if $(DEB_BUILDDIR_$(cdbs_curpkg)),$(DEB_BUILDDIR_$(cdbs_curpkg)),$(DEB_BUILDDIR))/config.status ] ; then \
 		$(DEB_CONFIGURE_INVOKE) $(cdbs_configure_flags) $(DEB_CONFIGURE_EXTRA_FLAGS) $(DEB_CONFIGURE_USER_FLAGS) ; \
 	fi
 	mkdir -p config-status && touch config-status/$(cdbs_curpkg)
 
 $(DEB_SRCDIR)/config.status:: $(DEB_SRCDIR)/configure
-	./configure --enable-maintainer-mode --disable-python-depends
+	./configure $(DEB_CONFIGURE_EXTRA_FLAGS) --enable-maintainer-mode --disable-python-depends
 
 $(DEB_SRCDIR)/configure:: $(DEB_SRCDIR)/bootstrap $(DEB_SRCDIR)/configure.ac
 	sh bootstrap
 	chmod a+x $@
 
-DEB_PYTHON_FILES = $(patsubst debian/python-%,%,$(shell ls debian/python-*{dirs,docs,postinst,install,templates,config,init} 2>/dev/null || echo))
+DEB_PYTHON_FILES = $(patsubst debian/python-%,%,$(shell ls debian/python-*{dirs,docs,postinst,postrm,preinst,install,templates,config,init} 2>/dev/null || echo))
 DEB_PYTHON_PACKAGE_FILES = $(foreach file,$(DEB_PYTHON_FILES),$(foreach version,$(DEB_PYTHON_VERSIONS),debian/python$(version)-$(file)))
 
 $(DEB_SRCDIR)/configure:: $(DEB_PYTHON_PACKAGE_FILES)
@@ -81,12 +83,12 @@ clean:: $(DEB_SRCDIR)/config.status
 	rm -fr config-status
 	$(MAKE) maintainer-clean
 
-$(patsubst %,cleanbuilddir/%,$(DEB_PACKAGES))::
+$(patsubst %,cleanbuilddir/%,$(DEB_AUTO_PACKAGES))::
 	-if test -n "$(DEB_BUILDDIR_$(cdbs_curpkg))" && test "$(DEB_BUILDDIR_$(cdbs_curpkg))" != "$(DEB_SRCDIR)"; then rm -fr "$(DEB_BUILDDIR_$(cdbs_curpkg))"; fi
 
 DEB_MAKE_INVOKE = $(DEB_MAKE_ENVVARS) make -C $(if $(DEB_BUILDDIR_$(cdbs_curpkg)),$(DEB_BUILDDIR_$(cdbs_curpkg)),$(DEB_BUILDDIR)) CFLAGS=$(if $(CFLAGS_$(cdbs_curpkg)),"$(CFLAGS_$(cdbs_curpkg))","$(CFLAGS)") CXXFLAGS=$(if $(CXXFLAGS_$(cdbs_curpkg)),"$(CXXFLAGS_$(cdbs_curpkg))","$(CXXFLAGS)") 
 
-$(patsubst %,build/%,$(DEB_PACKAGES)) :: 
+$(patsubst %,build/%,$(DEB_AUTO_PACKAGES)) :: 
 	$(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
 
 DEB_MAKE_INSTALL_TARGET = install DESTDIR=$(DEB_DESTDIR)

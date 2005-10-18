@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<bet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="bet.xsd" name="pot limit" table-stakes="yes" buy-in="1000" max-buy-in="1000" poker_engine_version="1.0.6">
+<bet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="bet.xsd" name="pot limit" table-stakes="yes" unit="500" buy-in="100000" max-buy-in="100000" poker_engine_version="1.0.10">
 
     <description>Pot limit 10/15</description>
 
-    <chips values="5 10 20 25 50 100 250 500 1000 2000 5000"/>
+    
 
-    <blind small="5" big="10" change="double" frequency="10" unit="hand"/>
+    <blind small="500" big="1000" change="double" frequency="10" unit="hand"/>
 
     <all_in method="side"/> 
 
     <variants ids="omaha omaha8 holdem">
-      <round name="pre-flop" min_pow_level="10" max="pot" cap="3"/>
-      <round name="flop" min_pow_level="10" max="pot" cap="3"/>
-      <round name="turn" min_pow_level="15" max="pot" cap="3"/>
-      <round name="river" min_pow_level="15" max="pot" cap="3"/>
+      <round name="pre-flop" min_pow_level="1000" max="pot" cap="3"/>
+      <round name="flop" min_pow_level="1000" max="pot" cap="3"/>
+      <round name="turn" min_pow_level="1500" max="pot" cap="3"/>
+      <round name="river" min_pow_level="1500" max="pot" cap="3"/>
     </variants>
 
     <variants ids="7stud 7stud8">
-      <round name="pre-flop" min_pow_level="10" max="pot" cap="3"/>
-      <round name="third" min_pow_level="10" max="pot" cap="3"/>
-      <round name="fourth" min_pow_level="10" max="pot" cap="3"/>
-      <round name="fifth" min_pow_level="15" max="pot" cap="3"/>
-      <round name="sixth" min_pow_level="15" max="pot" cap="3"/>
-      <round name="seventh" min_pow_level="15" max="pot" cap="3"/>
+      <round name="pre-flop" min_pow_level="1000" max="pot" cap="3"/>
+      <round name="third" min_pow_level="1000" max="pot" cap="3"/>
+      <round name="fourth" min_pow_level="1000" max="pot" cap="3"/>
+      <round name="fifth" min_pow_level="1500" max="pot" cap="3"/>
+      <round name="sixth" min_pow_level="1500" max="pot" cap="3"/>
+      <round name="seventh" min_pow_level="1500" max="pot" cap="3"/>
     </variants>
 </bet>

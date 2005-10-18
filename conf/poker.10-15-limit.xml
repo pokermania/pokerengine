@@ -1,27 +1,25 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<bet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="bet.xsd" name="10-15 limit" table-stakes="yes" buy-in="500" max-buy-in="5000" poker_engine_version="1.0.6">
+<bet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="bet.xsd" name="10-15 limit" table-stakes="yes" unit="500" buy-in="50000" max-buy-in="500000" poker_engine_version="1.0.10">
 
     <description>Limit 15/30</description>
 
-    <chips values="5 10 20 25 50 100 5000"/>
-
-    <blind small="5" big="10"/>
+    <blind small="500" big="1000"/>
 
     <all_in method="side"/> 
 
     <variants ids="omaha omaha8 holdem">
-      <round name="pre-flop" fixed="10" cap="3"/>
-      <round name="flop" fixed="10" cap="3"/>
-      <round name="turn" fixed="15" cap="3"/>
-      <round name="river" fixed="15" cap="3"/>
+      <round name="pre-flop" fixed="1000" cap="3"/>
+      <round name="flop" fixed="1000" cap="3"/>
+      <round name="turn" fixed="1500" cap="3"/>
+      <round name="river" fixed="1500" cap="3"/>
     </variants>
 
     <variants ids="7stud 7stud8">
-      <round name="pre-flop" fixed="10" cap="3"/>
-      <round name="third" fixed="10" cap="3"/>
-      <round name="fourth" fixed="10" cap="3"/>
-      <round name="fifth" fixed="15" cap="3"/>
-      <round name="sixth" fixed="15" cap="3"/>
-      <round name="seventh" fixed="15" cap="3"/>
+      <round name="pre-flop" fixed="1000" cap="3"/>
+      <round name="third" fixed="1000" cap="3"/>
+      <round name="fourth" fixed="1000" cap="3"/>
+      <round name="fifth" fixed="1500" cap="3"/>
+      <round name="sixth" fixed="1500" cap="3"/>
+      <round name="seventh" fixed="1500" cap="3"/>
     </variants>
 </bet>

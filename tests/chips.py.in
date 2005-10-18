@@ -46,33 +46,35 @@ class TestChips(unittest.TestCase):
         """
         """
         pokerchips.MAX_TOKENS_PER_STACK = 100
-        values = [1, 2, 5, 10, 25]
+        values = [100, 200, 500, 1000, 2500]
         chips = PokerChips(values, 0)
         self.assertEqual(chips.chips, [0, 0, 0, 0, 0])
 
-        chips = PokerChips(values, 200)
-        self.assertEqual(chips.chips, [6, 7, 4, 6, 4])
+        chips = PokerChips(values, 20000)
+        print "%s" % chips
+        self.assertEqual(chips.toint(), 20000)
+        self.assertEqual(chips.chips, [8, 6, 4, 6, 4])
         chips.add([150, 0, 0, 0, 0])
         self.assertEqual(chips.chips, [100, 35, 4, 6, 4])
-        self.assertEqual(chips.toint(), 350)
+        self.assertEqual(chips.toint(), 35000)
         
-        chips = PokerChips(values, 200)
-        total = 200 + sum(map(lambda x: x * 150, values))
+        chips = PokerChips(values, 20000)
+        total = 20000 + sum(map(lambda x: x * 150, values))
         chips.add([150, 150, 150, 150, 150])
         self.assertEqual(chips.chips, [100, 100, 100, 100, 194])
         self.assertEqual(chips.toint(), total)
         
-        chips = PokerChips(values, 200)
+        chips = PokerChips(values, 20000)
         chips.subtract([0, 20, 0, 0, 0])
-        self.assertEqual(chips.chips, [6, 7, 3, 5, 3])
-        self.assertEqual(chips.toint(), 160)
+        self.assertEqual(chips.chips, [8, 6, 3, 5, 3])
+        self.assertEqual(chips.toint(), 16000)
 
-        chips = PokerChips(values, 6000)
-        self.assertEqual(chips.chips, [6, 7, 4, 6, 236])
+        chips = PokerChips(values, 600000)
+        self.assertEqual(chips.chips, [8, 6, 4, 6, 236])
 
         chips = PokerChips(values)
-        chips.add(6000)
-        self.assertEqual(chips.chips, [6, 7, 4, 6, 236])
+        chips.add(600000)
+        self.assertEqual(chips.chips, [8, 6, 4, 6, 236])
 
         chips = PokerChips(values)
         chips.set([200, 0, 0, 0, 0])
@@ -82,53 +84,53 @@ class TestChips(unittest.TestCase):
         chips.subtract(250)
         self.assertEqual(chips.chips, [0, 0, 0, 0, 0])
         
-        chips = PokerChips(values, 200)
-        self.assertEqual(chips.__str__(), "PokerChips([6, 7, 4, 6, 4]) = 200")
-        self.assertEqual(chips.__repr__(), "PokerChips([6, 7, 4, 6, 4])")
+        chips = PokerChips(values, 20000)
+        self.assertEqual(chips.__str__(), "PokerChips([8, 6, 4, 6, 4]) = 20000 (-0)")
+        self.assertEqual(chips.__repr__(), "PokerChips([8, 6, 4, 6, 4])")
 
     def test2(self):
         """
         """
         pokerchips.MAX_TOKENS_PER_STACK = 30
-        values = [1, 2, 5, 10, 25, 5000]
+        values = [100, 200, 500, 1000, 2500, 500000]
         chips = PokerChips(values, 0)
         self.assertEqual(chips.chips, [0, 0, 0, 0, 0, 0])
 
-        chips = PokerChips(values, 200)
-        self.assertEqual(chips.chips, [6, 7, 4, 6, 4, 0])
+        chips = PokerChips(values, 20000)
+        self.assertEqual(chips.chips, [8, 6, 4, 6, 4, 0])
         chips.add([150, 0, 0, 0, 0, 0])
         self.assertEqual(chips.chips, [30, 30, 20, 6, 4, 0])
-        self.assertEqual(chips.toint(), 350)
+        self.assertEqual(chips.toint(), 35000)
         
-        chips = PokerChips(values, 200)
-        total = 200 + sum(map(lambda x: x * 150, values))
+        chips = PokerChips(values, 20000)
+        total = 20000 + sum(map(lambda x: x * 150, values))
         chips.add([150, 150, 150, 150, 150, 150])
         self.assertEqual(chips.chips, [30, 30, 30, 31, 44, 151])
         self.assertEqual(chips.toint(), total)
         
-        chips = PokerChips(values, 200)
+        chips = PokerChips(values, 20000)
         chips.subtract([0, 20, 0, 0, 0, 0])
-        self.assertEqual(chips.chips, [6, 7, 3, 5, 3, 0])
-        self.assertEqual(chips.toint(), 160)
+        self.assertEqual(chips.chips, [8, 6, 3, 5, 3, 0])
+        self.assertEqual(chips.toint(), 16000)
 
-        chips = PokerChips(values, 6000)
-        self.assertEqual(chips.chips, [6, 7, 4, 6, 36, 1])
+        chips = PokerChips(values, 600000)
+        self.assertEqual(chips.chips, [8, 6, 4, 6, 36, 1])
 
         chips = PokerChips(values)
-        chips.add(6000)
-        self.assertEqual(chips.chips, [6, 7, 4, 6, 36, 1])
+        chips.add(600000)
+        self.assertEqual(chips.chips, [8, 6, 4, 6, 36, 1])
 
         chips = PokerChips(values)
         chips.set([200, 0, 0, 0, 0, 0])
         self.assertEqual(chips.chips, [30, 30, 22, 0, 0, 0])
 
-        chips = PokerChips(values, 200)
-        chips.subtract(250)
+        chips = PokerChips(values, 20000)
+        chips.subtract(25000)
         self.assertEqual(chips.chips, [0, 0, 0, 0, 0, 0])
         
-        chips = PokerChips(values, 200)
-        self.assertEqual(chips.__str__(), "PokerChips([6, 7, 4, 6, 4, 0]) = 200")
-        self.assertEqual(chips.__repr__(), "PokerChips([6, 7, 4, 6, 4, 0])")
+        chips = PokerChips(values, 20000)
+        self.assertEqual(chips.__str__(), "PokerChips([8, 6, 4, 6, 4, 0]) = 20000 (-0)")
+        self.assertEqual(chips.__repr__(), "PokerChips([8, 6, 4, 6, 4, 0])")
 
 def run():
     suite = unittest.TestSuite()

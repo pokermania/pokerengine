@@ -195,10 +195,10 @@ class TestBlinds(unittest.TestCase):
         serial2chips_index = 9
         history = self.game.turn_history
         self.assertEqual(history[game_index][player_list_index], [1, 2, 10, 11, 3, 4])
-        self.assertEqual(history[game_index][serial2chips_index].keys(), [1, 2, 3, 4, 10, 11, 'values'])
+        self.assertEqual(history[game_index][serial2chips_index].keys(), [1, 2, 3, 4, 10, 11])
         self.game.historyReduce()
         self.assertEqual(history[game_index][player_list_index], [1, 2, 3, 4])
-        self.assertEqual(history[game_index][serial2chips_index].keys(), [1, 2, 3, 4, 'values'])
+        self.assertEqual(history[game_index][serial2chips_index].keys(), [1, 2, 3, 4])
 
         self.game.beginTurn(3)
         # (blind, missed, wait)
@@ -372,7 +372,7 @@ class TestBlinds(unittest.TestCase):
         self.game.sitOut(5)
 
         self.failUnless(self.game.state, "end")
-        self.failUnless(self.game.serial2player[3].money.toint(), self.game.buyIn())
+        self.failUnless(self.game.serial2player[3].money, self.game.buyIn())
 
     def test0(self):
         """
