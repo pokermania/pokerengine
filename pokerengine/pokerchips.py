@@ -27,7 +27,7 @@
 
 from types import *
 
-MAX_TOKENS_PER_STACK = 23
+MAX_CHIPS_PER_STACK = 23
 INT2CHIPS_FACTOR = 0.3
 
 class PokerChips:
@@ -42,11 +42,11 @@ class PokerChips:
         
         if type(what) is IntType or type(what) is LongType:
             ( self.chips, self.remainder ) = PokerChips.int2chips(values, INT2CHIPS_FACTOR, what)
-            self.limitTokens()
+            self.limitChips()
         elif type(what) is ListType:
             self.chips = what[:]
             self.remainder = 0
-            self.limitTokens()
+            self.limitChips()
         else:
             self.chips = what.chips[:]
             self.remainder = what.remainder
@@ -85,7 +85,7 @@ class PokerChips:
         converted = PokerChips.convert(self.values, chips)
         self.chips = converted.chips
         self.remainder = converted.remainder
-        self.limitTokens()
+        self.limitChips()
 
     def convert(values, what):
         remainder = 0
@@ -102,7 +102,7 @@ class PokerChips:
         other = PokerChips.convert(self.values, other)
         self.chips = [ self.chips[i] + other.chips[i] for i in xrange(self.size) ]
         self.remainder += other.remainder
-        self.limitTokens()
+        self.limitChips()
 
     def subtract(self, other):
         other = PokerChips.convert(self.values, other)
@@ -162,25 +162,14 @@ class PokerChips:
         if len(values) > 0:
             chips = [0] * len(values)
 
-            found = False
-            reversed_values = values[:]
-            reversed_values.reverse()
-            for index in xrange(len(reversed_values)):
-                if money % reversed_values[index] == 0 and money / reversed_values[index] < MAX_TOKENS_PER_STACK:
-                    chips[len(reversed_values) - index - 1] = money / reversed_values[index]
-                    money = 0
-                    found = True
-                    break
-
-            if not found:
-                for i in range(len(values) - 1, -1, -1):
-                    if i == 0:
-                        to_distribute = money
-                    else:
-                        to_distribute = money - int(values[i] / factor)
-                    if to_distribute > 0:
-                        chips[i] = to_distribute / values[i]
-                        money -= to_distribute - to_distribute % values[i]
+            for i in range(len(values) - 1, -1, -1):
+                if i == 0:
+                    to_distribute = money
+                else:
+                    to_distribute = money - int(values[i] / factor)
+                if to_distribute > 0:
+                    chips[i] = to_distribute / values[i]
+                    money -= to_distribute - to_distribute % values[i]
         else:
             chips = []
 
@@ -188,7 +177,7 @@ class PokerChips:
 
     int2chips = staticmethod(int2chips)
 
-    def limitTokens(self):
+    def limitChips(self):
         def lcm(a, b):
             def gcm(x, y):
                 if y == 0:
@@ -197,9 +186,9 @@ class PokerChips:
                     return gcm(y, x % y)
             return (a * b) / gcm(a, b)
         for i in xrange(len(self.chips) - 1):
-            if self.chips[i] > MAX_TOKENS_PER_STACK:
+            if self.chips[i] > MAX_CHIPS_PER_STACK:
                 _lcm = lcm(self.values[i], self.values[i + 1])
-                too_many = ( self.chips[i] - MAX_TOKENS_PER_STACK ) * self.values[i]
+                too_many = ( self.chips[i] - MAX_CHIPS_PER_STACK ) * self.values[i]
                 moving = too_many - too_many % _lcm
                 if moving > 0:
                     self.chips[i] -= moving / self.values[i]
