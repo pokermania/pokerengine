@@ -45,7 +45,7 @@ class TestChips(unittest.TestCase):
     def test1(self):
         """
         """
-        pokerchips.MAX_TOKENS_PER_STACK = 100
+        pokerchips.MAX_CHIPS_PER_STACK = 100
         values = [100, 200, 500, 1000, 2500]
         chips = PokerChips(values, 0)
         self.assertEqual(chips.chips, [0, 0, 0, 0, 0])
@@ -91,7 +91,7 @@ class TestChips(unittest.TestCase):
     def test2(self):
         """
         """
-        pokerchips.MAX_TOKENS_PER_STACK = 30
+        pokerchips.MAX_CHIPS_PER_STACK = 30
         values = [100, 200, 500, 1000, 2500, 500000]
         chips = PokerChips(values, 0)
         self.assertEqual(chips.chips, [0, 0, 0, 0, 0, 0])
