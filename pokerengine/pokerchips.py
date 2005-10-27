@@ -143,10 +143,14 @@ class PokerChips:
 
     def tostring(value):
         string = str(value)
-        if value < 10:
+        if value == 0:
+            return string
+        elif value < 10:
             return "0.0" + string
         elif value < 100:
             return "0." + string
+        elif value % 100 == 0:
+            return string[:-2]
         else:
             return string[:-2] + '.' + string[-2:]
 
