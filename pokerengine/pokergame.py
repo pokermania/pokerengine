@@ -35,6 +35,7 @@ from pokereval import PokerEval
 
 from pokerengine.pokercards import *
 from pokerengine.pokerengineconfig import Config
+from pokerengine.pokerchips import PokerChips
 
 ABSOLUTE_MAX_PLAYERS = 10
 
@@ -245,13 +246,13 @@ def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame)
         messages.append(message)
 
     if len(frame['serial2share']) > 1:
-        message = "winners share a pot of %d" % frame['pot']
+        message = "winners share a pot of %s" % PokerChips.tostring(frame['pot'])
         if frame.has_key('chips_left'):
             message += " (minus %d odd chips)" % frame['chips_left']
         messages.append(message)
 
     for (serial, share) in frame['serial2share'].iteritems():
-        messages.append("%s receives %d" % ( serial2name(serial), share ))
+        messages.append("%s receives %s" % ( serial2name(serial), PokerChips.tostring(share) ))
 
     return messages
 
@@ -311,14 +312,14 @@ def history2messages(game, history, serial2name = str, pocket_messages = False):
                 dead_message = " and %d dead man" % dead
             else:
                 dead_message = ""
-            messages.append("%s pays %d blind%s" % ( serial2name(serial), amount, dead_message ))
+            messages.append("%s pays %s blind%s" % ( serial2name(serial), PokerChips.tostring(amount), dead_message ))
 
         elif type == "ante_request":
             pass
 
         elif type == "ante":
             (type, serial, amount) = event
-            messages.append("%s pays %d ante" % ( serial2name(serial), amount ))
+            messages.append("%s pays %s ante" % ( serial2name(serial), PokerChips.tostring(amount) ))
 
         elif type == "all-in":
             (type, serial) = event
@@ -326,7 +327,7 @@ def history2messages(game, history, serial2name = str, pocket_messages = False):
 
         elif type == "call":
             (type, serial, amount) = event
-            messages.append("%s calls %d" % ( serial2name(serial), amount ))
+            messages.append("%s calls %s" % ( serial2name(serial), PokerChips.tostring(amount) ))
 
         elif type == "check":
             (type, serial) = event
@@ -338,12 +339,12 @@ def history2messages(game, history, serial2name = str, pocket_messages = False):
 
         elif type == "raise":
             (type, serial, amount) = event
-            messages.append("%s raise %d" % ( serial2name(serial), amount ) )
+            messages.append("%s raise %s" % ( serial2name(serial), PokerChips.tostring(amount) ) )
 
         elif type == "canceled":
             (type, serial, amount) = event
             if serial > 0 and amount > 0:
-                returned_message = " (%d returned to %s)" % ( amount, serial2name(serial) )
+                returned_message = " (%s returned to %s)" % ( PokerChips.tostring(amount), serial2name(serial) )
             else:
                 returned_message = ""
             messages.append("turn canceled%s" % returned_message)
@@ -353,7 +354,7 @@ def history2messages(game, history, serial2name = str, pocket_messages = False):
             game_state = showdown_stack[0]
             if not game_state.has_key('serial2best'):
                 serial = winners[0]
-                messages.append("%s receives %d (everyone else folded)" % ( serial2name(serial), game_state['serial2share'][serial] ))
+                messages.append("%s receives %s (everyone else folded)" % ( serial2name(serial), PokerChips.tostring(game_state['serial2share'][serial]) ))
             else:
                 serial2displayed = {}
                 hands = showdown_stack[0]['serial2best']
@@ -362,7 +363,7 @@ def history2messages(game, history, serial2name = str, pocket_messages = False):
                     if frame['type'] == 'left_over':
                         message = "%s receives %d odd chips" % ( serial2name(frame['serial']), frame['chips_left'])
                     elif frame['type'] == 'uncalled':
-                        message = "returning uncalled bet %d to %s" % ( frame['uncalled'], serial2name(frame['serial']) )
+                        message = "returning uncalled bet %s to %s" % ( PokerChips.tostring(frame['uncalled']), serial2name(frame['serial']) )
                     elif frame['type'] == 'resolve':
                         messages.extend(__historyResolve2messages(game, hands, serial2name, serial2displayed, frame))
                     else:
