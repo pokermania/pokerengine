@@ -45,8 +45,9 @@ MAINTAINERCLEANFILES = \
 	INSTALL \
 	.in
 
-nobase_dist_pkgdata_DATA = \
-	$(wildcard conf/*.xml)
+confpokerdir = ${pkgdatadir}/conf
+dist_confpoker_DATA = \
+	$(wildcard ${top_srcdir}/conf/*.xml)
 
 EXTRA_DIST = \
 	bootstrap \
