@@ -1,6 +1,11 @@
-Wed Oct 26 2005  Loic Dachary  <loic@gnu.org>
+Tue Nov 22 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.11
+
+	* pokerengine/pokergame.py (PokerGame.setBettingStructure): set best_buy_in and
+	  default values for buy-in and max-buy-in
+
+Wed Oct 26 2005  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokergame.py (__historyResolve2messages,
 	  history2messages): convert cents amounts for display

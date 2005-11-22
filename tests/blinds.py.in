@@ -48,7 +48,7 @@ class TestBlinds(unittest.TestCase):
     def make_new_bot(self, serial, seat):
         game = self.game
         self.failUnless(game.addPlayer(serial, seat))
-        self.failUnless(game.payBuyIn(serial, game.buyIn()))
+        self.failUnless(game.payBuyIn(serial, game.bestBuyIn()))
         self.failUnless(game.sit(serial))
         game.botPlayer(serial)
         game.noAutoBlindAnte(serial)
@@ -56,7 +56,7 @@ class TestBlinds(unittest.TestCase):
     def make_new_player(self, serial, seat):
         game = self.game
         self.failUnless(game.addPlayer(serial, seat))
-        self.failUnless(game.payBuyIn(serial, game.buyIn()))
+        self.failUnless(game.payBuyIn(serial, game.bestBuyIn()))
         self.failUnless(game.sit(serial))
 
     def pay_blinds(self):
@@ -372,7 +372,7 @@ class TestBlinds(unittest.TestCase):
         self.game.sitOut(5)
 
         self.failUnless(self.game.state, "end")
-        self.failUnless(self.game.serial2player[3].money, self.game.buyIn())
+        self.failUnless(self.game.serial2player[3].money, self.game.bestBuyIn())
 
     def test0(self):
         """

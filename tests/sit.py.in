@@ -48,7 +48,7 @@ class TestSit(unittest.TestCase):
     def make_new_player(self, serial, seat):
         game = self.game
         self.failUnless(game.addPlayer(serial, seat))
-        self.failUnless(game.payBuyIn(serial, game.buyIn()))
+        self.failUnless(game.payBuyIn(serial, game.bestBuyIn()))
         self.failUnless(game.sit(serial))
 
     def pay_blinds(self):

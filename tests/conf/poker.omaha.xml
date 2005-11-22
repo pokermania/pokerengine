@@ -1,14 +1,12 @@
-<?xml version='1.0'  encoding='iso-8859-1' ?>
-
-  <poker xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="poker.xsd">
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<poker xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="poker.xsd" poker_engine_version="1.0.11">
 
     <variant type="community" name="Omaha" id="omaha">
       <wins ways="1">
 	<winner id="1" type="hand" order="high"/>
       </wins>
 
-      <board layout="straight" />
+      <board layout="straight"/>
 
       <players max="11"/>
 
@@ -27,44 +25,44 @@
       </community>
 
       <hand useMin="2" useMax="2">
-	<position card="p1" x="1" />
-	<position card="p2" x="2" />
-	<position card="p3" x="3" />
-	<position card="p4" x="4" />
+	<position card="p1" x="1"/>
+	<position card="p2" x="2"/>
+	<position card="p3" x="3"/>
+	<position card="p4" x="4"/>
       </hand>
       
       <round name="pre-flop" id="1">
-	<deal card="down" id="p1" />
-	<deal card="down" id="p2" />
-	<deal card="down" id="p3" />
-	<deal card="down" id="p4" />
-	<position type="under-the-gun" />
-	<action type="bet" />
+	<deal card="down" id="p1"/>
+	<deal card="down" id="p2"/>
+	<deal card="down" id="p3"/>
+	<deal card="down" id="p4"/>
+	<position type="under-the-gun"/>
+	<action type="bet"/>
       </round>
 
       <round name="flop" id="2">
-	<deal card="board" id="b1" />
-	<deal card="board" id="b2" />
-	<deal card="board" id="b3" />
-	<position type="next-to-dealer" />
-	<action type="bet" />
+	<deal card="board" id="b1"/>
+	<deal card="board" id="b2"/>
+	<deal card="board" id="b3"/>
+	<position type="next-to-dealer"/>
+	<action type="bet"/>
       </round>
 
       <round name="turn" id="3">
-	<deal card="board" id="b4" />
-	<position type="next-to-dealer" />
-	<action type="bet" />
+	<deal card="board" id="b4"/>
+	<position type="next-to-dealer"/>
+	<action type="bet"/>
       </round>
 
       <round name="river" id="4">
-	<deal card="board" id="b5" />
-	<position type="next-to-dealer" />
-	<action type="bet" />
+	<deal card="board" id="b5"/>
+	<position type="next-to-dealer"/>
+	<action type="bet"/>
       </round>
 
       <round name="showdown">
-	<position type="next-to-dealer" />
-	<action type="showdown" />
+	<position type="next-to-dealer"/>
+	<action type="showdown"/>
       </round>
     </variant>
 </poker>

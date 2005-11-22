@@ -2029,8 +2029,9 @@ class PokerGame:
         self.__betting_structure.load(self.url % betting_structure)
         self.betting_structure = betting_structure
         self.betting_structure_name = self.getParam("/bet/description")
-        self.buy_in = int(self.getParam('/bet/@buy-in'))
-        self.max_buy_in = int(self.getParam('/bet/@max-buy-in'))
+        self.buy_in = int(self.getParam('/bet/@buy-in') or "0")
+        self.max_buy_in = int(self.getParam('/bet/@max-buy-in') or "1000000000")
+        self.best_buy_in = int(self.getParam('/bet/@best-buy-in') or "0")
         self.unit = int(self.getParam('/bet/@unit'))
 
         self.bet_info = self.getParamProperties('/bet/variants[contains(@ids,"' + self.variant + '")]/round')
@@ -3075,6 +3076,9 @@ class PokerGame:
 
     def maxBuyIn(self):
         return self.max_buy_in
+
+    def bestBuyIn(self):
+        return self.best_buy_in
 
     def getParamList(self, name):
         if name[:4] == "/bet":

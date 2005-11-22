@@ -29,20 +29,6 @@ MAINTAINERCLEANFILES = Makefile.in
 export PYTHON
 
 EXTRA_DIST = \
-	conf/poker.0-0-limit.xml \
-	conf/poker.10-15-limit.xml \
-	conf/poker.10-15-pot-limit.xml \
-	conf/poker.15-30-no-limit.xml \
-	conf/poker.2-4-limit.xml \
-	conf/poker.2-4-no-limit.xml \
-	conf/poker.7stud.xml \
-	conf/poker.ante-10-15-pot-limit.xml \
-	conf/poker.ante-5-10-limit.xml \
-	conf/poker.holdem.xml \
-	conf/poker.level-10-15-pot-limit.xml \
-	conf/poker.level-15-30-no-limit.xml \
-	conf/poker.level-2-4-limit.xml \
-	conf/poker.omaha8.xml \
-	conf/poker.omaha.xml
+	$(wildcard conf/*.xml)
 
 TESTS = run

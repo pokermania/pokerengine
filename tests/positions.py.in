@@ -221,7 +221,7 @@ class TestPosition(unittest.TestCase):
         self.assertEqual(game.getRequestedAction(5), None)
         game.getPlayer(5).money= 1
         self.assertEqual(game.getRequestedAction(5), "rebuy")
-        self.failUnless(game.rebuy(5, game.buyIn()))
+        self.failUnless(game.rebuy(5, game.bestBuyIn()))
         self.assertEqual(game.getRequestedAction(5), None)
         self.failUnless(game.sit(5))
         #
