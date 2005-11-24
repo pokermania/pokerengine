@@ -1,6 +1,26 @@
-Tue Nov 22 2005  Loic Dachary  <loic@gnu.org>
+Thu Nov 24 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.11
+
+	* pokerengine/pokertournament.py (PokerTournament.__init__): default is fixed
+	  payout tables
+
+	* conf/poker.payouts.xml: fixed payout tables
+
+	* tests/tournament.py.in (TestPrizes.test1): test fixed payout structure
+
+Wed Nov 23 2005  Loic Dachary  <loic@gnu.org>
+
+	* pokerengine/pokertournament.py (PokerTournament.endTurn): attempt to balance
+	  tables when a player is eliminated OR a table does not have enough players
+
+	* pokerengine/pokertournament.py (PokerTournament.balanceGames): remember that
+	  a need to move players was not satisfied
+
+	* pokerengine/pokertournament.py (equalizeCompute): separate function for
+	  computing games in need of equalization
+
+Tue Nov 22 2005  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokergame.py (PokerGame.setBettingStructure): set best_buy_in and
 	  default values for buy-in and max-buy-in

@@ -49,7 +49,9 @@ class Config:
         
     def free(self):
         if self.doc: self.doc.freeDoc()
+        self.doc = None
         if self.header: self.header.xpathFreeContext()
+        self.header = None
         
     def reload(self):
         self.free()

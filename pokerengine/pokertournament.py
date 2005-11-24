@@ -25,16 +25,18 @@
 #
 from math import ceil
 from types import StringType
+from pprint import pformat
 import time
 
 from pokerengine.pokergame import PokerGameServer
+from pokerengine.pokerengineconfig import Config
 
 TOURNAMENT_STATE_ANNOUNCED = "announced"
 TOURNAMENT_STATE_REGISTERING = "registering"
 TOURNAMENT_STATE_RUNNING = "running"
 TOURNAMENT_STATE_COMPLETE = "complete"
             
-def equalizeGames(games, verbose = 0, log_message = None):
+def equalizeCandidates(games):
     #
     # Games less than 70% full are willing to steal players from other
     # games. Games that are more than 70% full and that are not
@@ -50,6 +52,10 @@ def equalizeGames(games, verbose = 0, log_message = None):
         elif not game.isRunning():
             serials = game.serialsAllSorted()
             provide_players.append((game.id, serials[:count - threshold]))
+    return ( want_players, provide_players )
+
+def equalizeGames(games, verbose = 0, log_message = None):
+    ( want_players, provide_players ) = equalizeCandidates(games)
 
     results = []
 
@@ -80,9 +86,8 @@ def equalizeGames(games, verbose = 0, log_message = None):
             if not distributed:
                 break
 
-#    if len(results) > 0:
-#        print "equalizeGames: "
-#        pprint(results)
+    if verbose and len(results) > 0:
+        log_message("balanceGames equalizeGames: " + pformat(results))
 
     return results
 
@@ -104,7 +109,7 @@ def breakGames(games, verbose = 0, log_message = None):
         "to_add": [],
         "running": game.isRunning() } for game in games ]
 
-    if verbose > 2: log_message("breakGames: %s" % to_break)
+    if verbose > 2: log_message("balanceGames breakGames: %s" % to_break)
     results = []
     while True:
         result = breakGame(to_break[0], to_break[1:], verbose, log_message)
@@ -114,6 +119,9 @@ def breakGames(games, verbose = 0, log_message = None):
         results.extend(result)
         if len(to_break) < 2:
             break
+
+    if verbose and len(results) > 0:
+        log_message("balanceGames breakGames: " + pformat(results))
 
     return results
 
@@ -174,13 +182,14 @@ class PokerTournament:
         self.rebuy_delay = kwargs.get('rebuy_delay', 0)
         self.add_on = kwargs.get('add_on', 0)
         self.add_on_delay = kwargs.get('add_on_delay', 60)
-        self.prizes_specs = kwargs.get('prizes_specs', "algorithm")
+        self.prizes_specs = kwargs.get('prizes_specs', "table")
         self.finish_time = -1
         if type(self.start_time) is StringType:
             self.start_time = int(strftime("%s", strptime(self.start_time, "%Y/%m/%d %H:%M")))
         self.prefix = ""
         
         self.players = []
+        self.need_balance = False
         self.registered = 0
         self.winners = []
         self.state = TOURNAMENT_STATE_ANNOUNCED
@@ -192,7 +201,16 @@ class PokerTournament:
         self.callback_destroy_game = lambda tournament, game: True
         self.callback_move_player = lambda tournament, from_game_id, to_game_id, serial: self.movePlayer(from_game_id, to_game_id, serial)
         self.callback_remove_player = lambda tournament, game_id, serial: self.removePlayer(game_id, serial)
+        self.loadPayouts()
         self.updateRegistering()
+
+    def loadPayouts(self):
+        config = Config(self.dirs)
+        config.load("poker.payouts.xml")
+        self.payouts = []
+        for node in config.header.xpathEval("/payouts/payout"):
+            properties = config.headerNodeProperties(node)
+            self.payouts.append(( int(properties['max']), map(lambda percent: float(percent) / 100, node.content.split())))
 
     def message(self, message):
         print self.prefix + "[PokerTournament %s] " % self.name + message
@@ -352,10 +370,13 @@ class PokerTournament:
             self.changeState(TOURNAMENT_STATE_COMPLETE)
             return False
         else:
-            if loosers_count > 0: self.balanceGames()
+            if loosers_count > 0 or self.need_balance: self.balanceGames()
             return True
         
     def balanceGames(self):
+        self.need_balance = False
+        if len(self.games) < 2: return
+        if self.verbose > 2: self.message("balanceGames")
         to_break = breakGames(self.games, self.verbose, self.message)
         games_broken = {}
         for (from_id, to_id, serials) in to_break:
@@ -378,6 +399,10 @@ class PokerTournament:
             if self.verbose > 2: self.message("balanceGames: player %d moved from %d to %d" % ( serial, from_id, to_id ))
             self.callback_move_player(self, from_id, to_id, serial)
 
+        ( want_players, provide_players ) = equalizeCandidates(self.games)
+        self.need_balance = want_players and not provide_players
+        if self.need_balance and self.verbose > 2: self.message("balanceGames: postponed game equalization")
+        
         return len(to_equalize) > 0
 
     def prizes(self, buy_in):
@@ -385,6 +410,8 @@ class PokerTournament:
             return None
         if self.prizes_specs == "algorithm":
             return self.prizesAlgorithm(buy_in)
+        elif self.prizes_specs == "table":
+            return self.prizesTable(buy_in)
         else:
             return None
 
@@ -419,5 +446,18 @@ class PokerTournament:
                 prizes.append(money_left)
         rest = buy_in * candidates_count - sum(prizes)
         prizes[0] += rest
+        return prizes
+                
+    def prizesTable(self, buy_in):
+        for ( max, payouts ) in self.payouts:
+            if self.registered <= max:
+                break
+
+        total = self.registered * buy_in
+        prizes = map(lambda percent: int(total * percent), payouts)
+        #
+        # What's left because of rounding errors goes to the tournament winner
+        #
+        prizes[0] += total - sum(prizes)
         return prizes
                 
