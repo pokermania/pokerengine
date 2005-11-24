@@ -443,9 +443,9 @@ class TestPrizes(unittest.TestCase):
                         
 def run():
     suite = unittest.TestSuite()
-#    suite.addTest(unittest.makeSuite(TestEqualize))
-#    suite.addTest(unittest.makeSuite(TestBreak))
-#    suite.addTest(unittest.makeSuite(TestCreate))
+    suite.addTest(unittest.makeSuite(TestEqualize))
+    suite.addTest(unittest.makeSuite(TestBreak))
+    suite.addTest(unittest.makeSuite(TestCreate))
     suite.addTest(unittest.makeSuite(TestPrizes))
     unittest.TextTestRunner(verbosity=2).run(suite)
     
