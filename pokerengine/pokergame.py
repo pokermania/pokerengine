@@ -1536,6 +1536,17 @@ class PokerGame:
             return False
         return self.highestBetNotFold() <= self.getPlayer(serial).bet
 
+    def canFold(self, serial):
+        """
+        Can fold if in game and not in blind round
+        """
+        if self.isBlindAnteRound():
+            return False
+        player = self.getPlayer(serial)
+        if not player.isInGame():
+            return False
+        return True
+
     def setPlayerBlind(self, serial, blind):
         if self.isBlindAnteRound() and self.isInPosition(serial):
             self.getPlayer(serial).blind = blind
