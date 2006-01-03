@@ -28,8 +28,6 @@ import sys, os, getopt, stat
 sys.path = filter(lambda path: path not in sys.path, "@pythonpath@".split(":")) + sys.path
 sys.path.insert(0, "@top_srcdir@")
 
-print "pokerconfigupgrade" + str(sys.path)
-
 def usage():
     print """
 pokerconfigupgrade [--module=<python_module>] [--help] [--verbose=<level>] [--dry-run]
