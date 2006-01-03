@@ -26,6 +26,7 @@
 #
 from string import split, join, lower
 from pprint import pprint
+import sys
 import re
 import struct
 import random
@@ -38,6 +39,8 @@ from pokerengine.pokerengineconfig import Config
 from pokerengine.pokerchips import PokerChips
 
 ABSOLUTE_MAX_PLAYERS = 10
+
+LEVELS_CACHE = {}
 
 class PokerRandom(random.Random):
   def __init__(self, paranoid=False):
@@ -392,6 +395,7 @@ class PokerGame:
         self.name = "noname"
         self.__variant = Config(dirs)
         self.__betting_structure = Config(dirs)
+        self.dirs = dirs
         self.url = url
 
         self.variant = False
@@ -455,7 +459,7 @@ class PokerGame:
         self.last_to_talk = -1
         self.pot = False
         self.board = PokerCards()
-        self.round_cap_left = 0
+        self.round_cap_left = sys.maxint
         self.last_bet = 0
         self.winners = []
         self.side2winners = {}
@@ -577,7 +581,7 @@ class PokerGame:
     def sit(self, serial):
         player = self.serial2player[serial]
         if not player.isBuyInPayed() or self.isBroke(serial):
-            if self.verbose: self.error("sit: refuse to sit player %d because buy in == %s or broke == %s" % ( serial, player.buy_in_payed, self.isBroke(serial) ))
+            if self.verbose: self.error("sit: refuse to sit player %d because buy in == %s instead of True or broke == %s instead of False" % ( serial, player.buy_in_payed, self.isBroke(serial) ))
             return False
         player.sit_out_next_turn = False
         player.sit_requested = False
@@ -1027,10 +1031,10 @@ class PokerGame:
             if self.level == 0:
                 return (0, what["unit"])
 
-            if what["unit"] == "minute":
+            if what["unit"] == "minute" or what["unit"] == "minutes":
                 return ( ( what["frequency"] * 60 ) - ( self.time - what["time"] ), "second" )
 
-            elif what["unit"] == "hand":
+            elif what["unit"] == "hand" or what["unit"] == "hands":
                 return ( what["frequency"] - ( self.hands_count - what["hands"] ), "hand" )
 
             else:
@@ -1333,6 +1337,10 @@ class PokerGame:
             if info["change"] == "double":
                 blind_info["small"] = info["small_reference"] * pow(2, level - 1)
                 blind_info["big"] = info["big_reference"] * pow(2, level - 1)
+            elif info["change"] == "levels":
+                level_info = info["levels"][level - 1]
+                blind_info["small"] = level_info["small"]
+                blind_info["big"] = level_info["big"]
             else:
                 blind_info = None
                 if self.verbose >= 1: self.message("unexpected blind change method %s " % info["change"])
@@ -1344,6 +1352,10 @@ class PokerGame:
             if info["change"] == "double":
                 ante_info["value"] = info["value_reference"] * pow(2, level - 1)
                 ante_info["bringin"] = info["bringin_reference"] * pow(2, level - 1)
+            elif info["change"] == "levels":
+                level_info = info["levels"][level - 1]
+                ante_info["value"] = level_info["value"]
+                ante_info["bringin"] = level_info["bringin"]
             else:
                 ante_info = None
                 if self.verbose >= 1: self.message("unexpected ante change method %s " % info["change"])
@@ -2046,39 +2058,71 @@ class PokerGame:
         self.unit = int(self.getParam('/bet/@unit'))
 
         self.bet_info = self.getParamProperties('/bet/variants[contains(@ids,"' + self.variant + '")]/round')
-
+        for bet_info in self.bet_info:
+          if not bet_info.has_key("cap"):
+            bet_info["cap"] = sys.maxint
+          else:
+            bet_info["cap"] = int(bet_info["cap"])
+          if bet_info["cap"] < 0:
+            bet_info["cap"] = sys.maxint
+            
         self.blind_info = False
         blind_info = self.getParamProperties("/bet/blind");
         if len(blind_info) > 0:
             blinds = blind_info[0]
             self.blind_info = {
-                "small": int(blinds["small"]),
-                "small_reference": int(blinds["small"]),
-                "big": int(blinds["big"]),
-                "big_reference": int(blinds["big"]),
                 "change": blinds.has_key("change") and blinds["change"]
                 }
 
             if self.blind_info["change"] != False:
                 self.blind_info["frequency"] = int(blinds["frequency"])
                 self.blind_info["unit"] = blinds["unit"]
+                if self.blind_info["change"] == "levels":
+                  self.blind_info["levels"] = self.loadTournamentLevels(self.getParam('/bet/blind/@levels'))
+                elif self.blind_info["change"] == "double":
+                  self.blind_info["small"] = int(blinds["small"])
+                  self.blind_info["small_reference"] = self.blind_info["small"]
+                  self.blind_info["big"] = int(blinds["big"])
+                  self.blind_info["big_reference"] = self.blind_info["big"]
+            else:
+              self.blind_info["small"] = int(blinds["small"])
+              self.blind_info["big"] = int(blinds["big"])
 
         self.ante_info = False
         ante_info = self.getParamProperties("/bet/ante");
         if len(ante_info) > 0:
             antes = ante_info[0]
             self.ante_info = {
-                "value": int(antes["fixed"]),
-                "value_reference": int(antes["fixed"]),
-                "bringin": int(antes["bring-in"]),
-                "bringin_reference": int(antes["bring-in"]),
                 "change": antes.has_key("change") and antes["change"]
                 }
 
             if self.ante_info["change"] != False:
                 self.ante_info["frequency"] = int(antes["frequency"])
                 self.ante_info["unit"] = antes["unit"]
+                if self.ante_info["change"] == "levels":
+                  self.ante_info["levels"] = self.loadTournamentLevels(self.getParam('/bet/ante/@levels'))
+                elif self.ante_info["change"] == "double":
+                  self.ante_info["value"] = int(blinds["value"])
+                  self.ante_info["value_reference"] = self.ante_info["value"]
+                  self.ante_info["bringin"] = int(blinds["bringin"])
+                  self.ante_info["bringin_reference"] = self.ante_info["bringin"]
+            else:
+              self.ante_info["value"] = int(antes["value"])
+              self.ante_info["bringin"] = int(antes["bringin"])
 
+    def loadTournamentLevels(self, file):
+        if not LEVELS_CACHE.has_key(file):
+          config = Config(self.dirs)
+          config.load(file)
+          levels = []
+          nodes = config.header.xpathEval('/levels/level')
+          for node in nodes:
+            level = map(lambda (key, value): ( key, int(value) ), config.headerNodeProperties(node).iteritems())
+            levels.append(dict(level))
+          config.free()
+          LEVELS_CACHE[file] = levels
+        return LEVELS_CACHE[file]
+        
     def getBoardLength(self):
         return len(self.board.tolist(True))
 
@@ -2996,7 +3040,7 @@ class PokerGame:
     def roundCap(self):
         if(self.state == "null" or self.state == "end"):
             return 0
-        return int(self.betInfo()["cap"])
+        return self.betInfo()["cap"]
 
     def betLimits(self, serial):
         if(self.state == "null" or self.state == "end"):
@@ -3021,6 +3065,9 @@ class PokerGame:
             (min_bet, max_bet) = (fixed, fixed)
         else:
             if info.has_key("min"):
+              if info["min"] == "big":
+                min_bet = self.bigBlind()
+              else:
                 min_bet = int(info["min"])
             elif info.has_key("min_pow_level"):
                 min_bet = int(info["min_pow_level"]) * pow(2, self.getLevel() - 1)

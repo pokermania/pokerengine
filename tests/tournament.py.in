@@ -336,6 +336,32 @@ class TestBreak(TestTournament):
 class TestCreate(unittest.TestCase):
 
     def test1(self):
+        tourney = PokerTournament(name = 'Test create',
+                                  verbose = 3,
+                                  players_quota = 4,
+                                  dirs = [ '@top_srcdir@/conf' ],
+                                  seats_per_game = 4,
+                                  betting_structure = "level-10-20-no-limit")
+
+        for serial in xrange(1,5):
+            self.failUnless(tourney.register(serial))
+
+        self.assertEqual(len(tourney.games), 1)
+        for game in tourney.games:
+            for serial in game.serialsAll():
+                game.botPlayer(serial)
+        turn = 1
+        running = True
+        while running:
+            for game in tourney.games:
+                if game.sitCount() > 1:
+                    game.beginTurn(turn)
+                    running = tourney.endTurn(game.id)
+                    if not running: break
+        for serial in tourney.winners:
+            print "%d\thas rank %d" % ( serial, tourney.getRank(serial) )
+
+    def test2(self):
         #
         # One table sit-n-go
         #
@@ -356,7 +382,7 @@ class TestCreate(unittest.TestCase):
         game = tourney.games[0]
         game.beginTurn(1)
 
-    def test2(self):
+    def test3(self):
         #
         # Multi tables sit-n-go
         #
@@ -386,7 +412,6 @@ class TestCreate(unittest.TestCase):
                     if not running: break
         for serial in tourney.winners:
             print "%d\thas rank %d" % ( serial, tourney.getRank(serial) )
-
 
 class TestPrizes(unittest.TestCase):
 

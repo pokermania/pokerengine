@@ -460,4 +460,3 @@ class PokerTournament:
         #
         prizes[0] += total - sum(prizes)
         return prizes
-                
