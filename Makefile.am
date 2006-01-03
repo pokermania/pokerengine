@@ -49,6 +49,10 @@ confpokerdir = ${pkgdatadir}/conf
 dist_confpoker_DATA = \
 	$(wildcard ${top_srcdir}/conf/*.xml)
 
+upgradepokerdir = ${pkgdatadir}/upgrades
+dist_upgradepoker_DATA = \
+	$(wildcard ${top_srcdir}/upgrades/*.xsl)
+
 EXTRA_DIST = \
 	bootstrap \
 	config/python.m4 \
