@@ -1,6 +1,11 @@
-Mon Jan 02 2006  Loic Dachary  <loic@gnu.org>
+Tue Jan 03 2006  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.12
+
+	* tests/upgrades.py.in: fix PYTHONPATH bug that gave precedence to the
+	  installed version instead of the version from the source tree
+
+Mon Jan 02 2006  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokergame.py (PokerGame.setBettingStructure): by default and if
 	  negative, round cap is set to maxint

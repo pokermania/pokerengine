@@ -26,6 +26,7 @@
 
 import sys, os, shutil, stat
 sys.path.insert(0, "@top_srcdir@")
+sys.environ['PYTHONPATH'] = sys.environ.get('PYTHONPATH', '') + '@top_srcdir@'
 
 import unittest
 from pokerengine.pokerengineconfig import Config
