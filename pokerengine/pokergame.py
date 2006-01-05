@@ -2688,10 +2688,12 @@ class PokerGame:
             serials = [serial]
         for serial in serials:
             player = self.serial2player[serial]
-            self.pot += player.bet
-            if self.isBlindAnteRound():
-                player.dead += player.bet
+            bet = player.bet
+            self.pot += bet
+            if self.isBlindAnteRound() and self.blind_info:
+                player.dead += bet
             player.bet = 0
+            self.runCallbacks("bet2pot", serial, bet)
 
     def money2bet(self, serial, amount):
         player = self.serial2player[serial]
