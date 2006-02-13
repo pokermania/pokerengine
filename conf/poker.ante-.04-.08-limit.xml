@@ -3,7 +3,7 @@
 
     <description>Limit .04/.08</description>
 
-    <ante fixed="1" bring-in="2"/>
+    <ante value="1" bring-in="2"/>
 
     <all_in method="side"/> 
 

@@ -3,7 +3,7 @@
 
     <description>Limit 2/4</description>
 
-    <ante fixed="25" bring-in="100"/>
+    <ante value="25" bring-in="100"/>
 
     <all_in method="side"/> 
 

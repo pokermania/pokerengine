@@ -1351,11 +1351,11 @@ class PokerGame:
             ante_info = {}
             if info["change"] == "double":
                 ante_info["value"] = info["value_reference"] * pow(2, level - 1)
-                ante_info["bringin"] = info["bringin_reference"] * pow(2, level - 1)
+                ante_info["bring-in"] = info["bring-in_reference"] * pow(2, level - 1)
             elif info["change"] == "levels":
                 level_info = info["levels"][level - 1]
                 ante_info["value"] = level_info["value"]
-                ante_info["bringin"] = level_info["bringin"]
+                ante_info["bring-in"] = level_info["bring-in"]
             else:
                 ante_info = None
                 if self.verbose >= 1: self.message("unexpected ante change method %s " % info["change"])
@@ -1379,7 +1379,7 @@ class PokerGame:
             info["hands"] = self.hands_count
             info["time"] = self.time
             info["value"] = ante_info["value"]
-            info["bringin"] = ante_info["bringin"]
+            info["bring-in"] = ante_info["bring-in"]
 
         self.level = level
 
@@ -2104,11 +2104,11 @@ class PokerGame:
                 elif self.ante_info["change"] == "double":
                   self.ante_info["value"] = int(blinds["value"])
                   self.ante_info["value_reference"] = self.ante_info["value"]
-                  self.ante_info["bringin"] = int(blinds["bringin"])
-                  self.ante_info["bringin_reference"] = self.ante_info["bringin"]
+                  self.ante_info["bring-in"] = int(blinds["bring-in"])
+                  self.ante_info["bring-in_reference"] = self.ante_info["bring-in"]
             else:
               self.ante_info["value"] = int(antes["value"])
-              self.ante_info["bringin"] = int(antes["bringin"])
+              self.ante_info["bring-in"] = int(antes["bring-in"])
 
     def loadTournamentLevels(self, file):
         if not LEVELS_CACHE.has_key(file):

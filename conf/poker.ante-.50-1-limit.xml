@@ -3,7 +3,7 @@
 
     <description>Limit .50/1</description>
 
-    <ante fixed="5" bring-in="25"/>
+    <ante value="5" bring-in="25"/>
 
     <all_in method="side"/> 
 
