@@ -57,6 +57,25 @@ class Version:
 
         return cmp(self.version, other.version)
 
+    def __add__(self, num):
+        self.version = (self.version[0], self.version[1], self.version[2] + num)
+        return self
+
+    def __sub__(self, num):
+        version = list(self.version)
+        if version[2] - num < 0:
+            if version[1] - num < 0:
+                if version[0] - num < 0:
+                    raise UserException, "cannot subtract %d from version %s" % ( num, str(self) )
+                else:
+                    version[0] -= num
+            else:
+                version[1] -= num
+        else:
+            version[2] -= num
+        self.version = tuple(version)
+        return self
+
     def major(self):
         return self.version[0]
     
@@ -65,7 +84,7 @@ class Version:
     
     def minor(self):
         return self.version[2]
-    
+
     def parse(self, vstring):
         match = Version.version_re.match(vstring)
         if not match:
