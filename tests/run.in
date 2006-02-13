@@ -26,7 +26,7 @@
 #  Henry Precheur <henry@precheur.org>
 #
 # 
-for script in history deal positions tournament allin chips blinds sit upgrades muck
+for script in history deal positions tournament allin chips blinds sit upgrades # muck
 do
   python $script.py
 done
