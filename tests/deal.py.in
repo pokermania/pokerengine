@@ -42,7 +42,7 @@ class TestDeal(unittest.TestCase):
         self.game = PokerGameServer("poker.%s.xml", [ "@top_srcdir@/conf" ])
         self.game.verbose = 3
         self.game.setVariant("7stud")
-        self.game.setBettingStructure("0-0-limit")
+        self.game.setBettingStructure("ante-10-20-limit")
 
     def tearDown(self):
         del self.game
