@@ -441,8 +441,6 @@ class PokerGame:
 
         self.first_turn = True
         
-        self.level_skin = ""
-        
         self.eval = PokerEval()
         if self.is_directing:
           self.shuffler = random
@@ -3279,4 +3277,5 @@ class PokerGameServer(PokerGame):
 class PokerGameClient(PokerGame):
     def __init__(self, url, dirs):
         PokerGame.__init__(self, url, False, dirs) # is_directing == False
+        self.level_skin = ""
         
