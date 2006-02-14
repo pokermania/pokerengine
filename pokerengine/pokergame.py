@@ -441,6 +441,8 @@ class PokerGame:
 
         self.first_turn = True
         
+        self.level_skin = ""
+        
         self.eval = PokerEval()
         if self.is_directing:
           self.shuffler = random
