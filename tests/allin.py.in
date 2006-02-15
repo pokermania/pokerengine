@@ -520,14 +520,54 @@ class TestHoldemPlayBoard(TestAllIn):
         game.distributeMoney()
         self.assertEqual(game.side2winners["hi"], [1, 2])
 
+class TestHoldemSplit(TestAllIn):
+
+    def setUp(self):
+        TestAllIn.setUp(self, "holdem", "0-0-limit")
+        
+    def dealCardsOne(self):
+        """
+        Two players, one 
+        """
+        game = self.game
+        game.side_pots = {'pots': {
+             0: (1000, 1000),
+            },
+            'contributions': {
+            'total': { 1: 200,
+                       2: 800,
+                       }
+                          }
+                          }
+        player = self.player
+        game.board = self.make_cards(True, 'As', 'Ac', 'Ad', '7d', '7c')
+
+        player[1].hand = self.make_cards(False, 'Th', 'Js')
+        self.assertEqual(self.bestWithStrings("hi", 1),
+                         ('FlHouse', ['As', 'Ac', 'Ad', '7c', '7d']))
+        
+        player[2].hand = self.make_cards(False, '9c', '8s')
+        self.assertEqual(self.bestWithStrings("hi", 2),
+                         ('FlHouse', ['As', 'Ac', 'Ad', '7c', '7d']))
+        
+    def test1_showdown(self):
+        self.prepareGame(2)
+        self.dealCardsOne()
+        game = self.game
+        money = self.money
+        player = self.player
+        game.distributeMoney()
+        self.assertEqual(game.side2winners["hi"], [1, 2])
+
 def run():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestRaise))
-    suite.addTest(unittest.makeSuite(TestHoldemAllIn))
-    suite.addTest(unittest.makeSuite(TestCommonAllIn))
-    suite.addTest(unittest.makeSuite(TestAllInCase2))
-    suite.addTest(unittest.makeSuite(TestOmaha8AllIn))
-    suite.addTest(unittest.makeSuite(TestHoldemPlayBoard))
+#    suite.addTest(unittest.makeSuite(TestRaise))
+#    suite.addTest(unittest.makeSuite(TestHoldemAllIn))
+#    suite.addTest(unittest.makeSuite(TestCommonAllIn))
+#    suite.addTest(unittest.makeSuite(TestAllInCase2))
+#    suite.addTest(unittest.makeSuite(TestOmaha8AllIn))
+#    suite.addTest(unittest.makeSuite(TestHoldemPlayBoard))
+    suite.addTest(unittest.makeSuite(TestHoldemSplit))
     unittest.TextTestRunner(verbosity=2).run(suite)
     
 if __name__ == '__main__':
