@@ -27,11 +27,13 @@
 
 import sys, os
 sys.path.insert(0, "@top_srcdir@")
+sys.path.insert(0, "..")
 
 import unittest
+from pokereval import PokerEval
+from pokerengine import pokergame
 from pokerengine.pokergame import PokerGameServer, PokerGame
 from pokerengine.pokercards import PokerCards
-from pokereval import PokerEval
 
 poker_eval = PokerEval()
 _initial_money = 1000
@@ -44,7 +46,7 @@ class TestAllIn(unittest.TestCase):
             self.output_file = open(output, 'a')
         else:
             self.output_file = sys.stderr
-        self.game = PokerGameServer("poker.%s.xml", [ "@top_srcdir@/conf" ])
+        self.game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
         self.game.verbose = 3
         self.game.setVariant(variant)
         self.game.setBettingStructure(betting)
@@ -75,6 +77,7 @@ class TestAllIn(unittest.TestCase):
         player.buy_in_payed = True
         self.assert_(self.game.sit(i))
         player.auto_blind_ante = True
+        self.game.autoMuck(i, pokergame.AUTO_MUCK_ALWAYS)
 
     def prepareGame(self, nplayers):
         pot = 9100
@@ -190,7 +193,7 @@ class TestCommonAllIn(TestAllIn):
 
         self.assertEqual(game.inGameCount(), 0)
         self.assertEqual(game.notFoldCount(), 5)
-        self.assertEqual(game.state, "end")
+        self.assertEqual(game.state, "muck")
         
 class TestAllInCase2(TestAllIn):
 
@@ -245,7 +248,7 @@ class TestAllInCase2(TestAllIn):
 
         self.assertEqual(game.inGameCount(), 0)
         self.assertEqual(game.notFoldCount(), 3)
-        self.assertEqual(game.state, "end")
+        self.assertEqual(game.state, "muck")
         
 class TestRaise(TestAllIn):
 
@@ -455,8 +458,7 @@ class TestOmaha8AllIn(TestAllIn):
         game = self.game
         money = self.money
         player = self.player
-        game.distributeMoney()
-        game.showdown()
+        game.muckState(pokergame.WON_ALLIN)
         self.assertEqual(game.side2winners["hi"], [2, 3, 4])
         self.assertEqual(game.side2winners["low"], [5])
         self.assertEqual(player[1].hand.areVisible(), False)
@@ -471,8 +473,7 @@ class TestOmaha8AllIn(TestAllIn):
         game = self.game
         money = self.money
         player = self.player
-        game.distributeMoney()
-        game.showdown()
+        game.muckState(pokergame.WON_REGULAR)
         self.assertEqual(game.side2winners["hi"], [3])
         self.assertEqual(game.side2winners["low"], [4])
         self.assertEqual(player[1].hand.areVisible(), False)

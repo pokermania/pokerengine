@@ -4,6 +4,16 @@ Fri Feb 10 2006  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/version.py (Version.__{sub,add}__): arithmetic on versions
 
+Wed Jan 20 2006  Benoit Treins
+
+        * conf/*: removed showdown round from variants
+        * pokerengine/tests/muck.py.in: created
+        * pokerengine/pokergame.py: added muck logic
+
+Wed Jan 19 2006  Benoit Treins
+
+        * pokerengine/pokergame.py: changed first test in call check fold raise functions (may raise error message)
+
 Tue Jan 03 2006  Loic Dachary  <loic@gnu.org>
 
 	* tests/upgrades.py.in: fix PYTHONPATH bug that gave precedence to the

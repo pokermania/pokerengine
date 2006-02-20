@@ -26,6 +26,7 @@
 
 import sys, os
 sys.path.insert(0, "@top_srcdir@")
+sys.path.insert(0, "..")
 
 from random import shuffle
 import unittest
@@ -39,7 +40,7 @@ _initial_money = 1000
 class TestDeal(unittest.TestCase):
 
     def setUp(self):
-        self.game = PokerGameServer("poker.%s.xml", [ "@top_srcdir@/conf" ])
+        self.game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
         self.game.verbose = 3
         self.game.setVariant("7stud")
         self.game.setBettingStructure("ante-10-20-limit")

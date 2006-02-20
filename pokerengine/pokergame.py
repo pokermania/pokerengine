@@ -76,6 +76,12 @@ class PokerRandom(random.Random):
 if os.name == "posix":
   random._inst = PokerRandom()
 
+# muck constants
+AUTO_MUCK_NEVER  = 0x00
+AUTO_MUCK_WIN    = 0x01
+AUTO_MUCK_LOSE   = 0x02
+AUTO_MUCK_ALWAYS = AUTO_MUCK_WIN + AUTO_MUCK_LOSE
+
 class PokerPlayer:
     def __init__(self, serial, game):
         self.serial = serial
@@ -89,6 +95,7 @@ class PokerPlayer:
         self.bot = False
         self.auto = False ##
         self.auto_blind_ante = False ##
+        self.auto_muck = AUTO_MUCK_ALWAYS # AUTO_MUCK_NEVER, AUTO_MUCK_WIN, AUTO_MUCK_LOSE, AUTO_MUCK_ALWAYS
         self.wait_for = False # True, False, "late", "big", "first_round" ##
         self.missed_blind = "n/a" # None, "n/a", "big", "small"
         self.blind = "late" # True, None, "late", "big", "small", "big_and_dead" ##
@@ -383,11 +390,34 @@ def history2messages(game, history, serial2name = str, pocket_messages = False):
         elif type == "finish":
             pass
 
+        elif type == "muck":
+            pass
+
         else:
             print "*ERROR* unknown history type %s " % type
 
     return (subject, messages)
 
+
+# poker game states
+GAME_STATE_NULL       = "null"
+GAME_STATE_BLIND_ANTE = "blindAnte"
+GAME_STATE_PRE_FLOP   = "pre-flop"
+GAME_STATE_FLOP       = "flop"
+GAME_STATE_THIRD      = "third"
+GAME_STATE_TURN       = "turn"
+GAME_STATE_FOURTH     = "fourth"
+GAME_STATE_RIVER      = "river"
+GAME_STATE_FIFTH      = "fifth"
+GAME_STATE_MUCK       = "muck"
+GAME_STATE_END        = "end"
+
+# winning helper states
+WON_NULL        = -1 # turn not ended yet
+WON_ALLIN_BLIND = 0 # turn ended on allin in blind phase
+WON_ALLIN       = 1 # turn ended on allin
+WON_FOLD        = 2 # turn ended on fold
+WON_REGULAR     = 3 # turn ended normally
 
 class PokerGame:
     def __init__(self, url, is_directing, dirs):
@@ -441,6 +471,8 @@ class PokerGame:
 
         self.first_turn = True
         
+        self.level_skin = ""
+        
         self.eval = PokerEval()
         if self.is_directing:
           self.shuffler = random
@@ -448,7 +480,8 @@ class PokerGame:
 #        print "__init__ PokerGame %s" % self
 
     def reset(self):
-        self.state = "null"
+        self.state = GAME_STATE_NULL
+        self.win_condition = WON_NULL 
         self.current_round = -2
         self.serial2player = {}
         self.player_list = []
@@ -462,6 +495,7 @@ class PokerGame:
         self.round_cap_left = sys.maxint
         self.last_bet = 0
         self.winners = []
+        self.muckable_serials = []        
         self.side2winners = {}
         self.serial2best = {}
         self.showdown_stack = []
@@ -692,11 +726,13 @@ class PokerGame:
     def botPlayer(self, serial):
         self.serial2player[serial].bot = True
         self.autoBlindAnte(serial)
+        self.autoMuck(serial, AUTO_MUCK_ALWAYS)
         self.autoPlayer(serial)
 
     def interactivePlayer(self, serial):
         self.serial2player[serial].bot = False
         self.noAutoBlindAnte(serial)
+        self.autoMuck(serial, AUTO_MUCK_ALWAYS)
         self.noAutoPlayer(serial)
         
     def autoPlayer(self, serial):
@@ -766,6 +802,10 @@ class PokerGame:
         self.pot = 0
         self.board = PokerCards()
         self.winners = []
+        if self.muckable_serials:
+           self.error("beginTurn: muckable_serials not empty %s" % self.muckable_serials)
+        self.muckable_serials = []
+        self.win_condition = WON_NULL
         self.serial2best = {}
         self.side_pots = {
           'contributions': { 'total': {} },
@@ -783,7 +823,7 @@ class PokerGame:
         if not self.buildPlayerList(True):
             return
 
-        self.changeState("blindAnte")
+        self.changeState(GAME_STATE_BLIND_ANTE)
         if self.blind_info and self.is_directing and not self.first_turn:
             self.moveDealerLeft()
         self.dealerFromDealerSeat()
@@ -1478,13 +1518,51 @@ class PokerGame:
         self.position = -1
         self.changeState(self.roundInfo()["name"])
 
-    def endState(self):
+    def muckState(self, win_condition):        
         self.current_round = -2
         if self.position != -1:
           self.historyAdd("position", -1)
         self.position = -1
-        self.changeState("end")
+        
+        self.win_condition = win_condition
+        self.changeState(GAME_STATE_MUCK)
+        
+        if self.is_directing:
+           self.distributeMoney()
+           to_show, muckable_candidates_serials = self.dispatchMuck()
+           
+           if self.verbose > 2:
+              print "muckState: to_show = %s muckable_candidates = %s " % ( to_show, muckable_candidates_serials )
+           
+           muckable_serials = []
+           for serial in to_show:
+              self.serial2player[serial].hand.allVisible()
+           for serial in muckable_candidates_serials:
+              auto_muck = self.serial2player[serial].auto_muck
+              if auto_muck == AUTO_MUCK_ALWAYS:
+                pass
+              elif auto_muck == AUTO_MUCK_WIN and self.isWinnerBecauseFold():
+                pass
+              elif auto_muck == AUTO_MUCK_LOSE and not self.isWinnerBecauseFold():
+                pass
+              else:
+                muckable_serials.append(serial)                
+           self.setMuckableSerials(muckable_serials)
+           self.__talked_muck()
+        else:
+           if self.verbose >= 2: self.message("muckState: muck ignored...")
+
+    def setMuckableSerials(self, muckable_serials):
+        self.muckable_serials = muckable_serials
+        if muckable_serials:
+            self.historyAdd("muck", tuple(self.muckable_serials))
+        if self.verbose > 2:
+            print "setMuckableSerials: muckable = %s " % muckable_serials
+
+    def endState(self):
+        self.changeState(GAME_STATE_END)
         self.runCallbacks("end_round_last")
+        self.endTurn()
         
     def roundInfo(self):
         return self.round_info[self.current_round]
@@ -1597,9 +1675,7 @@ class PokerGame:
             return False
         
     def call(self, serial):
-        if self.isBlindAnteRound():
-            return False
-        if not self.canAct(serial):
+        if self.isBlindAnteRound() or not self.canAct(serial):
             self.error("player %d cannot call. state = %s" %
                        (serial, self.state))
             return False
@@ -1612,9 +1688,7 @@ class PokerGame:
         return True
 
     def callNraise(self, serial, amount):
-        if self.isBlindAnteRound():
-            return False
-        if not self.canAct(serial):
+        if self.isBlindAnteRound() or not self.canAct(serial):
             self.error("player %d cannot raise. state = %s" %
                        (serial, self.state))
             return False
@@ -1652,9 +1726,7 @@ class PokerGame:
         self.__talked(serial)
 
     def check(self, serial):
-        if self.isBlindAnteRound():
-            return False
-        if not self.canAct(serial):
+        if self.isBlindAnteRound() or not self.canAct(serial):
             self.error("player %d cannot check. state = %s, serial in position = %d (ignored)" % (serial, self.state, self.getSerialInPosition()))
             return False
 
@@ -1671,9 +1743,7 @@ class PokerGame:
         return True
 
     def fold(self, serial):
-        if self.isBlindAnteRound():
-            return False
-        if not self.canAct(serial):
+        if self.isBlindAnteRound() or not self.canAct(serial):
             self.error("player %d cannot fold. state = %s, serial in position = %d (ignored)" % (serial, self.state, self.getSerialInPosition()))
             return False
 
@@ -1792,7 +1862,23 @@ class PokerGame:
             if self.verbose >= 2: self.message("money not yet distributed, assuming information is missing ...")
         else:
             self.nextRound()
-        
+    
+    def muck(self, serial, want_to_muck):
+        if not self.is_directing:
+            if self.verbose: self.message("muck action ignored...")
+            return
+        if not self.state == GAME_STATE_MUCK:
+            self.error("muck: game state muck expected, found %s" % self.state)            
+            return
+        if serial not in self.muckable_serials:
+            self.error("muck: serial %s not found in muckable_serials" % serial) 
+            return
+            
+        self.muckable_serials.remove(serial)
+        if not want_to_muck:
+            self.serial2player[serial].hand.allVisible()  
+        self.__talked_muck()
+      
     def __talkedBlindAnte(self):
         if self.sitCountBlindAnteRound() < 2:
             self.returnBlindAnte()
@@ -1832,13 +1918,7 @@ class PokerGame:
                     self.nextRound()
                     self.dealCards()
 
-                self.endState()
-                if self.is_directing:
-                    self.distributeMoney()
-                    self.showdown()
-                    self.endTurn()
-                else:
-                    if self.verbose >= 2: self.message("money not yet distributed, assuming information is missing ...")
+                self.muckState(WON_ALLIN_BLIND)
             else:
                 self.nextRound()
                 self.dealCards()
@@ -1864,9 +1944,8 @@ class PokerGame:
                 if self.verbose >= 2: self.message("last player in game %d" % self.getSerialInPosition())
                 if self.isFirstRound():
                     self.updateStatsFlop(True)
-                self.endState()
-                self.distributeMoney()
-                self.endTurn()
+
+                self.muckState(WON_FOLD)
 
             elif self.inGameCount() < 2:
                 #
@@ -1877,59 +1956,57 @@ class PokerGame:
                 while not self.isLastRound():
                     self.nextRound()
                     self.dealCards()
-
-                self.endState()
-                if self.is_directing:
-                    self.distributeMoney()
-                    self.showdown()
-                    self.endTurn()
-                else:
-                    if self.verbose >= 2: self.message("money not yet distributed, assuming information is missing ...")
+                    
+                self.muckState(WON_ALLIN)
             else:
                 #
                 # All bets equal, go to next round
                 #
                 if self.verbose >= 2: self.message("next state")
-                self.nextRound()
-                if not self.isLastRound():
+                if self.isLastRound():
+                    self.muckState(WON_REGULAR)
+                else:
+                    self.nextRound()
                     if self.is_directing:
                         self.dealCards()
                         self.initRound()
                     else:
                       self.runCallbacks("end_round")
                       if self.verbose >= 2: self.message("round not initialized, waiting for more information ... ")
-                else:
-                    self.endState()
-                    if self.is_directing:
-                        self.distributeMoney()
-                        self.showdown()
-                        self.endTurn()
-                    else:
-                        if self.verbose >= 2: self.message("money not yet distributed, assuming information is missing ...")
+                    
         else:
             self.position = self.indexInGameAdd(self.position, 1)
             self.historyAdd("position", self.position)
             if self.verbose >= 2: self.message("new position (%d)" % self.position)
             self.__autoPlay()
 
+    def __talked_muck(self):
+        if not self.is_directing:
+            return
+        if not self.state == GAME_STATE_MUCK:
+            self.error("muck: game state muck expected, found %s" % self.state)            
+        if not self.muckable_serials:          
+            self.showdown()
+            self.endState()
+
     def __botEval(self, serial):
         ev = self.handEV(serial, 10000, True)
 
-        if self.state == "pre-flop":
+        if self.state == GAME_STATE_PRE_FLOP:
             if ev < 100:
                 action = "check"
             elif ev < 500:
                 action = "call"
             else:
                 action = "raise"
-        elif self.state == "flop" or self.state == "third":
+        elif self.state == GAME_STATE_FLOP or self.state == GAME_STATE_THIRD:
             if ev < 200:
                 action = "check"
             elif ev < 600:
                 action = "call"
             else:
                 action = "raise"
-        elif self.state == "turn" or self.state == "fourth":
+        elif self.state == GAME_STATE_TURN or self.state == GAME_STATE_FOURTH:
             if ev < 300:
                 action = "check"
             elif ev < 700:
@@ -2226,7 +2303,7 @@ class PokerGame:
         return len(self.showdown_stack) > 0
 
     def isWinnerBecauseFold(self):
-        return moneyDistributed() and self.showdown_stack[0].has_key('foldwin')
+        return ( self.win_condition == WON_FOLD )
 
     #
     # Split the pots
@@ -2243,7 +2320,7 @@ class PokerGame:
         for (serial, share) in side_pots['contributions']['total'].iteritems():
           serial2delta[serial] = - share
           
-        if self.notFoldCount() < 2:
+        if self.isWinnerBecauseFold():
             #
             # Special and simplest case : the winner has it because 
             # everyone folded. Don't bother to evaluate.
@@ -2452,19 +2529,14 @@ class PokerGame:
     def divideChips(self, amount, divider):
         return ( amount / divider, amount % divider )
     
-    def showdown(self):
-        if self.notFoldCount() < 2:
-            #
-            # When everyone folds, there is no such thing as a showdown
-            #
-            return
-
+    def dispatchMuck(self):
         if not self.is_directing:
-            #
-            # A game instance that does not know the cards of each player
-            # can't compute a showdown
-            #
-            return
+            self.error("dispatchMuck: not supposed to be called by client")
+            return None
+        
+        if self.isWinnerBecauseFold():
+            return ( (), tuple(self.winners) )
+            
         #
         # Show the winning cards.
         # Starting left of the dealer, display player cards as if each showed
@@ -2476,6 +2548,10 @@ class PokerGame:
         best_low_value = 0x0FFFFFFF
         has_high = len(self.side2winners["hi"])
         best_hi_value = 0
+        
+        muckable = []
+        to_show  = []
+        
         while True:
             player = self.serial2player[self.player_list[showing]]
             show = False 
@@ -2504,18 +2580,23 @@ class PokerGame:
             # shows and win. In the end player 1 showed his hand and player 2
             # also showed his hand although he was after player 1 with a
             # weaker hand.
-            #
-            if self.player_list[showing] in self.winners:
+            #            
+            if player.serial in self.winners:
                 show = True
 
             if show:
-                player.hand.allVisible()
+                to_show.append(player.serial)
+            else:
+                muckable.append(player.serial)
                 
             if showing == last_to_show:
                 break
             
             showing = self.indexNotFoldAdd(showing, 1)
-
+        
+        return ( to_show, muckable )
+    
+    def showdown(self):
         self.historyAdd("showdown", self.board.copy(), self.handsMap())
 
     def handEV(self, serial, iterations, self_only = False):
@@ -3030,7 +3111,7 @@ class PokerGame:
         # Only relevant for a game that has ended and for which we want to know
         # if all players involved in the last hand are still seated.
         #
-        if self.state != "end" or len(self.winners) <= 0:
+        if self.state != GAME_STATE_END or len(self.winners) <= 0:
           return False
         if filter(lambda serial: not self.serial2player.has_key(serial), self.winners):
           return False
@@ -3040,12 +3121,12 @@ class PokerGame:
     # Game Parameters.
     #
     def roundCap(self):
-        if(self.state == "null" or self.state == "end"):
-            return 0
-        return self.betInfo()["cap"]
+        if self.isRunning():
+          return self.betInfo()["cap"]
+        return 0
 
     def betLimits(self, serial):
-        if(self.state == "null" or self.state == "end"):
+        if not self.isRunning():
             return 0
         info = self.betInfo()
         highest_bet = self.highestBetNotFold()
@@ -3105,6 +3186,9 @@ class PokerGame:
         
     def noAutoBlindAnte(self, serial):
         self.getPlayer(serial).auto_blind_ante = False
+        
+    def autoMuck(self, serial, auto_muck):
+        self.getPlayer(serial).auto_muck = auto_muck
         
     def payBuyIn(self, serial, amount):
         if not self.isTournament() and amount > self.maxBuyIn():
@@ -3169,10 +3253,7 @@ class PokerGame:
         self.state = state
 
     def isRunning(self):
-        if self.state == "null" or self.state == "end":
-            return False
-        else:
-            return True
+        return not ( self.state == GAME_STATE_NULL or self.state == GAME_STATE_END or self.state == GAME_STATE_MUCK )
 
     def registerCallback(self, callback):
         if not callback in self.callbacks:
@@ -3201,8 +3282,8 @@ class PokerGame:
         while index < len(self.turn_history):
             event = self.turn_history[index]
             type = event[0]
-            if ( type == "showdown" or
-                 ( type == "round" and event[1] != "blindAnte" ) ):
+            if ( type == "showdown" or type == "muck" or
+                 ( type == "round" and event[1] != GAME_STATE_BLIND_ANTE ) ):
                 break
             elif type == "game":
                 game_event = self.turn_history[index]

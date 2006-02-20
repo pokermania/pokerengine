@@ -63,9 +63,5 @@
 	<action type="bet"/>
       </round>
 
-      <round name="showdown">
-	<position type="next-to-dealer"/>
-	<action type="showdown"/>
-      </round>
     </variant>
 </poker>

@@ -26,6 +26,7 @@
 
 import sys, os
 sys.path.insert(0, "@top_srcdir@")
+sys.path.insert(0, "..")
 
 import unittest
 from pokerengine.pokergame import PokerGameServer
@@ -38,7 +39,7 @@ class TestTournament(unittest.TestCase):
     def setUp(self):
         self.games = []
         for i in xrange(NGAMES):
-            game = PokerGameServer("poker.%s.xml", [ "@top_srcdir@/conf" ])
+            game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
             game.verbose = 3
             game.setVariant("7stud")
             game.setBettingStructure("0-0-limit")
@@ -339,7 +340,7 @@ class TestCreate(unittest.TestCase):
         tourney = PokerTournament(name = 'Test create',
                                   verbose = 3,
                                   players_quota = 4,
-                                  dirs = [ '@top_srcdir@/conf' ],
+                                  dirs = [ '../conf', '@top_srcdir@/conf' ],
                                   seats_per_game = 4,
                                   betting_structure = "level-10-20-no-limit")
 
@@ -368,7 +369,7 @@ class TestCreate(unittest.TestCase):
         tourney = PokerTournament(name = 'Test create',
                                        verbose = 3,
                                        players_quota = 4,
-                                       dirs = [ '@top_srcdir@/conf' ],
+                                       dirs = [ '../conf', '@top_srcdir@/conf' ],
                                        seats_per_game = 4)
 
         for serial in xrange(1,4):
@@ -392,7 +393,7 @@ class TestCreate(unittest.TestCase):
         tourney = PokerTournament(name = 'Test create',
                                   verbose = 3,
                                   players_quota = players_count,
-                                  dirs = [ '@top_srcdir@/conf' ],
+                                  dirs = [ '../conf', '@top_srcdir@/conf' ],
                                   seats_per_game = seats_per_game)
 
         for serial in xrange(1,players_count + 1):
@@ -416,7 +417,7 @@ class TestCreate(unittest.TestCase):
 class TestPrizes(unittest.TestCase):
 
     def test1(self):
-        tourney = PokerTournament(dirs = [ '@top_srcdir@/conf' ])
+        tourney = PokerTournament(dirs = [ '../conf', '@top_srcdir@/conf' ])
         tourney.can_register = False
 
         tourney.prizes_specs = "algorithm"
