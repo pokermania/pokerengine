@@ -182,6 +182,36 @@ class TestMuck(unittest.TestCase):
         self.failUnless(self.game.getPlayer(1).hand.areVisible())
         self.assertEqual(self.game.state, pokergame.GAME_STATE_END)
 
+    def test6(self):
+        """
+          game canceled because blind not payed, player p2 get her/his blind back
+        """
+        for (serial, seat) in ((1, 0), (2, 1)):
+            self.make_new_player(serial, seat)
+            self.game.noAutoBlindAnte(serial)
+                    
+        self.game.beginTurn(1)
+        self.game.blind(2)
+        self.game.sitOut(1)
+        self.assertEqual(self.game.state, pokergame.GAME_STATE_END)
+        self.assertEqual(len(self.game.winners), 0)
+
+    def test0(self):
+        """
+          game canceled explicitly, player p2 get her/his blind back
+        """
+        for (serial, seat) in ((1, 0), (2, 1)):
+            self.make_new_player(serial, seat)
+            self.game.noAutoBlindAnte(serial)
+                    
+        self.game.beginTurn(1)
+        self.game.blind(2)
+        self.game.is_directing = False
+        self.game.sitOut(1)
+        self.game.canceled(2, self.game.smallBlind())
+        self.assertEqual(self.game.state, pokergame.GAME_STATE_END)
+        self.assertEqual(len(self.game.winners), 0)
+
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestMuck))

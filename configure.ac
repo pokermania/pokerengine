@@ -86,6 +86,7 @@ AC_CONFIG_FILES([Makefile
                  tests/deal.py
                  tests/eval.py
                  tests/history.py
+                 tests/muck.py
                  tests/positions.py
                  tests/sit.py
                  tests/tournament.py
