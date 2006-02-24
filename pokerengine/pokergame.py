@@ -640,7 +640,7 @@ class PokerGame:
     def canceled(self, serial, amount):
         if self.isBlindAnteRound():
             self.acceptPlayersWaitingForFirstRound()
-            self.endState()
+            self.cancelState()
             if self.sitCount() != 1:
                 self.error("%d players sit, expected exactly one" % self.sitCount())
             elif amount > 0:
@@ -1559,6 +1559,14 @@ class PokerGame:
         if self.verbose > 2:
             print "setMuckableSerials: muckable = %s " % muckable_serials
 
+    def cancelState(self):
+        self.current_round = -2
+        if self.position != -1:
+          self.historyAdd("position", -1)
+        self.position = -1
+        self.changeState("end")
+        self.runCallbacks("end_round_last")
+
     def endState(self):
         self.changeState(GAME_STATE_END)
         self.runCallbacks("end_round_last")
@@ -1882,7 +1890,7 @@ class PokerGame:
     def __talkedBlindAnte(self):
         if self.sitCountBlindAnteRound() < 2:
             self.returnBlindAnte()
-            self.endState()
+            self.cancelState()
             return
         
         if self.isBlindAntePayed():
