@@ -3366,5 +3366,4 @@ class PokerGameServer(PokerGame):
 class PokerGameClient(PokerGame):
     def __init__(self, url, dirs):
         PokerGame.__init__(self, url, False, dirs) # is_directing == False
-        self.level_skin = ""
         
