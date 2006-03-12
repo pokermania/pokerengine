@@ -1,5 +1,5 @@
 # -*- mode: python -*-
-# Copyright (C) 2004, 2005 Mekensleep
+# Copyright (C) 2004, 2005, 2006 Mekensleep
 #
 # Mekensleep
 # 24 rue vieille du temple
@@ -69,7 +69,7 @@ class TestDeal(unittest.TestCase):
         game.beginTurn(1)
         while True:
             if game.isLastRound():
-                self.assertEqual(len(game.board.tolist(True)) == 1)
+                self.assertEqual(len(game.board.tolist(True)), 1)
 
             for x in xrange(1,9):
                 serial = game.getSerialInPosition()

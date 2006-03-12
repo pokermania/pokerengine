@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2004, 2005 Mekensleep
+# Copyright (C) 2004, 2005, 2006 Mekensleep
 #
 # Mekensleep
 # 24 rue vieille du temple
@@ -24,8 +24,18 @@
 #  Henry Precheur <henry@precheur.org>
 #  Loic Dachary <loic@gnu.org>
 #
-
+import sys
 from types import *
+
+if sys.hexversion < 0x02030000:
+  from types import *
+  def sum(*args):
+    if len(args) == 1 and type(args[0]) == ListType or type(args[0]) == TupleType:
+      args = args[0]
+    result = 0
+    for arg in args:
+      result += arg
+    return result
 
 MAX_CHIPS_PER_STACK = 23
 INT2CHIPS_FACTOR = 0.3

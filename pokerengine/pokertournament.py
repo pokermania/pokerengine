@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2004, 2005 Mekensleep
+# Copyright (C) 2004, 2005, 2006 Mekensleep
 #
 # Mekensleep
 # 24 rue vieille du temple
@@ -26,7 +26,17 @@
 from math import ceil
 from types import StringType
 from pprint import pformat
-import time
+import time, sys
+
+if sys.hexversion < 0x02030000:
+  from types import *
+  def sum(*args):
+    if len(args) == 1 and type(args[0]) == ListType or type(args[0]) == TupleType:
+      args = args[0]
+    result = 0
+    for arg in args:
+      result += arg
+    return result
 
 from pokerengine.pokergame import PokerGameServer
 from pokerengine.pokerengineconfig import Config

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2004,2005 Mekensleep
+# Copyright (C) 2004,2005, 2006 Mekensleep
 #
 # Mekensleep
 # 24 rue vieille du temple
@@ -42,6 +42,22 @@ ABSOLUTE_MAX_PLAYERS = 10
 
 LEVELS_CACHE = {}
 
+if sys.hexversion < 0x02030000:
+  from types import *
+  def sum(*args):
+    if len(args) == 1 and type(args[0]) == ListType or type(args[0]) == TupleType:
+      args = args[0]
+    result = 0
+    for arg in args:
+      result += arg
+    return result
+
+def uniq(elements):
+  temp = {}
+  for element in elements:
+    temp[element] = None
+  return temp.keys()
+  
 class PokerRandom(random.Random):
   def __init__(self, paranoid=False):
     self._file = None
@@ -2420,7 +2436,8 @@ class PokerGame:
                 serial2side_pot[winner.serial] = 0
                 break
             
-            frame.fromkeys(self.win_orders + [ 'pot', 'chips_left' ])
+            for key in (self.win_orders + [ 'pot', 'chips_left' ]):
+              frame[key] = None
             frame['type'] = 'resolve'
             frame['serial2share'] = {}
             frame['serials'] = [ player.serial for player in potential_winners ]
@@ -2518,11 +2535,10 @@ class PokerGame:
         # of the side of the pot they won. Remove duplicates in all lists.
         #
         winners_serials = []
-        uniq = {}
         for side in self.side2winners.keys():
-            self.side2winners[side] = uniq.fromkeys(self.side2winners[side]).keys()
+            self.side2winners[side] = uniq(self.side2winners[side])
             winners_serials += self.side2winners[side]
-        self.setWinners(uniq.fromkeys(winners_serials).keys())
+        self.setWinners(uniq(winners_serials))
         showdown_stack.insert(0, { 'type': 'game_state',
                                    'serial2best': self.serial2best,
                                    'player_list': self.player_list,
@@ -3040,7 +3056,9 @@ class PokerGame:
 
     def serialsAllSorted(self):
         if self.dealer < 0 or self.dealer >= len(self.player_list):
-            return self.serial2player.keys()
+            player_list = self.serial2player.keys()
+            player_list.sort()
+            return player_list
         else:
             #
             # The list of serials, sort from worst position to best

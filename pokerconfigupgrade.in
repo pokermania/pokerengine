@@ -1,6 +1,6 @@
 #!@PYTHON@
 # -*- encoding: iso-8859-1; mode: python -*-
-# Copyright (C) 2005 Mekensleep
+# Copyright (C) 2005, 2006 Mekensleep
 #
 # Mekensleep
 # 24 rue vieille du temple
@@ -24,7 +24,7 @@
 # Authors:
 #  Loic Dachary <loic@gnu.org>
 #
-import sys, os, getopt, stat
+import sys, os, getopt, stat, string
 sys.path = filter(lambda path: path not in sys.path, "@pythonpath@".split(":")) + sys.path
 sys.path.insert(0, "@top_srcdir@")
 
@@ -90,7 +90,7 @@ def main():
             else:
                 raise Exception, "File not found " + path
 
-        files = filter(lambda file: ".xml" in file, files)
+        files = filter(lambda file: string.find(file, ".xml") >= 0, files)
         for file in files:
             mode = os.stat(file)[stat.ST_MODE]
             if not mode & stat.S_IWUSR:

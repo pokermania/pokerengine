@@ -1,5 +1,5 @@
 # -*- mode: python -*-
-# Copyright (C) 2004, 2005 Mekensleep
+# Copyright (C) 2004, 2005, 2006 Mekensleep
 #
 # Mekensleep
 # 24 rue vieille du temple
@@ -148,7 +148,7 @@ class TestEqualize(TestTournament):
         for serial in (100, 101, 102, 103, 104):
             games[1].serial2player[serial] = None
 
-        self.assertEqual(equalizeGames(games), [(1, 0, 104), (1, 0, 100)])
+        self.assertEqual(equalizeGames(games), [(1, 0, 100), (1, 0, 101)])
 
     def test3(self):
         #

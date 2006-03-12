@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2004, 2005 Mekensleep
+# Copyright (C) 2004, 2005, 2006 Mekensleep
 #
 # Mekensleep
 # 24 rue vieille du temple
@@ -35,15 +35,18 @@ AC_CONFIG_SRCDIR([pokerengine/pokergame.py])
 AC_PROG_MAKE_SET
 
 AC_PATH_PROG(RSYNC, [rsync])
+if test -z "$RSYNC" ; then
+   AC_MSG_ERROR(rsync is needed to install poker-engine)
+fi
 
 AM_MAINTAINER_MODE
 
 test x$prefix = xNONE && prefix="$ac_default_prefix"
 test x$exec_prefix = xNONE && exec_prefix="$prefix"
 
-if test -z "$PYTHON_VERSION_CONSTRAINT" ; then PYTHON_VERSION_CONSTRAINT='>=2.3' ; fi
+if test -z "$PYTHON_VERSION_CONSTRAINT" ; then PYTHON_VERSION_CONSTRAINT='>=2.2' ; fi
 
-m4_define([_AM_PYTHON_INTERPRETER_LIST], [python2.4 python2.3 python])
+m4_define([_AM_PYTHON_INTERPRETER_LIST], [python2.4 python2.3 python2.2 python])
 AM_PATH_PYTHON([$PYTHON_VERSION_CONSTRAINT])
 eval pythonpath=$pythondir
 if eval test "$pythondir" != "$pyexecdir" ; then

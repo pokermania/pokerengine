@@ -1,10 +1,31 @@
+Sun Mar 12 2006  Loic Dachary  <loic@gnu.org>
+
+	* Release 1.0.12
+
+	* configure.ac: accept python2.2, abort if rsync missing
+
+	* pokerconfigupgrade.in: use string.find for python2.2 compatibility
+
+	* pokerengine/poker{chips,game,tournament}.py, tests/chips.py.in: define
+	  sum function for python2.2
+
+	* pokerengine/pokergame.py: define uniq function and otherwise avoid
+	  usage of fromkeys dictionary method
+
+	* pokerengine/pokergame.py(serialsAllSorted): sort keys to avoid 
+	  hash key algorithm dependency (may ruin non regression tests)
+
+	* tests/deal.py.in: do not rely on assertEqual with single argument (does
+	  not work in python2.2)
+
+	* tests/tournament.py.in: fix equalizeGames output results to take advantage
+	  of sorted results.
+
 Mon Feb 27 2006  proppy  <johan@mekensleep.com>
 
 	* pokerengine/pokergame.py (PokerGameClient): removed skin_level
 
 Fri Feb 10 2006  Loic Dachary  <loic@gnu.org>
-
-	* Release 1.0.12
 
 	* pokerengine/version.py (Version.__{sub,add}__): arithmetic on versions
 
