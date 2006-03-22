@@ -113,8 +113,7 @@ buildconf:
 		buy_in=`expr $$big \* 10` ; \
 		best_buy_in=`expr $$big \* 50` ; \
 		max_buy_in=`expr $$big \* 100` ; \
-		big_bet=`expr $$big \* 2` ; \
-		sed -e "s;_NAME_;$$name;g" -e "s;_DESC_;$$desc;g" -e "s/_UNIT_/$$unit/g" -e "s/_BEST_BUY_IN_/$$best_buy_in/g" -e "s/_MAX_BUY_IN_/$$max_buy_in/g" -e "s/_BUY_IN_/$$buy_in/g" -e "s/_SMALL_/$$small/g" -e "s/_BIG_/$$big/g" -e "s/_BIGBET_/$$bigbet/g" < conf/no-limit.template > conf/poker.$${name}-no-limit.xml ; \
+		sed -e "s;_NAME_;$$name;g" -e "s;_DESC_;$$desc;g" -e "s/_UNIT_/$$unit/g" -e "s/_BEST_BUY_IN_/$$best_buy_in/g" -e "s/_MAX_BUY_IN_/$$max_buy_in/g" -e "s/_BUY_IN_/$$buy_in/g" -e "s/_SMALL_/$$small/g" -e "s/_BIG_/$$big/g" < conf/no-limit.template > conf/poker.$${name}-no-limit.xml ; \
 	done
 
 	( \
@@ -157,7 +156,8 @@ buildconf:
 		buy_in=`expr $$big \* 5` ; \
 		best_buy_in=`expr $$big \* 30` ; \
 		max_buy_in=`expr $$big \* 100000` ; \
-		sed -e "s;_NAME_;$$name;g" -e "s;_DESC_;$$desc;g" -e "s/_UNIT_/$$unit/g" -e "s/_BEST_BUY_IN_/$$best_buy_in/g" -e "s/_MAX_BUY_IN_/$$max_buy_in/g" -e "s/_BUY_IN_/$$buy_in/g" -e "s/_SMALL_/$$small/g" -e "s/_BIG_/$$big/g" < conf/limit.template > conf/poker.$${name}-limit.xml ; \
+		big_bet=`expr $$big \* 2` ; \
+		sed -e "s;_NAME_;$$name;g" -e "s;_DESC_;$$desc;g" -e "s/_UNIT_/$$unit/g" -e "s/_BEST_BUY_IN_/$$best_buy_in/g" -e "s/_MAX_BUY_IN_/$$max_buy_in/g" -e "s/_BUY_IN_/$$buy_in/g" -e "s/_SMALL_/$$small/g" -e "s/_BIG_/$$big/g" -e "s/_BIGBET_/$$big_bet/g" < conf/limit.template > conf/poker.$${name}-limit.xml ; \
 	done
 
 	( \
