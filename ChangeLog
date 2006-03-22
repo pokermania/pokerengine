@@ -1,6 +1,8 @@
-Mon Mar 13 2006  Loic Dachary  <loic@gnu.org>
+Wed Mar 22 2006  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.13
+
+	* Makefile.am (buildconf): fix bugous limit structure
 
 Sun Mar 12 2006  Loic Dachary  <loic@gnu.org>
 
