@@ -115,7 +115,7 @@ class Version:
             if match:
                 ( version_from, version_to ) = map(Version, match.groups())
                 if ( ( version_from >= current_version and version_from < desired_version )
-                     ( version_to > current_version and version_to <= desired_version ) ):
+                     and ( version_to > current_version and version_to <= desired_version ) ):
                     upgrade_matrix.setdefault(version_from, {})
                     if upgrade_matrix[version_from].has_key(version_to):
                         print "Version: duplicate upgrade string (%s => %s) keep %s, ignore %s" % ( version_from, version_to, upgrade_matrix[version_from][version_to], string)
