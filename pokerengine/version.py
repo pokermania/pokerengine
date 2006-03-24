@@ -58,23 +58,36 @@ class Version:
         return cmp(self.version, other.version)
 
     def __add__(self, num):
+        ver = Version()
+        ver.version = (self.version[0], self.version[1], self.version[2] + num)
+        return ver
+        
+    def __iadd__(self, num):
         self.version = (self.version[0], self.version[1], self.version[2] + num)
         return self
-
-    def __sub__(self, num):
-        version = list(self.version)
+        
+    def sub(ver, num):
+        version = list(ver.version)
         if version[2] - num < 0:
             if version[1] - num < 0:
                 if version[0] - num < 0:
-                    raise UserException, "cannot subtract %d from version %s" % ( num, str(self) )
+                    raise UserWarning, "cannot subtract %d from version %s" % ( num, str(ver) )
                 else:
                     version[0] -= num
             else:
                 version[1] -= num
         else:
             version[2] -= num
-        self.version = tuple(version)
-        return self
+        ver.version = tuple(version)
+        return ver
+
+    sub = staticmethod(sub)
+
+    def __isub__(self, num):
+        return Version.sub(self, num)
+        
+    def __sub__(self, num):
+        return Version.sub(Version(str(self)), num)
 
     def major(self):
         return self.version[0]
@@ -101,8 +114,8 @@ class Version:
             match = Version.upgrade_re.match(string)
             if match:
                 ( version_from, version_to ) = map(Version, match.groups())
-                if ( ( version_from >= current_version and
-                       version_from < desired_version ) and version_to <= desired_version ):
+                if (  ( version_from >= current_version and version_from < desired_version )
+                and version_to <= desired_version ):
                     upgrade_matrix.setdefault(version_from, {})
                     if upgrade_matrix[version_from].has_key(version_to):
                         print "Version: duplicate upgrade string (%s => %s) keep %s, ignore %s" % ( version_from, version_to, upgrade_matrix[version_from][version_to], string)

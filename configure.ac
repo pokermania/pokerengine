@@ -94,5 +94,6 @@ AC_CONFIG_FILES([Makefile
                  tests/sit.py
                  tests/tournament.py
                  tests/upgrades.py
+                 tests/test-version.py
                  tests/Makefile], [chmod -w $ac_file])
 AC_OUTPUT
