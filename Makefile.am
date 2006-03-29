@@ -59,6 +59,7 @@ EXTRA_DIST = \
 	config/python-depends.m4 \
 	examples/simple.py \
 	$(wildcard conf/*.template)
+	$(wildcard gentoo/dev-games/poker-eval/*.ebuild)
 
 pkgconfigdir = ${libdir}/pkgconfig
 pkgconfig_DATA = poker-engine.pc
