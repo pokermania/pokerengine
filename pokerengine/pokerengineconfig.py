@@ -98,7 +98,7 @@ class Config:
             return True
 
     def upgrade(self, version_attribute, file_version, software_version, upgrades_repository):
-        if os.path.exists(upgrades_repository):
+        if upgrades_repository and os.path.exists(upgrades_repository):
             files = map(lambda file: upgrades_repository + "/" + file, os.listdir(upgrades_repository))
             files = filter(lambda file: isfile(file) and ".xsl" in file, files)
             for file in file_version.upgradeChain(software_version, files):
@@ -115,14 +115,14 @@ class Config:
                 if not self.upgrade_dry_run:
                     self.reload()
         else:
-            if self.verbose: print "Config::upgrade: %s is not a directory, ignored" % upgrades_repository
+            if self.verbose: print "Config::upgrade: %s is not a directory, ignored" % str(upgrades_repository)
         if not self.upgrade_dry_run:
             self.headerSet("/child::*/@" + version_attribute, str(software_version))
             self.save()
         
     def save(self):
         if not self.path:
-            print "unable to write back to %s" % self.path
+            print "unable to write back, invalid path"
             return
         self.doc.saveFile(self.path)
         

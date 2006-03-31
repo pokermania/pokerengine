@@ -86,6 +86,8 @@ class PokerCards:
         self.set(cards)
 
     def __eq__(self, other):
+        if type(self) != type(other): return False
+                
         cards = self.cards[:]
         cards.sort()
         other_cards = other.cards[:]
