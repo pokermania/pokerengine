@@ -2115,7 +2115,7 @@ class PokerGame:
             else:
                 self.error("unexpected win order: %s for variant %s" % ( win_order, variant ))
         if not self.win_orders:
-            raise UserWarning, "failed to read win orders from %s" % self.__variant.url 
+            raise UserWarning, "failed to read win orders from %s" % self.__variant.path 
 
         board_size = 0
         hand_size = 0
@@ -2134,7 +2134,7 @@ class PokerGame:
                 "cards": cards,
                 }
             self.round_info.append(info)
-            self.round_info_backup.append(info)
+            self.round_info_backup.append(info.copy())
 
     def resetRoundInfo(self):
         """
@@ -2203,9 +2203,9 @@ class PokerGame:
                 if self.ante_info["change"] == "levels":
                   self.ante_info["levels"] = self.loadTournamentLevels(self.getParam('/bet/ante/@levels'))
                 elif self.ante_info["change"] == "double":
-                  self.ante_info["value"] = int(blinds["value"])
+                  self.ante_info["value"] = int(antes["value"])
                   self.ante_info["value_reference"] = self.ante_info["value"]
-                  self.ante_info["bring-in"] = int(blinds["bring-in"])
+                  self.ante_info["bring-in"] = int(antes["bring-in"])
                   self.ante_info["bring-in_reference"] = self.ante_info["bring-in"]
             else:
               self.ante_info["value"] = int(antes["value"])

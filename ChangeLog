@@ -1,6 +1,21 @@
-Thu Mar 30 2006  Loic Dachary  <loic@gnu.org>
+Wed Apr 05 2006  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.14
+
+	* pokerengine/pokergame.py (PokerGame.setVariant): copy the info dict in backup instead
+	  of keeping a reference
+
+	* pokerengine/pokergame.py (PokerGame.setVariant): use .path not .url
+
+Sat Apr 01 2006  Loic Dachary  <loic@gnu.org>
+
+	* pokerengine/pokerengineconfig.py (Config.save): don't print none self.path
+
+	* pokerengine/pokerengineconfig.py (Config.checkVersion): test upgrades_repository
+
+	* pokerengine/pokercards.py (PokerCards.__eq__): test argument type
+
+Thu Mar 30 2006  Loic Dachary  <loic@gnu.org>
 
 	* tests/test-version.py.in: unit test for pokerengine/version.py
 
