@@ -1,0 +1,814 @@
+# -*- mode: python -*-
+# Copyright (C) 2006 Pierre-Andre
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Authors:
+#  Pierre-Andre Vieillard-Baron
+#  Loic Dachary <loic@gnu.org>
+#
+
+import sys, os
+sys.path.insert(0, "@top_srcdir@")
+sys.path.insert(0, "..")
+
+import unittest
+import os.path
+import shutil
+import libxml2
+
+from pokerengine import pokergame
+
+class PokerGameTestCase(unittest.TestCase):
+    
+    TestConfDirectory = './conf'
+    
+    TestVariantInvalidFile = 'unittest.variant.invalid.xml'
+    TestVariantTemplateFile = 'unittest.variant.template.xml'
+    TestConfigTemplateFile = 'unittest.config.template.xml'
+    TestLevelsTemplateFile = 'unittest.levels.template.xml'
+    
+    TestUrl = 'unittest.%s.xml'
+    
+    TestConfigTemporaryFile = 'config'
+    TestVariantTemporaryFile = 'variant'
+    
+    # -----------------------------------------------------------------------------------------------------
+    def setUp(self):
+        self.VariantInvalidFile = os.path.join(PokerGameTestCase.TestConfDirectory, PokerGameTestCase.TestVariantInvalidFile)
+        self.ConfigTmplFile = os.path.join(PokerGameTestCase.TestConfDirectory, PokerGameTestCase.TestConfigTemplateFile)
+        self.VariantTmplFile = os.path.join(PokerGameTestCase.TestConfDirectory, PokerGameTestCase.TestVariantTemplateFile)
+        self.LevelsTmplFile = os.path.join(PokerGameTestCase.TestConfDirectory, PokerGameTestCase.TestLevelsTemplateFile)
+        
+        self.ConfigTempFile = os.path.join(PokerGameTestCase.TestConfDirectory, PokerGameTestCase.TestUrl % PokerGameTestCase.TestConfigTemporaryFile)
+        self.VariantTempFile = os.path.join(PokerGameTestCase.TestConfDirectory, PokerGameTestCase.TestUrl % PokerGameTestCase.TestVariantTemporaryFile)
+        
+        if not self.CopyFile(self.ConfigTmplFile, self.ConfigTempFile):
+            self.fail('Error during creation of configuration file ' + self.ConfigTempFile)
+            
+        self.game = pokergame.PokerGameServer(PokerGameTestCase.TestUrl, ['.', PokerGameTestCase.TestConfDirectory, '~/conf'])
+    
+    # -----------------------------------------------------------------------------------------------------    
+    def tearDown(self):
+        self.DeleteFile(self.ConfigTempFile)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameSetInvalidMaxPlayer(self):
+        """Test Poker game Set an invalid number max of player"""
+        self.game.setMaxPlayers(0)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 0)
+        self.failUnlessEqual(self.game.seatsCount(), 0)
+        
+        self.game.setMaxPlayers(1)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 0)
+        self.failUnlessEqual(self.game.seatsCount(), 0)
+        
+        self.game.setMaxPlayers(pokergame.ABSOLUTE_MAX_PLAYERS + 1)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 0)
+        self.failUnlessEqual(self.game.seatsCount(), 0)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameSetValidMaxPlayer(self):
+        """Test Poker game Set a invalid number max of player"""
+        
+        for num in range(2,pokergame.ABSOLUTE_MAX_PLAYERS):
+            self.game.setMaxPlayers(num)
+            self.failUnlessEqual(self.game.seatsLeftCount(), num)
+            self.failUnlessEqual(self.game.seatsCount(), num)
+            
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameOpen(self):
+        """Test Poker game open and close"""
+        
+        self.failUnlessEqual(self.game.is_open, True)
+        self.game.close()
+        self.failUnlessEqual(self.game.is_open, False)
+        self.game.open()
+        self.failUnlessEqual(self.game.is_open, True)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameCanAddPlayer(self):
+        """Test Poker game can add player"""
+        
+        self.game.setMaxPlayers(1)
+        self.failUnlessEqual(self.game.canAddPlayer(1), False)
+        
+        self.game.setMaxPlayers(2)
+        self.failUnlessEqual(self.game.canAddPlayer(1), True)
+        
+        self.game.close()
+        self.failUnlessEqual(self.game.canAddPlayer(2), False)
+        self.game.open()
+        self.failUnlessEqual(self.game.canAddPlayer(2), True)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameAddPlayerToServerWithoutSelectedSeat(self):
+        """Test Poker game add player to a server game without a selected seat"""
+        
+        self.game.setMaxPlayers(2)
+        
+        # Add a new player
+        self.failUnlessEqual(self.game.addPlayer(1), True)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
+                
+        # Try to add the same player
+        self.failUnlessEqual(self.game.addPlayer(1), False)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
+        
+        # Add a new player
+        self.failUnlessEqual(self.game.addPlayer(2), True)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 0)
+        
+        # Try to add new one but there is no seat left
+        self.failUnlessEqual(self.game.addPlayer(3), False)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 0)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameAddPlayerToServerWithSelectedSeat(self):
+        """Test Poker game add player to a server game with a selected seat"""
+        
+        self.game.setMaxPlayers(2)
+    
+        # Add a player on the seat 2
+        self.failUnlessEqual(self.game.addPlayer(1,2), True)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
+        
+        # Try to add the same player on the same seat
+        self.failUnlessEqual(self.game.addPlayer(1,2), True)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
+        
+        # Try to add the same player on another seat
+        self.failUnlessEqual(self.game.addPlayer(1,7), False)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
+        
+        # Try to add a new player on an invalid seat
+        self.failUnlessEqual(self.game.addPlayer(2,3), False)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
+        
+        # Try to add a new player on an unavailable seat
+        self.failUnlessEqual(self.game.addPlayer(2,2), False)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
+        
+        # Add a player on the seat 7
+        self.failUnlessEqual(self.game.addPlayer(2,7), True)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 0)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameAddPlayerToClient(self):
+        """Test Poker game add player to a client game"""
+        
+        self.game = pokergame.PokerGameClient(PokerGameTestCase.TestUrl, ['.', PokerGameTestCase.TestConfDirectory, '~/conf'])
+        self.game.setMaxPlayers(2)
+        
+        # Try to add a new player without a selected seat
+        self.failUnlessEqual(self.game.addPlayer(1), False)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 2)
+        
+        # Add a player on the seat 2
+        self.failUnlessEqual(self.game.addPlayer(1,2), True)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
+        
+        # Try to add the same player on the same seat
+        self.failUnlessEqual(self.game.addPlayer(1,2), True)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
+        
+        # Try to add the same player on another seat
+        self.failUnlessEqual(self.game.addPlayer(1,7), False)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
+        
+        # Try to add a new player on an invalid seat
+        self.failUnlessEqual(self.game.addPlayer(2,3), False)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
+        
+        # Try to add a new player on an unavailable seat
+        self.failUnlessEqual(self.game.addPlayer(2,2), False)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
+        
+        # Add a player on the seat 7
+        self.failUnlessEqual(self.game.addPlayer(2,7), True)
+        self.failUnlessEqual(self.game.seatsLeftCount(), 0)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameGetPlayer(self):
+        """Test Poker game get player"""
+        
+        self.failUnlessEqual(self.game.serialsAll(), [])
+        self.failUnlessEqual(self.game.playersAll(), [])
+        self.failUnlessEqual(self.game.allCount(), 0)
+        
+        self.failUnlessEqual(self.game.addPlayer(1), True)
+        player = self.game.getPlayer(1)
+        self.failIfEqual(player, None)
+        self.failUnlessEqual(self.game.getPlayer(2), None)
+        
+        self.failUnlessEqual(self.game.serialsAll(), [1])
+        self.failUnlessEqual(self.game.playersAll(), [player])
+        self.failUnlessEqual(self.game.allCount(), 1)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameSeats(self):
+        """Test Poker game seats"""
+        
+        self.game.setMaxPlayers(2)         
+        seats = self.game.seats()
+        for seat in seats:
+            self.failUnlessEqual(seats[seat], 0)
+        
+        self.failUnlessEqual(self.game.addPlayer(1, 2), True)
+        self.failUnlessEqual(self.game.addPlayer(2, 7), True)
+        
+        seats = self.game.seats()
+        self.failUnlessEqual(seats[2], 1)
+        self.failUnlessEqual(seats[7], 2)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGamePlayerCanComeBack(self):
+        """Test Poker game player can comme back"""
+        
+        self.game.setMaxPlayers(2) 
+        
+        self.failUnlessEqual(self.game.canComeBack(1), False)
+        self.failUnlessEqual(self.game.addPlayer(1), True)
+        self.failUnlessEqual(self.game.canComeBack(1), False)
+        
+        player = self.game.getPlayer(1)
+        self.failIfEqual(player, None)
+        
+        # Change the state of the game 
+        """
+        self.game.changeState(pokergame.GAME_STATE_TURN)
+        self.failUnlessEqual(self.game.removePlayer(1), False)
+        
+        self.failUnlessEqual(self.game.canComeBack(1), True)
+        self.failUnlessEqual(self.game.comeBack(1), True)
+        
+        self.failUnlessEqual(self.game.canComeBack(1), False)
+        self.game.autoPlayer(1)
+        self.failUnlessEqual(self.game.canComeBack(1), True)
+        """
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameSitPlayer(self):
+        """Test Poker game Player sit count"""
+        
+        self.game.setMaxPlayers(2) 
+        
+        self.failUnlessEqual(self.game.sitCount(), 0)
+        self.failUnlessEqual(self.game.serialsSit(), [])
+        self.failUnlessEqual(self.game.playersSit(), [])
+        
+        self.failUnlessEqual(self.game.sitOutCount(), 0)
+        self.failUnlessEqual(self.game.serialsSitOut(), [])
+        self.failUnlessEqual(self.game.playersSitOut(), [])
+        
+        self.failUnlessEqual(self.game.addPlayer(1), True)
+        
+        player = self.game.getPlayer(1)
+        self.failIfEqual(player, None)
+        
+        self.failUnlessEqual(self.game.sitCount(), 0)
+        self.failUnlessEqual(self.game.serialsSit(), [])
+        self.failUnlessEqual(self.game.playersSit(), [])
+        
+        self.failUnlessEqual(self.game.sitOutCount(), 1)
+        self.failUnlessEqual(self.game.serialsSitOut(), [1])
+        self.failUnlessEqual(self.game.playersSitOut(), [player])
+        
+        player.sit_out = False        
+        self.failUnlessEqual(self.game.sitCount(), 1)
+        self.failUnlessEqual(self.game.serialsSit(), [1])
+        self.failUnlessEqual(self.game.playersSit(), [player])
+        
+        self.failUnlessEqual(self.game.sitOutCount(), 0)
+        self.failUnlessEqual(self.game.serialsSitOut(), [])
+        self.failUnlessEqual(self.game.playersSitOut(), [])
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameCallback(self):
+        """Test Poker game callback"""
+        
+        self.game.setMaxPlayers(2) 
+        
+        self.CallbackValue = None
+        self.game.runCallbacks('Value')
+        self.failUnlessEqual(self.CallbackValue, None)
+        
+        self.game.registerCallback(self.Callback)
+        self.game.runCallbacks('Value')
+        self.failUnlessEqual(self.CallbackValue, 'Value')
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameBettingStructure(self):
+        """Test Poker game initialisation of the betting structure"""
+        
+        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
+            self.fail('Error during creation of variant file ' + self.VariantTempFile)
+            
+        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        self.failUnlessEqual(self.game.getBettingStructureName(), 'Bet Description')
+        self.failUnlessEqual(self.game.buyIn(), 50)
+        self.failUnlessEqual(self.game.maxBuyIn(), 10000)
+        self.failUnlessEqual(self.game.bestBuyIn(), 500)
+        self.failUnlessEqual(self.game.getChipUnit(), 300)
+                
+        bet_properties = {  'buy-in' : '100',
+                            'max-buy-in' : '20000',
+                            'best-buy-in' : '1000',
+                            'unit' : '600'
+                        }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', None, bet_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.failUnlessEqual(self.game.buyIn(), 100)
+        self.failUnlessEqual(self.game.maxBuyIn(), 20000)
+        self.failUnlessEqual(self.game.bestBuyIn(), 1000)
+        self.failUnlessEqual(self.game.getChipUnit(), 600)
+        
+        self.DeleteFile(self.VariantTempFile)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameBlindBettingStructure(self):
+        """Test Poker game initialisation of the blind betting structure"""
+        
+        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
+            self.fail('Error during creation of variant file ' + self.VariantTempFile)
+            
+        self.failUnlessEqual(self.game.smallBlind(), None)
+        self.failUnlessEqual(self.game.bigBlind(), None)
+        
+        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        self.failUnlessEqual(self.game.smallBlind(), 500)
+        self.failUnlessEqual(self.game.bigBlind(), 1000)
+        
+        blind_properties = {  'small' : '1000',
+                                'big' : '2000',
+                            }
+                                
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.failUnlessEqual(self.game.smallBlind(), 1000)
+        self.failUnlessEqual(self.game.bigBlind(), 2000)
+        
+        blind_properties = {  'change' : 'double',
+                                'frequency' : '15',
+                                'unit' : 'minute',
+                                'small' : '2000',
+                                'big' : '4000'
+                            }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+                                
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.failUnlessEqual(self.game.blind_info['small'], 2000)
+        self.failUnlessEqual(self.game.blind_info['small_reference'], 2000)
+        self.failUnlessEqual(self.game.blind_info['big'], 4000)
+        self.failUnlessEqual(self.game.blind_info['big_reference'], 4000)
+        
+        blind_properties = {  'change' : 'levels',
+                              'levels' : PokerGameTestCase.TestLevelsTemplateFile
+                            }
+
+        levels_info =   [
+                            { 'small' : 1000, 'big' : 1500 },
+                            { 'small' : 1500, 'big' : 3000 },
+                            { 'small' : 2500, 'big' : 5000 }
+                        ]
+                            
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+        
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.failUnlessEqual(self.game.blind_info["levels"], levels_info)        
+        
+        self.DeleteFile(self.VariantTempFile)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameAnteBettingStructure(self):
+        """Test Poker game initialisation of the ante betting structure"""
+        
+        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
+            self.fail('Error during creation of variant file ' + self.VariantTempFile)
+            
+        self.failUnlessEqual(self.game.smallBlind(), None)
+        self.failUnlessEqual(self.game.bigBlind(), None)
+        
+        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        self.failUnlessEqual(self.game.ante_info["value"], 100)
+        self.failUnlessEqual(self.game.ante_info["bring-in"] , 500)
+        
+        ante_properties = {  'value' : '200',
+                             'bring-in' : '1000',
+                          }
+                                
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.failUnlessEqual(self.game.ante_info["value"], 200)
+        self.failUnlessEqual(self.game.ante_info["bring-in"] , 1000)
+        
+        ante_properties = {  'change' : 'double',
+                             'frequency' : '15',
+                             'unit' : 'minute',
+                             'value' : '50',
+                             'bring-in' : '200'
+                          }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+                                
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.failUnlessEqual(self.game.ante_info['value'], 50)
+        self.failUnlessEqual(self.game.ante_info['value_reference'], 50)
+        self.failUnlessEqual(self.game.ante_info['bring-in'], 200)
+        self.failUnlessEqual(self.game.ante_info['bring-in_reference'], 200)
+        
+        blind_properties = {  'change' : 'levels',
+                              'levels' : PokerGameTestCase.TestLevelsTemplateFile
+                            }
+
+        levels_info =   [
+                           { 'small' : 1000, 'big' : 1500 },
+                           { 'small' : 1500, 'big' : 3000 },
+                           { 'small' : 2500, 'big' : 5000 }
+                        ]
+                            
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', blind_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+        
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.failUnlessEqual(self.game.ante_info["levels"], levels_info)        
+        
+        self.DeleteFile(self.VariantTempFile)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameGetLevelValues(self):
+        """Test Poker game get level values"""
+        
+        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
+            self.fail('Error during creation of variant file ' + self.VariantTempFile)
+            
+        blind_properties = {  'change' : 'double',
+                              'frequency' : '15',
+                              'unit' : 'minute',
+                              'small' : '2000',
+                              'big' : '4000'
+                            }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        ante_properties = {  'change' : 'double',
+                              'frequency' : '15',
+                              'unit' : 'minute',
+                              'value' : '50',
+                              'bring-in' : '200'
+                           }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+        
+        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        for level in range(3):
+            blind_info, ante_info = self.game.getLevelValues(level)
+        
+            self.failUnlessEqual(blind_info['small'], 2000 * pow(2, level - 1))      
+            self.failUnlessEqual(blind_info['big'], 4000 * pow(2, level - 1))
+            self.failUnlessEqual(ante_info['value'], 50 * pow(2, level - 1))      
+            self.failUnlessEqual(ante_info['bring-in'], 200 * pow(2, level - 1)) 
+            
+        # TODO level
+            
+        self.DeleteFile(self.VariantTempFile)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameSetVariantInvalid(self):
+        """Test Poker game variant with invalid specification"""
+        
+        if not self.CopyFile(self.VariantInvalidFile, self.VariantTempFile):
+            self.fail('Error during creation of variant file ' + self.VariantInvalidFile)
+            
+        self.failUnlessRaises(UserWarning, self.game.setVariant,PokerGameTestCase.TestVariantTemporaryFile)
+        
+        self.DeleteFile(self.VariantTempFile)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameSetVariantWinnerOrder(self):
+        """Test Poker game variant winner order"""
+        
+        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
+            self.fail('Error during creation of variant file ' + self.VariantTempFile)
+            
+        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)        
+        self.failUnlessEqual(self.game.isLow(), True)
+        self.failUnlessEqual(self.game.hasLow(), True)
+        self.failUnlessEqual(self.game.isHigh(), False)
+        self.failUnlessEqual(self.game.hasHigh(), False)
+        
+        self.failUnlessEqual(self.game.isHighLow(), False)
+            
+        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/wins/winner', None, {'order' : 'high'}):
+            self.fail('Error during modification of variant file ' + self.VariantTempFile)
+            
+        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
+        self.failUnlessEqual(self.game.getVariantName(), 'VariantName')
+        self.failUnlessEqual(self.game.isLow(), False)
+        self.failUnlessEqual(self.game.hasLow(), False)
+        self.failUnlessEqual(self.game.isHigh(), True)
+        self.failUnlessEqual(self.game.hasHigh(), True)
+        
+        self.DeleteFile(self.VariantTempFile)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameSetVariantRoundInfos(self):
+        """Test Poker game variant round infos"""
+        
+        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
+            self.fail('Error during creation of variant file ' + self.VariantTempFile)
+        
+        # 2 rounds in the template file
+        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)        
+        self.failUnlessEqual(len(self.game.round_info),2)
+        self.failUnlessEqual(len(self.game.round_info_backup),2)
+        
+        self.failUnlessEqual(self.game.round_info[0],self.game.round_info_backup[0])
+        self.failUnlessEqual(self.game.round_info[1],self.game.round_info_backup[1])
+            
+        round1_info = {
+                                'name': 'Round1',
+                                'position': 'PositionType1',
+                                'board': [''], # One card of type board
+                                'board_size': 1,
+                                'hand_size': 2,
+                                'cards': ['up', 'down'] 
+                            }
+                            
+        round2_info = {
+                                'name': 'Round2',
+                                'position': 'PositionType2',
+                                'board': ['', ''], # Two cards of type board
+                                'board_size': 3,
+                                'hand_size': 4,
+                                'cards': ['up', 'down'] 
+                            }
+                
+        self.failUnlessEqual(self.game.round_info[0], round1_info)
+        self.failUnlessEqual(self.game.round_info[1], round2_info)
+        
+        self.failUnlessEqual(self.game.round_info[0],self.game.round_info_backup[0])
+        self.failUnlessEqual(self.game.round_info[1],self.game.round_info_backup[1])
+        
+        self.DeleteFile(self.VariantTempFile)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameResetRoundInfos(self):
+        """Test Poker game reset round infos"""
+        
+        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
+            self.fail('Error during creation of variant file ' + self.VariantTempFile)
+        
+        # 2 rounds in the template file
+        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)        
+        
+        round1_info = {
+                                'name': 'Round1',
+                                'position': 'PositionType1',
+                                'board': [''], # One card of type board
+                                'board_size': 1,
+                                'hand_size': 2,
+                                'cards': ['up', 'down'] 
+                            }
+                            
+        self.failUnlessEqual(self.game.round_info[0], round1_info)
+        
+        self.game.round_info[0]['name'] = 'ModifiedRound'
+        self.game.round_info[0]['position'] = 'ModifiedPosition'
+        self.game.round_info[0]['board'] = ['ModifiedBoard']
+        self.game.round_info[0]['board_size'] = 'ModifiedBoardSize'
+        self.game.round_info[0]['hand_size'] = 'ModifiedHandSize'
+        self.game.round_info[0]['cards'] = ['up']
+        
+        self.failIfEqual(self.game.round_info[0], round1_info)
+        self.game.resetRoundInfo()
+        self.failUnlessEqual(self.game.round_info[0], round1_info)
+        
+        self.DeleteFile(self.VariantTempFile)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameLoadTournamentLevels(self):
+        """Test Poker game load tournament levels"""
+        
+        levels_info =   [
+                                { 'small' : 1000, 'big' : 1500 },
+                                { 'small' : 1500, 'big' : 3000 },
+                                { 'small' : 2500, 'big' : 5000 }
+                            ]
+        
+        levels = self.game.loadTournamentLevels(self.LevelsTmplFile)
+        self.failUnlessEqual(levels, levels_info)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGamePayBuyIn(self):
+        """Test Poker game pay buy in"""
+                
+        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
+            self.fail('Error during creation of variant file ' + self.VariantTempFile)
+            
+        self.failUnlessEqual(self.game.addPlayer(1), True)
+        player = self.game.getPlayer(1)
+        self.failIfEqual(player, None)
+            
+        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        self.failUnlessEqual(self.game.buyIn(), 50)
+        self.failUnlessEqual(self.game.maxBuyIn(), 10000)
+        self.failUnlessEqual(self.game.bestBuyIn(), 500)
+        
+        self.failUnlessEqual(self.game.payBuyIn(1,20000), False)
+        
+        self.failUnlessEqual(self.game.payBuyIn(1,40), False)
+        self.failUnlessEqual(player.isBuyInPayed(), False)
+        
+        self.failUnlessEqual(self.game.payBuyIn(1,100), True)
+        self.failUnlessEqual(player.isBuyInPayed(), True)
+        self.failUnlessEqual(self.game.getPlayerMoney(1), 100)
+        
+        blind_properties = {  'change' : 'double',
+                                    'frequency' : '15',
+                                    'unit' : 'minute',
+                                    'small' : '2000',
+                                    'big' : '4000'
+                                }
+                                
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        self.failUnlessEqual(self.game.payBuyIn(1,20000), True)
+        self.failUnlessEqual(player.isBuyInPayed(), True)
+        self.failUnlessEqual(self.game.getPlayerMoney(1), 20000)
+        
+        self.DeleteFile(self.VariantTempFile)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameMessage(self):
+        """Test Poker game messages"""
+        
+        history =   [
+                        ('sitOut', 1),
+                        ('canceled', 1, 10),
+                        ('position', 1),
+                        ('blind', 1, 1000, 0),
+                        ('ante', 1, 500),
+                        ('wait_for', 1, 0),
+                        ('player_list', [1])
+                        ]
+                                    
+        for message in history:
+            apply(self.game.historyAdd,message)
+            
+        self.failUnlessEqual(self.game.historyGet(), history)
+        pokergame.history2messages(self.game, history)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameSitRequested(self):
+        """Test Poker game sit requested"""
+        
+        self.game.setMaxPlayers(2)
+        
+        self.failUnlessEqual(self.game.addPlayer(1), True)
+        self.game.sitRequested(1)
+        player = self.game.getPlayer(1)
+        self.failIfEqual(player, None)
+        
+        self.failUnlessEqual(player.isSitRequested(), True)
+        self.failUnlessEqual(player.isWaitForBlind(), False)
+        self.failUnlessEqual(player.sit_out_next_turn, False)        
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameSit(self):
+        """Test Poker game sit"""
+        
+        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
+            self.fail('Error during creation of variant file ' + self.VariantTempFile)
+            
+        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        self.game.setMaxPlayers(2)
+        
+        self.failUnlessEqual(self.game.addPlayer(1), True)
+        
+        player = self.game.getPlayer(1)
+        self.failIfEqual(player, None)
+        
+        self.failUnlessEqual(self.game.sit(1), False)
+
+        self.failUnlessEqual(self.game.payBuyIn(1,1600), True)
+        self.failUnlessEqual(player.isBuyInPayed(), True)
+        
+        self.failUnlessEqual(self.game.sit(1), True)
+        
+        self.DeleteFile(self.VariantTempFile)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def Callback(self, id, value):
+        self.CallbackValue = value
+    
+    # -----------------------------------------------------------------------------------------------------
+    def ModifyXMLFile(self, path, parent, child, attributes = {}):
+        
+        try:
+            doc = libxml2.parseFile(path)
+        except libxml2.parserError:
+            return False
+            
+        header = doc.xpathNewContext()
+        
+        node_parent = doc.getRootElement()
+        if parent:
+            nodes = header.xpathEval(parent)
+            if nodes: node_parent = nodes[0]
+            else: return False
+                
+        node = node_parent
+        if child:
+            child_path = node_parent.nodePath() + '/' + child
+            nodes = header.xpathEval(child_path)
+            if nodes: node = nodes[0]
+            else: 
+                node = node_parent.newChild(ns = None, name = child, content = None)
+        
+        for attribute_name, attribute_value in attributes.items():
+            if not node.hasProp(attribute_name):
+                node.newProp(attribute_name,attribute_value)
+            else:
+                for property in node.properties:
+                    if property.name == attribute_name: property.setContent(attribute_value)
+        
+        doc.saveFile(path)
+        
+        doc.freeDoc()
+        header.xpathFreeContext()
+        
+        return True
+        
+    # -----------------------------------------------------------------------------------------------------
+    def CopyFile(self, src_path, dst_path):
+        if src_path and not os.path.isfile(src_path): 
+            return False
+        
+        shutil.copyfile(src_path,dst_path)
+        if os.path.isfile(dst_path):
+            return True
+            
+        return False
+            
+    # -----------------------------------------------------------------------------------------------------
+    def DeleteFile(self, path):
+        if os.path.isfile(path):
+            os.unlink(path)
+        
+# -----------------------------------------------------------------------------------------------------
+def GetTestSuite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(PokerGameTestCase))
+    return suite
+    
+# -----------------------------------------------------------------------------------------------------
+def GetTestedModule():
+    return pokergame
+  
+# -----------------------------------------------------------------------------------------------------
+def Run(verbose = 2):
+    unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
+    
+# -----------------------------------------------------------------------------------------------------
+if __name__ == '__main__':
+    Run()

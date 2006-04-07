@@ -1,0 +1,255 @@
+# -*- mode: python -*-
+# Copyright (C) 2006 Pierre-Andre
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Authors:
+#  Pierre-Andre Vieillard-Baron
+#  Loic Dachary <loic@gnu.org>
+#
+
+import sys, os
+sys.path.insert(0, "@top_srcdir@")
+sys.path.insert(0, "..")
+
+import unittest
+
+from pokerengine import pokercards
+
+class PokerCardsTestCase(unittest.TestCase):
+    
+    # -----------------------------------------------------------------------------------------------------
+    def setUp(self):
+        pass
+    
+    # -----------------------------------------------------------------------------------------------------    
+    def tearDown(self):
+        pass
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testInit(self):
+        """Test creation of cards"""
+        
+        empty = pokercards.PokerCards()
+        self.failUnlessEqual(empty.toRawList(), [])
+        
+        cards = pokercards.PokerCards(12)
+        self.failUnlessEqual(cards.toRawList(), [12])
+        self.failUnlessEqual(cards.areVisible(), True)
+        
+        cards = pokercards.PokerCards([12, 25, 37])
+        self.failUnlessEqual(cards.toRawList(), [12, 25, 37])
+        self.failUnlessEqual(cards.areVisible(), True)
+        
+        cards = pokercards.PokerCards('Ah')
+        self.failUnlessEqual(cards.toRawList(), [12])
+        self.failUnlessEqual(cards.areVisible(), True)
+        
+        cards = pokercards.PokerCards(['Ah', 'Ad', 'Kc'])
+        self.failUnlessEqual(cards.toRawList(), [12, 25, 37])
+        self.failUnlessEqual(cards.areVisible(), True)
+        
+        cards = pokercards.PokerCards(['Ah', 25, 'Kc'])
+        self.failUnlessEqual(cards.toRawList(), [12, 25, 37])
+        self.failUnlessEqual(cards.areVisible(), True)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def TestGetValue(self):
+        """Test get card value"""
+        
+        cards = pokercards.PokerCards()
+        self.failUnlessEqual(cards.getValue(12), 12)
+        self.failUnlessEqual(cards.getValue('Ah'), 12)
+        self.failUnlessRaises(UserWarning, cards.add, 52, True)
+        self.failUnlessRaises(UserWarning, cards.add, -1, True)
+        self.failUnlessRaises(UserWarning, cards.add, 'Aa', True)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testAddInvalid(self):
+        """Test invalid card adding"""
+        
+        cards = pokercards.PokerCards()
+        self.failUnlessRaises(UserWarning,cards.add, 52, True)
+        self.failUnlessRaises(UserWarning,cards.add, -1, True)
+        self.failUnlessRaises(UserWarning,cards.add, 'Aa', True)
+                
+    # -----------------------------------------------------------------------------------------------------    
+    def testAddVisible(self):
+        """Test visible card adding"""
+        
+        cards = pokercards.PokerCards()
+        cards.add(12, True)
+        self.failUnlessEqual(cards.hasCard(12), True)
+        self.failUnlessEqual(cards.getVisible(), [12])
+        
+        cards = pokercards.PokerCards()
+        cards.add('3s', True)
+        self.failUnlessEqual(cards.hasCard(40), True)
+        self.failUnlessEqual(cards.getVisible(), [40])
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testAddInvisible(self):
+        """Test visible card adding"""
+        
+        cards = pokercards.PokerCards()
+        cards.add(12, False)
+        self.failUnlessEqual(cards.hasCard(12), True)        
+        self.failUnlessEqual(cards.getVisible(), [])
+        
+        cards = pokercards.PokerCards()
+        cards.add('3s', False)
+        self.failUnlessEqual(cards.hasCard(40), True)
+        self.failUnlessEqual(cards.getVisible(), [])
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testAllVisible(self):
+        """Test all card visible"""
+        
+        cards = pokercards.PokerCards()
+        cards.add(12, False)
+        cards.add(25, False)
+        cards.add(45, False)
+        
+        self.failUnlessEqual(cards.getVisible(), [])
+        cards.allVisible()
+        self.failUnlessEqual(cards.areVisible(), True)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testAllVisible(self):
+        """Test all card visible"""
+        
+        cards = pokercards.PokerCards()
+        cards.add(12, False)
+        cards.add(25, True)
+        cards.add(45, False)
+        
+        self.failUnlessEqual(cards.getVisible(), [25])
+        cards.allVisible()
+        self.failUnlessEqual(cards.areVisible(), True)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testAllHidden(self):
+        """Test all card hidden"""
+        
+        cards = pokercards.PokerCards()
+        cards.add(12, True)
+        cards.add(25, False)
+        cards.add(45, True)
+        
+        self.failUnlessEqual(cards.getVisible(), [12, 45])
+        cards.allHidden()
+        self.failUnlessEqual(cards.areHidden(), True)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testSetVisible(self):
+        """Test set card visible"""
+        
+        cards = pokercards.PokerCards()
+        cards.add(12, True)
+        self.failUnlessEqual(cards.getVisible(), [12])
+        
+        cards.setVisible(12,False)
+        self.failUnlessEqual(cards.getVisible(), [])
+        
+        cards.setVisible(12,True)
+        self.failUnlessEqual(cards.getVisible(), [12])
+        
+        cards.setVisible(15,True)
+        self.failUnlessEqual(cards.getVisible(), [12])
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testIsEmpty(self):
+        """Test is empty card"""
+        
+        cards = pokercards.PokerCards()
+        self.failUnlessEqual(cards.isEmpty(), True)
+        
+        cards.add(12, True)
+        self.failUnlessEqual(cards.isEmpty(), False)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testLen(self):
+        """Test cards lenght"""
+        
+        cards = pokercards.PokerCards()
+        self.failUnlessEqual(cards.len(), 0)
+        
+        cards.add(12, True)
+        self.failUnlessEqual(cards.len(), 1)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testHasCard(self):
+        """Test has card"""
+        
+        cards = pokercards.PokerCards([12,26])
+        self.failUnlessEqual(cards.hasCard(12), True)
+        self.failUnlessEqual(cards.hasCard(27), False)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testOperatorEqu(self):
+        """Test cards operator equ"""
+        
+        cards1 = pokercards.PokerCards([12,26])
+        cards2 = pokercards.PokerCards([26,12])
+        self.failUnlessEqual(cards1 == cards2, True)
+        
+        cards3 = pokercards.PokerCards([26,12])
+        self.failUnlessEqual(cards3 == cards1, True)
+        
+        cards4 = pokercards.PokerCards([26,12,50])
+        self.failIfEqual(cards4, cards1)
+        
+        self.failIfEqual(cards4, [26,12,50])
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testToList(self):
+        """Test cards to list"""
+        
+        cards = pokercards.PokerCards([12,26])
+        self.failUnlessEqual(cards.tolist(False), [12,26])
+        self.failUnlessEqual(cards.tolist(True), [12,26])
+        
+        cards.setVisible(26,False)
+        self.failUnlessEqual(cards.tolist(False), [12, cards.nocard()])
+        self.failUnlessEqual(cards.tolist(True), [12, 26])
+        
+        cards.allHidden()
+        self.failUnlessEqual(cards.tolist(False), [cards.nocard(), cards.nocard()])
+        self.failUnlessEqual(cards.tolist(True), [12, 26])
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testNoCard(self):
+        """Test no card value"""
+        
+        cards = pokercards.PokerCards()
+        self.failUnlessEqual(cards.nocard(), pokercards.PokerCards.NOCARD)
+        
+# -----------------------------------------------------------------------------------------------------
+def GetTestSuite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(PokerCardsTestCase))
+    return suite
+    
+# -----------------------------------------------------------------------------------------------------
+def GetTestedModule():
+    return pokercards
+  
+# -----------------------------------------------------------------------------------------------------
+def Run(verbose = 2):
+    unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
+    
+# -----------------------------------------------------------------------------------------------------
+if __name__ == '__main__':
+    Run()

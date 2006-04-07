@@ -30,8 +30,8 @@ pythondir = ${pyexecdir}/pokerengine
 python_PYTHON = \
 	__init__.py \
 	pokerengineconfig.py \
-	version.py \
 	pokercards.py \
 	pokerchips.py \
 	pokertournament.py \
-	pokergame.py
+	pokergame.py \
+	version.py

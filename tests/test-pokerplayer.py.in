@@ -1,0 +1,173 @@
+# -*- mode: python -*-
+# Copyright (C) 2006 Pierre-Andre
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Authors:
+#  Pierre-Andre Vieillard-Baron
+#  Loic Dachary <loic@gnu.org>
+#
+
+import sys, os
+sys.path.insert(0, "@top_srcdir@")
+sys.path.insert(0, "..")
+
+import unittest
+import random
+
+from pokerengine import pokergame
+
+class PokerPlayerTestCase(unittest.TestCase):
+    
+    PokerPlayerAttributes = [
+                                    'serial', \
+                                    'name', \
+                                    'game', \
+                                    'fold', \
+                                    'remove_next_turn', \
+                                    'sit_out', \
+                                    'sit_out_next_turn', \
+                                    'sit_requested', \
+                                    'bot', \
+                                    'auto', \
+                                    'auto_blind_ante', \
+                                    'wait_for', \
+                                    'auto_muck', \
+                                    'missed_blind', \
+                                    'blind', \
+                                    'buy_in_payed', \
+                                    'ante', \
+                                    'all_in', \
+                                    'side_pot_index', \
+                                    'seat', \
+                                    'hand', \
+                                    'money', \
+                                    'rebuy', \
+                                    'bet', \
+                                    'dead', \
+                                    'talked_once', \
+                                    'user_data'
+                                    ]
+                                
+    # -----------------------------------------------------------------------------------------------------
+    def setUp(self):
+        pass
+    
+    # -----------------------------------------------------------------------------------------------------    
+    def tearDown(self):
+        pass
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerPlayerGetSetUserData(self):
+        """Test Poker Player User data accessors"""
+        
+        player = pokergame.PokerPlayer(1,None)
+        self.failUnlessEqual(player.getUserData(), None)
+        player.setUserData('UserData')
+        self.failUnlessEqual(player.getUserData(), 'UserData')
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerPlayerIsAllIn(self):
+        """Test Poker Player is all in"""
+        
+        player = pokergame.PokerPlayer(1,None)
+        self.failUnlessEqual(player.isAllIn(), False)
+        player.all_in = True
+        self.failUnlessEqual(player.isAllIn(), True)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerPlayerIsFold(self):
+        """Test Poker Player is fold or not"""
+        
+        player = pokergame.PokerPlayer(1,None)
+        self.failUnlessEqual(player.isFold(), False)
+        self.failUnlessEqual(player.isNotFold(), True)
+        player.fold = True
+        self.failUnlessEqual(player.isFold(), True)
+        self.failUnlessEqual(player.isNotFold(), False)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerPlayerIsSit(self):
+        """Test Poker Player is sit or not"""
+        
+        player = pokergame.PokerPlayer(1,None)
+        self.failUnlessEqual(player.isSit(), False)
+        self.failUnlessEqual(player.isSitOut(), True)
+        player.sit_out = False
+        self.failUnlessEqual(player.isSit(), True)
+        self.failUnlessEqual(player.isSitOut(), False)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerPlayerIsConnected(self):
+        """Test Poker Player is connected or not"""
+        
+        player = pokergame.PokerPlayer(1,None)
+        self.failUnlessEqual(player.isConnected(), True)
+        self.failUnlessEqual(player.isDisconnected(), False)
+        player.remove_next_turn = True
+        self.failUnlessEqual(player.isConnected(), False)
+        self.failUnlessEqual(player.isDisconnected(), True)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerPlayerCopy(self):
+        """Test Poker Player Copy"""
+        
+        player = pokergame.PokerPlayer(1,'game')
+        for attribute in PokerPlayerTestCase.PokerPlayerAttributes:
+            getattr(player,attribute,random.random())
+            
+        copy = player.copy()
+        for attribute in PokerPlayerTestCase.PokerPlayerAttributes:
+            try:
+                player_attr = getattr(player,attribute)
+                copy_attr = getattr(copy,attribute)
+                self.failUnlessEqual(player_attr, copy_attr)
+            except:
+                self.fail('Exception during accessing attribute ' + attribute)
+                
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerPlayerStringRepresentation(self):
+        """Test Poker Player string representation"""
+        
+        player = pokergame.PokerPlayer(1,'game')
+        for attribute in PokerPlayerTestCase.PokerPlayerAttributes:
+            getattr(player,attribute,random.random())
+            
+        string = ''
+        for attribute in PokerPlayerTestCase.PokerPlayerAttributes:
+            if attribute == 'game': continue
+            string += attribute + ' = ' + str(getattr(player,attribute)) + ', '
+        
+        # Skip the last comma and space character
+        self.failUnlessEqual(string[:-2], str(player))
+    
+        
+# -----------------------------------------------------------------------------------------------------
+def GetTestSuite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(PokerPlayerTestCase))
+    return suite
+    
+# -----------------------------------------------------------------------------------------------------
+def GetTestedModule():
+    return pokergame
+  
+# -----------------------------------------------------------------------------------------------------
+def Run(verbose = 2):
+    unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
+    
+# -----------------------------------------------------------------------------------------------------
+if __name__ == '__main__':
+    Run()

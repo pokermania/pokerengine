@@ -29,6 +29,8 @@ MAINTAINERCLEANFILES = Makefile.in
 export PYTHON
 
 EXTRA_DIST = \
-	$(wildcard conf/*.xml)
+	coverage.py \
+	$(wildcard conf/*.xml) \
+	$(wildcard upgrade/*.xsl)
 
 TESTS = run

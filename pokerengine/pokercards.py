@@ -75,6 +75,7 @@ letter2names = {
 class PokerCards:
     NOCARD = 255
     MAX_CARD = 64 # 64 > 52 cards 0x0100 0000
+    NB_CARD = 52
     
     VALUE_CARD_MASK = MAX_CARD - 1 # 0x0011 1111
 
@@ -87,7 +88,7 @@ class PokerCards:
 
     def __eq__(self, other):
         if type(self) != type(other): return False
-                
+        
         cards = self.cards[:]
         cards.sort()
         other_cards = other.cards[:]
@@ -114,18 +115,39 @@ class PokerCards:
         other.cards = [ x for x in self.cards ]
         return other
         
-    def set(self, cards):
-        if type(cards) is ListType:
-            if len(cards) > 0 and type(cards[0]) is StringType:
-                eval = PokerEval()
-                self.cards = eval.string2card(cards)
-            else:
-                self.cards = cards[:]
+    def getValue(self, card):
+        value = None
+        if type(card) is StringType:
+            eval = PokerEval()
+            try:
+                value = eval.string2card(card)
+            except RuntimeError:
+                raise UserWarning, "Invalid card %s" %(card)
         else:
+            if card != PokerCards.NOCARD:
+                value = card & PokerCards.VALUE_CARD_MASK
+                if (value < 0) or (value >= PokerCards.NB_CARD):
+                    raise UserWarning, "Invalid card %s" %(card)
+                
+            value = card
+                
+        return value
+        
+    def set(self, cards):
+        self.cards = []
+        
+        if isinstance(cards,PokerCards):
             self.cards = cards.cards[:]
+            return
+                
+        if not type(cards) is ListType:
+            cards = [cards]
+            
+        self.cards = map(self.getValue,cards)
             
     def add(self, card, visible):
-        self.cards.append(card | ((not visible and PokerCards.NOT_VISIBLE_CARD) or PokerCards.VISIBLE_CARD))
+        card_value = self.getValue(card)
+        self.cards.append(card_value | ((not visible and PokerCards.NOT_VISIBLE_CARD) or PokerCards.VISIBLE_CARD))
         
     def allVisible(self):
         for i in xrange(len(self.cards)):

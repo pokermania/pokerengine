@@ -1,0 +1,140 @@
+# -*- mode: python -*-
+# Copyright (C) 2006 Pierre-Andre
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Authors:
+#  Pierre-Andre Vieillard-Baron
+#  Loic Dachary <loic@gnu.org>
+#
+
+import sys, os
+sys.path.insert(0, "..")
+
+import os, re, os.path, sys
+import unittest
+
+coverage_available = False
+try:
+    import coverage
+    coverage_available = True
+except ImportError :
+    pass
+    
+# -----------------------------------------------------------------------------------------------------
+def uniq(elements):
+  temp = {}
+  for element in elements:
+    temp[element] = None
+  return temp.keys()
+    
+# -----------------------------------------------------------------------------------------------------
+def GetTestModules(directory, test_module_name = None):
+    files = os.listdir(directory)
+    test_files  = re.compile('^(test-.*)\.py$', re.IGNORECASE)          
+    files = filter(test_files.search, files)
+    test_modules_names = map(lambda l__file: os.path.splitext(l__file)[0], files)
+    print str(test_modules_names)
+    if test_module_name:
+        if not test_module_name in test_modules_names:
+            test_modules_names = []
+        else:
+            test_modules_names = [test_module_name]
+         
+    test_modules = map(__import__, test_modules_names)
+    return test_modules
+    
+# -----------------------------------------------------------------------------------------------------
+def GetModules(test_modules):
+    modules = []
+    for test_module in test_modules:
+        if hasattr(test_module,'GetTestedModule'):
+            modules.append(test_module.GetTestedModule())
+    return modules
+    
+# -----------------------------------------------------------------------------------------------------
+def StartCoverageTest():
+    if coverage_available:
+        coverage.start()
+        
+# -----------------------------------------------------------------------------------------------------
+def DisplayCoverageTestResults(modules):
+    if coverage_available:
+        coverage.report(modules)
+    
+# -----------------------------------------------------------------------------------------------------
+def EndCoverageTest():
+    if coverage_available:
+        coverage.stop()
+        coverage.erase()
+    
+# -----------------------------------------------------------------------------------------------------
+def PrintUsage():
+    print 'Usage:'
+    print '\t' + sys.argv[0] + ' [-h] [-c] [-d Tests directory] [-v Verbosity level]\n'
+    print '\t [-h] This message'
+    print '\t [-c] Activate the coverage statistiques'
+    print '\t [-m] Select the tested module'
+    print '\t [-d] Path of the tests directory'
+    print '\t [-v] Verbosity level [0-2]'
+        
+# -----------------------------------------------------------------------------------------------------
+if __name__ == '__main__':
+    import getopt
+    
+    try:
+        opts,args = getopt.getopt(sys.argv[1:],'v:d:m:ch')
+    except getopt.error, msg:
+        PrintUsage()
+        os._exit(1)
+    
+    test_module_name = None
+    test_verbosity_level = 0
+    test_directory = os.getcwd()
+    test_coverage_activated = False
+    
+    try:
+        for opt, arg in opts:
+            if opt == '-h':
+                PrintUsage()
+                os._exit(0)
+            if opt == '-d': test_directory = arg
+            if opt == '-c': test_coverage_activated = True
+            if opt == '-v': test_verbosity_level = int(arg)
+            if opt == '-m': test_module_name = arg
+                
+    except:
+        print 'Error during parsing arguments'
+        PrintUsage()
+        os._exit(1)
+        
+    if test_coverage_activated: StartCoverageTest()    
+        
+    tested_modules = GetTestModules(test_directory, test_module_name)
+    if not tested_modules:
+        print 'No module find'
+        PrintUsage()
+        os._exit(1)
+        
+    test_suite = unittest.TestSuite(map(unittest.defaultTestLoader.loadTestsFromModule, tested_modules)) 
+    
+    results = unittest.TextTestRunner(verbosity=test_verbosity_level).run(test_suite)
+    
+    if test_coverage_activated:
+        a = GetModules(tested_modules)
+        b = uniq(a)
+        coverage.report(b)
+#        DisplayCoverageTestResults(uniq())
+#        EndCoverageTest()

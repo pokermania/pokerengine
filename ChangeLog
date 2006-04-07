@@ -1,6 +1,38 @@
-Wed Apr 05 2006  Loic Dachary  <loic@gnu.org>
+Sat Apr 08 2006  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.14
+
+	* tests/coverage.py: add coverage code
+	  from http://nedbatchelder.com/code/modules/coverage.html
+
+	* tests/tests-*.py.in: 35% unit test coverage
+
+	* tests/conf/unittest*.xml, upgrade/*.xsl: helpers for unit tests
+
+	* tests/run.in: run all tests and measure coverage (including non-regression tests).
+
+Fri Apr 07 2006  Loic Dachary  <loic@gnu.org>
+
+	* pokerengine/pokergame.py (PokerGame.setDealer): don't modify position
+	  if an error occured.
+	  (PokerGame.noAutoPlayer): auto = False (instead of True !)
+
+	* pokerengine/pokergame.py (PokerGame.addPlayer): add loads of
+	  sanity checks and error reports
+
+	* pokerengine/pokergame.py (PokerGame.setPosition): don't modify position
+	  if an error occured.
+
+	* pokerengine/pokergame.py (PokerGame.resetSeatsLeft): If the
+	  number of player is invalid the seats_left is reset.
+
+	* pokerengine/pokergame.py (PokerGame.setMaxPlayers): The number
+	  max of player is now check and if it is invalid the error is
+	  traced and the number is set to 0.
+
+	* pokerengine/pokergame.py (PokerPlayer.__str__):  missing muck
+
+Wed Apr 05 2006  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokergame.py (PokerGame.setVariant): copy the info dict in backup instead
 	  of keeping a reference

@@ -1,5 +1,5 @@
 # -*- mode: python -*-
-# Copyright (C) 2006 Pierre-Andre <pavieillardbaron@hotmail.com>
+# Copyright (C) 2006 Pierre-Andre
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#  Pierre-Andre <pavieillardbaron@hotmail.com>
+#  Pierre-Andre Vieillard-Baron
 #  Loic Dachary <loic@gnu.org>
 #
 
@@ -39,10 +39,17 @@ class VersionTestCase(unittest.TestCase):
         pass
         
     # -----------------------------------------------------------------------------------------------------
-    def testParseError(self):
-        """Test parsing error of the version string representation"""
-        ver = version.Version()
+    def testStringRepresentation(self):
+        """Test the string representation of the version object"""
         
+        ver = version.Version('1.2.3')
+        self.failUnlessEqual(repr(ver),ver.__class__.__name__ + ' (\'' + str(ver) + '\')')
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testParseError(self):
+        """Test parsing error with invalid version string"""
+        
+        ver = version.Version()
         self.failUnlessRaises(ValueError,ver.parse,'')
         self.failUnlessRaises(ValueError,ver.parse,'1')
         self.failUnlessRaises(ValueError,ver.parse,'1.2')
@@ -53,9 +60,9 @@ class VersionTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------
     def testParseSuccess(self):
-        """Test parsing success of the version string representation"""
-        ver = version.Version()
+        """Test parsing success with valid version string"""
         
+        ver = version.Version()
         try:
             ver.parse('1.2.3')
             major, medium, minor = ver.version
@@ -69,24 +76,28 @@ class VersionTestCase(unittest.TestCase):
     # -----------------------------------------------------------------------------------------------------
     def testMajor(self):
         """Test accessor to the major version number"""
+        
         ver = version.Version('1.2.3')
         self.failUnlessEqual(ver.major(),1)
         
     # -----------------------------------------------------------------------------------------------------
     def testMedium(self):
         """Test accessor to the medium version number"""
+        
         ver = version.Version('1.2.3')
         self.failUnlessEqual(ver.medium(),2)
         
     # -----------------------------------------------------------------------------------------------------
     def testMinor(self):
         """Test accessor to the minor version number"""
+        
         ver = version.Version('1.2.3')
         self.failUnlessEqual(ver.minor(),3)
         
     # -----------------------------------------------------------------------------------------------------
     def testStr(self):
         """Test string representation"""
+        
         sver = '1.2.3'
         ver = version.Version('1.2.3')
         self.failUnlessEqual(sver,str(ver))
@@ -94,6 +105,7 @@ class VersionTestCase(unittest.TestCase):
     # -----------------------------------------------------------------------------------------------------
     def testAdd(self):
         """Test version addition"""
+        
         ver1 = version.Version('1.2.3')
         ver2 = ver1 + 1
         self.failUnlessEqual(version.Version('1.2.3'),ver1)        
@@ -102,6 +114,7 @@ class VersionTestCase(unittest.TestCase):
     # -----------------------------------------------------------------------------------------------------
     def testIAdd(self):
         """Test version auto addition"""
+        
         ver1 = version.Version('1.2.3')
         ver1 += 1
         self.failUnlessEqual(version.Version('1.2.4'),ver1)
@@ -109,6 +122,7 @@ class VersionTestCase(unittest.TestCase):
     # -----------------------------------------------------------------------------------------------------
     def testSub(self):
         """Test version substraction"""
+        
         ver1 = version.Version('3.2.1')
         ver2 = ver1 - 1
         self.failUnlessEqual(version.Version('3.2.1'),ver1)
@@ -127,6 +141,7 @@ class VersionTestCase(unittest.TestCase):
     # -----------------------------------------------------------------------------------------------------
     def testISub(self):
         """Test version auto substraction"""
+        
         ver1 = version.Version('3.2.1')
         ver1 -= 1
         self.failUnlessEqual(version.Version('3.2.0'),ver1)
@@ -176,7 +191,6 @@ class VersionTestCase(unittest.TestCase):
         ver = version.Version('3.2.1')
         self.failUnlessEqual(ver.upgradeChain('3.2.3',ver_ignored),[])
         
-        
     # -----------------------------------------------------------------------------------------------------
     def testUpgradeChainValid(self):      
         """Test upgrade chain with valid inputs"""
@@ -195,11 +209,19 @@ class VersionTestCase(unittest.TestCase):
         self.failUnlessEqual(ver.upgradeChain('3.2.7',ver_valid), ['upgrade-3.2.1-3.2.6'])
         
 # -----------------------------------------------------------------------------------------------------
-def DefaultSuite():
+def GetTestSuite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(VersionTestCase))
     return suite
+    
+# -----------------------------------------------------------------------------------------------------
+def GetTestedModule():
+    return version
   
 # -----------------------------------------------------------------------------------------------------
+def Run(verbose = 2):
+    unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
+    
+# -----------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    unittest.TextTestRunner(verbosity=2).run(DefaultSuite())
+    Run()

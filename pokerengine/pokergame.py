@@ -157,7 +157,7 @@ class PokerPlayer:
         return other
 
     def __str__(self):
-        return "serial = %d, name= %s, fold = %s, remove_next_turn = %s, sit_out = %s, sit_out_next_turn = %s, sit_requested = %s, bot = %s, auto = %s, auto_blind_ante = %s, wait_for = %s, missed_blind = %s, blind = %s, buy_in_payed = %s, ante = %s, all_in = %s, side_pot_index = %d, seat = %d, hand = %s, money = %d, rebuy = %d, bet = %d, dead = %d, talked_once = %s, user_data = %s" % (self.serial, self.name, self.fold, self.remove_next_turn, self.sit_out, self.sit_out_next_turn, self.sit_requested, self.bot, self.auto, self.auto_blind_ante, self.wait_for, self.missed_blind, self.blind, self.buy_in_payed, self.ante, self.all_in, self.side_pot_index, self.seat, self.hand, self.money, self.rebuy, self.bet, self.dead, self.talked_once, self.user_data)
+        return "serial = %d, name = %s, fold = %s, remove_next_turn = %s, sit_out = %s, sit_out_next_turn = %s, sit_requested = %s, bot = %s, auto = %s, auto_blind_ante = %s, wait_for = %s, auto_muck = %d, missed_blind = %s, blind = %s, buy_in_payed = %s, ante = %s, all_in = %s, side_pot_index = %d, seat = %d, hand = %s, money = %d, rebuy = %d, bet = %d, dead = %d, talked_once = %s, user_data = %s" % (self.serial, self.name, self.fold, self.remove_next_turn, self.sit_out, self.sit_out_next_turn, self.sit_requested, self.bot, self.auto, self.auto_blind_ante, self.wait_for, self.auto_muck, self.missed_blind, self.blind, self.buy_in_payed, self.ante, self.all_in, self.side_pot_index, self.seat, self.hand, self.money, self.rebuy, self.bet, self.dead, self.talked_once, self.user_data)
 
     def setUserData(self, user_data):
         self.user_data = user_data
@@ -528,6 +528,9 @@ class PokerGame:
         
     def setMaxPlayers(self, max_players):
         self.max_players = max_players
+        if (self.max_players < 2) or (self.max_players > ABSOLUTE_MAX_PLAYERS):
+            self.error("The number of players must be between %d and %d" % (2, ABSOLUTE_MAX_PLAYERS))
+            self.max_players = 0
         self.resetSeatsLeft()
 
     def seatsLeftCount(self):
@@ -552,6 +555,9 @@ class PokerGame:
             self.seats_left = [0, 1, 2, 3, 4, 5, 6, 7, 8]
         elif self.max_players == 10:
             self.seats_left = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        else:
+            self.seats_left = []
+            
         self.seats_all = self.seats_left[:]
 
     def seatsCount(self):
@@ -690,12 +696,14 @@ class PokerGame:
     def setPosition(self, position):
         if not self.isRunning():
             self.error("changing position while the game is not running has no effect")
-        self.position = position
+        else:
+            self.position = position
         
     def setDealer(self, seat):
         if self.isRunning():
             self.error("cannot change the dealer during the turn")
-        self.dealer_seat = seat
+        else:
+            self.dealer_seat = seat
         
     def getPlayer(self, serial):
         return self.serial2player.get(serial, None)
@@ -720,20 +728,38 @@ class PokerGame:
             return False
         
     def addPlayer(self, serial, seat = -1):
+        
+        if self.serial2player.has_key(serial):
+            player = self.serial2player[serial]
+            if seat == player.seat:
+                # Player already added on this seat
+                return True
+            else:
+                # Player already added on another seat
+                return False
+        
         if self.canAddPlayer(serial):
             player = PokerPlayer(serial, self)
             if self.is_directing:
-                if seat != -1 and seat in self.seats_left:
-                    player.seat = seat
-                    self.seats_left.remove(seat)
+                if seat != -1:
+                    if seat in self.seats_left:
+                        player.seat = seat
+                        self.seats_left.remove(seat)
+                    else:
+                        self.error("the seat %d is not among the remaining seats %s" % ( seat, self.seats_left ))
+                        return False
                 else:
                     player.seat = self.seats_left.pop(0)
             else:
                 if seat not in self.seats_left:
                     self.error("the seat %d is not among the remaining seats %s" % ( seat, self.seats_left ))
+                    return False
+                    
                 player.seat = seat
                 self.seats_left.remove(seat)
+            
             if self.verbose >= 1: self.message("player %d get seat %d" % (serial, player.seat))
+            
             self.serial2player[serial] = player
             return True
         else:
@@ -771,7 +797,7 @@ class PokerGame:
         if self.verbose >= 2: self.message("noAutoPlayer: player %d" % serial)
         player = self.getPlayer(serial)
         if player:
-            player.auto = True
+            player.auto = False
             return True
         else:
             return False
@@ -2115,7 +2141,7 @@ class PokerGame:
             else:
                 self.error("unexpected win order: %s for variant %s" % ( win_order, variant ))
         if not self.win_orders:
-            raise UserWarning, "failed to read win orders from %s" % self.__variant.path 
+            raise UserWarning, "failed to read win orders from %s" % self.__variant.path
 
         board_size = 0
         hand_size = 0

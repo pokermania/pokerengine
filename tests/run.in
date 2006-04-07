@@ -26,7 +26,9 @@
 #  Henry Precheur <henry@precheur.org>
 #
 # 
-for script in history deal positions tournament allin chips blinds sit upgrades muck test-version
+python coverage.py -e
+for script in history.py deal.py positions.py tournament.py allin.py chips.py blinds.py sit.py upgrades.py muck.py test-*.py
 do
-  python $script.py
+  python coverage.py -x $script
 done
+python coverage.py -m -r ../pokerengine/*.py

@@ -71,7 +71,9 @@ sbin_SCRIPTS = \
 	pokerconfigupgrade
 
 clean-local:
-	rm -f */*.py[co]
+	rm -f */*.py[co] 
+	rm -fr tests/conftest
+	rm -f tests/.coverage
 
 all-local:
 	if [ -w ${srcdir}/conf ] ; then \

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<poker>
+    <variant type="VariantType" name="VariantName" id="VariantName">
+    
+        <wins>
+            <winner order="low8"/>
+        </wins>
+        
+        <round name="Round1">
+            <deal card="board" BoardAttribute = "BoardAttributeValue1"/>
+            <deal card="up" CardUpAttribute = "CardUpAttributeValue1"/>
+            <deal card="down" CardDownAttribute = "CardDownAttributeValue1"/>
+            <position type="PositionType1"/>
+            <action type="ActionType1"/>
+        </round>
+        
+        <round name="Round2">
+            <deal card="board" BoardAttribute = "BoardAttributeValue1"/>
+		  <deal card="board" BoardAttribute = "BoardAttributeValue2"/>
+            <deal card="up" CardUpAttribute = "CardUpAttributeValue2"/>
+            <deal card="down" CardDownAttribute = "CardDownAttributeValue2"/>
+            <position type="PositionType2"/>
+            <action type="ActionType2"/>
+        </round>
+        
+    </variant>
+</poker>

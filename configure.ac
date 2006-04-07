@@ -94,6 +94,13 @@ AC_CONFIG_FILES([Makefile
                  tests/sit.py
                  tests/tournament.py
                  tests/upgrades.py
+                 tests/test-all.py	
+                 tests/test-pokercards.py
+                 tests/test-pokerengineconfig.py
+                 tests/test-pokertournament.py
+                 tests/test-game.py
+                 tests/test-pokerchips.py
+                 tests/test-pokerplayer.py
                  tests/test-version.py
                  tests/Makefile], [chmod -w $ac_file])
 AC_OUTPUT
