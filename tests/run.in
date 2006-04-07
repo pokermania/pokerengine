@@ -26,9 +26,9 @@
 #  Henry Precheur <henry@precheur.org>
 #
 # 
-python coverage.py -e
+$PYTHON ${srcdir}/coverage.py -e
 for script in history.py deal.py positions.py tournament.py allin.py chips.py blinds.py sit.py upgrades.py muck.py test-*.py
 do
-  python coverage.py -x $script
+  $PYTHON ${srcdir}/coverage.py -x $script
 done
-python coverage.py -m -r ../pokerengine/*.py
+$PYTHON ${srcdir}/coverage.py -m -r ${top_srcdir}/pokerengine/*.py
