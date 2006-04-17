@@ -52,8 +52,8 @@ letter2name = {
     '6': 'Six',
     '5': 'Five',
     '4': 'Four',
-    '3': 'Three',
-    '2': 'Two'
+    '3': 'Trey',
+    '2': 'Deuce'
     }
 
 letter2names = {
@@ -68,7 +68,7 @@ letter2names = {
     '6': 'Sixes',
     '5': 'Fives',
     '4': 'Fours',
-    '3': 'Threes',
+    '3': 'Treys',
     '2': 'Deuces'
     }
 
