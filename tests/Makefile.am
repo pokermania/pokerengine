@@ -31,7 +31,8 @@ export PYTHON
 EXTRA_DIST = \
 	coverage.py \
 	$(wildcard conf/*.xml) \
-	$(wildcard upgrade/*.xsl)
+	$(wildcard test-data/conf/*.xml) \
+	$(wildcard test-data/upgrade/*.xsl)
 
 TESTS_ENVIRONMENT = ./run
 TESTS = coverage-reset history.py deal.py positions.py tournament.py allin.py chips.py blinds.py sit.py upgrades.py muck.py test-*.py coverage-report
