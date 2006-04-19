@@ -27,6 +27,7 @@
 
 AC_PREREQ(2.54)
 AC_INIT(poker-engine, [esyscmd(perl -n -e "print if(s/^version_number = \"(.*)\".*/\1/s)" pokerengine/__init__.py)])
+AC_CONFIG_AUX_DIR(config)
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR([pokerengine/pokergame.py])

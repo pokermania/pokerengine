@@ -36,8 +36,8 @@ from pokerengine import pokerengineconfig
 
 class PokerEngineConfigTestCase(unittest.TestCase):
     
-    TestConfDirectory = './conf'
-    TestUpgradeDirectory = './upgrade'
+    TestConfDirectory = './test-data/conf'
+    TestUpgradeDirectory = './test-data/upgrade'
     
     TestConfigTemporaryFile = 'unittest.config.temporary.xml'
 

@@ -26,9 +26,21 @@
 #  Henry Precheur <henry@precheur.org>
 #
 # 
-$PYTHON ${srcdir}/coverage.py -e
-for script in history.py deal.py positions.py tournament.py allin.py chips.py blinds.py sit.py upgrades.py muck.py test-*.py
-do
-  $PYTHON ${srcdir}/coverage.py -x $script
-done
-$PYTHON ${srcdir}/coverage.py -m -r ${top_srcdir}/pokerengine/*.py
+set -e
+
+: ${srcdir:=.}
+: ${top_srcdir:=..}
+
+case "$1" in 
+
+*coverage-reset) @PYTHON@ ${srcdir}/coverage.py -e ;;
+
+*coverage-report) @PYTHON@ ${srcdir}/coverage.py -m -r ${top_srcdir}/pokerengine/*.py ;;
+
+*.py) @PYTHON@ ${srcdir}/coverage.py -x "$1" ;;
+
+*) 
+        echo unknown test $1
+        exit 1
+        ;;
+esac

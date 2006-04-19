@@ -32,18 +32,8 @@ pythondir=@pythondir@
 
 SUBDIRS = pokerengine tests 
 
-MAINTAINERCLEANFILES = \
-	py-compile \
-	aclocal.m4 \
-	config.guess \
-	config.sub \
-	configure \
-	install-sh \
-	mkinstalldirs \
-	missing \
-	Makefile.in \
-	INSTALL \
-	.in
+MAINTAINERCLEANFILES = INSTALL Makefile.in aclocal.m4 configure \
+	$(filter-out %.m4,$(wildcard config/[a-z]*)) 
 
 confpokerdir = ${pkgdatadir}/conf
 dist_confpoker_DATA = \
@@ -54,7 +44,6 @@ dist_upgradepoker_DATA = \
 	$(wildcard ${top_srcdir}/upgrades/*.xsl)
 
 EXTRA_DIST = \
-	bootstrap \
 	config/python.m4 \
 	config/python-depends.m4 \
 	examples/simple.py \

@@ -33,7 +33,7 @@ from pokerengine import pokergame
 
 class PokerGameTestCase(unittest.TestCase):
     
-    TestConfDirectory = './conf'
+    TestConfDirectory = './test-data/conf'
     
     TestVariantInvalidFile = 'unittest.variant.invalid.xml'
     TestVariantTemplateFile = 'unittest.variant.template.xml'

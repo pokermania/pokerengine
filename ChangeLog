@@ -1,6 +1,13 @@
-Mon Apr 17 2006  Loic Dachary  <loic@gnu.org>
+Wed Apr 19 2006  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.14
+
+	* pokerengine/pokerchips.py (PokerChips.__ne__): use isinstance
+
+	* tests/run.in: tests run individually by make check instead of grouped
+	  into a single execution (exhibits errors)
+
+Mon Apr 17 2006  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokercards.py (letter2names): try & deuce (Christopher Stone <chris.stone@gmail.com>)
 

@@ -62,13 +62,13 @@ class PokerChips:
             self.remainder = what.remainder
 
     def __eq__(self, other):
-        if type(other) is PokerChips:
+        if isinstance(other, PokerChips):
             return self.chips == other.chips and self.remainder == other.remainder
         else:
             return False
 
     def __ne__(self, other):
-        if type(other) is PokerChips:
+        if isinstance(other, PokerChips):
             return self.chips != other.chips or self.remainder != other.remainder
         else:
             return True

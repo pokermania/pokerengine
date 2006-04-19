@@ -1,6 +1,8 @@
 poker-engine (1.0.14-1) unstable; urgency=low
 
   * upstream sync
+  
+  * use autoreconf
 
  -- Loic Dachary (OuoU) <loic@debian.org>  Fri, 24 Mar 2006 18:50:26 +0100
 

@@ -44,7 +44,6 @@ class PokerChipsTestCase(unittest.TestCase):
     def testInit(self):
         values = [5, 10, 20]
         pokerchip = pokerchips.PokerChips(values)
-        
         self.failUnlessEqual(pokerchip, pokerchips.PokerChips(values, 0))
         self.failUnlessEqual(pokerchip.toint(), 0)
         

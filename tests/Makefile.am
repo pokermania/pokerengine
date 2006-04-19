@@ -33,4 +33,10 @@ EXTRA_DIST = \
 	$(wildcard conf/*.xml) \
 	$(wildcard upgrade/*.xsl)
 
-TESTS = run
+TESTS_ENVIRONMENT = ./run
+TESTS = coverage-reset history.py deal.py positions.py tournament.py allin.py chips.py blinds.py sit.py upgrades.py muck.py test-*.py coverage-report
+
+clean-local:
+	rm -fr .coverage
+
+.PHONY: coverage-reset coverage-report
