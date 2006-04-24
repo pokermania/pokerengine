@@ -27,16 +27,6 @@
 import sys
 from types import *
 
-if sys.hexversion < 0x02030000:
-  from types import *
-  def sum(*args):
-    if len(args) == 1 and type(args[0]) == ListType or type(args[0]) == TupleType:
-      args = args[0]
-    result = 0
-    for arg in args:
-      result += arg
-    return result
-
 MAX_CHIPS_PER_STACK = 23
 INT2CHIPS_FACTOR = 0.3
 
@@ -142,7 +132,7 @@ class PokerChips:
         if self.remainder > 0:
             if list:
                 if list[0] == 1:
-                    list[1] += self.remainder
+                  raise UserWarning, "pokerchips.py:tolist unexpected remainder > 0 when first chip value is 1 : " + str(self)
                 else:
                     list.insert(0, self.remainder)
                     list.insert(0, 1)
