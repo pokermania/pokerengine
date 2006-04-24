@@ -28,16 +28,6 @@ from types import StringType
 from pprint import pformat
 import time, sys
 
-if sys.hexversion < 0x02030000:
-  from types import *
-  def sum(*args):
-    if len(args) == 1 and type(args[0]) == ListType or type(args[0]) == TupleType:
-      args = args[0]
-    result = 0
-    for arg in args:
-      result += arg
-    return result
-
 from pokerengine.pokergame import PokerGameServer
 from pokerengine.pokerengineconfig import Config
 
@@ -96,7 +86,7 @@ def equalizeGames(games, verbose = 0, log_message = None):
             if not distributed:
                 break
 
-    if verbose and len(results) > 0:
+    if log_message and verbose and len(results) > 0:
         log_message("balanceGames equalizeGames: " + pformat(results))
 
     return results
@@ -130,7 +120,7 @@ def breakGames(games, verbose = 0, log_message = None):
         if len(to_break) < 2:
             break
 
-    if verbose and len(results) > 0:
+    if log_message and verbose and len(results) > 0:
         log_message("balanceGames breakGames: " + pformat(results))
 
     return results
@@ -177,7 +167,6 @@ class PokerTournament:
         self.name = kwargs.get('name', 'no name')
         self.description_short = kwargs.get('description_short', 'nodescription_short')
         self.description_long = kwargs.get('description_long', 'nodescription_long')
-        self.name = kwargs.get('name', 'no name')
         self.serial = kwargs.get('serial', 1)
         self.verbose = kwargs.get('verbose', 0)
         self.players_quota = kwargs.get('players_quota', 10)
@@ -195,7 +184,7 @@ class PokerTournament:
         self.prizes_specs = kwargs.get('prizes_specs', "table")
         self.finish_time = -1
         if type(self.start_time) is StringType:
-            self.start_time = int(strftime("%s", strptime(self.start_time, "%Y/%m/%d %H:%M")))
+            self.start_time = int(time.mktime(time.strptime(self.start_time, "%Y/%m/%d %H:%M")))
         self.prefix = ""
         
         self.players = []
@@ -205,6 +194,8 @@ class PokerTournament:
         self.state = TOURNAMENT_STATE_ANNOUNCED
         self.can_register = False
         self.games = []
+        self.id2game = {}
+        
         self.callback_new_state = lambda tournament: True
         self.callback_create_game = lambda tournament: PokerGameServer("poker.%s.xml", tournament.dirs)
         self.callback_game_filled = lambda tournament, game: True
@@ -239,7 +230,7 @@ class PokerTournament:
     def updateRegistering(self):
         if self.state == TOURNAMENT_STATE_ANNOUNCED:
             now = time.time()
-            if now - self.register_time > 0:
+            if now - self.register_time > 0.0:
                 self.changeState(TOURNAMENT_STATE_REGISTERING)
                 return -1
             else:
@@ -338,11 +329,14 @@ class PokerTournament:
 
             buy_in = game.buyIn()
             for seat in xrange(self.seats_per_game):
+                if not players: break
+                    
                 player = players.pop()
                 game.addPlayer(player)
                 game.payBuyIn(player, buy_in)
                 game.sit(player)
                 game.autoBlindAnte(player)
+                
             self.games.append(game)
             self.callback_game_filled(self, game)
             game.close()

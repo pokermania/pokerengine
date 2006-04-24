@@ -42,16 +42,6 @@ ABSOLUTE_MAX_PLAYERS = 10
 
 LEVELS_CACHE = {}
 
-if sys.hexversion < 0x02030000:
-  from types import *
-  def sum(*args):
-    if len(args) == 1 and type(args[0]) == ListType or type(args[0]) == TupleType:
-      args = args[0]
-    result = 0
-    for arg in args:
-      result += arg
-    return result
-
 def uniq(elements):
   temp = {}
   for element in elements:
@@ -139,6 +129,7 @@ class PokerPlayer:
         other.bot = self.bot
         other.auto = self.auto
         other.auto_blind_ante = self.auto_blind_ante
+        other.auto_muck = self.auto_muck
         other.wait_for = self.wait_for
         other.missed_blind = self.missed_blind
         other.blind = self.blind
@@ -330,6 +321,9 @@ def history2messages(game, history, serial2name = str, pocket_messages = False):
             pass
 
         elif type == "wait_blind":
+            pass
+            
+        elif type == "rebuy":
             pass
 
         elif type == "blind":
@@ -1710,8 +1704,8 @@ class PokerGame:
                 return None
                 
     def possibleActions(self, serial):
+        actions = []
         if self.canAct(serial) and not self.isBlindAnteRound():
-            actions = []
             if self.canCall(serial):
                 actions.append("call")
             if self.canRaise(serial):
@@ -1720,9 +1714,7 @@ class PokerGame:
                 actions.append("check")
             else:
                 actions.append("fold")
-            return actions
-        else:
-            return False
+        return actions
         
     def call(self, serial):
         if self.isBlindAnteRound() or not self.canAct(serial):
@@ -2082,25 +2074,28 @@ class PokerGame:
         if player.isBot():
             (desired_action, ev) = self.__botEval(serial)
             actions = self.possibleActions(serial)
-            while not desired_action in actions:
-                if desired_action == "check":
-                    desired_action = "fold"
-                elif desired_action == "call":
-                    desired_action = "check"
-                elif desired_action == "raise":
-                    desired_action = "call"
+            if actions:
+              while not desired_action in actions:
+                  if desired_action == "check":
+                      desired_action = "fold"
+                  elif desired_action == "call":
+                      desired_action = "check"
+                  elif desired_action == "raise":
+                      desired_action = "call"
 
-            if desired_action == "fold":
-                self.fold(serial)
-            elif desired_action == "check":
-                self.check(serial)
-            elif desired_action == "call":
-                self.call(serial)
-            elif desired_action == "raise":
-                self.callNraise(serial, 0)
+              if desired_action == "fold":
+                  self.fold(serial)
+              elif desired_action == "check":
+                  self.check(serial)
+              elif desired_action == "call":
+                  self.call(serial)
+              elif desired_action == "raise":
+                  self.callNraise(serial, 0)
+              else:
+                  self.error("__autoPlay: unexpected actions = %s" % actions)
+
             else:
-                self.error("__autoPlay: unexpected actions = %s" % actions)
-          
+                self.error("__autoPlay: no possible action")
         elif ( player.isSitOut() or player.isAuto() ):
             #
             # A player who is sitting but not playing (sitOut) automatically
@@ -2707,7 +2702,7 @@ class PokerGame:
         elif value == "Quads":
             return "Four of a kind %s, %s kicker" % ( letter2names[cards[0][0]], letter2name[cards[4][0]] )
         elif value == "StFlush":
-            if letter2names[cards[0][0]] == 'A':
+            if letter2name[cards[0][0]] == 'Ace':
                 return "Royal flush"
             else:
                 return "Straight flush %s high" % letter2name[cards[0][0]]
@@ -2738,7 +2733,7 @@ class PokerGame:
         elif value == "Quads":
             return "Quads %s, %s kicker" % ( letter2names[cards[0][0]], letter2name[cards[4][0]] )
         elif value == "StFlush":
-            if letter2names[cards[0][0]] == 'A':
+            if letter2name[cards[0][0]] == 'Ace':
                 return "Royal flush"
             else:
                 return "Straight flush"
