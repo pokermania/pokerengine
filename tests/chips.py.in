@@ -28,16 +28,6 @@ import sys, os
 sys.path.insert(0, "@top_srcdir@")
 sys.path.insert(0, "..")
 
-if sys.hexversion < 0x02030000:
-  from types import *
-  def sum(*args):
-    if len(args) == 1 and type(args[0]) == ListType or type(args[0]) == TupleType:
-      args = args[0]
-    result = 0
-    for arg in args:
-      result += arg
-    return result
-
 import unittest
 from pokerengine.pokerchips import PokerChips
 from pokerengine import pokerchips

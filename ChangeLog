@@ -1,3 +1,21 @@
+Mon Apr 24 2006  Loic Dachary  <loic@gnu.org>
+
+	* Release 1.0.15
+
+	* pokerengine/pokergame.py (PokerGame.readableHandValueLong): royal flush tests fix
+
+	* pokerengine/pokergame.py (PokerGame.possibleActions): return [] instead
+	  of False
+
+	* pokerengine/pokertournament.py (PokerTournament.__init__): init bug fixes
+
+	* pokerengine/pokertournament.py (PokerTournament.createGames): ok if the
+	  tournament players don't divide into an exact number of tables
+
+	* pokerengine/pokerchips.py (PokerChips.tolist): impossible case raises warning
+
+	* give up python2.2 support
+
 Wed Apr 19 2006  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.14
