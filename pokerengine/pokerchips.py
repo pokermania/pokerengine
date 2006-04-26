@@ -92,7 +92,9 @@ class PokerChips:
         if type(what) is IntType or type(what) is LongType:
             ( what, remainder ) = PokerChips.int2chips(values, INT2CHIPS_FACTOR, what)
         if type(what) is ListType:
-            return PokerChips(values, what)
+            chips = PokerChips(values, what)
+            chips.remainder += remainder
+            return chips
         else:
             return what
         
