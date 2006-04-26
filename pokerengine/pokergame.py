@@ -2829,8 +2829,6 @@ class PokerGame:
             amount = player.money
         player.money -= amount
         player.bet += amount
-        if player.money < 0:
-            self.error("money2bet: %d money dropped under 0" % serial)
         self.runCallbacks("money2bet", serial, amount)
         self.updatePots(serial, amount)
         if player.money == 0:
