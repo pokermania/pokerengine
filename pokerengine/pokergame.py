@@ -215,10 +215,6 @@ class PokerPlayer:
         return self.buy_in_payed
 
 def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame):
-    def card2string(hand):
-        eval = game.eval
-        return join(eval.card2string(hand[1][1:]))
-
     messages = []
     best = { 'hi': 0,
              'low': 0x0FFFFFFF }
@@ -824,6 +820,7 @@ class PokerGame:
                     self.seats_left.remove(seat)
                 else:
                     self.error("setSeats: seat %d not in seats_left %s" % ( seat, self.seats_left ))
+                    self.serial2player[serial].seat = -1
             seat += 1
         if self.seats() != seats:
             self.error("seatSeats: wanted %s but got %s" % ( seats, self.seats() ))
@@ -1600,7 +1597,7 @@ class PokerGame:
         if self.position != -1:
           self.historyAdd("position", -1)
         self.position = -1
-        self.changeState("end")
+        self.changeState(GAME_STATE_END)
         self.runCallbacks("end_round_last")
 
     def endState(self):
@@ -1806,6 +1803,7 @@ class PokerGame:
     def waitBigBlind(self, serial):
         if not self.blind_info:
             self.error("no blind due")
+            return False
         if not self.isBlindAnteRound():
             self.error("player %d cannot pay blind while in state %s" % ( serial, self.state ))
             return False
@@ -1823,6 +1821,7 @@ class PokerGame:
     def blind(self, serial, amount = 0, dead = 0):
         if not self.blind_info:
             self.error("no blind due")
+            return False
         if not self.isBlindAnteRound():
             self.error("player %d cannot pay blind while in state %s" % ( serial, self.state ))
             return False
@@ -1861,17 +1860,19 @@ class PokerGame:
     def ante(self, serial, amount = 0):
         if not self.ante_info:
             self.error("no ante due")
+            return False
         if not self.isBlindAnteRound():
             self.error("player %d cannot pay ante while in state %s" % ( serial, self.state ))
             return False
         if not self.canAct(serial):
             self.error("player %d cannot pay ante. state = %s, serial in position = %d (ignored)" % (serial, self.state, self.getSerialInPosition()))
             return False
-        if self.is_directing:
+        if self.is_directing and amount == 0:
             amount = self.ante_info['value']
         self.payAnte(serial, amount)
         if self.is_directing:
             self.__talkedBlindAnte()
+        return True
 
     def payAnte(self, serial, amount):
         player = self.serial2player[serial]
@@ -3002,7 +3003,7 @@ class PokerGame:
         return self.serial2player[self.player_list[self.last_to_talk]]
 
     def disconnectedCount(self):
-        return len(self.serialsDisconnectedGame())
+        return len(self.serialsDisconnected())
 
     def serialsDisconnected(self):
         return filter(lambda x: self.serial2player[x].isDisconnected(), self.serial2player.keys())
@@ -3011,7 +3012,7 @@ class PokerGame:
         return [ self.serial2player[serial] for serial in self.serialsDisconnected() ]
 
     def connectedCount(self):
-        return len(self.serialsConnectedGame())
+        return len(self.serialsConnected())
 
     def serialsConnected(self):
         return filter(lambda x: self.serial2player[x].isConnected(), self.serial2player.keys())
