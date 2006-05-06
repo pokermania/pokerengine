@@ -1,6 +1,35 @@
-Mon Apr 24 2006  Loic Dachary  <loic@gnu.org>
+Sat May 06 2006  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.15
+
+	* test/test-*.py.in: more coverage tests (95%)
+
+Wed May 03 2006  Loic Dachary  <loic@dachary.org>
+
+	* pokerengine/pokergame.py (PokerGame.setSeats): player seat set to -1 if an
+	  error occurs
+	  (PokerGame.cancelState): use GAME_STATE_END macro
+	  (PokerGame.waitBigBlind): return if no blind data
+	  (PokerGame.blind): return if no blind data
+	  (PokerGame.ante): return if no blind data
+	  (PokerGame.ante): set amount if amount from info is undefined
+	  (PokerGame.disconnectedCount): wrong method name fixed
+
+	* pokerengine/pokergame.py (__historyResolve2messages): kill the unused card2string
+	  method.
+
+Tue May 02 2006  Loic Dachary  <loic@gnu.org>
+
+	* conf/*.template: add bet/type
+
+Wed Apr 26 2006  Loic Dachary  <loic@gnu.org>
+
+	* pokerengine/pokerchips.py (PokerChips.convert): if converting from an int and
+	  there is a remainder, don't lose it
+
+	* pokerengine/pokergame.py (PokerGame.money2bet): remove redundant test
+
+Mon Apr 24 2006  Loic Dachary  <loic@gnu.org>
 
 	* pokerengine/pokergame.py (PokerGame.readableHandValueLong): royal flush tests fix
 

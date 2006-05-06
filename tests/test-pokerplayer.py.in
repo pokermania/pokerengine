@@ -22,48 +22,50 @@
 
 import sys, os
 sys.path.insert(0, "@top_srcdir@")
-sys.path.insert(0, "..")
 
 import unittest
 import random
 
+from pokerengine import pokercards
 from pokerengine import pokergame
+
+RAND_MAX = 0x7fff
 
 class PokerPlayerTestCase(unittest.TestCase):
     
     PokerPlayerAttributes = [
-                                    'serial', \
-                                    'name', \
-                                    'game', \
-                                    'fold', \
-                                    'remove_next_turn', \
-                                    'sit_out', \
-                                    'sit_out_next_turn', \
-                                    'sit_requested', \
-                                    'bot', \
-                                    'auto', \
-                                    'auto_blind_ante', \
-                                    'wait_for', \
-                                    'auto_muck', \
-                                    'missed_blind', \
-                                    'blind', \
-                                    'buy_in_payed', \
-                                    'ante', \
-                                    'all_in', \
-                                    'side_pot_index', \
-                                    'seat', \
-                                    'hand', \
-                                    'money', \
-                                    'rebuy', \
-                                    'bet', \
-                                    'dead', \
-                                    'talked_once', \
-                                    'user_data'
+                                    'serial' ,\
+                                    'name' , \
+                                    'game' , \
+                                    'fold' , \
+                                    'remove_next_turn' , \
+                                    'sit_out' , \
+                                    'sit_out_next_turn' , \
+                                    'sit_requested' , \
+                                    'bot' , \
+                                    'auto' , \
+                                    'auto_blind_ante' , \
+                                    'wait_for' , \
+                                    'auto_muck' , \
+                                    'missed_blind' , \
+                                    'blind' , \
+                                    'buy_in_payed' , \
+                                    'ante' , \
+                                    'all_in' , \
+                                    'side_pot_index' , \
+                                    'seat' , \
+                                    'hand' , \
+                                    'money' , \
+                                    'rebuy' , \
+                                    'bet' , \
+                                    'dead' , \
+                                    'talked_once' ,\
+                                    'user_data',
                                     ]
                                 
     # -----------------------------------------------------------------------------------------------------
     def setUp(self):
-        pass
+        self.player = pokergame.PokerPlayer(1,None)
     
     # -----------------------------------------------------------------------------------------------------    
     def tearDown(self):
@@ -71,89 +73,218 @@ class PokerPlayerTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerPlayerGetSetUserData(self):
-        """Test Poker Player User data accessors"""
+        """Test Poker Player : User data accessors"""
         
-        player = pokergame.PokerPlayer(1,None)
-        self.failUnlessEqual(player.getUserData(), None)
-        player.setUserData('UserData')
-        self.failUnlessEqual(player.getUserData(), 'UserData')
+        self.failUnlessEqual(self.player.getUserData(), None)
+        self.player.setUserData('UserData')
+        self.failUnlessEqual(self.player.getUserData(), 'UserData')
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerPlayerIsAllIn(self):
-        """Test Poker Player is all in"""
+        """Test Poker Player : Is all in"""
         
-        player = pokergame.PokerPlayer(1,None)
-        self.failUnlessEqual(player.isAllIn(), False)
-        player.all_in = True
-        self.failUnlessEqual(player.isAllIn(), True)
+        self.failUnlessEqual(self.player.isAllIn(), False)
+        self.player.all_in = True
+        self.failUnlessEqual(self.player.isAllIn(), True)
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerPlayerIsFold(self):
-        """Test Poker Player is fold or not"""
+        """Test Poker Player : Is fold"""
         
-        player = pokergame.PokerPlayer(1,None)
-        self.failUnlessEqual(player.isFold(), False)
-        self.failUnlessEqual(player.isNotFold(), True)
-        player.fold = True
-        self.failUnlessEqual(player.isFold(), True)
-        self.failUnlessEqual(player.isNotFold(), False)
+        self.failUnlessEqual(self.player.isFold(), False)
+        self.failUnlessEqual(self.player.isNotFold(), True)
+        self.player.fold = True
+        self.failUnlessEqual(self.player.isFold(), True)
+        self.failUnlessEqual(self.player.isNotFold(), False)
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerPlayerIsSit(self):
-        """Test Poker Player is sit or not"""
+        """Test Poker Player : Is sit"""
         
-        player = pokergame.PokerPlayer(1,None)
-        self.failUnlessEqual(player.isSit(), False)
-        self.failUnlessEqual(player.isSitOut(), True)
-        player.sit_out = False
-        self.failUnlessEqual(player.isSit(), True)
-        self.failUnlessEqual(player.isSitOut(), False)
+        self.failUnlessEqual(self.player.isSit(), False)
+        self.failUnlessEqual(self.player.isSitOut(), True)
+        self.player.sit_out = False
+        self.failUnlessEqual(self.player.isSit(), True)
+        self.failUnlessEqual(self.player.isSitOut(), False)
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerPlayerIsConnected(self):
-        """Test Poker Player is connected or not"""
+        """Test Poker Player : Is connected"""
         
-        player = pokergame.PokerPlayer(1,None)
-        self.failUnlessEqual(player.isConnected(), True)
-        self.failUnlessEqual(player.isDisconnected(), False)
-        player.remove_next_turn = True
-        self.failUnlessEqual(player.isConnected(), False)
-        self.failUnlessEqual(player.isDisconnected(), True)
+        self.failUnlessEqual(self.player.isConnected(), True)
+        self.failUnlessEqual(self.player.isDisconnected(), False)
+        self.player.remove_next_turn = True
+        self.failUnlessEqual(self.player.isConnected(), False)
+        self.failUnlessEqual(self.player.isDisconnected(), True)
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerPlayerCopy(self):
-        """Test Poker Player Copy"""
+        """Test Poker Player : Copy"""
         
-        player = pokergame.PokerPlayer(1,'game')
         for attribute in PokerPlayerTestCase.PokerPlayerAttributes:
-            getattr(player,attribute,random.random())
+            setattr(self.player,attribute,random.randint(0,RAND_MAX))
             
-        copy = player.copy()
+        self.player.hand = pokercards.PokerCards()
+            
+        copy = self.player.copy()
         for attribute in PokerPlayerTestCase.PokerPlayerAttributes:
             try:
-                player_attr = getattr(player,attribute)
-                copy_attr = getattr(copy,attribute)
-                self.failUnlessEqual(player_attr, copy_attr)
+                self.failUnlessEqual(getattr(self.player,attribute), getattr(copy,attribute))
             except:
                 self.fail('Exception during accessing attribute ' + attribute)
                 
     # -----------------------------------------------------------------------------------------------------    
     def testPokerPlayerStringRepresentation(self):
-        """Test Poker Player string representation"""
+        """Test Poker Player : String representation"""
         
-        player = pokergame.PokerPlayer(1,'game')
         for attribute in PokerPlayerTestCase.PokerPlayerAttributes:
-            getattr(player,attribute,random.random())
+            setattr(self.player,attribute,random.randint(0,RAND_MAX))
             
         string = ''
         for attribute in PokerPlayerTestCase.PokerPlayerAttributes:
             if attribute == 'game': continue
-            string += attribute + ' = ' + str(getattr(player,attribute)) + ', '
-        
+            string += attribute + ' = ' + str(getattr(self.player,attribute)) + ', '
+
         # Skip the last comma and space character
-        self.failUnlessEqual(string[:-2], str(player))
-    
+        self.failUnlessEqual(string[:-2], str(self.player))
+            
+    # -----------------------------------------------------------------------------------------------------    
+    def testBeginTurn(self):
+        """Test Poker Player : Begin turn"""
         
+        Attributes = {
+                                'bet' : 0,
+                                'dead' : 0,
+                                'fold' : False,
+                                'hand' : pokercards.PokerCards(),
+                                'side_pot_index' : 0,
+                                'all_in' : False,
+                                'blind' : None,
+                                'ante' : False
+                            }
+                                        
+        for key in Attributes.keys():
+            setattr(self.player,key,random.random())
+            
+        self.player.beginTurn()
+        
+        for key, value in Attributes.items():
+            self.failUnlessEqual(getattr(self.player, key), value)
+            
+    # -----------------------------------------------------------------------------------------------------    
+    def testIsInGame(self):
+        """Test Poker Player : Is in game"""
+        
+        # Initially the player in in game because not all-in and not fold
+        self.failIf(self.player.isAllIn())
+        self.failIf(self.player.isFold())
+        self.failUnless(self.player.isInGame())
+        
+        # Player is all in
+        self.player.all_in = True
+        self.failUnless(self.player.isAllIn())
+        self.failIf(self.player.isInGame())
+        self.player.all_in = False
+        
+        # Player is fold
+        self.player.fold = True
+        self.failUnless(self.player.isFold())
+        self.failIf(self.player.isInGame())
+        self.player.fold = False
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testSitRequested(self):
+        """Test Poker Player : Sit requested"""
+        
+        # Initially the player does not request  to sit
+        self.failIf(self.player.isSitRequested())
+        
+        # Sit is now requested
+        self.player.sit_requested = True
+        self.failUnless(self.player.isSitRequested())
+    
+    # -----------------------------------------------------------------------------------------------------    
+    def testIsBot(self):
+        """Test Poker Player : Is bot"""
+        
+        # Initially the player is not a bot
+        self.failIf(self.player.isBot())
+        
+        # The player is now a bot
+        self.player.bot = True
+        self.failUnless(self.player.isBot())
+    
+    # -----------------------------------------------------------------------------------------------------    
+    def testIsAuto(self):
+        """Test Poker Player : Is auto"""
+        
+        # Initially the player is not an automatic player
+        self.failIf(self.player.isAuto())
+        
+        # The player is automatic
+        self.player.auto = True
+        self.failUnless(self.player.isAuto())
+    
+    # -----------------------------------------------------------------------------------------------------    
+    def testIsAutoBlind(self):
+        """Test Poker Player : Is auto blind"""
+        
+        # Initially the player does not in a automatic blind and ante mode
+        self.failIf(self.player.isAutoBlindAnte())
+        
+        # Sit is now requested
+        self.player.auto_blind_ante = True
+        self.failUnless(self.player.isAutoBlindAnte())
+    
+    # -----------------------------------------------------------------------------------------------------    
+    def testIsWaitForBlind(self):
+        """Test Poker Player : Is wait for blind"""
+        
+        # Initially the player does not wait for blind
+        self.failIf(self.player.isWaitForBlind())
+        
+        # The player is waiting the first round
+        self.player.wait_for = 'first_round'
+        self.failUnless(self.player.isWaitForBlind())
+    
+    # -----------------------------------------------------------------------------------------------------    
+    def testIsMissedBlind(self):
+        """Test Poker Player : Is missed blind"""
+        
+        # Initially blind is missed
+        self.failIf(self.player.isMissedBlind())
+        
+        # A blind is missed
+        self.player.missed_blind = 'big'
+        self.failUnless(self.player.isMissedBlind())
+        
+        # No blind is missed
+        self.player.missed_blind = 'n/a'
+        self.failIf(self.player.isMissedBlind())
+    
+    # -----------------------------------------------------------------------------------------------------    
+    def testIsBlind(self):
+        """Test Poker Player : Is blind"""
+        
+        # Initially the player blind is late
+        self.failUnlessEqual(self.player.blind, 'late')
+        self.failUnless(self.player.isBlind())
+        
+        # The player not blind
+        self.player.blind = None
+        self.failIf(self.player.isBlind())
+    
+    # -----------------------------------------------------------------------------------------------------    
+    def testIsBuyInPayed(self):
+        """Test Poker Player : Is buy in payed"""
+        
+        # Initially the player nuy in is not payed
+        self.failIf(self.player.isBuyInPayed())
+        
+        # The buy in is payed
+        self.player.buy_in_payed = True
+        self.failUnless(self.player.isBuyInPayed())
+    
 # -----------------------------------------------------------------------------------------------------
 def GetTestSuite():
     suite = unittest.TestSuite()

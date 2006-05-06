@@ -22,15 +22,52 @@
 
 import sys, os
 sys.path.insert(0, "@top_srcdir@")
-sys.path.insert(0, "..")
 
 import unittest
 import os.path
 import shutil
 import libxml2
+import time
+import string
 
+from pokerengine import pokercards
 from pokerengine import pokergame
 
+CallbackIds = None
+CallbackArgs = None
+
+# -----------------------------------------------------------------------------------------------------    
+def InitCallback():
+    global CallbackIds
+    global CallbackArgs
+    
+    CallbackIds = None
+    CallbackArgs = None
+
+# -----------------------------------------------------------------------------------------------------    
+def Callback(id, *args):
+    global CallbackIds
+    global CallbackArgs
+    
+    if not CallbackIds: CallbackIds = []
+    if not CallbackArgs: CallbackArgs = []
+        
+    CallbackIds.append(id)
+    CallbackArgs.append(args)
+    
+# -----------------------------------------------------------------------------------------------------    
+class PokerPredefinedDecks:
+    def __init__(self, decks):
+        self.decks = decks
+        self.index = 0
+        
+    def shuffle(self, deck):
+        deck[:] = self.decks[self.index][:]
+        self.index += 1
+        if self.index >= len(self.decks):
+            self.index = 0
+
+# -----------------------------------------------------------------------------------------------------    
 class PokerGameTestCase(unittest.TestCase):
     
     TestConfDirectory = '@srcdir@/test-data/conf'
@@ -55,18 +92,64 @@ class PokerGameTestCase(unittest.TestCase):
         self.ConfigTempFile = os.path.join(PokerGameTestCase.TestConfDirectory, PokerGameTestCase.TestUrl % PokerGameTestCase.TestConfigTemporaryFile)
         self.VariantTempFile = os.path.join(PokerGameTestCase.TestConfDirectory, PokerGameTestCase.TestUrl % PokerGameTestCase.TestVariantTemporaryFile)
         
-        if not self.CopyFile(self.ConfigTmplFile, self.ConfigTempFile):
-            self.fail('Error during creation of configuration file ' + self.ConfigTempFile)
-            
-        self.game = pokergame.PokerGameServer(PokerGameTestCase.TestUrl, ['.', PokerGameTestCase.TestConfDirectory, '~/conf'])
-    
+        self.CreateGameServer()
+        self.InitGame()
+        InitCallback()
+        
     # -----------------------------------------------------------------------------------------------------    
     def tearDown(self):
         self.DeleteFile(self.ConfigTempFile)
+        self.DeleteFile(self.VariantTempFile)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testUniq(self):
+        """Test Poker Game : Uniq"""
+        
+        self.failUnlessEqual(pokergame.uniq([1, 4, 4, 7]).sort(), [1, 4, 7].sort())
+        self.failUnlessEqual(pokergame.uniq([1, 4, 4, 7, 3, 3, 3, 9, 7]).sort(), [1, 3, 4, 7, 9].sort())
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testGetSerialByNameNoCase(self):
+        """Test Poker Game : Get serial by name no case sensitive"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        player1.name = 'Player1'
+        player2.name = 'Player2'
+        
+        # The search is not case sensitive
+        self.failUnlessEqual(self.game.getSerialByNameNoCase('player1'), 1)
+        self.failUnlessEqual(self.game.getSerialByNameNoCase('pLaYEr2'), 2)
+        self.failUnlessEqual(self.game.getSerialByNameNoCase('unknown'), 0)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testSetPosition(self):
+        """Test Poker Game : Set position"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # Blind and ante round
+        self.failUnlessEqual(self.game.position, 0)
+        
+        # The game is not running, the set position function has no effect
+        self.failIf(self.game.isRunning())
+        self.game.setPosition(5)
+        self.failUnlessEqual(self.game.position, 0)
+        
+        # The game is now running
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isRunning())
+
+        self.game.setPosition(5)
+        self.failUnlessEqual(self.game.position, 5)
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameSetInvalidMaxPlayer(self):
-        """Test Poker game Set an invalid number max of player"""
+        """Test Poker Game : Set an invalid number max of player"""
+        
+        # The minimum number of player is 2
         self.game.setMaxPlayers(0)
         self.failUnlessEqual(self.game.seatsLeftCount(), 0)
         self.failUnlessEqual(self.game.seatsCount(), 0)
@@ -75,23 +158,60 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.seatsLeftCount(), 0)
         self.failUnlessEqual(self.game.seatsCount(), 0)
         
+        # The maximum number of player is sepcified by ABSOLUTE_MAX_PLAYERS constant
         self.game.setMaxPlayers(pokergame.ABSOLUTE_MAX_PLAYERS + 1)
         self.failUnlessEqual(self.game.seatsLeftCount(), 0)
         self.failUnlessEqual(self.game.seatsCount(), 0)
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameSetValidMaxPlayer(self):
-        """Test Poker game Set a invalid number max of player"""
+        """Test Poker Game : Set a valid number max of player"""
         
+        # Test all the valid number of player
         for num in range(2,pokergame.ABSOLUTE_MAX_PLAYERS):
             self.game.setMaxPlayers(num)
             self.failUnlessEqual(self.game.seatsLeftCount(), num)
             self.failUnlessEqual(self.game.seatsCount(), num)
             
     # -----------------------------------------------------------------------------------------------------    
-    def testPokerGameOpen(self):
-        """Test Poker game open and close"""
+    def testSetSeats(self):
+        """Test Poker Game : Set seats"""
         
+        # Set the number maximum of players, the available seats are [1, 3, 6, 8]
+        self.game.setMaxPlayers(4)
+        
+        for player in range(1, 5):
+            player = self.AddPlayerAndSit(player)
+        
+        seats = [0] * pokergame.ABSOLUTE_MAX_PLAYERS
+        
+        seats[1] = 1
+        seats[3] = 3
+        seats[6] = 4
+        seats[8] = 2
+        
+        self.game.setSeats(seats)
+        self.failUnlessEqual(self.GetPlayer(1).seat, 1) 
+        self.failUnlessEqual(self.GetPlayer(2).seat, 8) 
+        self.failUnlessEqual(self.GetPlayer(3).seat, 3) 
+        self.failUnlessEqual(self.GetPlayer(4).seat, 6) 
+            
+        # All the seats are not available
+        seats = [0] * pokergame.ABSOLUTE_MAX_PLAYERS
+        
+        seats[1] = 1
+        seats[4] = 3
+        seats[6] = 4
+        seats[8] = 2
+        
+        self.game.setSeats(seats)
+        self.failUnlessEqual(self.GetPlayer(3).seat, -1) 
+            
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameOpen(self):
+        """Test Poker Game : Open and close"""
+        
+        # Test the open and close game action
         self.failUnlessEqual(self.game.is_open, True)
         self.game.close()
         self.failUnlessEqual(self.game.is_open, False)
@@ -100,25 +220,23 @@ class PokerGameTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameCanAddPlayer(self):
-        """Test Poker game can add player"""
+        """Test Poker Game : Can add player"""
         
-        self.game.setMaxPlayers(1)
-        self.failUnlessEqual(self.game.canAddPlayer(1), False)
-        
-        self.game.setMaxPlayers(2)
+        # The player can be added to the game
         self.failUnlessEqual(self.game.canAddPlayer(1), True)
         
+        # Close the game, no more player can be added
         self.game.close()
-        self.failUnlessEqual(self.game.canAddPlayer(2), False)
+        self.failUnlessEqual(self.game.canAddPlayer(1), False)
+        
+        # Open the game and the player can be added
         self.game.open()
-        self.failUnlessEqual(self.game.canAddPlayer(2), True)
+        self.failUnlessEqual(self.game.canAddPlayer(1), True)
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameAddPlayerToServerWithoutSelectedSeat(self):
-        """Test Poker game add player to a server game without a selected seat"""
-        
-        self.game.setMaxPlayers(2)
-        
+        """Test Poker Game : Add a player to a server game without a selected seat"""
+
         # Add a new player
         self.failUnlessEqual(self.game.addPlayer(1), True)
         self.failUnlessEqual(self.game.seatsLeftCount(), 1)
@@ -137,10 +255,8 @@ class PokerGameTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameAddPlayerToServerWithSelectedSeat(self):
-        """Test Poker game add player to a server game with a selected seat"""
+        """Test Poker Game : Add a player to a server game with a selected seat"""
         
-        self.game.setMaxPlayers(2)
-    
         # Add a player on the seat 2
         self.failUnlessEqual(self.game.addPlayer(1,2), True)
         self.failUnlessEqual(self.game.seatsLeftCount(), 1)
@@ -167,10 +283,10 @@ class PokerGameTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameAddPlayerToClient(self):
-        """Test Poker game add player to a client game"""
+        """Test Poker Game : Add a player to a client game"""
         
-        self.game = pokergame.PokerGameClient(PokerGameTestCase.TestUrl, ['.', PokerGameTestCase.TestConfDirectory, '~/conf'])
-        self.game.setMaxPlayers(2)
+        self.CreateGameClient()
+        self.InitGame()
         
         # Try to add a new player without a selected seat
         self.failUnlessEqual(self.game.addPlayer(1), False)
@@ -202,15 +318,14 @@ class PokerGameTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameGetPlayer(self):
-        """Test Poker game get player"""
+        """Test Poker Game : Get player"""
         
         self.failUnlessEqual(self.game.serialsAll(), [])
         self.failUnlessEqual(self.game.playersAll(), [])
         self.failUnlessEqual(self.game.allCount(), 0)
         
         self.failUnlessEqual(self.game.addPlayer(1), True)
-        player = self.game.getPlayer(1)
-        self.failIfEqual(player, None)
+        player = self.GetPlayer(1)
         self.failUnlessEqual(self.game.getPlayer(2), None)
         
         self.failUnlessEqual(self.game.serialsAll(), [1])
@@ -219,9 +334,8 @@ class PokerGameTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameSeats(self):
-        """Test Poker game seats"""
+        """Test Poker Game : Seats"""
         
-        self.game.setMaxPlayers(2)         
         seats = self.game.seats()
         for seat in seats:
             self.failUnlessEqual(seats[seat], 0)
@@ -235,35 +349,52 @@ class PokerGameTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGamePlayerCanComeBack(self):
-        """Test Poker game player can comme back"""
+        """Test Poker Game : Player can come back"""
         
-        self.game.setMaxPlayers(2) 
+        # Unknown player
+        self.failIf(self.game.canComeBack(1))
+        self.failIf(self.game.comeBack(1))
         
-        self.failUnlessEqual(self.game.canComeBack(1), False)
-        self.failUnlessEqual(self.game.addPlayer(1), True)
-        self.failUnlessEqual(self.game.canComeBack(1), False)
+        # Add a new player
+        player1 = self.AddPlayerAndSit(1)
         
-        player = self.game.getPlayer(1)
-        self.failIfEqual(player, None)
+        # Initially the player are connected and not auto
+        self.failIf(self.game.canComeBack(1))
+        self.failIf(self.game.comeBack(1))
         
-        # Change the state of the game 
-        """
-        self.game.changeState(pokergame.GAME_STATE_TURN)
-        self.failUnlessEqual(self.game.removePlayer(1), False)
+        # Player disconnected
+        player1.remove_next_turn = True
+        self.failUnlessEqual(self.game.serialsDisconnected(), [1])
         
-        self.failUnlessEqual(self.game.canComeBack(1), True)
-        self.failUnlessEqual(self.game.comeBack(1), True)
+        # The player can now come back
+        self.failUnless(self.game.canComeBack(1))
+        self.failUnless(self.game.comeBack(1))
         
-        self.failUnlessEqual(self.game.canComeBack(1), False)
-        self.game.autoPlayer(1)
-        self.failUnlessEqual(self.game.canComeBack(1), True)
-        """
+        # The player is now in the game
+        self.failIf(self.game.canComeBack(1))
+        self.failIf(player1.remove_next_turn)
+        self.failIf(player1.sit_out_next_turn)
+        self.failIf(player1.sit_requested)
+        self.failIf(player1.auto)
+        
+        # The player is an automatic player
+        player1.auto = True
+        self.failUnless(player1.isAuto())
+        
+        # The player now can come back
+        self.failUnless(self.game.canComeBack(1))
+        self.failUnless(self.game.comeBack(1))
+    
+        # The player is now in the game
+        self.failIf(self.game.canComeBack(1))
+        self.failIf(player1.remove_next_turn)
+        self.failIf(player1.sit_out_next_turn)
+        self.failIf(player1.sit_requested)
+        self.failIf(player1.auto)
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameSitPlayer(self):
-        """Test Poker game Player sit count"""
-        
-        self.game.setMaxPlayers(2) 
+        """Test Poker Game : Player sit"""
         
         self.failUnlessEqual(self.game.sitCount(), 0)
         self.failUnlessEqual(self.game.serialsSit(), [])
@@ -275,8 +406,7 @@ class PokerGameTestCase(unittest.TestCase):
         
         self.failUnlessEqual(self.game.addPlayer(1), True)
         
-        player = self.game.getPlayer(1)
-        self.failIfEqual(player, None)
+        player = self.GetPlayer(1)
         
         self.failUnlessEqual(self.game.sitCount(), 0)
         self.failUnlessEqual(self.game.serialsSit(), [])
@@ -297,32 +427,26 @@ class PokerGameTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameCallback(self):
-        """Test Poker game callback"""
+        """Test Poker Game : Callback"""
         
-        self.game.setMaxPlayers(2) 
+        self.game.runCallbacks('Args1', 'Args2')
+        self.failUnlessEqual(CallbackIds, None)
+        self.failUnlessEqual(CallbackArgs, None)
         
-        self.CallbackValue = None
-        self.game.runCallbacks('Value')
-        self.failUnlessEqual(self.CallbackValue, None)
+        self.game.registerCallback(Callback)
+        self.game.runCallbacks('Args1', 'Args2')
         
-        self.game.registerCallback(self.Callback)
-        self.game.runCallbacks('Value')
-        self.failUnlessEqual(self.CallbackValue, 'Value')
+        self.failUnlessEqual(CallbackIds, [self.game.id])
+        self.failUnlessEqual(CallbackArgs, [('Args1', 'Args2')])
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameBettingStructure(self):
-        """Test Poker game initialisation of the betting structure"""
-        
-        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
-            self.fail('Error during creation of variant file ' + self.VariantTempFile)
-            
-        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
-        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        """Test Poker Game : Initialisation of the betting structure"""
         
         self.failUnlessEqual(self.game.getBettingStructureName(), 'Bet Description')
         self.failUnlessEqual(self.game.buyIn(), 50)
         self.failUnlessEqual(self.game.maxBuyIn(), 10000)
-        self.failUnlessEqual(self.game.bestBuyIn(), 500)
+        self.failUnlessEqual(self.game.bestBuyIn(), 1600)
         self.failUnlessEqual(self.game.getChipUnit(), 300)
                 
         bet_properties = {  'buy-in' : '100',
@@ -340,20 +464,33 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.bestBuyIn(), 1000)
         self.failUnlessEqual(self.game.getChipUnit(), 600)
         
-        self.DeleteFile(self.VariantTempFile)
+        rounds_properties =  [ \
+                                    {   'name' : 'pre-flop', \
+                                        'cap' : 3 \
+                                    }, \
+                                    {   'name' : 'flop', \
+                                        'cap' : sys.maxint \
+                                    }, \
+                                    {   'name' : 'turn', \
+                                        'cap' : sys.maxint \
+                                    }, \
+                                    {   'name' : 'river', \
+                                        'cap' : 3 \
+                                    } \
+                                    ]
+        
+        self.failUnlessEqual(len(self.game.bet_info), len(rounds_properties))
+        
+        self.game.current_round = 0
+        for round_properties in rounds_properties:
+            for property, value in round_properties.items():
+                self.failUnlessEqual(self.game.betInfo()[property], value)
+            
+            self.game.current_round += 1
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameBlindBettingStructure(self):
-        """Test Poker game initialisation of the blind betting structure"""
-        
-        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
-            self.fail('Error during creation of variant file ' + self.VariantTempFile)
-            
-        self.failUnlessEqual(self.game.smallBlind(), None)
-        self.failUnlessEqual(self.game.bigBlind(), None)
-        
-        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
-        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        """Test Poker Game : Initialisation of the blind betting structure"""
         
         self.failUnlessEqual(self.game.smallBlind(), 500)
         self.failUnlessEqual(self.game.bigBlind(), 1000)
@@ -390,10 +527,10 @@ class PokerGameTestCase(unittest.TestCase):
                             }
 
         levels_info =   [
-                            { 'small' : 1000, 'big' : 1500 },
-                            { 'small' : 1500, 'big' : 3000 },
-                            { 'small' : 2500, 'big' : 5000 }
-                        ]
+                            { 'small' : 1000, 'big' : 1500, 'value' : 100, 'bring-in' : 150 },
+                           { 'small' : 1500, 'big' : 3000, 'value' : 150, 'bring-in' : 300 },
+                           { 'small' : 2500, 'big' : 5000, 'value' : 250, 'bring-in' : 500 }
+                            ]
                             
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
@@ -401,27 +538,13 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
         self.failUnlessEqual(self.game.blind_info["levels"], levels_info)        
         
-        self.DeleteFile(self.VariantTempFile)
-        
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameAnteBettingStructure(self):
-        """Test Poker game initialisation of the ante betting structure"""
-        
-        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
-            self.fail('Error during creation of variant file ' + self.VariantTempFile)
-            
-        self.failUnlessEqual(self.game.smallBlind(), None)
-        self.failUnlessEqual(self.game.bigBlind(), None)
-        
-        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
-        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
-        
-        self.failUnlessEqual(self.game.ante_info["value"], 100)
-        self.failUnlessEqual(self.game.ante_info["bring-in"] , 500)
+        """Test Poker Game : Initialisation of the ante betting structure"""
         
         ante_properties = {  'value' : '200',
-                             'bring-in' : '1000',
-                          }
+                                     'bring-in' : '1000',
+                                  }
                                 
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
@@ -446,31 +569,27 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.ante_info['bring-in'], 200)
         self.failUnlessEqual(self.game.ante_info['bring-in_reference'], 200)
         
-        blind_properties = {  'change' : 'levels',
+        ante_properties = {  'change' : 'levels',
                               'levels' : PokerGameTestCase.TestLevelsTemplateFile
                             }
 
         levels_info =   [
-                           { 'small' : 1000, 'big' : 1500 },
-                           { 'small' : 1500, 'big' : 3000 },
-                           { 'small' : 2500, 'big' : 5000 }
-                        ]
+                           { 'small' : 1000, 'big' : 1500, 'value' : 100, 'bring-in' : 150 },
+                           { 'small' : 1500, 'big' : 3000, 'value' : 150, 'bring-in' : 300 },
+                           { 'small' : 2500, 'big' : 5000, 'value' : 250, 'bring-in' : 500 }
+                            ]
                             
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
         
         self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
         self.failUnlessEqual(self.game.ante_info["levels"], levels_info)        
         
-        self.DeleteFile(self.VariantTempFile)
-        
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameGetLevelValues(self):
-        """Test Poker game get level values"""
+        """Test Poker Game : Get level values"""
         
-        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
-            self.fail('Error during creation of variant file ' + self.VariantTempFile)
-            
+        # Modify the XML configuration file to set the blind and ante properties
         blind_properties = {  'change' : 'double',
                               'frequency' : '15',
                               'unit' : 'minute',
@@ -490,9 +609,11 @@ class PokerGameTestCase(unittest.TestCase):
         
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
-        
-        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
+            
+        # Reload the betting structure
         self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        # Get the level value for change of type double
         for level in range(3):
             blind_info, ante_info = self.game.getLevelValues(level)
         
@@ -501,79 +622,155 @@ class PokerGameTestCase(unittest.TestCase):
             self.failUnlessEqual(ante_info['value'], 50 * pow(2, level - 1))      
             self.failUnlessEqual(ante_info['bring-in'], 200 * pow(2, level - 1)) 
             
-        # TODO level
-            
-        self.DeleteFile(self.VariantTempFile)
+        # Modify the XML configuration file to set the blind and ante properties
+        blind_properties = {  'change' : 'levels',
+                                    'levels' : PokerGameTestCase.TestLevelsTemplateFile
+                                }
         
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        ante_properties = {  'change' : 'levels',
+                                    'levels' : PokerGameTestCase.TestLevelsTemplateFile
+                                }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        # Level infos loaded from the PokerGameTestCase.TestLevelsTemplateFile file
+        levels_info =   [
+                           { 'small' : 1000, 'big' : 1500, 'value' : 100, 'bring-in' : 150 },
+                           { 'small' : 1500, 'big' : 3000, 'value' : 150, 'bring-in' : 300 },
+                           { 'small' : 2500, 'big' : 5000, 'value' : 250, 'bring-in' : 500 }
+                            ]
+        
+        # Get the level value for change of type levels
+        for level in range(3):
+            blind_info, ante_info = self.game.getLevelValues(level + 1)
+        
+            self.failUnlessEqual(blind_info['small'], levels_info[level]['small'])      
+            self.failUnlessEqual(blind_info['big'], levels_info[level]['big'])      
+            self.failUnlessEqual(ante_info['value'], levels_info[level]['value'])      
+            self.failUnlessEqual(ante_info['bring-in'], levels_info[level]['bring-in'])
+            
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameSetLevelValues(self):
+        """Test Poker Game : Set level values"""
+            
+        # Modify the XML configuration file to set the blind and ante properties
+        blind_properties = {  
+                                'change' : 'levels',
+                                'frequency' : '15',
+                                'unit' : 'minute',
+                                'levels' : PokerGameTestCase.TestLevelsTemplateFile
+                                }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        ante_properties =   {  
+                                    'change' : 'levels',
+                                    'frequency' : '15',
+                                    'unit' : 'minute',
+                                    'levels' : PokerGameTestCase.TestLevelsTemplateFile
+                                    }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        # Level infos loaded from the PokerGameTestCase.TestLevelsTemplateFile file
+        levels_info =   [
+                           { 'small' : 1000, 'big' : 1500, 'value' : 100, 'bring-in' : 150 },
+                           { 'small' : 1500, 'big' : 3000, 'value' : 150, 'bring-in' : 300 },
+                           { 'small' : 2500, 'big' : 5000, 'value' : 250, 'bring-in' : 500 }
+                            ]
+        
+        # Get the level value for change of type levels
+        for level in range(3):
+            blind_info, ante_info = self.game.getLevelValues(level + 1)
+        
+            self.game.setLevel(level + 1)
+            self.failUnlessEqual(self.game.getLevel(), level + 1)
+            self.failUnlessEqual(self.game.blind_info['small'], blind_info['small'])
+            self.failUnlessEqual(self.game.blind_info['big'], blind_info['big'])
+            self.failUnlessEqual(self.game.ante_info['value'], ante_info['value'])
+            self.failUnlessEqual(self.game.ante_info['bring-in'], ante_info['bring-in'])
+            self.failUnlessEqual(self.game.blind_info['hands'], self.game.hands_count)
+            self.failUnlessEqual(self.game.blind_info['time'], self.game.time)
+            self.failUnlessEqual(self.game.ante_info['hands'], self.game.hands_count)
+            self.failUnlessEqual(self.game.ante_info['time'], self.game.time)
+            
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameSetVariantInvalid(self):
-        """Test Poker game variant with invalid specification"""
+        """Test Poker Game : Variant with invalid specifications"""
         
         if not self.CopyFile(self.VariantInvalidFile, self.VariantTempFile):
             self.fail('Error during creation of variant file ' + self.VariantInvalidFile)
             
         self.failUnlessRaises(UserWarning, self.game.setVariant,PokerGameTestCase.TestVariantTemporaryFile)
         
-        self.DeleteFile(self.VariantTempFile)
-        
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameSetVariantWinnerOrder(self):
-        """Test Poker game variant winner order"""
+        """Test Poker Game : Set variant winner order"""
         
-        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
-            self.fail('Error during creation of variant file ' + self.VariantTempFile)
+        # The winner order is set to high in the self.VariantTmplFile file
+        self.failIf(self.game.isLow())
+        self.failIf(self.game.hasLow())
+        self.failUnless(self.game.isHigh())
+        self.failUnless(self.game.hasHigh())
+        self.failIf(self.game.isHighLow())
             
-        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)        
-        self.failUnlessEqual(self.game.isLow(), True)
-        self.failUnlessEqual(self.game.hasLow(), True)
-        self.failUnlessEqual(self.game.isHigh(), False)
-        self.failUnlessEqual(self.game.hasHigh(), False)
-        
-        self.failUnlessEqual(self.game.isHighLow(), False)
-            
-        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/wins/winner', None, {'order' : 'high'}):
+        # Change the winner order to low            
+        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/wins/winner', None, {'order' : 'low8'}):
             self.fail('Error during modification of variant file ' + self.VariantTempFile)
             
         self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
-        self.failUnlessEqual(self.game.getVariantName(), 'VariantName')
-        self.failUnlessEqual(self.game.isLow(), False)
-        self.failUnlessEqual(self.game.hasLow(), False)
-        self.failUnlessEqual(self.game.isHigh(), True)
-        self.failUnlessEqual(self.game.hasHigh(), True)
         
-        self.DeleteFile(self.VariantTempFile)
+        # The winner order is now low
+        self.failUnless(self.game.isLow())
+        self.failUnless(self.game.hasLow())
+        self.failIf(self.game.isHigh())
+        self.failIf(self.game.hasHigh())
+        self.failIf(self.game.isHighLow())
         
+        # Invalid winner order
+        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/wins/winner', None, {'order' : 'invalid'}):
+            self.fail('Error during modification of variant file ' + self.VariantTempFile)
+            
+        # An exception is raised if the order is not low8 or hi
+        self.failUnlessRaises(UserWarning,self.game.setVariant, PokerGameTestCase.TestVariantTemporaryFile)
+                
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameSetVariantRoundInfos(self):
-        """Test Poker game variant round infos"""
-        
-        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
-            self.fail('Error during creation of variant file ' + self.VariantTempFile)
+        """Test Poker Game : Set variant round infos"""
         
         # 2 rounds in the template file
-        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)        
-        self.failUnlessEqual(len(self.game.round_info),2)
-        self.failUnlessEqual(len(self.game.round_info_backup),2)
+        self.failUnlessEqual(len(self.game.round_info),4)
+        self.failUnlessEqual(len(self.game.round_info_backup),4)
         
-        self.failUnlessEqual(self.game.round_info[0],self.game.round_info_backup[0])
-        self.failUnlessEqual(self.game.round_info[1],self.game.round_info_backup[1])
+        for round in range(len(self.game.round_info)):
+            self.failUnlessEqual(self.game.round_info[round],self.game.round_info_backup[round])
             
         round1_info = {
-                                'name': 'Round1',
-                                'position': 'PositionType1',
-                                'board': [''], # One card of type board
-                                'board_size': 1,
+                                'name': 'pre-flop',
+                                'position': 'under-the-gun',
+                                'board': [],
+                                'board_size': 0,
                                 'hand_size': 2,
-                                'cards': ['up', 'down'] 
+                                'cards': ['down', 'down'] 
                             }
                             
         round2_info = {
-                                'name': 'Round2',
-                                'position': 'PositionType2',
-                                'board': ['', ''], # Two cards of type board
+                                'name': 'flop',
+                                'position': 'next-to-dealer',
+                                'board': ['', '', ''],
                                 'board_size': 3,
-                                'hand_size': 4,
-                                'cards': ['up', 'down'] 
+                                'hand_size': 2,
+                                'cards': [] 
                             }
                 
         self.failUnlessEqual(self.game.round_info[0], round1_info)
@@ -582,29 +779,23 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.round_info[0],self.game.round_info_backup[0])
         self.failUnlessEqual(self.game.round_info[1],self.game.round_info_backup[1])
         
-        self.DeleteFile(self.VariantTempFile)
-        
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameResetRoundInfos(self):
-        """Test Poker game reset round infos"""
-        
-        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
-            self.fail('Error during creation of variant file ' + self.VariantTempFile)
-        
-        # 2 rounds in the template file
-        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)        
+        """Test Poker Game : Reset round infos"""
         
         round1_info = {
-                                'name': 'Round1',
-                                'position': 'PositionType1',
-                                'board': [''], # One card of type board
-                                'board_size': 1,
+                                'name': 'pre-flop',
+                                'position': 'under-the-gun',
+                                'board': [],
+                                'board_size': 0,
                                 'hand_size': 2,
-                                'cards': ['up', 'down'] 
+                                'cards': ['down', 'down'] 
                             }
                             
+        # The round info are loaded from the VariantTmplFile file
         self.failUnlessEqual(self.game.round_info[0], round1_info)
         
+        # Change all the round infos
         self.game.round_info[0]['name'] = 'ModifiedRound'
         self.game.round_info[0]['position'] = 'ModifiedPosition'
         self.game.round_info[0]['board'] = ['ModifiedBoard']
@@ -612,20 +803,20 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.round_info[0]['hand_size'] = 'ModifiedHandSize'
         self.game.round_info[0]['cards'] = ['up']
         
+        # Restore the round backup
         self.failIfEqual(self.game.round_info[0], round1_info)
         self.game.resetRoundInfo()
         self.failUnlessEqual(self.game.round_info[0], round1_info)
         
-        self.DeleteFile(self.VariantTempFile)
-        
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameLoadTournamentLevels(self):
-        """Test Poker game load tournament levels"""
+        """Test Poker Game : Load tournament levels"""
         
+        # The levels are loaded from the LevelsTmplFile file
         levels_info =   [
-                                { 'small' : 1000, 'big' : 1500 },
-                                { 'small' : 1500, 'big' : 3000 },
-                                { 'small' : 2500, 'big' : 5000 }
+                           { 'small' : 1000, 'big' : 1500, 'value' : 100, 'bring-in' : 150 },
+                           { 'small' : 1500, 'big' : 3000, 'value' : 150, 'bring-in' : 300 },
+                           { 'small' : 2500, 'big' : 5000, 'value' : 250, 'bring-in' : 500 }
                             ]
         
         levels = self.game.loadTournamentLevels(self.LevelsTmplFile)
@@ -633,31 +824,30 @@ class PokerGameTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGamePayBuyIn(self):
-        """Test Poker game pay buy in"""
+        """Test Poker Game : Pay buy in"""
                 
-        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
-            self.fail('Error during creation of variant file ' + self.VariantTempFile)
-            
         self.failUnlessEqual(self.game.addPlayer(1), True)
-        player = self.game.getPlayer(1)
-        self.failIfEqual(player, None)
+        player = self.GetPlayer(1)
             
-        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
-        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
-        
+        # Get the buy in values
         self.failUnlessEqual(self.game.buyIn(), 50)
         self.failUnlessEqual(self.game.maxBuyIn(), 10000)
-        self.failUnlessEqual(self.game.bestBuyIn(), 500)
+        self.failUnlessEqual(self.game.bestBuyIn(), 1600)
         
-        self.failUnlessEqual(self.game.payBuyIn(1,20000), False)
+        # Can not pay more then the max buy in 
+        self.failIf(self.game.payBuyIn(1,20000))
+        self.failIf(player.isBuyInPayed())
         
-        self.failUnlessEqual(self.game.payBuyIn(1,40), False)
-        self.failUnlessEqual(player.isBuyInPayed(), False)
+        # Can not pay less than the min buy in
+        self.failIf(self.game.payBuyIn(1,40))
+        self.failIf(player.isBuyInPayed())
         
-        self.failUnlessEqual(self.game.payBuyIn(1,100), True)
-        self.failUnlessEqual(player.isBuyInPayed(), True)
+        # Pay the buy in
+        self.failUnless(self.game.payBuyIn(1,100))
+        self.failUnless(player.isBuyInPayed())
         self.failUnlessEqual(self.game.getPlayerMoney(1), 100)
         
+        # The game in now a tournament, there is no maximum limit
         blind_properties = {  'change' : 'double',
                                     'frequency' : '15',
                                     'unit' : 'minute',
@@ -670,42 +860,18 @@ class PokerGameTestCase(unittest.TestCase):
             
         self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
         
-        self.failUnlessEqual(self.game.payBuyIn(1,20000), True)
-        self.failUnlessEqual(player.isBuyInPayed(), True)
+        # The player can pay more than the max buy in
+        self.failUnless(self.game.payBuyIn(1,20000))
+        self.failUnless(player.isBuyInPayed())
         self.failUnlessEqual(self.game.getPlayerMoney(1), 20000)
-        
-        self.DeleteFile(self.VariantTempFile)
-        
-    # -----------------------------------------------------------------------------------------------------    
-    def testPokerGameMessage(self):
-        """Test Poker game messages"""
-        
-        history =   [
-                        ('sitOut', 1),
-                        ('canceled', 1, 10),
-                        ('position', 1),
-                        ('blind', 1, 1000, 0),
-                        ('ante', 1, 500),
-                        ('wait_for', 1, 0),
-                        ('player_list', [1])
-                        ]
-                                    
-        for message in history:
-            apply(self.game.historyAdd,message)
-            
-        self.failUnlessEqual(self.game.historyGet(), history)
-        pokergame.history2messages(self.game, history)
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameSitRequested(self):
-        """Test Poker game sit requested"""
-        
-        self.game.setMaxPlayers(2)
+        """Test Poker Game : Sit requested"""
         
         self.failUnlessEqual(self.game.addPlayer(1), True)
         self.game.sitRequested(1)
-        player = self.game.getPlayer(1)
-        self.failIfEqual(player, None)
+        player = self.GetPlayer(1)
         
         self.failUnlessEqual(player.isSitRequested(), True)
         self.failUnlessEqual(player.isWaitForBlind(), False)
@@ -713,33 +879,2332 @@ class PokerGameTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testPokerGameSit(self):
-        """Test Poker game sit"""
-        
-        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
-            self.fail('Error during creation of variant file ' + self.VariantTempFile)
-            
-        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
-        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
-        
-        self.game.setMaxPlayers(2)
+        """Test Poker Game : Sit"""
         
         self.failUnlessEqual(self.game.addPlayer(1), True)
-        
-        player = self.game.getPlayer(1)
-        self.failIfEqual(player, None)
-        
+        player = self.GetPlayer(1)
         self.failUnlessEqual(self.game.sit(1), False)
 
-        self.failUnlessEqual(self.game.payBuyIn(1,1600), True)
+        self.failUnlessEqual(self.game.payBuyIn(1,self.game.bestBuyIn()), True)
         self.failUnlessEqual(player.isBuyInPayed(), True)
         
         self.failUnlessEqual(self.game.sit(1), True)
         
-        self.DeleteFile(self.VariantTempFile)
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameBuildPlayerList(self):
+        """Test Poker Game : Build player list"""
+        
+        player1 = self.AddPlayerAndSit(1, 7)
+        
+        self.failUnless(self.game.addPlayer(2, 2))
+        self.failUnless(self.game.payBuyIn(2,self.game.bestBuyIn()))
+    
+        # Can not construct the player list because there is only one player sit
+        self.failIf(self.game.buildPlayerList(False))
+        
+        # The player 2 is now sit
+        self.failUnlessEqual(self.game.sit(2), True)
+        
+        # The construction of the player list is now possible
+        self.failUnless(self.game.buildPlayerList(False))
+        
+        # The players are ordered by his seat
+        self.failUnlessEqual(self.game.player_list, [2, 1])
+        
+        # The player 1 is waiting for blind and first round
+        player1.wait_for = 'first_round'
+        self.failUnless(player1.isWaitForBlind())
+        self.failUnless(self.game.buildPlayerList(False))
+        self.failUnlessEqual(self.game.player_list, [2])
+        
+        self.failUnless(self.game.buildPlayerList(True))
+        self.failUnlessEqual(self.game.player_list, [2])
+        
+        # The player 1 is only waiting for blind
+        player1.wait_for = 'big'
+        self.failUnless(player1.isWaitForBlind())
+        self.failUnless(self.game.buildPlayerList(False))
+        self.failUnlessEqual(self.game.player_list, [2])
+        
+        self.failUnless(self.game.buildPlayerList(True))
+        self.failUnlessEqual(self.game.player_list, [2, 1])
         
     # -----------------------------------------------------------------------------------------------------    
-    def Callback(self, id, value):
-        self.CallbackValue = value
+    def testMoveDealerLeft(self):
+        """Test Poker Game : Move dealer left"""
+        
+        self.game.setMaxPlayers(3)
+        
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        # The construction of the player list
+        self.failUnless(self.game.buildPlayerList(False))
+        self.failUnlessEqual(self.game.player_list, [1, 2, 3])
+        
+        # The dealer is the player 1
+        self.failUnlessEqual(self.game.dealer_seat, 2)
+        self.game.dealerFromDealerSeat()
+        self.failUnlessEqual(self.game.getPlayerDealer(), player1)
+        
+        # Move the dealer
+        player2.missed_blind = None
+        self.game.moveDealerLeft()
+        
+        # The player 2 is now the dealer        
+        self.failUnlessEqual(self.game.dealer_seat, 5)
+        self.game.dealerFromDealerSeat()
+        self.failUnlessEqual(self.game.getPlayerDealer(), player2)
+        
+        # No blind info, nothing done
+        self.game.blind_info = None
+        player1.missed_blind = None
+        self.game.moveDealerLeft()
+        
+        # The player 2 is still the dealer
+        self.failUnlessEqual(self.game.dealer_seat, 5)
+        self.game.dealerFromDealerSeat()
+        self.failUnlessEqual(self.game.getPlayerDealer(), player2)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testDealerFromDealerSeat(self):
+        """Test Poker Game : Dealer from dealer seat"""
+        
+        self.game.setMaxPlayers(3)
+        
+        self.failUnlessEqual(self.game.dealer, -1)
+        self.failUnlessEqual(self.game.dealer_seat, -1)
+        
+        self.game.dealerFromDealerSeat()
+        
+        # The dealer and his seat are not initialised
+        self.failUnlessEqual(self.game.dealer, -1)
+        self.failUnlessEqual(self.game.dealer_seat, -1)
+        
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        
+        self.failUnlessEqual(self.game.dealer_seat, 2)
+        
+        # Construct the player list
+        self.failUnlessEqual(self.game.buildPlayerList(False), True)
+        self.failUnlessEqual(self.game.player_list, [1, 2])
+        
+        # The dealer is the player 1
+        self.failUnlessEqual(self.game.dealer_seat, 2)
+        self.game.dealerFromDealerSeat()
+        self.failUnlessEqual(self.game.getSerialDealer(), 1)
+        self.failUnlessEqual(self.game.getPlayerDealer(), player1)
+        
+        # Change the dealer seat
+        self.game.dealer_seat = 5
+        
+        # The dealer is now the player 2
+        self.game.dealerFromDealerSeat()
+        self.failUnlessEqual(self.game.getSerialDealer(), 2)
+        self.failUnlessEqual(self.game.getPlayerDealer(), player2)
+        
+        # Add a player but do not reconstruct the player list
+        player3 = self.AddPlayerAndSit(3)
+        
+        # Change the dealer seat
+        self.game.dealer_seat = 7
+        
+        # The dealder is still the player 2
+        self.game.dealerFromDealerSeat()
+        self.failUnlessEqual(self.game.getSerialDealer(), 2)
+        self.failUnlessEqual(self.game.getPlayerDealer(), player2)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testSetDealer(self):
+        """Test Poker Game : Set dealer"""
+        
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 7)
+        
+        # Construct the player list
+        self.failUnless(self.game.buildPlayerList(False))
+        
+        # The game is not running
+        self.failIf(self.game.isRunning())
+        
+        # The dealer can be set because the game is not running
+        self.game.setDealer(7)
+        
+        # The dealer is the player 2
+        self.game.dealerFromDealerSeat()
+        self.failUnlessEqual(self.game.getSerialDealer(), 2)
+        
+        # The dealer can be set because the game is not running
+        self.game.setDealer(2)
+        
+        # The dealer is the player 1
+        self.game.dealerFromDealerSeat()
+        self.failUnlessEqual(self.game.getSerialDealer(), 1)
+        
+        self.game.beginTurn(1)
+        
+        # The game is now running
+        self.failUnless(self.game.isRunning())
+        self.failUnlessEqual(self.game.getSerialDealer(), 1)
+        
+        # The set dealer function has no effect
+        self.game.setDealer(7)
+        
+        # The dealer is still the player 1
+        self.game.dealerFromDealerSeat()
+        self.failUnlessEqual(self.game.getSerialDealer(), 1)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameServerBeginTurn(self):
+        """Test Poker Game : Server begin turn"""
+        
+        Attributes = {
+                                'pot' : 0, \
+                                'board' : pokercards.PokerCards(), \
+                                'winners' : [], \
+                                'muckable_serials' : [], \
+                                'win_condition' : pokergame.WON_NULL, \
+                                'serial2best' : {}, \
+                                'side_pots' : { \
+                                                    'contributions': { 'total': {},  -1: {} }, \
+                                                    'pots': [[0, 0]], \
+                                                    'building': 0, \
+                                                    }, \
+                                'showdown_stack' : [] \
+                            }
+                            
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        self.game.beginTurn(1)
+        
+        # The begin of the turn can not be called twice
+        self.game.beginTurn(1)
+        
+        for key, value in Attributes.items():
+            self.failUnlessEqual(getattr(self.game, key), value)
+        
+        self.failUnlessEqual(self.game.player_list, [1, 2])
+        self.failUnlessEqual(self.game.state, pokergame.GAME_STATE_BLIND_ANTE)
+        self.failUnlessEqual(self.game.current_round, -1)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameBet(self):
+        """Test Poker Game : Bet"""
+        
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerGameMoney2Bet(self):
+        """Test Poker Game : Money to bet"""
+        
+        self.game.registerCallback(Callback)
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        self.game.beginTurn(1)
+        
+        player = self.GetPlayer(1)
+        
+        self.failUnlessEqual(player.bet, 0)
+        self.failUnlessEqual(self.game.getPlayerMoney(1), self.game.bestBuyIn())
+        
+        InitCallback()
+        player1_bet = 500
+        self.game.money2bet(1, player1_bet)
+        
+        self.failUnlessEqual(self.game.getPlayerMoney(1), self.game.bestBuyIn() - player1_bet)
+        self.failUnlessEqual(player.bet, player1_bet)
+        self.failUnlessEqual(player.isAllIn(), False)
+        
+        self.failUnlessEqual(CallbackIds, [self.game.id])
+        self.failUnlessEqual(CallbackArgs, [('money2bet', 1, player1_bet)])
+        
+        player = self.GetPlayer(2)
+        
+        self.failUnlessEqual(self.game.getPlayerMoney(2), self.game.bestBuyIn())
+        
+        InitCallback()
+        self.game.money2bet(2, 2000)
+        self.failUnlessEqual(self.game.getPlayerMoney(2), 0)
+        self.failUnlessEqual(player.bet, self.game.bestBuyIn())
+        self.failUnlessEqual(player.isAllIn(), True)
+        
+        self.failUnlessEqual(CallbackIds, [self.game.id, self.game.id])
+        self.failUnlessEqual(CallbackArgs, [('money2bet', 2, self.game.bestBuyIn()), ('all-in', 2)])
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testNotFoldCount(self):
+        """Test Poker Game : Not fold count"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.game.beginTurn(1)
+        
+        self.failUnlessEqual(self.game.notFoldCount(), 2)
+        self.failUnlessEqual(self.game.serialsNotFold(), [1, 2])
+        self.failUnlessEqual(self.game.playersNotFold(), [player1, player2])
+        
+        player1.fold = True
+        self.failUnlessEqual(self.game.notFoldCount(), 1)
+        self.failUnlessEqual(self.game.serialsNotFold(), [2])
+        self.failUnlessEqual(self.game.playersNotFold(), [player2])
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testPot2Money(self):
+        """Test Poker Game : Pot to money"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.game.beginTurn(1)
+        
+        self.failUnlessEqual(self.game.getPlayerMoney(1), self.game.bestBuyIn())
+        self.game.pot = 500
+        self.game.pot2money(1)
+        self.failUnlessEqual(self.game.getPlayerMoney(1), self.game.bestBuyIn() + 500)
+        self.failUnlessEqual(self.game.pot, 0)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testCancelState(self):
+        """Test Poker Game : Cancel state"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.game.beginTurn(1)
+        
+        Attributes = {
+                            'current_round' : -2,
+                            'position' : -1,
+                            'state' : 'end'
+                        }
+                        
+        self.game.position = -1
+        self.game.cancelState()
+        for key, value in Attributes.items():
+            self.failUnlessEqual(getattr(self.game,key), value)
+            
+        self.game.position = 0
+        self.game.turn_history = []
+        self.game.cancelState()
+        
+        self.failUnlessEqual(self.game.turn_history, [('position', -1)] )
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testHighestBet(self):
+        """Test Poker Game : Highest bet"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.game.beginTurn(1)
+        
+        self.failUnlessEqual(player1.bet, 0)
+        self.failUnlessEqual(player2.bet, 0)
+        player1.bet = 500
+        self.failUnlessEqual(self.game.highestBetNotFold(), 500)
+        self.failUnlessEqual(self.game.highestBetInGame(), 500)
+        player2.bet = 1000
+        self.failUnlessEqual(self.game.highestBetNotFold(), 1000)
+        self.failUnlessEqual(self.game.highestBetInGame(), 1000)
+        player2.fold = True
+        self.failUnlessEqual(self.game.highestBetNotFold(), 500)
+        self.failUnlessEqual(self.game.highestBetInGame(), 500)    
+        player2.fold = False
+        player2.all_in = True
+        self.failUnlessEqual(self.game.highestBetNotFold(), 1000)
+        self.failUnlessEqual(self.game.highestBetInGame(), 500)    
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testBetsEqual(self):
+        """Test Poker Game : Bets equal"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.game.beginTurn(1)
+        
+        self.failUnlessEqual(player1.bet, 0)
+        self.failUnlessEqual(player2.bet, 0)
+        player1.bet = 500
+        self.failUnlessEqual(self.game.betsEqual(), False)
+        player2.bet = 500
+        self.failUnlessEqual(self.game.betsEqual(), True)
+        player2.bet = 1000
+        player2.all_in = True
+        self.failUnlessEqual(self.game.betsEqual(), False)
+        player2.fold = True
+        self.failUnlessEqual(self.game.betsEqual(), True)
+        player2.fold = False
+        player1.all_in = True
+        self.failUnlessEqual(self.game.betsEqual(), True)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testCanCall(self):
+        """Test Poker Game : Can call"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.game.beginTurn(1)
+        
+        self.failUnless(self.game.isBlindAnteRound())
+        self.failIf(self.game.canCall(1))
+        
+        self.game.nextRound()
+        self.failIf(self.game.isBlindAnteRound())
+        
+        player1.bet = 1000
+        self.failUnless(self.game.canCall(2))
+        player2.bet = 1500
+        self.failIf(self.game.canCall(2))
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testCall(self):
+        """Test Poker Game : Call"""
+        
+        self.game.setMaxPlayers(3)
+        
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        self.failIf(self.game.call(1))
+        
+        self.game.nextRound()
+        self.game.initRound()
+        
+        self.failIf(self.game.isBlindAnteRound())
+        self.failIf(self.game.canAct(1))
+        self.failIf(self.game.call(1))
+        
+        player1.hand = pokercards.PokerCards(['Ad', 'As'])
+        player2.hand = pokercards.PokerCards(['4d', 'Ts'])
+        player3.hand = pokercards.PokerCards(['Kd', '3s'])
+        
+        self.failUnless(self.game.callNraise(1, 100))
+        
+        self.failUnless(self.game.canAct(2))
+        self.failIf(player2.talked_once)
+        
+        self.failUnless(self.game.call(2))
+        
+        self.failUnlessEqual(player2.bet, 100)
+        self.failUnlessEqual(player2.money, 1500)
+        self.failUnless(player2.talked_once)
+        
+        self.failUnless(self.game.canAct(3))
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testCanCheck(self):
+        """Test Poker Game : Can check"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.game.beginTurn(1)
+        
+        self.failUnless(self.game.isBlindAnteRound())
+        self.failIf(self.game.canCheck(1))
+        
+        self.game.nextRound()
+        self.failIf(self.game.isBlindAnteRound())
+        
+        player1.bet = 1000
+        player2.bet = 500
+        self.failIf(self.game.canCheck(2))
+        player2.bet = 1000
+        self.failUnless(self.game.canCheck(2))
+        player2.bet = 1500
+        self.failUnless(self.game.canCheck(2))
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testCheck(self):
+        """Test Poker Game : Check"""
+        
+        self.game.setMaxPlayers(3)
+        
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        self.failIf(self.game.check(1))
+        
+        self.game.nextRound()
+        self.game.initRound()
+        
+        self.failIf(self.game.isBlindAnteRound())
+        self.failIf(self.game.canAct(1))
+        self.failIf(self.game.check(1))
+                
+        player1.hand = pokercards.PokerCards(['Ad', 'As'])
+        player2.hand = pokercards.PokerCards(['4d', 'Ts'])
+        player3.hand = pokercards.PokerCards(['Kd', '3s'])
+        
+        self.failUnless(self.game.callNraise(1, 100))
+        
+        self.failUnless(self.game.canAct(2))
+        self.failIf(self.game.canCheck(2))
+        self.failIf(self.game.check(2))
+        
+        player2.bet = 100
+        self.failUnless(self.game.canCheck(2))
+        self.failIf(player2.talked_once)
+        
+        self.failUnless(self.game.check(2))
+        self.failUnless(player2.talked_once)
+        
+        self.failUnless(self.game.canAct(3))
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testCanFold(self):
+        """Test Poker Game : Can fold"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.game.beginTurn(1)
+        
+        self.failUnless(self.game.isBlindAnteRound())
+        self.failIf(self.game.canFold(1))
+        
+        self.game.nextRound()
+        self.failIf(self.game.isBlindAnteRound())
+        
+        self.failUnless(self.game.canFold(1))
+        
+        player2.all_in = True
+        self.failIf(self.game.canFold(2))
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testFold(self):
+        """Test Poker Game : Fold"""
+        
+        self.game.setMaxPlayers(3)
+        
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        self.failIf(self.game.fold(1))
+        
+        self.game.nextRound()
+        self.game.initRound()
+        
+        self.failIf(self.game.isBlindAnteRound())
+        self.failIf(self.game.canAct(1))
+        self.failIf(self.game.fold(1))
+        
+        player1.hand = pokercards.PokerCards(['Ad', 'As'])
+        player2.hand = pokercards.PokerCards(['4d', 'Ts'])
+        player3.hand = pokercards.PokerCards(['Kd', '3s'])
+        
+        self.failUnless(self.game.callNraise(1, 100))
+        
+        self.failIf(player2.fold)        
+        self.failUnless(self.game.canAct(2))
+        
+        player2.bet = 300
+        self.failUnless(self.game.fold(2))
+        
+        self.failUnless(player2.fold)
+        self.failUnlessEqual(player2.bet, 0)
+        self.failUnlessEqual(self.game.pot, 300)
+        
+        self.failUnless(self.game.canAct(3))
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testCanRaise(self):
+        """Test Poker Game : Can raise"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # It is the blind and ante turn so the players can not raise
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        self.failIf(self.game.canRaise(1))
+        
+        # Go to the next turn
+        self.game.nextRound()
+        self.game.initRound()
+        self.failIf(self.game.isBlindAnteRound())
+        
+        # The player can now raise
+        self.failUnless(self.game.canRaise(1))
+        
+        self.game.round_cap_left = 0
+        self.failIf(self.game.canRaise(1))
+        self.game.round_cap_left = sys.maxint
+            
+        player1.bet = 1000
+        player1.money = 600
+        self.failUnless(self.game.canRaise(2))
+        
+        player1.talked_once = False
+        self.failUnless(self.game.canRaise(1))
+        player1.talked_once = True
+        self.failIf(self.game.canRaise(1))
+        
+        player1.bet = player2.money + 1000
+        self.failIf(self.game.canRaise(2))
+        
+        player2.bet = 1600
+        player2.money = 0
+        self.failIf(self.game.canRaise(2))        
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testCallNRaise(self):
+        """Test Poker Game : Call N raise"""
+        
+        self.game.setMaxPlayers(3)
+        
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3 ,7)
+        
+        # It is the blind and ante turn so the players can not raise
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        self.failIf(self.game.canAct(1))
+        self.failIf(self.game.callNraise(1, 100))
+        
+        # Go to the next turn
+        self.game.nextRound()
+        self.game.initRound()
+        self.failIf(self.game.isBlindAnteRound())
+        
+        # The card are not dealt so the players can not act
+        self.failIf(self.game.canAct(1))
+        self.failIf(self.game.callNraise(1, 100))
+        
+        self.game.dealCards()
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/variants/round', None, {'min' : '100', 'max' : '300'}):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.failUnlessEqual(self.game.betLimits(1), (100, 300 , 0))
+        
+        self.failUnless(self.game.callNraise(1, 50))
+        self.failUnlessEqual(player1.bet, 100)
+        self.failUnlessEqual(self.game.betLimits(2), (200, 400 , 100))
+        
+        self.failUnless(self.game.canAct(2))
+        
+        self.failUnless(self.game.callNraise(2, 500))
+        self.failUnlessEqual(player2.bet, 400)
+        
+        self.failUnless(self.game.canAct(3))
+        
+        self.game.round_cap_left = 0
+        self.failIf(self.game.callNraise(3, 100))
+        
+        self.game.round_cap_left = -1
+        self.failIf(self.game.callNraise(3, 100))
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testCanAct(self):
+        """Test Poker Game : Can act"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        self.game.beginTurn(1)
+
+        # It the blind and ante turn so the player can act
+        self.failUnless(self.game.canAct(1))        
+        
+        # Go to first round
+        self.game.nextRound()
+        self.game.initRound()
+        
+        # Can not act because the cards are not dealt
+        self.failIf(self.game.cardsDealt())
+        self.failIf(self.game.canAct(1))
+        
+        self.game.dealCards()
+        
+        # The cards are now dealt so the player 1 can act
+        self.failUnless(self.game.cardsDealt())
+        self.failUnless(self.game.canAct(1))
+        
+        # The player 2 can not act because it is not its turn
+        self.failIfEqual(self.game.getSerialInPosition(), 2)
+        self.failIf(self.game.canAct(2))
+        
+        self.game.callNraise(1, 1000)
+        
+        # The player 2 can now play
+        self.failUnlessEqual(self.game.getSerialInPosition(), 2)
+        #self.game.setPosition(1)
+        self.failUnless(self.game.canAct(2))
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testWillAct(self):
+        """Test Poker Game : Will act"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # The game is not running
+        self.failIf(self.game.isRunning())
+        self.failIf(self.game.willAct(1))
+        
+        # Start the game
+        self.game.beginTurn(1)
+        self.game.nextRound()
+        self.game.initRound()
+        self.game.dealCards()
+        self.failUnless(self.game.isRunning())
+        
+        # The player 1 can not call
+        self.failIf(self.game.canCall(1))
+        self.failUnless(self.game.willAct(1))
+        
+        # The player 1 raise
+        self.game.callNraise(1, 100)
+        
+        # The player 2 can call and will act
+        self.failUnless(self.game.canCall(2))
+        self.failIf(player2.talked_once)
+        self.failUnless(self.game.willAct(2))
+        
+        # The player 2 call
+        self.game.callNraise(2, 200)
+        
+        # The player 2 has talked so he won't act
+        self.failUnless(player2.talked_once)
+        self.failIf(self.game.willAct(2))
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testPossibleActions(self):
+        """Test Poker Game : Possible actions"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        self.game.beginTurn(1)
+        
+        # It is the blind and ante turn so there is no possible action
+        self.failUnless(self.game.canAct(1))        
+        self.failUnless(self.game.isBlindAnteRound())
+        self.failUnlessEqual(self.game.possibleActions(1), [])
+        
+        # Go to first round
+        self.game.nextRound()
+        self.game.initRound()
+        self.failIf(self.game.isBlindAnteRound())
+        
+        # Deal the cards
+        self.game.dealCards()
+        
+        # The player 1 can raise or check
+        self.failUnless(self.game.canAct(1))        
+        self.failUnlessEqual(self.game.possibleActions(1), ['raise', 'check'])
+        
+        # The player 2 can not do anything because it is not its turn
+        self.failUnlessEqual(self.game.possibleActions(2), [])
+        
+        # The player 1 raise 1000
+        self.game.callNraise(1, 1000)
+        
+        # The player 2 can now call, raise or fold
+        self.failUnlessEqual(self.game.possibleActions(2), ['call', 'raise', 'fold'])
+        
+        # The player 2 can not raise because he has not enough money
+        player1.bet = 1800
+        self.failUnlessEqual(self.game.possibleActions(2), ['call', 'fold'])
+
+    # -----------------------------------------------------------------------------------------------------
+    def testBetsNull(self):
+        """Test Poker Game : Bets null"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        self.failIf(self.game.betsNull())
+        self.game.beginTurn(1)
+        self.failUnless(self.game.betsNull())
+        
+        player1.bet = 1000
+        self.failIf(self.game.betsNull())
+        player1.fold =True
+        self.failUnless(self.game.betsNull())
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testBetLimits(self):
+        """Test Poker Game : Bet limits"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.failUnlessEqual(self.game.betLimits(1), 0)
+        
+        self.game.beginTurn(1)
+        self.game.current_round = 0
+        
+        player1.bet = 1000
+        self.failUnlessEqual(self.game.betLimits(2), (1000, 1600 , 1000))
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/variants/round', None, {'min' : '100', 'max' : '300'}):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.failUnlessEqual(self.game.betLimits(2), (1100, 1300 , 1000))
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, {'big' : '200'}):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/variants/round', None, {'min' : 'big', 'max' : 'pot'}):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+        
+        player1.bet = 400        
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        # self.failUnlessEqual(self.game.betLimits(2), (600,  800, 400))
+        self.failUnlessEqual(self.game.betLimits(2), (600,  1200, 400)) # Strange the to_call value is added twice
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testBestHand(self):
+        """Test Poker Game : Best hand"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player1.hand = pokercards.PokerCards(['Ad', 'As', 'Ah', '3s'])
+        self.game.board = pokercards.PokerCards(['9d', '6s', 'Td', '4d', '4h'])
+        
+        self.failUnless(self.game.isHigh())
+        
+        self.game.variant = 'holdem'
+        bestHand = pokercards.PokerCards(['Ad', 'Ah', 'As', '4d', '4h'])
+        hand = self.game.bestHand('hi', 1)
+        self.failUnlessEqual(pokercards.PokerCards(hand[1][1:]), bestHand)
+        self.failUnlessEqual(self.game.readablePlayerBestHand('hi', 1), 'Full house, Ace over Four: As, Ad, Ah, 4d, 4h')
+    
+        self.game.variant = 'omaha'
+        bestHand = pokercards.PokerCards(['Ad', 'Ah', '4d', '4h', 'Td'])
+        hand = self.game.bestHand('hi', 1)
+        self.failUnlessEqual(pokercards.PokerCards(hand[1][1:]), bestHand)
+        self.failUnlessEqual(self.game.readablePlayerBestHand('hi', 1), 'Two pairs Aces and Fours, Ten kicker: Ad, Ah, 4d, 4h, Td')
+            
+        value, cards = self.game.bestHand('hi', 1)
+        self.failUnlessEqual(self.game.bestHandValue('hi', 1), value)
+        self.failUnlessEqual(self.game.bestHandCards('hi', 1), cards)
+    
+    # -----------------------------------------------------------------------------------------------------
+    def testBestHands(self):
+        """Test Poker Game : Best hands"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        player1.hand = pokercards.PokerCards(['Ad', 'As', 'Ah', '3s'])
+        player2.hand = pokercards.PokerCards(['Jh', '5c', '7d', '2d'])
+        self.game.board = pokercards.PokerCards(['9d', '6s', 'Td', '4d', '4h'])
+        
+        bestHand1 = pokercards.PokerCards(['Ad', 'Ah', 'As', '4d', '4h'])
+        bestHand2 = pokercards.PokerCards(['7d', '2d', '9d', 'Td', '4d'])
+        
+        self.failUnless(self.game.isHigh())
+        
+        self.game.variant = 'holdem'
+        results = self.game.bestHands([1, 2])
+        self.failUnless(results.has_key(1))
+        self.failUnless(results[1].has_key('hi'))
+        self.failUnlessEqual(pokercards.PokerCards(results[1]['hi'][1][1:]), bestHand1)
+        self.failUnlessEqual(self.game.readablePlayerBestHands(1), 'Full house, Ace over Four: As, Ad, Ah, 4d, 4h')
+            
+        self.failUnless(results.has_key(2))
+        self.failUnless(results[2].has_key('hi'))
+        self.failUnlessEqual(pokercards.PokerCards(results[2]['hi'][1][1:]), bestHand2)
+        self.failUnlessEqual(self.game.readablePlayerBestHands(2), 'Flush Ten high: Td, 9d, 7d, 4d, 2d')
+
+    # -----------------------------------------------------------------------------------------------------
+    def testReadableHandValue(self):
+        """Test Poker Game : Readable hand value"""
+        
+        self.game.variant = 'holdem'
+        player1 = self.AddPlayerAndSit(1)
+        
+        player1.hand = pokercards.PokerCards(['2h', '5s', '6h', '9s', 'Ks'])
+        cards = self.game.bestHandCards('hi', 1)
+        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'High card King')
+        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'High card King')
+        
+        player1.hand = pokercards.PokerCards(['2h', '2s', '6h', '9s', 'Ks'])
+        cards = self.game.bestHandCards('hi', 1)
+        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Pair of Deuces')
+        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'A pair of Deuces, King kicker')
+        
+        player1.hand = pokercards.PokerCards(['3h', '3s', '6h', '6s', 'Ks'])
+        cards = self.game.bestHandCards('hi', 1)
+        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Pairs of Sixes and Treys')
+        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Two pairs Sixes and Treys, King kicker')
+            
+        player1.hand = pokercards.PokerCards(['Th', 'Ts', 'Td', '6s', 'Qs'])
+        cards = self.game.bestHandCards('hi', 1)
+        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Trips Tens')
+        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Three of a kind Tens, Queen kicker')
+        
+        player1.hand = pokercards.PokerCards(['7h', '8s', '9d', 'Ts', 'Js'])
+        cards = self.game.bestHandCards('hi', 1)
+        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Straight Jack high')
+        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Straight Jack to Seven')
+        
+        player1.hand = pokercards.PokerCards(['2s', '5s', '6s', '9s', 'Ks'])
+        cards = self.game.bestHandCards('hi', 1)
+        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Flush King high')
+        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Flush King high')
+        
+        player1.hand = pokercards.PokerCards(['Qh', 'Qs', 'Qc', 'Ts', 'Td'])
+        cards = self.game.bestHandCards('hi', 1)
+        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Full Queen over Ten')
+        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Full house, Queen over Ten')
+        
+        player1.hand = pokercards.PokerCards(['6h', '6s', '6d', '6c', 'Qs'])
+        cards = self.game.bestHandCards('hi', 1)
+        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Quads Sixes, Queen kicker')
+        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Four of a kind Sixes, Queen kicker')
+            
+        player1.hand = pokercards.PokerCards(['7h', '8h', '9h', 'Th', 'Jh'])
+        cards = self.game.bestHandCards('hi', 1)
+        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Straight flush')
+        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Straight flush Jack high')
+            
+        player1.hand = pokercards.PokerCards(['Ts', 'Js', 'Qs', 'Ks', 'As'])
+        cards = self.game.bestHandCards('hi', 1)
+        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Royal flush')
+        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Royal flush')
+            
+        player1.hand = pokercards.PokerCards(['Ac', '2s', '3h', '4d', '5s'])
+        cards = self.game.bestHandCards('low', 1)
+        self.failUnlessEqual(self.game.readableHandValueShort('low', cards[0], cards[1:]), 'The wheel')
+        self.failUnlessEqual(self.game.readableHandValueLong('low', cards[0], cards[1:]), 'The wheel')
+            
+        player1.hand = pokercards.PokerCards(['8h', '2s', '3h', '4d', '5s'])
+        cards = self.game.bestHandCards('low', 1)
+        self.failUnlessEqual(self.game.readableHandValueShort('low', cards[0], cards[1:]), '8, 5, 4, 3, 2')
+        self.failUnlessEqual(self.game.readableHandValueLong('low', cards[0], cards[1:]), '8, 5, 4, 3, 2')
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testHandEV(self):
+        """Test Poker Game : Hand eval"""
+        
+        self.game.variant = 'holdem'
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        self.game.beginTurn(1)
+        
+        player1.hand = pokercards.PokerCards(['Ad', 'As'])
+        self.failUnless(self.game.handEV(1, 10000) in range(830,870))
+        
+        player1.hand = pokercards.PokerCards(['2c', '7s'])
+        self.failUnless(self.game.handEV(1, 10000) in range(330,370))
+        
+        self.game.board = pokercards.PokerCards(['2c', '3c', '4s'])
+        self.failUnless(self.game.handEV(1, 10000) in range(430,470))
+        
+        player2.hand = pokercards.PokerCards(['4h', '5c'])
+        self.failUnless(self.game.handEV(1, 10000, True) in range(430,470))
+        
+        self.failUnless(self.game.handEV(1, 10000) in range(100, 140))
+        
+        self.failUnless(self.game.handEV(2, 10000, True) in range(690, 730))
+        self.failUnless(self.game.handEV(2, 10000) in range(860, 900))
+        
+        self.failUnlessEqual(self.game.handEV(3, 10000), None)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testMoneyMap(self):
+        """Test Poker Game : Money map"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.game.beginTurn(1)
+        
+        player1.money = 1500
+        player2.money = 600
+        self.failUnlessEqual(self.game.moneyMap(), { 1 : 1500, 2 : 600})
+            
+        player2.fold = True
+        self.failUnlessEqual(self.game.moneyMap(), { 1 : 1500})
+            
+    # -----------------------------------------------------------------------------------------------------
+    def testHasLevel(self):
+        """Test Poker Game : Has level"""
+        
+        self.failIf(self.game.hasLevel())
+        
+        blind_properties = {  'change' : 'double',
+                                    'frequency' : '15',
+                                    'unit' : 'minute',
+                                    'small' : '2000',
+                                    'big' : '4000'
+                                }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.failUnless(self.game.hasLevel())
+        
+        if not self.CopyFile(self.ConfigTmplFile, self.ConfigTempFile):
+            self.fail('Error during creation of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.failIf(self.game.hasLevel())
+        
+        ante_properties = {  'change' : 'double',
+                                     'frequency' : '15',
+                                     'unit' : 'minute',
+                                     'value' : '50',
+                                     'bring-in' : '200'
+                                  }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.failUnless(self.game.hasLevel())
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testLevelUp(self):
+        """Test Poker Game : Level up"""
+        
+        # The blind properties 
+        self.failIf(self.game.delayToLevelUp())
+        
+        blind_properties = { 
+                                'change' : 'levels',
+                                'levels' : PokerGameTestCase.TestLevelsTemplateFile,
+                                'frequency' : '3',
+                                'unit' : 'minute',
+                                }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.failUnless(self.game.hasLevel())
+        
+        # Level 0
+        self.game.setLevel(0)
+        self.failUnless(self.game.delayToLevelUp(), (0, 'minute'))
+        
+        # Level 1
+        self.game.setLevel(1)
+        # The level is not finished
+        self.failIf(self.game.levelUp())
+        
+        # 3 minutes to wait is a little bit long so this test is not active
+        # time.sleep(3 * 60)
+        # self.failUnless(self.game.levelUp())
+        
+        # Change the unit 
+        blind_properties = { 
+                                'change' : 'levels',
+                                'levels' : PokerGameTestCase.TestLevelsTemplateFile,
+                                'frequency' : '3',
+                                'unit' : 'hand',
+                                }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        # Level 0
+        self.game.setLevel(0)
+        self.failUnless(self.game.delayToLevelUp(), (0, 'hand'))
+        
+        # Level 1
+        self.game.setLevel(1)
+        self.game.setHandsCount(2)
+        self.failUnless(self.game.delayToLevelUp(), (5, 'hand'))
+        self.failIf(self.game.levelUp())
+        
+        # Invalid unit 
+        blind_properties = { 
+                                'change' : 'levels',
+                                'levels' : PokerGameTestCase.TestLevelsTemplateFile,
+                                'frequency' : '3',
+                                'unit' : 'Invalid',
+                                }
+                                
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        self.failIf(self.game.delayToLevelUp())
+        
+        # The game is not directing
+        self.game.is_directing = False
+        self.failIf(self.game.levelUp())
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testCardsDealt(self):
+        """Test Poker Game : Cards dealt"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.game.beginTurn(1)
+        
+        self.failUnless(self.game.cardsDealt())
+        self.game.nextRound()
+        
+        self.failIf(self.game.cardsDealt())
+        self.failUnlessEqual(self.game.roundInfo()["hand_size"], 2)
+        self.failUnlessEqual(self.game.roundInfo()["board_size"], 0)
+        
+        player1.hand = pokercards.PokerCards(['Ad', 'As'])
+        player2.hand = pokercards.PokerCards(['4d', 'Ts'])
+    
+        self.failUnless(self.game.cardsDealt())
+
+        self.game.nextRound()        
+        self.failIf(self.game.cardsDealt())
+        
+        self.failUnlessEqual(self.game.roundInfo()["hand_size"], 2)
+        self.failUnlessEqual(self.game.roundInfo()["board_size"], 3)
+        
+        self.game.board = pokercards.PokerCards(['Qd', 'Kh', '8c'])
+        self.failUnless(self.game.cardsDealt())
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testBet2Pot(self):
+        """Test Poker Game : Bet to pot"""
+        
+        self.game.registerCallback(Callback)
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.game.beginTurn(1)
+        
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        InitCallback()
+        player1.bet = 500
+        self.game.bet2pot(1)
+        self.failUnlessEqual(player1.bet, 0)
+        self.failUnlessEqual(player1.dead, 500)
+        self.failUnlessEqual(self.game.pot, 500)
+        
+        self.failUnlessEqual(CallbackIds, [self.game.id])
+        self.failUnlessEqual(CallbackArgs, [('bet2pot', 1, 500)])
+        
+        
+        InitCallback()
+        player1.bet = 100
+        player2.bet = 1000
+        self.game.bet2pot()
+        self.failUnlessEqual(player1.bet, 0)
+        self.failUnlessEqual(player1.dead, 600)
+        self.failUnlessEqual(player2.bet, 0)
+        self.failUnlessEqual(player2.dead, 1000)
+        
+        self.failUnlessEqual(self.game.pot, 1600)
+        
+        self.failUnlessEqual(CallbackIds, [self.game.id, self.game.id])
+        self.failUnlessEqual(CallbackArgs, [('bet2pot', 1, 100), ('bet2pot', 2, 1000)])
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testDealCards(self):
+        """Test Poker Game : Deal cards"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.game.beginTurn(1)
+        
+        self.game.nextRound()
+        self.failIf(self.game.isBlindAnteRound())
+        self.failIf(self.game.cardsDealt())
+        
+        self.game.dealCards()
+        self.failUnless(player1.hand.areHidden())
+        self.failUnless(player2.hand.areHidden())
+        
+        player1_cards = pokercards.PokerCards(['8s', 'As'])
+        player2_cards = pokercards.PokerCards(['3h', '6d'])
+        player1_cards.allHidden()
+        player2_cards.allHidden()
+        
+        self.failUnlessEqual(player1.hand, player1_cards)
+        self.failUnlessEqual(player2.hand, player2_cards)
+        
+        self.game.nextRound()
+        self.game.dealCards()
+        self.failUnlessEqual(self.game.board, pokercards.PokerCards(['6s', '6h', 'Ah']))
+        
+        # There is not enough cards in the deck for all the players
+        self.game.nextRound()
+        
+        info = self.game.roundInfo()
+        info['board'] = ['board', 'board']
+        info["board_size"] = 2
+        
+        info['cards'] = ['up', 'down']
+        info["hand_size"] = 2
+        
+        self.game.deck = ['8d', '2h', '2c', '8c']
+        
+        # The player cards are transfered to the board
+        self.game.dealCards()
+        self.failUnlessEqual(info["hand_size"], 0)
+        self.failUnlessEqual(info["board_size"], 4)
+        
+        # Can not deal all the cards needed
+        info = self.game.roundInfo()
+        info['board'] = ['board', 'board']
+        info["board_size"] = 2
+        
+        info['cards'] = ['up', 'unknown', 'down']
+        info["hand_size"] = 3
+        
+        self.game.deck = ['8d', '2h', '2c', '8c']
+        
+        self.failUnlessRaises(UserWarning,self.game.dealCards)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testBotPlayerPlay(self):
+        """Test Poker Game : Bot player play"""
+        
+        self.game.variant = 'holdem'
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        self.game.beginTurn(1)
+        
+        self.game.nextRound()
+        self.game.initRound()
+        
+        self.failIf(self.game.isBlindAnteRound())
+        self.game.botPlayer(1)
+        self.failUnless(player1.isBot())
+        self.failUnless(player1.isAutoBlindAnte())
+        self.failUnlessEqual(player1.auto_muck, pokergame.AUTO_MUCK_ALWAYS)
+        self.failUnless(player1.isAuto())
+        
+        player1.hand = pokercards.PokerCards(['Ad', 'As'])
+        player2.hand = pokercards.PokerCards(['4d', 'Ts'])
+        
+        self.failUnlessEqual(self.game.possibleActions(1), ['raise', 'check'])
+        self.game.botPlayer(1)
+        
+        """
+        player1.bet = 1000
+        self.failUnlessEqual(self.game.possibleActions(1), ['raise', 'check'])
+        
+        self.failUnlessEqual(self.game.possibleActions(2), [])
+        self.game.setPosition(1)
+        self.failUnlessEqual(self.game.possibleActions(2), ['call', 'raise'])
+        
+        player1.bet = 1800
+        self.failUnlessEqual(self.game.possibleActions(2), ['call'])
+        """
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testGetRequestedAction(self):
+        """Test Poker Game : Get requested action"""
+        
+        self.game.setMaxPlayers(3)
+        
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The dealder is the player 2
+        self.failUnlessEqual(self.game.getRequestedAction(1), None)
+        self.failUnlessEqual(self.game.getRequestedAction(2), 'blind_ante')
+        
+        self.game.nextRound()
+        self.game.initRound()
+        self.failIf(self.game.isBlindAnteRound())
+        
+        self.failUnlessEqual(self.game.getRequestedAction(2), 'play')
+        
+        self.failUnless(self.game.addPlayer(3))
+        self.failUnlessEqual(self.game.getRequestedAction(3), 'buy-in')
+        self.failUnless(self.game.payBuyIn(3,self.game.bestBuyIn()))
+        self.failUnlessEqual(self.game.getRequestedAction(3), None)
+        
+        player3 = self.GetPlayer(3)
+        player3.money = 0
+        self.failUnlessEqual(self.game.getRequestedAction(3), 'rebuy')
+        
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testTalked(self):
+        """Test Poker Game : Talked"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        self.failIf(self.game.call(1))
+        
+        self.game.nextRound()
+        self.game.initRound()
+        
+        self.failIf(self.game.isBlindAnteRound())
+                
+        player1.hand = pokercards.PokerCards(['Ad', 'As'])
+        player2.hand = pokercards.PokerCards(['4d', 'Ts'])
+        
+        self.failUnless(self.game.canAct(1))
+        self.failIf(player1.talked_once)
+        self.failUnless(self.game.callNraise(1, 600))
+        self.failUnlessEqual(player1.bet, 600)
+        self.failUnlessEqual(player1.money, 1000)
+        self.failUnless(player1.talked_once)
+        self.failUnlessEqual(self.game.position, 1)
+        
+        self.failUnless(self.game.canAct(2))
+        self.failIf(player2.talked_once)
+        
+        self.failUnless(self.game.call(2))
+        self.failUnlessEqual(player2.money, 1000)
+        
+        self.failUnlessEqual(self.game.position, 1)
+
+    # -----------------------------------------------------------------------------------------------------
+    def testBlindInfo(self):
+        """Test Poker Game : Blind info"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        self.failUnless(self.game.blind_info)
+        
+        self.failUnlessEqual(self.game.bigBlind(), 1000)
+        self.failUnlessEqual(self.game.smallBlind(), 500)
+        
+        self.game.setPlayerBlind(1, 'big')
+        self.failUnlessEqual(self.game.blindAmount(1), (self.game.bigBlind(), 0, 'big'))
+        self.game.setPlayerBlind(1, 'late')
+        self.failUnlessEqual(self.game.blindAmount(1), (self.game.bigBlind(), 0, 'late'))
+        self.game.setPlayerBlind(1, 'small')
+        self.failUnlessEqual(self.game.blindAmount(1), (self.game.smallBlind(), 0, 'small'))
+        self.game.setPlayerBlind(1, 'big_and_dead')
+        self.failUnlessEqual(self.game.blindAmount(1), (self.game.bigBlind(), self.game.smallBlind(), 'big_and_dead'))
+        self.game.setPlayerBlind(1, None)
+        self.failUnlessEqual(self.game.blindAmount(1), (0, 0, None))
+        self.game.setPlayerBlind(1, True)
+        self.failUnlessEqual(self.game.blindAmount(1), (0, 0, True))
+        
+        self.game.blind_info = None
+        self.failUnlessEqual(self.game.bigBlind(), None)
+        self.failUnlessEqual(self.game.smallBlind(), None)
+        self.failUnlessEqual(self.game.blindAmount(1), (0, 0, False))
+
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testSitOutNextTurn(self):
+        """Test Poker Game : Sit out next turn"""
+        
+        self.game.setMaxPlayers(3)
+        
+        # Create all the players
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        # Start the game, it is blind and ante round
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The player 2 can talk
+        self.failUnlessEqual(self.game.getSerialInPosition(), 2)
+        
+        # The player 2 sit out next turn
+        self.failIf(self.game.isSitOut(2))
+        self.failUnless(self.game.sitOutNextTurn(2))
+        self.failUnless(player2.isSitOut())
+        self.failIf(player2.sit_out_next_turn)
+        self.failIf(player2.sit_requested)
+        self.failIf(player2.wait_for)
+        
+        # Auto blind for the others players
+        self.game.autoBlindAnte(3)
+        self.game.autoBlindAnte(1)
+
+        # First round
+        self.failIf(self.game.isBlindAnteRound())
+        
+        # The player 3 is not sit out
+        self.failIf(player3.sit_out)
+        self.failIf(player3.sit_out_next_turn)
+        self.failIf(player3.sit_requested)
+        self.failIf(player3.wait_for)
+        
+        # Player 3 sit out
+        self.failIf(self.game.sitOutNextTurn(3))
+        self.failUnless(player3.sit_out_next_turn)
+        self.failIf(player3.sit_requested)
+        
+        self.game.is_directing = False
+        
+        self.failIf(player1.sit_out_next_turn)
+        self.failIf(player1.sit_requested)
+        self.failIf(self.game.sitOutNextTurn(1))
+        self.failUnless(player1.sit_out_next_turn)
+        self.failIf(player1.sit_requested)
+        self.failIf(player1.wait_for)
+
+    # -----------------------------------------------------------------------------------------------------
+    def testSitOut(self):
+        """Test Poker Game : Sit out"""
+        
+        self.game.setMaxPlayers(3)
+        
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        self.failIf(player1.sit_out)
+        self.failUnless(self.game.sitOut(1))
+        self.failUnless(player1.sit_out)
+        self.failIf(player1.sit_out_next_turn)
+        self.failIf(player1.sit_requested)
+        self.failIf(player1.wait_for)
+        
+        self.failIf(self.game.sitOut(1))
+        
+        self.failUnlessEqual(self.game.getSerialInPosition(), 2)
+        
+        self.failIf(player3.sit_out)
+        self.failUnless(self.game.sitOut(3))
+        self.failUnless(player3.sit_out)
+        self.failIf(player3.sit_out_next_turn)
+        self.failIf(player3.sit_requested)
+        self.failIf(player3.wait_for)
+        
+        self.failUnlessEqual(self.game.getSerialInPosition(), 2)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testRebuy(self):
+        """Test Poker Game : Rebuy"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        self.failUnlessEqual(self.game.maxBuyIn(), 10000)
+        
+        # The player 3 is unknown so it can not rebuy
+        self.failIf(self.game.rebuy(3, 100))
+        
+        # The player money + the rebuy amount is too high
+        player1.money = 5000
+        self.failIf(self.game.rebuy(1, 5001))
+        
+        # The player money + the player rebuy + the rebuy amount is too high
+        player1.rebuy = 2000
+        self.failIf(self.game.rebuy(1, 3001))
+        
+        # The player 1 rebuy 1000 but the game is not running so the money is added to it rebuy amount
+        self.failIf(self.game.isPlaying(1))
+        self.failUnless(self.game.rebuy(1, 1000))
+        self.failUnless(player1.rebuy, 3000)
+        self.failUnless(player1.money, 5000)
+        
+        self.game.beginTurn(1)
+        
+        # The player 1 rebuy 1000 and the game is not running so the money is added directly to its money amount
+        self.failUnless(self.game.isPlaying(1))
+        self.failUnless(self.game.rebuy(1, 1000))
+        self.failUnless(player1.rebuy, 3000)
+        self.failUnless(player1.money, 6000)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testFullEmpty(self):
+        """Test Poker Game : Full empty"""
+        
+        # The game must be empty
+        self.failUnless(self.game.empty())
+        self.failIf(self.game.full())
+        
+        # Add one player
+        player1 = self.AddPlayerAndSit(1)
+        
+        # The game is not empty and not full
+        self.failIf(self.game.empty())
+        self.failIf(self.game.full())
+        
+        # Add the second player, the game is now full
+        player2 = self.AddPlayerAndSit(2)
+        
+        self.failIf(self.game.empty())
+        self.failUnless(self.game.full())
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testSerialsAllSorted(self):
+        """Test Poker Game : Serials all sorted"""
+        
+        self.game.setMaxPlayers(3)
+
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        # The dealer is not specified or incorrect so get the list of player sorted by serial number
+        self.game.dealer = -1
+        self.failUnlessEqual(self.game.serialsAllSorted(), [1, 2, 3])
+        self.game.dealer = 4
+        self.failUnlessEqual(self.game.serialsAllSorted(), [1, 2, 3])
+        
+        # Go to the blind and ante round
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        self.failUnlessEqual(self.game.dealer, 0)
+        self.failUnlessEqual(self.game.serialsAllSorted(), [2, 3, 1])
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testBlind(self):
+        """Test Poker Game : Blind"""
+        
+        self.game.setMaxPlayers(3)
+        
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        # Not Blind or Ante turn
+        self.failIf(self.game.isBlindAnteRound())
+        self.failIf(self.game.blind(1))
+        
+        # Go to Blind or Ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The player 1 can not act so it can not blind
+        self.failIf(self.game.canAct(1))
+        self.failIf(self.game.blind(1))
+        
+        # Get the blind limits for player 2
+        self.game.setPlayerBlind(2, 'big_and_dead')
+        self.failUnlessEqual(self.game.blindAmount(2), (1000, 500, 'big_and_dead'))
+        
+        # The player 2 can blind, use the defined limits
+        self.game.blind(2)
+        self.failUnlessEqual(player2.bet, 1000)
+        self.failUnlessEqual(self.game.pot, 500)
+        self.failUnlessEqual(player2.money, 100)
+        
+        # The player 2 has blind
+        self.failUnless(player2.blind)
+        self.failUnlessEqual(player2.missed_blind, None)
+        self.failIf(player2.wait_for)
+        
+        # The player 3 can blind, bet 400 and 200 for the dead
+        self.game.blind(3, 400, 200)
+        self.failUnlessEqual(player3.bet, 400)
+        self.failUnlessEqual(self.game.pot, 500 + 200)
+        self.failUnlessEqual(player3.money, 1000)
+        
+        # Blind structure unknown
+        self.game.blind_info = None
+        
+        # The blind has not effect
+        self.game.blind(1, 400, 200)
+        self.failUnlessEqual(player1.bet, 0)
+        self.failUnlessEqual(self.game.pot, 500 + 200)
+        self.failUnlessEqual(player1.money, 1600)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testPayBlind(self):
+        """Test Poker Game : Pay blind"""
+        
+        self.game.setMaxPlayers(3)
+        
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        # Go to Blind or Ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The player 1 pay blind
+        self.game.payBlind(1, 600, 200)
+        self.failUnlessEqual(player1.bet, 600)
+        self.failUnlessEqual(self.game.pot, 200)
+        self.failUnlessEqual(player1.money, 800)
+        self.failUnless(player1.blind)
+        self.failUnlessEqual(player1.missed_blind, None)
+        self.failIf(player1.wait_for)
+        
+        # The player 2 pay ante, the amount is higher than his money
+        self.game.payBlind(2, 2000, 100)
+        self.failUnlessEqual(player2.bet, 1600)
+        self.failUnlessEqual(self.game.pot, 200 + 0)
+        self.failUnlessEqual(player2.money, 0)
+        self.failUnless(player2.blind)
+        self.failUnlessEqual(player2.missed_blind, None)
+        self.failIf(player2.wait_for)
+        
+        # The player 3 pay ante, the amount + the dead is higher than his money
+        self.game.payBlind(3, 1000, 1000)
+        self.failUnlessEqual(player3.bet, 1000)
+        self.failUnlessEqual(self.game.pot, 200 + 0 + 600)
+        self.failUnlessEqual(player3.money, 0)
+        self.failUnless(player3.blind)
+        self.failUnlessEqual(player3.missed_blind, None)
+        self.failIf(player3.wait_for)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testWaitBigBlind(self):
+        """Test Poker Game : Wait big blind"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # Blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The player 2 can not act so he can not wait big blind
+        self.failIf(self.game.canAct(2))
+        self.failIf(self.game.waitBigBlind(2))
+        
+        # The player 1 can act and can wait big blind
+        self.failUnless(self.game.canAct(1))
+        self.failUnless(self.game.waitBigBlind(1))
+        self.failUnlessEqual(player1.wait_for, 'big')
+        
+        # Player 2 pay the blind
+        self.failUnless(self.game.canAct(2))
+        self.game.autoBlindAnte(2)
+        self.failUnlessEqual(player2.money, 600)
+        self.failUnlessEqual(player2.bet, 1000)
+        self.failUnless(player2.isBlind())
+        
+        # The player 1 pay the blind
+        self.failUnless(self.game.canAct(1))
+        self.game.autoBlindAnte(1)
+        self.failUnlessEqual(player1.money, 1100)
+        self.failUnlessEqual(player1.bet, 500)
+        self.failUnless(player1.isBlind())
+        
+        # The blind and ante turn is now finished
+        self.failIf(self.game.isBlindAnteRound())
+        
+        # The players can not wait big blind
+        self.failIf(self.game.waitBigBlind(1))
+        self.failIf(self.game.waitBigBlind(2))
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testAnte(self):
+        """Test Poker Game : Ante"""
+        
+        ante_properties =   {  
+                                    'value' : '100',
+                                    'bring-in' : '200'
+                                    }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        self.game.setMaxPlayers(3)
+        
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        # Not Blind or Ante turn
+        self.failIf(self.game.isBlindAnteRound())
+        self.failIf(self.game.ante(1))
+        
+        # Go to Blind or Ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The player 1 can not act so it can not ante
+        self.failIf(self.game.canAct(1))
+        self.failIf(self.game.ante(1))
+        
+        # Get the ante value
+        self.failUnlessEqual(self.game.ante_info['value'], 100)
+        
+        # The player 2 can ante, use the defined limits
+        self.game.ante(2)
+        self.failUnlessEqual(player2.bet, 0)
+        self.failUnlessEqual(self.game.pot, 100)
+        self.failUnlessEqual(player2.money, 1500)
+        
+        # The player 2 has ante
+        self.failUnless(player2.ante)
+        
+        # The player 3 can ante 400 
+        self.game.ante(3, 400)
+        self.failUnlessEqual(player3.bet, 0)
+        self.failUnlessEqual(self.game.pot, 100 + 400)
+        self.failUnlessEqual(player3.money, 1200)
+        
+        # Ante structure unknown
+        self.game.ante_info = None
+        
+        # The ante has not effect
+        self.game.ante(1, 400)
+        self.failUnlessEqual(player1.bet, 0)
+        self.failUnlessEqual(self.game.pot, 100 + 400)
+        self.failUnlessEqual(player1.money, 1600)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testPayAnte(self):
+        """Test Poker Game : Pay ante"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # Go to Blind or Ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The player 1 pay ante
+        self.game.payAnte(1, 600)
+        self.failUnlessEqual(player1.bet, 0)
+        self.failUnlessEqual(self.game.pot, 600)
+        self.failUnlessEqual(player1.money, 1000)
+        self.failUnless(player1.ante)
+        
+        # The player 2 pay ante, more than his money
+        self.game.payAnte(2, 2000)
+        self.failUnlessEqual(player2.bet, 0)
+        self.failUnlessEqual(self.game.pot, 600 + 1600)
+        self.failUnlessEqual(player2.money, 0)
+        self.failUnless(player2.ante)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testIsBroke(self):
+        """Test Poker Game : Is broke"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # The player 3 is unknown so it is not broke
+        self.failIf(self.game.isBroke(2))
+        
+        # The player 1 and 2 are not borke
+        self.failIf(self.game.isBroke(1))
+        self.failIf(self.game.isBroke(2))
+        
+        # There is no player broke
+        self.failUnlessEqual(self.game.brokeCount(), 0)
+        
+        # The player 1 has no money so he is broke
+        player1.money = 0
+        self.failUnless(self.game.isBroke(1))
+        self.failUnlessEqual(self.game.brokeCount(), 1)
+        self.failUnlessEqual(self.game.serialsBroke(), [1])
+        self.failUnlessEqual(self.game.playersBroke(), [player1])
+        
+        # The player 2 has not enough money to play
+        self.failIf(self.game.isTournament())
+        
+        blind_properties = {  'small' : '1000',
+                                    'big' : '2000',
+                                }
+                                
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        self.failUnless(self.game.isBroke(2))
+        self.failUnlessEqual(self.game.brokeCount(), 2)
+        self.failUnlessEqual(self.game.serialsBroke(), [1, 2])
+        self.failUnlessEqual(self.game.playersBroke(), [player1, player2])
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testAllIn(self):
+        """Test Poker Game : All in"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # It is blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The players are not initially all in
+        self.failIf(player1.isAllIn())
+        self.failIf(player2.isAllIn())
+        self.failUnlessEqual(self.game.allInCount(), 0)
+        
+        # Go to first round
+        self.game.nextRound()
+        self.game.initRound()
+        self.failIf(self.game.isBlindAnteRound())
+        
+        # Deal the cards
+        self.game.dealCards()
+        
+        # The player 1 put all his money
+        self.failUnless(self.game.callNraise(1, player1.money))
+        self.failUnless(player1.isAllIn())
+        self.failUnlessEqual(self.game.allInCount(), 1)
+        self.failUnlessEqual(self.game.serialsAllIn(), [1])
+        self.failUnlessEqual(self.game.playersAllIn(), [player1])
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testDisconnected(self):
+        """Test Poker Game : Diconnected"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # It is blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The player are initially connected
+        self.failIf(player1.remove_next_turn)
+        self.failIf(player2.remove_next_turn)
+        self.failUnlessEqual(self.game.disconnectedCount(), 0)
+        self.failUnlessEqual(self.game.connectedCount(), 2)
+        self.failUnlessEqual(self.game.serialsDisconnected(), [])
+        self.failUnlessEqual(self.game.serialsConnected(), [1, 2])
+        self.failUnlessEqual(self.game.playersDisconnected(), [])
+        self.failUnlessEqual(self.game.playersConnected(), [player1, player2])
+        
+        # Remove the player 1
+        self.failIf(self.game.removePlayer(1))
+        self.failUnless(player1.remove_next_turn)
+        
+        # The player 1 is now disconnected
+        self.failUnlessEqual(self.game.disconnectedCount(), 1)
+        self.failUnlessEqual(self.game.connectedCount(), 1)
+        self.failUnlessEqual(self.game.serialsDisconnected(), [1])
+        self.failUnlessEqual(self.game.serialsConnected(), [2])
+        self.failUnlessEqual(self.game.playersDisconnected(), [player1])
+        self.failUnlessEqual(self.game.playersConnected(), [player2])
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testReturnBlindAnte(self):
+        """Test Poker Game : Return blind ante"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # It is blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The player 1 blind
+        self.game.setPlayerBlind(1, 'big')
+        self.game.blind(1)
+        self.failUnlessEqual(player1.bet, 1000)
+        self.failUnlessEqual(player1.money, 600)
+        
+        # The player 2 sit out so the game is canceled
+        self.game.sitOut(2)
+        self.failUnlessEqual(player1.bet, 0)
+        self.failUnlessEqual(player1.money, 1600)
+        
+        # The game is finished, there is no winners
+        self.failUnlessEqual(self.game.state, pokergame.GAME_STATE_END)
+        self.failUnlessEqual(len(self.game.winners), 0)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testCanceled(self):
+        """Test Poker Game : Canceled"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # It is blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The player 1 blind
+        self.game.setPlayerBlind(1, 'big')
+        self.game.blind(1)
+        self.failUnlessEqual(player1.bet, 1000)
+        self.failUnlessEqual(player1.money, 600)
+        
+        self.game.is_directing = False
+        
+        # The player 2 sit out
+        self.game.sitOut(2)
+        
+        # The game is explicitely canceled
+        self.game.canceled(1, self.game.bigBlind())
+        self.failUnlessEqual(player1.bet, 0)
+        self.failUnlessEqual(player1.money, 1600)
+        
+        # The game is finished, there is no winners
+        self.failUnlessEqual(self.game.state, pokergame.GAME_STATE_END)
+        self.failUnlessEqual(len(self.game.winners), 0)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testNoAutoPlayer(self):
+        """Test Poker Game : No auto player"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # The player 1 is an automatic player
+        player1.auto = True
+        
+        # The player 1 is not an automatic player
+        self.failUnless(self.game.noAutoPlayer(1))
+        self.failIf(player1.auto)
+        
+        # Invalid player
+        self.failIf(self.game.noAutoPlayer(3))
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testAutoPlayer(self):
+        """Test Poker Game : Auto player"""
+        
+        self.game.setMaxPlayers(3)
+        
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        # The player 1 is set an automatic player
+        self.game.autoPlayer(1)
+        self.failUnless(player1.auto)
+        
+        # Start the game
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The player 1 is not a bot so he sits out
+        self.game.autoPlayer(1)
+        self.failUnless(player1.sit_out)
+        
+        # The player 2 is a bot so he pays automatically the blind
+        player2.bot = True
+        self.game.autoPlayer(2)
+        # self.failUnless(player1.blind)
+        # TODO
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testPlayersPlaying(self):
+        """Test Poker Game : Players playing"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # The game is not running so there is no playing players
+        self.failUnlessEqual(self.game.playingCount(), 0)
+        self.failUnlessEqual(self.game.serialsPlaying(), [])
+        self.failUnlessEqual(self.game.notPlayingCount(), 2)
+        self.failUnlessEqual(self.game.serialsNotPlaying(), [1, 2])
+        
+        # Start the game
+        self.game.beginTurn(1)
+        self.game.nextRound()
+        
+        # All the players are now playing
+        self.failUnlessEqual(self.game.playingCount(), 2)
+        self.failUnlessEqual(self.game.serialsPlaying(), [1, 2])
+        self.failUnlessEqual(self.game.notPlayingCount(), 0)
+        self.failUnlessEqual(self.game.serialsNotPlaying(), [])
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testMuckStateWonFold(self):
+        """Test Poker Game : Muck state won fold"""
+        
+        self.game.setVariant('holdem')
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+    
+        # Start the game, skip blind
+        self.game.beginTurn(1)
+        self.game.nextRound()
+        self.game.initRound()
+        
+        self.game.dealCards()
+        
+        # Buy in amount
+        self.failUnlessEqual(player1.money, 1600)
+        self.failUnlessEqual(player2.money, 1600)
+        
+        # The players raise
+        self.failUnless(self.game.callNraise(1, 100))
+        self.failUnless(self.game.callNraise(2, 200))
+        
+        self.failUnlessEqual(player1.bet, 100)
+        self.failUnlessEqual(player2.bet, 200)
+        
+        # The player 1 fold
+        self.failUnless(self.game.fold(1))
+        
+        # The winner is the player 2
+        self.failUnlessEqual(self.game.winners, [2])
+        self.failUnlessEqual(self.game.playersWinner(), [player2])
+        self.failUnless(self.game.isWinnerBecauseFold())
+        
+        # Money amounts after 
+        self.failUnlessEqual(player1.money, 1500)
+        self.failUnlessEqual(player2.money, 1700)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testMuckStateWonAllIn(self):
+        """Test Poker Game : Muck state won all in"""
+        
+        self.game.setVariant('holdem')
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+    
+        # Start the game, skip blind
+        self.game.beginTurn(1)
+        self.game.nextRound()
+        self.game.initRound()
+        
+        self.game.dealCards()
+        
+        # Buy in amount
+        self.failUnlessEqual(player1.money, 1600)
+        self.failUnlessEqual(player2.money, 1600)
+        
+        # The players raise
+        self.failUnless(self.game.callNraise(1, 100))
+        self.failUnless(self.game.callNraise(2, 1600))
+        
+        self.failUnless(player1.bet, 100)
+        self.failUnless(player2.bet, 1600)
+        
+        # The player 2 is all in
+        self.failUnlessEqual(player2.money, 0)
+        self.failUnless(player2.isAllIn())
+        
+        # The player 1 is also all in
+        self.failUnless(self.game.callNraise(1, player1.money))
+        self.failUnless(player1.isAllIn())
+        
+        # All the players are now all in 
+        # All the cards must be dealt
+        # Each player has 2 cards, and there is 5 cards in the board
+        hand1 = pokercards.PokerCards(['8s', 'As'])
+        hand2 = pokercards.PokerCards(['3h', '6d'])
+        board = pokercards.PokerCards(['4s', 'Qs', '6s', '6h', 'Ah'])
+        
+        self.failUnlessEqual(player1.hand, hand1)
+        self.failUnlessEqual(player2.hand, hand2)
+        self.failUnlessEqual(self.game.board, board)
+        
+        # The player 1 wins with a flush 
+        self.failUnlessEqual(self.game.winners, [1])
+        self.failUnlessEqual(self.game.playersWinner(), [player1])
+        
+        # Money amounts after 
+        self.failUnlessEqual(player1.money, 3200)
+        self.failUnlessEqual(player2.money, 0)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testMuckStateWonRegular(self):
+        """Test Poker Game : Muck state won regular"""
+        
+        self.game.setVariant('holdem')
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+    
+        # Start the game, skip blind
+        self.game.beginTurn(1)
+        self.game.nextRound()
+        self.game.initRound()
+        
+        self.game.dealCards()
+        
+        # Buy in amount
+        self.failUnlessEqual(player1.money, 1600)
+        self.failUnlessEqual(player2.money, 1600)
+        
+        # Round 1
+        self.failUnless(self.game.callNraise(1, 100))
+        self.failUnless(self.game.callNraise(2, 200))
+        self.failUnless(self.game.call(1))
+        
+        # Round 2
+        self.failUnless(self.game.callNraise(2, 100))
+        self.failUnless(self.game.call(1))
+        
+        # Round 3
+        self.failUnless(self.game.callNraise(2, 100))
+        self.failUnless(self.game.callNraise(1, 300))
+        self.failUnless(self.game.call(2))
+        
+        # Round 4
+        self.failUnless(self.game.isLastRound())
+        self.failUnless(self.game.check(2))
+        self.failUnless(self.game.check(1))
+        
+        # The turn is finished
+        # Each player has 2 cards, and there is 5 cards in the board
+        hand1 = pokercards.PokerCards(['8s', 'As'])
+        hand2 = pokercards.PokerCards(['3h', '6d'])
+        board = pokercards.PokerCards(['4s', 'Qs', '6s', '6h', 'Ah'])
+    
+        self.failUnlessEqual(player1.hand, hand1)
+        self.failUnlessEqual(player2.hand, hand2)
+        self.failUnlessEqual(self.game.board, board)
+        
+        # The player 1 wins with a flush 
+        self.failUnlessEqual(self.game.winners, [1])
+        self.failUnlessEqual(self.game.playersWinner(), [player1])
+        
+        # Money amounts after 
+        self.failUnlessEqual(player1.money, 2200)
+        self.failUnlessEqual(player2.money, 1000)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testRemovePlayer(self):
+        """Test Poker Game : Remove player"""
+        
+        # The number max of player is 2 so there are 2 seats left
+        self.failUnlessEqual(self.game.seatsLeftCount(), 2)
+        self.failUnlessEqual(self.game.seats_left, [2, 7])
+        
+        # Add a new player on the seat 7
+        player1 = self.AddPlayerAndSit(1, 7)
+        self.failUnlessEqual(player1.seat, 7)
+        
+        # 1 seat is still left
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
+        self.failUnlessEqual(self.game.seats_left, [2])
+        
+        # Remove the player
+        self.failUnless(self.game.removePlayer(1))
+        
+        # The Player has been delete
+        self.failUnlessEqual(self.game.getPlayer(1), None)
+        
+        # The player seat is now left
+        self.failUnlessEqual(self.game.seatsLeftCount(), 2)
+        self.failUnlessEqual(self.game.seats_left, [7, 2])
+        
+        # Add a new player on an invalid seat
+        player1 = self.AddPlayerAndSit(1)
+        player1.seat = 4
+        
+        # Remove the player
+        self.failUnless(self.game.removePlayer(1))
+        
+        # The Player has been delete
+        self.failUnlessEqual(self.game.getPlayer(1), None)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testCardsDealtThisRoundCount(self):
+        """Test Poker Game : Card dealt this round"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+    
+        # The game is not running
+        self.failUnlessEqual(self.game.cardsDealtThisRoundCount(), -1)
+        
+        # Blind and ante round
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        self.failUnlessEqual(self.game.cardsDealtThisRoundCount(), 0)
+        
+        # First round
+        self.game.nextRound()
+        self.game.initRound()
+        
+        # First round 2 cards down
+        round_info = self.game.roundInfo()
+        self.failUnlessEqual(round_info["cards"], ['down', 'down'])
+        self.failUnlessEqual(self.game.cardsDealtThisRoundCount(), 2)
+        self.failUnlessEqual(self.game.downCardsDealtThisRoundCount(), 2)
+        self.failUnlessEqual(self.game.upCardsDealtThisRoundCount(), 0)
+        
+        # Set a card to up
+        round_info["cards"] = ['down', 'up']
+        self.failUnlessEqual(self.game.downCardsDealtThisRoundCount(), 1)
+        self.failUnlessEqual(self.game.upCardsDealtThisRoundCount(), 1)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testSidePots(self):
+        """Test Poker Game : Side pots"""
+        
+        # Initial pots
+        pots =  {
+                    'contributions': { 'total': {} },
+                    'pots': [[0, 0]],
+                    'building': 0,
+                    }
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # The side pots is initally empty
+        self.failUnlessEqual(self.game.getPots(), {})
+        
+        # Blind turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The blind contribution has been added to the pots
+        current_round = self.game.current_round
+        pots['contributions'][current_round] = {}
+        self.failUnlessEqual(self.game.getPots(), pots)
+        
+        # The player 1 pay the blind
+        self.game.autoBlindAnte(1)
+        self.failUnlessEqual(player1.bet, 500)
+        
+        # The pots has been updated
+        pots['building'] += 500
+        pots['contributions']['total'][1] = 500
+        pots['contributions'][current_round][len(pots['pots']) -1] = {}
+        pots['contributions'][current_round][len(pots['pots']) -1][1] = 500
+        self.failUnlessEqual(self.game.getPots(), pots)
+            
+        # The player 2 pay also the blind
+        self.game.autoBlindAnte(2)
+        self.failUnlessEqual(player2.bet, 1000)
+        
+        # The pots has been updated
+        pots['building'] += 1000
+        pots['contributions']['total'][2] = 1000
+        
+        # The blind turn will be finished so its contribution infos will be copy in the first round infos and deleted
+        pots['contributions'][current_round][len(pots['pots']) -1][2] = 1000
+        pots['contributions'][current_round + 1] = pots['contributions'][-1]
+        del pots['contributions'][current_round]
+        current_round += 1
+    
+        # Check pots
+        self.failUnlessEqual(self.game.getPots(), pots)
+    
+        # The player 1 raise 700
+        self.failUnless(self.game.callNraise(1, 700))
+        self.failUnlessEqual(player1.bet, 1200)
+        
+        # The pots has been updated
+        pots['building'] += 700
+        pots['contributions']['total'][1] += 700
+        pots['contributions'][current_round][len(pots['pots']) -1][1] += 700
+        self.failUnlessEqual(self.game.getPots(), pots)
+        self.failUnlessEqual(self.game.getLatestPotContributions(), {0: {1: 1200, 2: 1000}})
+        
+        # The player 2 raise
+        self.failUnless(self.game.call(2))
+        
+        # The round is finished, the post has been updated
+        pots['building'] = 0
+        pots['pots'][0] = [1200 + 1200, 1200 + 1200]
+        pots['contributions']['total'][2] += 200
+        pots['contributions'][current_round][len(pots['pots']) -1][2] += 200
+        
+        current_round += 1
+        pots['contributions'][current_round] = {}
+        
+        # Check pots
+        self.failUnlessEqual(self.game.getPots(), pots)
+        self.failUnlessEqual(self.game.getSidePotTotal(), 2400)
+        
+        # The player 2 raise 100
+        self.failUnless(self.game.callNraise(2, 100))
+        self.failUnlessEqual(self.game.getLatestPotContributions(), {0: {2: 100}})
+        
+        # The player 1 call
+        self.failUnless(self.game.call(1))
+        
+        # The pots has been updated
+        pots['pots'][0] = [1200 + 1200 + 100 + 100, 1200 + 1200 + 100 + 100]
+        pots['contributions']['total'][1] += 100
+        pots['contributions']['total'][2] += 100
+        pots['contributions'][current_round][len(pots['pots']) -1] = {}
+        pots['contributions'][current_round][len(pots['pots']) -1][1] = 100
+        pots['contributions'][current_round][len(pots['pots']) -1][2] = 100
+        
+        current_round += 1
+        pots['contributions'][current_round] = {}
+        
+        # Check pots
+        self.failUnlessEqual(self.game.getPots(), pots)
+        self.failUnlessEqual(self.game.getSidePotTotal(), 2600)
+        self.failUnlessEqual(self.game.playersInPotCount(self.game.getPots()), 0)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testEndTurn(self):
+        """Test Poker Game : End turn"""
+        
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        # Blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # Pay the blind
+        self.game.autoBlindAnte(1)
+        self.game.autoBlindAnte(2)
+        
+        # Check the players money and bet
+        self.failUnlessEqual(player1.bet, 500)
+        self.failUnlessEqual(player2.bet, 1000)
+        self.failUnlessEqual(player1.money, 1100)
+        self.failUnlessEqual(player2.money, 600)
+        
+        # Set a rebuy amount for each player
+        self.game.rebuy(1, 400)
+        self.game.rebuy(2, 600)
+        self.failUnlessEqual(player1.rebuy, 400)
+        self.failUnlessEqual(player2.rebuy, 600)
+        
+        # The rebuy is return to the player
+        self.game.endTurn()
+        
+        self.failUnlessEqual(player1.rebuy, 0)
+        self.failUnlessEqual(player2.rebuy, 0)
+        self.failUnlessEqual(player1.money, 1500)
+        self.failUnlessEqual(player2.money, 1200)
+        
+        # The hand count is incremented
+        self.failUnlessEqual(self.game.hands_count, 1)
+        
+        # The player 1 is broke
+        player1.money = 0
+        self.failUnless(self.game.isBroke(1))
+        
+        # Remove the player 2
+        self.game.removePlayer(2)
+        self.failUnless(player2.remove_next_turn)
+        
+        # Make the player remove needed
+        self.game.endTurn()
+        
+        # The player 1 sit out
+        self.failIfEqual(self.game.getPlayer(1), None)
+        self.failUnless(self.game.getPlayer(1).sit_out)
+        
+        # The player 2 has been removed
+        self.failUnlessEqual(len(self.game.seats_left), 1)
+        self.failUnlessEqual(self.game.allCount(), 1)
+        self.failUnlessEqual(self.game.getPlayer(2), None)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def AddPlayerAndSit(self, serial, seat = -1):
+        self.failUnless(self.game.addPlayer(serial, seat))
+        self.failUnless(self.game.payBuyIn(serial,self.game.bestBuyIn()))
+        player = self.GetPlayer(serial)
+        self.failUnless(player.isBuyInPayed())
+        self.failUnless(self.game.sit(serial))
+        self.failUnless(self.game.isSit(serial))
+        return player
     
     # -----------------------------------------------------------------------------------------------------
     def ModifyXMLFile(self, path, parent, child, attributes = {}):
@@ -794,6 +3259,45 @@ class PokerGameTestCase(unittest.TestCase):
     def DeleteFile(self, path):
         if os.path.isfile(path):
             os.unlink(path)
+            
+    # -----------------------------------------------------------------------------------------------------
+    def GetPlayer(self, serial):
+        player = self.game.getPlayer(serial)
+        self.failIfEqual(player, None)
+        return player
+        
+    # -----------------------------------------------------------------------------------------------------
+    def CreateGameClient(self):
+        if not self.CopyFile(self.ConfigTmplFile, self.ConfigTempFile):
+            self.fail('Error during creation of configuration file ' + self.ConfigTempFile)
+            
+        self.game = pokergame.PokerGameClient(PokerGameTestCase.TestUrl, ['.', PokerGameTestCase.TestConfDirectory, '~/conf'])
+        
+    # -----------------------------------------------------------------------------------------------------
+    def CreateGameServer(self):
+        if not self.CopyFile(self.ConfigTmplFile, self.ConfigTempFile):
+            self.fail('Error during creation of configuration file ' + self.ConfigTempFile)
+            
+        self.game = pokergame.PokerGameServer(PokerGameTestCase.TestUrl, ['.', PokerGameTestCase.TestConfDirectory, '~/conf'])
+        
+    # -----------------------------------------------------------------------------------------------------
+    def InitGame(self):
+        self.game.verbose = True
+        self.game.setTime(0)
+        
+        if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
+            self.fail('Error during creation of variant file ' + self.VariantTempFile)
+            
+        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        self.game.setMaxPlayers(2)
+        self.game.id = 4
+        
+        predefined_decks = string.split("8d 2h 2c 8c 4c Kc Ad 9d Ts Jd 5h Tc 4d 9h 8h 7h 9c 2s 3c Kd 5s Td 5d Th 3s Kh Js Qh 7d 2d 3d 9s Qd Ac Jh Jc Qc 6c 7s Ks 5c 4h 7c 4s Qs 6s 6h Ah 6d As 3h 8s")
+        shuffler = PokerPredefinedDecks([map(lambda card: self.game.eval.string2card(card), predefined_decks)])
+            
+        self.game.deck = predefined_decks
+        self.game.shuffler = shuffler
         
 # -----------------------------------------------------------------------------------------------------
 def GetTestSuite():

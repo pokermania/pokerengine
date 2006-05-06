@@ -1,27 +1,50 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <poker>
-    <variant type="VariantType" name="VariantName" id="VariantName">
+    <variant type="community" name="VariantName" id="VariantTest">
     
         <wins>
-            <winner order="low8"/>
+            <winner order="high"/>
         </wins>
         
-        <round name="Round1">
-            <deal card="board" BoardAttribute = "BoardAttributeValue1"/>
-            <deal card="up" CardUpAttribute = "CardUpAttributeValue1"/>
-            <deal card="down" CardDownAttribute = "CardDownAttributeValue1"/>
-            <position type="PositionType1"/>
-            <action type="ActionType1"/>
+        <round name="pre-flop" id="1">
+            <deal card="down" id="p1"/>
+            <deal card="down" id="p2"/>
+            <position type="under-the-gun"/>
+            <action type="bet"/>
         </round>
         
-        <round name="Round2">
-            <deal card="board" BoardAttribute = "BoardAttributeValue1"/>
-		  <deal card="board" BoardAttribute = "BoardAttributeValue2"/>
-            <deal card="up" CardUpAttribute = "CardUpAttributeValue2"/>
-            <deal card="down" CardDownAttribute = "CardDownAttributeValue2"/>
-            <position type="PositionType2"/>
-            <action type="ActionType2"/>
+        <round name="flop" id="2">
+            <deal card="board" id="b1"/>
+            <deal card="board" id="b2"/>
+            <deal card="board" id="b3"/>
+            <position type="next-to-dealer"/>
+            <action type="bet"/>
         </round>
         
+        <round name="turn" id="3">
+            <deal card="board" id="b4"/>
+            <position type="next-to-dealer"/>
+            <action type="bet"/>
+        </round>
+        
+        <round name="river" id="4">
+            <deal card="board" id="b5"/>
+            <position type="next-to-dealer"/>
+            <action type="bet"/>
+        </round>
+        
+        <community useMin="3" useMax="5">
+            <position card="b1" x="1" y="1"/>
+            <position card="b2" x="2" y="1"/>
+            <position card="b3" x="3" y="1"/>
+            <position card="b4" x="1.5" y="2"/>
+            <position card="b5" x="2.5" y="2"/>
+        </community>
+    
+        <hand useMin="0" useMax="2">
+            <position card="p1" x="1"/>
+            <position card="p2" x="1"/>
+        </hand>
+    
     </variant>
 </poker>

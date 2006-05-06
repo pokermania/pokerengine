@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<bet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="bet.xsd" name=".02-.04 limit" table-stakes="yes" unit="1" buy-in="10" best-buy-in="60" max-buy-in="100000000" poker_engine_version="1.0.14">
+<bet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="bet.xsd" name=".02-.04 limit" table-stakes="yes" unit="1" buy-in="10" best-buy-in="60" max-buy-in="100000000" poker_engine_version="1.0.15">
 
     <description>Limit .02/.04</description>
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <levels>
-	<level small="1000" big="1500"/>
-	<level small="1500" big="3000"/>
-	<level small="2500" big="5000"/>
+	<level small="1000" big="1500" value="100" bring-in="150"/>
+	<level small="1500" big="3000" value="150" bring-in="300"/>
+	<level small="2500" big="5000" value="250" bring-in="500"/>
 </levels>

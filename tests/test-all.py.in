@@ -21,7 +21,7 @@
 #
 
 import sys, os
-sys.path.insert(0, "..")
+sys.path.insert(0, "@top_srcdir@")
 
 import os, re, os.path, sys
 import unittest
@@ -43,10 +43,9 @@ def uniq(elements):
 # -----------------------------------------------------------------------------------------------------
 def GetTestModules(directory, test_module_name = None):
     files = os.listdir(directory)
-    test_files  = re.compile('^(test-.*)\.py$', re.IGNORECASE)          
-    files = filter(test_files.search, files)
+    test_files  = re.compile('(^test-.*)\.py$', re.IGNORECASE)          
+    files = filter(test_files.search, files)    
     test_modules_names = map(lambda l__file: os.path.splitext(l__file)[0], files)
-    print str(test_modules_names)
     if test_module_name:
         if not test_module_name in test_modules_names:
             test_modules_names = []
@@ -132,9 +131,8 @@ if __name__ == '__main__':
     
     results = unittest.TextTestRunner(verbosity=test_verbosity_level).run(test_suite)
     
-    if test_coverage_activated:
-        a = GetModules(tested_modules)
-        b = uniq(a)
-        coverage.report(b)
-#        DisplayCoverageTestResults(uniq())
-#        EndCoverageTest()
+    if test_coverage_activated: 
+        DisplayCoverageTestResults(uniq(GetModules(tested_modules)))
+        EndCoverageTest()
+
+        

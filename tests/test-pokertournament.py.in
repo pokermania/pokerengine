@@ -22,24 +22,721 @@
 
 import sys, os
 sys.path.insert(0, "@top_srcdir@")
-sys.path.insert(0, "..")
 
 import unittest
 import os.path
 import types
+import time
 
 from pokerengine import pokertournament
 
 class PokerTournamentTestCase(unittest.TestCase):
+    
+    TestConfDirectory = '@top_srcdir@/conf'
         
     # -----------------------------------------------------------------------------------------------------
     def setUp(self):
-        pass
+        self.dirs = ['.', PokerTournamentTestCase.TestConfDirectory, '~/conf']
     
     # -----------------------------------------------------------------------------------------------------    
     def tearDown(self):
         pass
         
+    # -----------------------------------------------------------------------------------------------------    
+    def testTournamentDefaultInitialisation(self):
+        """Test Poker Tournament : Default initialisation"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'name' : 'no name', \
+                            'description_short' : 'nodescription_short', \
+                            'description_long' :  'nodescription_long', \
+                            'serial' : 1, \
+                            'verbose' :  0, \
+                            'players_quota' :  10, \
+                            'variant' : 'holdem', \
+                            'betting_structure' : 'level-15-30-no-limit', \
+                            'seats_per_game' : 10, \
+                            'sit_n_go' : 'y', \
+                            'register_time' : 0, \
+                            'start_time' : 0, \
+                            'breaks_interval' : 60, \
+                            'rebuy_delay' : 0, \
+                            'add_on' : 0, \
+                            'add_on_delay' : 60, \
+                            'prizes_specs' : 'table', \
+                            }
+        
+        tournament = pokertournament.PokerTournament(**arguments)
+        for attribute, value in arguments.items():
+            self.failUnlessEqual(getattr(tournament,attribute), value)
+            
+        self.failUnlessEqual(tournament.players, [])
+        self.failUnlessEqual(tournament.winners, [])
+        self.failIf(tournament.need_balance)
+        
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
+        self.failUnlessEqual(tournament.registered, 0)
+        self.failUnless(tournament.can_register)
+        
+            
+    # -----------------------------------------------------------------------------------------------------    
+    def testTournamentInitialisation(self):
+        """Test Poker Tournament : Initialisation"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'name' : 'Test', \
+                            'description_short' : 'ShortDescription', \
+                            'description_long' :  'LongDescription', \
+                            'serial' : 3, \
+                            'verbose' :  3, \
+                            'players_quota' :  20, \
+                            'variant' : 'variant', \
+                            'betting_structure' : 'config', \
+                            'seats_per_game' : 2, \
+                            'sit_n_go' : 'n', \
+                            'register_time' : time.time() + 60, \
+                            'start_time' : '2006/04/22 12:00', \
+                            'breaks_interval' : 120, \
+                            'rebuy_delay' : 30, \
+                            'add_on' : 10, \
+                            'add_on_delay' : 120, \
+                            'prizes_specs' : 'prizes', \
+                            }                                
+            
+        tournament = pokertournament.PokerTournament(**arguments)
+        for attribute, value in arguments.items():
+            if attribute == 'start_time':
+                value = int(time.mktime(time.strptime(value, "%Y/%m/%d %H:%M")))
+                
+            self.failUnlessEqual(getattr(tournament,attribute), value)
+            
+        self.failUnlessEqual(tournament.players, [])
+        self.failUnlessEqual(tournament.winners, [])
+        self.failIf(tournament.need_balance)
+        
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_ANNOUNCED)
+        self.failUnlessEqual(tournament.registered, 0)
+        self.failIf(tournament.can_register)
+        
+        # TODO Payout
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testUpdateRegistering(self):
+        """Test Poker Tournament : Update registering"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'register_time' : time.time() + 3, \
+                            'verbose' : 3
+                            }                                
+        
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_ANNOUNCED)
+        self.failUnless((tournament.register_time - time.time()) > 0.0)
+        self.failUnless(tournament.updateRegistering() > 0.0)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_ANNOUNCED)
+        
+        time.sleep(4)
+        self.failIf((tournament.register_time - time.time()) > 0.0)
+        self.failUnlessEqual(tournament.updateRegistering(), -1)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
+        
+        self.failUnlessEqual(tournament.updateRegistering(), -1)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testRegister(self):
+        """Test Poker Tounament : Register"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  5, \
+                            'sit_n_go' : 'n',  \
+                            'verbose' : 3
+                            }                                
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        # The tournament has been created and players can be regsitered
+        self.failUnless(tournament.can_register)
+        self.failUnlessEqual(tournament.players, [])
+        self.failUnlessEqual(tournament.registered, 0)
+        
+        # The player 1 can be registered
+        self.failIf(tournament.isRegistered(1))
+        self.failUnless(tournament.canRegister(1))
+        
+        # Register the player
+        self.failUnless(tournament.register(1))
+        self.failUnlessEqual(tournament.players, [1])
+        self.failUnlessEqual(tournament.registered, 1)
+        self.failUnless(tournament.isRegistered(1))
+        
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
+        
+        # The player 1 can be registered
+        self.failIf(tournament.isRegistered(2))
+        self.failUnless(tournament.canRegister(2))
+        
+        # Register the player
+        self.failUnless(tournament.register(2))
+        self.failUnlessEqual(tournament.players, [1, 2])
+        self.failUnlessEqual(tournament.registered, 2)
+        self.failUnless(tournament.isRegistered(2))
+        
+        # Change the tournament state
+        tournament.changeState(pokertournament.TOURNAMENT_STATE_RUNNING)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_RUNNING)
+        
+        # Register the player
+        self.failUnless(tournament.can_register)
+        self.failUnless(tournament.canRegister(3))
+        self.failUnless(tournament.register(3))
+        
+        # Players can not be regsitered
+        tournament.can_register = False
+        self.failIf(tournament.canRegister(3))
+        self.failIf(tournament.register(3))
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testChangeState(self):
+        """Test Poker Tournament : Change state"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  5, \
+                            'sit_n_go' : 'n',  \
+                            'verbose' : 3
+                            }                                
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        # Iniitalize state to TOURNAMENT_STATE_ANNOUNCED
+        tournament.state = pokertournament.TOURNAMENT_STATE_ANNOUNCED
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_ANNOUNCED)
+        
+        # Go to state TOURNAMENT_STATE_REGISTERING
+        tournament.changeState(pokertournament.TOURNAMENT_STATE_REGISTERING)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
+        
+        # Try to go return to TOURNAMENT_STATE_ANNOUNCED
+        tournament.changeState(pokertournament.TOURNAMENT_STATE_ANNOUNCED)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
+        
+        # Go to state TOURNAMENT_STATE_RUNNING
+        tournament.changeState(pokertournament.TOURNAMENT_STATE_RUNNING)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_RUNNING)
+        
+        # Go to state TOURNAMENT_STATE_COMPLETE
+        tournament.changeState(pokertournament.TOURNAMENT_STATE_COMPLETE)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_COMPLETE)
+        
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testCanUnregister(self):
+        """Test Poker Tounament : Can unregister"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  2, \
+                            'sit_n_go' : 'y', \
+                            'verbose' : 3
+                            }                                
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
+        self.failIf(tournament.canUnregister(1))
+        
+        self.failUnless(tournament.register(1))
+        self.failUnless(tournament.canUnregister(1))
+        
+        self.failUnless(tournament.register(2))
+        
+        self.failIfEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
+        self.failIf(tournament.canUnregister(1))
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testUnregister(self):
+        """Test Poker Tounament : Unregister"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  2, \
+                            'sit_n_go' : 'y', \
+                            'verbose' : 3
+                            }                                
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        self.failUnless(tournament.register(1))
+        self.failUnlessEqual(tournament.players, [1])
+        self.failUnlessEqual(tournament.registered, 1)
+        
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
+        
+        self.failUnless(tournament.unregister(1))
+        self.failUnlessEqual(tournament.players, [])
+        self.failUnlessEqual(tournament.registered, 0)
+        
+        self.failUnless(tournament.register(1))
+        self.failUnless(tournament.register(2))
+        self.failIfEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
+        
+        self.failIf(tournament.unregister(1))
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testCreateGames(self):
+        """Test Poker Tournament : Create games"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  10, \
+                            'seats_per_game' : 2, \
+                            'sit_n_go' : 'n', \
+                            'variant' : 'holdem', \
+                            'betting_structure' : 'level-15-30-no-limit', \
+                            'verbose' : 3
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        for player in range(tournament.players_quota):
+            self.failUnless(tournament.register(player))
+            
+        self.failUnlessEqual(tournament.registered, tournament.players_quota)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
+        
+        self.failUnlessEqual(tournament.id2game, {})
+        
+        tournament.createGames()
+        self.failUnlessEqual(len(tournament.id2game), tournament.players_quota / tournament.seats_per_game)
+        self.failUnlessEqual(len(tournament.games), tournament.players_quota / tournament.seats_per_game)
+        
+        id = 1
+        for game in tournament.games:
+            self.failUnlessEqual(game.max_players, tournament.seats_per_game)
+            self.failUnlessEqual(game.allCount(), tournament.seats_per_game)
+            self.failUnlessEqual(game.variant, 'holdem')
+            self.failUnlessEqual(game.id, id)
+            id += 1
+            
+            for serial in game.serial2player:
+                self.failUnless(game.serial2player[serial].isSit())
+                self.failUnless(game.serial2player[serial].isBuyInPayed())
+                self.failUnless(game.serial2player[serial].isAutoBlindAnte())
+
+            self.failIf(game.is_open)
+            
+    # -----------------------------------------------------------------------------------------------------    
+    def testPrizesAlgorithm(self):
+        """Test Poker Tournament : Prizes algorithm"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  300, \
+                            'seats_per_game' : 2, \
+                            'verbose' : 3
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        for player in range(4):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(tournament.prizesAlgorithm(100), [400])
+        
+        for player in range(4, 8):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(tournament.prizesAlgorithm(100), [600, 200])
+        
+        for player in range(8, 18):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(tournament.prizesAlgorithm(100), [1125, 450, 225])
+        
+        for player in range(18, 28):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(tournament.prizesAlgorithm(100), [1575, 700, 350, 175])
+        
+        for player in range(28, 38):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(tournament.prizesAlgorithm(100), [1902, 950, 237, 237, 237, 237])
+        
+        for player in range(38, 48):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(len(tournament.prizesAlgorithm(100)), int(48 * 0.20))
+        
+        for player in range(48, 198):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(len(tournament.prizesAlgorithm(100)), int(198 * 0.15))
+        
+        for player in range(198, 298):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(len(tournament.prizesAlgorithm(100)), int(298 * 0.10))
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPrizesTable(self):
+        """Test Poker Tournament : Prizes table"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  300, \
+                            'seats_per_game' : 2, \
+                            'verbose' : 3
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        for player in range(2):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(tournament.prizesTable(100), [200])
+        
+        for player in range(4, 7):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(tournament.prizesTable(100), [350, 150])
+        
+        for player in range(7, 28):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(tournament.prizesTable(100), [1300, 780, 520])
+        
+        for player in range(28, 48):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(tournament.prizesTable(100), [1840, 1104, 736, 552, 368])
+        
+        for player in range(48, 198):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(tournament.prizesTable(100), [5880, 3920, 2450, 1764, 1568, 1274, 980, 784, 588, 392])
+        
+        for player in range(198, 298):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(len(tournament.prizesTable(100)), 20)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPrizes(self):
+        """Test Poker Tournament : Prizes"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  20, \
+                            'seats_per_game' : 2, \
+                            'sit_n_go' : 'y', \
+                            'prizes_specs' :  'table', \
+                            'verbose' : 3
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        self.failUnlessEqual(tournament.prizes(100), None)
+        
+        for player in range(20):
+            self.failUnless(tournament.register(player))
+        
+        tournament.prizes_specs = 'table'
+        self.failUnlessEqual(tournament.prizesTable(100), tournament.prizes(100))
+        
+        tournament.prizes_specs = 'algorithm'
+        self.failUnlessEqual(tournament.prizesAlgorithm(100), tournament.prizes(100))
+        
+        tournament.prizes_specs = 'invalid'
+        self.failUnlessEqual(tournament.prizes(100), None)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testMovePlayer(self):
+        """Test Poker Tournament : Move player"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  10, \
+                            'seats_per_game' : 5, \
+                            'sit_n_go' : 'n', \
+                            'verbose' : 3
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        for player in range(12):
+            self.failUnless(tournament.register(player))
+            
+        tournament.createGames()
+        move = pokertournament.equalizeGames(tournament.games)
+        self.failUnlessEqual(move, [(1, 3, 7), (1, 3, 8), (2, 3, 2)])
+        
+        from_game = tournament.id2game[move[0][0]]
+        to_game = tournament.id2game[move[0][1]]
+        
+        player = from_game.getPlayer(move[0][2])
+        player.name = 'Player'
+        player.setUserData('UserData')
+        player.sit_out = True
+        player.bot = True
+        
+        self.failUnlessEqual(from_game.allCount(), 5)
+        self.failUnlessEqual(to_game.allCount(), 2)
+        
+        tournament.movePlayer(from_game.id, to_game.id, player.serial)
+        
+        self.failUnlessEqual(from_game.allCount(), 4)
+        self.failUnlessEqual(to_game.allCount(), 3)
+        
+        player = to_game.getPlayer(move[0][2])
+        self.failUnlessEqual(player.name, 'Player')
+        self.failUnlessEqual(player.getUserData(), 'UserData')
+        self.failUnless(player.isSitOut())
+        self.failUnless(player.isBot())
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testEqualizeCandidates(self):
+        """Test Poker Tournament : Equalize candidates"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  10, \
+                            'seats_per_game' : 5, \
+                            'sit_n_go' : 'n', \
+                            'verbose' : 3
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        for player in range(12):
+            self.failUnless(tournament.register(player))
+            
+        tournament.createGames()
+            
+        want, provide = pokertournament.equalizeCandidates(tournament.games)
+        
+        self.failUnlessEqual(len(want), 1)
+        self.failUnlessEqual(len(provide), 2)
+        
+        self.failUnlessEqual(want, [[3, 3]])
+        self.failUnlessEqual(provide, [(1, [7, 8]), (2, [2, 3])])
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testEqualizeGames(self):
+        """Test Poker Tournament : Equalize games"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  10, \
+                            'seats_per_game' : 5, \
+                            'sit_n_go' : 'n', \
+                            'verbose' : 3
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        for player in range(10):
+            self.failUnless(tournament.register(player))
+            
+        tournament.createGames()
+        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, 3, None), [])
+        
+        tournament = pokertournament.PokerTournament(**arguments)
+        for player in range(12):
+            self.failUnless(tournament.register(player))
+        
+        tournament.createGames()
+        
+        self.failUnlessEqual(len(tournament.games), 3) 
+        
+        self.failUnlessEqual(tournament.games[0].allCount(), 5)
+        self.failUnlessEqual(tournament.games[1].allCount(), 5)
+        self.failUnlessEqual(tournament.games[2].allCount(), 2)
+        
+        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, 3, sys.stdout.write), [(1, 3, 7), (1, 3, 8), (2, 3, 2)])
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testBreakGame(self):
+        """Test Poker Tournament : Break game"""
+        
+        to_break = { \
+                        'id' : 1, \
+                        'to_add' : [], \
+                        'running' : True, \
+                        'seats_left' : 0, \
+                        'serials' : [1, 2] \
+                        }
+                                
+        to_fill_1 = { \
+                        'id' : 2, \
+                        'to_add' : [], \
+                        'running' : False, \
+                        'seats_left' : 2, \
+                        'serials' : [3, 4] \
+                        }
+                        
+        to_fill_2 = { \
+                        'id' : 3, \
+                        'to_add' : [], \
+                        'running' : False, \
+                        'seats_left' : 2, \
+                        'serials' : [5, 6] \
+                        }
+                            
+        self.failIf(pokertournament.breakGame(to_break, [to_fill_1]))
+        
+        to_break['to_add'] = [2]
+        to_break['running'] = False
+        self.failIf(pokertournament.breakGame(to_break, [to_fill_1]))
+        
+        to_break['to_add'] = []
+        to_break['running'] = True
+        self.failIf(pokertournament.breakGame(to_break, [to_fill_1]))
+        
+        to_break['running'] = False
+        to_fill_1['seats_left'] = len(to_break['serials']) - 1
+        self.failIf(pokertournament.breakGame(to_break, [to_fill_1]))
+        
+        to_fill_1['seats_left'] = len(to_break['serials'])
+        self.failUnlessEqual(pokertournament.breakGame(to_break, [to_fill_1]), [(1, 2, [1, 2])])
+        
+        to_fill_1['seats_left'] = len(to_break['serials']) - 1
+        to_fill_2['seats_left'] = 1
+        self.failUnlessEqual(pokertournament.breakGame(to_break, [to_fill_1, to_fill_2]), [(1, 3, [1]), (1, 2, [2])])
+
+    # -----------------------------------------------------------------------------------------------------    
+    def testBreakGames(self):
+        """Test Poker Tournament : Break games"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  50, \
+                            'seats_per_game' : 5, \
+                            'sit_n_go' : 'n', \
+                            'verbose' : 3
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        for player in range(12):
+            self.failUnless(tournament.register(player))
+            
+        tournament.createGames()
+        
+        self.failUnlessEqual(len(tournament.games), 3) 
+        
+        self.failUnlessEqual(tournament.games[0].allCount(), 5)
+        self.failUnlessEqual(tournament.games[1].allCount(), 5)
+        self.failUnlessEqual(tournament.games[2].allCount(), 2)
+        
+        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0])
+        tournament.removePlayer(tournament.games[1].id, tournament.games[1].serialsAll()[0])
+        
+        player1 = tournament.games[2].serialsAll()[0]
+        player2 = tournament.games[2].serialsAll()[1]
+        
+        self.failUnlessEqual(pokertournament.breakGames(tournament.games), [(3, 2, [player1]), (3, 1, [player2])])
+        
+        # Impossible to break less than 2 game
+        self.failUnlessEqual(pokertournament.breakGames([tournament.games[0]]), [])
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testBalanceGames(self):
+        """Test Poker Tournament : Balance games"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  20, \
+                            'seats_per_game' : 5, \
+                            'sit_n_go' : 'n', \
+                            'verbose' : 3
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        # Register the players
+        for player in range(12):
+            self.failUnless(tournament.register(player))
+        
+        # Create game, 2 with 5 players, the last one with 2
+        tournament.createGames()
+        
+        # Remove one player from the first two games
+        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0])
+        tournament.removePlayer(tournament.games[1].id, tournament.games[1].serialsAll()[0])
+        
+        # Get the players of the last game
+        player1 = tournament.games[2].serialsAll()[0]
+        player2 = tournament.games[2].serialsAll()[1]
+     
+        # The last game will be break 
+        self.failUnlessEqual(pokertournament.breakGames(tournament.games), [(3, 2, [player1]), (3, 1, [player2])])
+        
+        # The players of the last game are transfered in the other games
+        self.failUnless(tournament.id2game[3].getPlayer(player1))
+        self.failIf(tournament.id2game[2].getPlayer(player1))
+        
+        self.failUnless(tournament.id2game[3].getPlayer(player2))
+        self.failIf(tournament.id2game[1].getPlayer(player2))
+        
+        self.failUnless(tournament.balanceGames())
+        
+        self.failUnlessEqual(len(tournament.id2game), 2)
+        self.failUnless(tournament.id2game[2].getPlayer(player1))
+        self.failUnless(tournament.id2game[1].getPlayer(player2))
+        
+        self.failIf(tournament.need_balance)
+        
+        
+        # Create a new tournament where is no need to break a game
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  20, \
+                            'seats_per_game' : 5, \
+                            'sit_n_go' : 'n', \
+                            'verbose' : 3
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        # Register the players
+        for player in range(12):
+            self.failUnless(tournament.register(player))
+        
+        # Create game, 2 with 5 players, the last one with 2
+        tournament.createGames()
+        
+        # The players are moved from the 2 first games to complete the last one
+        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games), [(1, 3, 7), (1, 3, 8), (2, 3, 2)])
+        
+        self.failUnless(tournament.balanceGames())
+        
+        # The game 1 has lost 2 players
+        self.failUnlessEqual(len(tournament.games[0].serialsAll()), 3)
+        # The game 2 has lost 1 players
+        self.failUnlessEqual(len(tournament.games[1].serialsAll()), 4)
+        # The game 3 has won 3 players
+        self.failUnlessEqual(len(tournament.games[2].serialsAll()), 5)
+        
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testGetRank(self):
+        """Test Poker Tournament : Get rank"""
+        
+        # TODO A little bit strange
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  20, \
+                            'seats_per_game' : 5, \
+                            'sit_n_go' : 'n', \
+                            'verbose' : 3
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        for player in range(10):
+            self.failUnless(tournament.register(player))
+            
+        tournament.winners = [1, 5, 8]
+        
+        self.failUnlessEqual(tournament.getRank(1), 8)
+        self.failUnlessEqual(tournament.getRank(5), 9)
+        self.failUnlessEqual(tournament.getRank(8), 10)
+        
+        for player in range(10):
+            if player not in tournament.winners:
+                self.failUnlessEqual(tournament.getRank(player), -1)
+
 # -----------------------------------------------------------------------------------------------------
 def GetTestSuite():
     suite = unittest.TestSuite()

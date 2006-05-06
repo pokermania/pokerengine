@@ -22,7 +22,6 @@
 
 import sys, os
 sys.path.insert(0, "@top_srcdir@")
-sys.path.insert(0, "..")
 
 import unittest
 import libxml2

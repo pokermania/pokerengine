@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<bet buy-in="50" max-buy-in="10000" best-buy-in="500" unit="300">
+<bet buy-in="50" max-buy-in="10000" best-buy-in="1600" unit="300">
     <description>Bet Description</description>
+
     <blind small="500" big="1000"/>
-    <ante value="100" bring-in="500"/>
+    
+    <variants ids="variant">
+        <round name="pre-flop" cap="3"/>
+        <round name="flop"/>
+        <round name="turn" cap="-3"/>
+        <round name="river" cap="3"/>
+    </variants>
 </bet>
