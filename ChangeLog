@@ -1,6 +1,11 @@
-Sat May 06 2006  Loic Dachary  <loic@dachary.org>
+Thu May 11 2006  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.15
+
+	* pokerengine/pokergame.py (PokerGame.historyReduce): index for sitOut & wait_blind
+	  is incorrect
+
+Sat May 06 2006  Loic Dachary  <loic@dachary.org>
 
 	* test/test-*.py.in: more coverage tests (95%)
 

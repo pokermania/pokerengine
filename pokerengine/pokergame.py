@@ -522,6 +522,7 @@ class PokerGame:
             self.error("The number of players must be between %d and %d" % (2, ABSOLUTE_MAX_PLAYERS))
             self.max_players = 0
         self.resetSeatsLeft()
+        self.serial2player = {}
 
     def seatsLeftCount(self):
         return len(self.seats_left)
@@ -892,7 +893,6 @@ class PokerGame:
             elif seat == self.dealer_seat:
                 if previous_player:
                     self.dealer = self.player_list.index(previous_player.serial)
-                    break
                 else:
                     # the impossible has happened
                     self.dealer = len(self.player_list) - 1
@@ -3346,7 +3346,17 @@ class PokerGame:
                 if index < 1 or self.turn_history[index-1][0] != "position":
                     pprint(self.turn_history)
                     self.error("unable to update sitOut or wait_blind")
-                del self.turn_history[index - 1:index + 1]
+                    #
+                    # help unit test : it is not meaningful to do anything on a corrupted
+                    # history. Therefore the following line is not doing anything (or
+                    # repair anything). It only helps run unit tests.
+                    #
+                    del self.turn_history[index]
+                else:
+                    del self.turn_history[index]
+                    del self.turn_history[index - 1]
+                    index -= 1
+                    
                 #
                 # remove references to the player who finally
                 # decided to not be part of the turn, either because
