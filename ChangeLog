@@ -1,6 +1,11 @@
-Thu May 11 2006  Loic Dachary  <loic@dachary.org>
+Fri May 12 2006  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.15
+
+	* pokerengine/pokergame.py (PokerGame.playersInPotCount): last_round was always
+	  'total' because this index was added after playersInPotCount implementation.
+
+Thu May 11 2006  Loic Dachary  <loic@dachary.org>
 
 	* pokerengine/pokergame.py (PokerGame.historyReduce): index for sitOut & wait_blind
 	  is incorrect

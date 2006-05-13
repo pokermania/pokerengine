@@ -2850,7 +2850,9 @@ class PokerGame:
 
     def playersInPotCount(self, side_pots):
         pot_index = len(side_pots['pots']) - 1
-        last_round = max(side_pots['contributions'].keys())
+        
+        # last_round = max([ player.bet for player in self.playersNotFold() ])
+        last_round = max(filter(lambda round: round != 'total', side_pots['contributions'].keys()))
         contributions = side_pots['contributions'][last_round]
         if contributions.has_key(pot_index):
             return len(contributions[pot_index])
