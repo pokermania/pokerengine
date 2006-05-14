@@ -29,13 +29,12 @@
 set -e
 
 : ${srcdir:=.}
-: ${top_srcdir:=..}
 
 case "$1" in 
 
 *coverage-reset) @PYTHON@ ${srcdir}/coverage.py -e ;;
 
-*coverage-report) @PYTHON@ ${srcdir}/coverage.py -m -r ${top_srcdir}/pokerengine/*.py ;;
+*coverage-report) @PYTHON@ ${srcdir}/coverage.py -m -r ${srcdir}/../pokerengine/*.py ;;
 
 *.py) @PYTHON@ ${srcdir}/coverage.py -x "$1" ;;
 

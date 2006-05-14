@@ -239,9 +239,10 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         
         subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
-        message1 = '1 pays 10 blind and 5 dead man' 
-        message2 = '1 pays 10 blind' 
-        self.failUnlessEqual(message,  [message1, message2])    
+        self.failUnlessEqual(message,  [
+                                                '1 pays 10 blind and 5 dead man',
+                                                '1 pays 10 blind'
+                                                ])    
         
     # -----------------------------------------------------------------------------------------------------    
     def testHistory2messagesCancelled(self):
@@ -255,10 +256,11 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         
         subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
-        message1 = 'turn canceled (1 returned to 1)' 
-        message2 = 'turn canceled' 
-        message3 = 'turn canceled' 
-        self.failUnlessEqual(message,  [message1, message2, message3])    
+        self.failUnlessEqual(message,  [
+                                                'turn canceled (1 returned to 1)',
+                                                'turn canceled',
+                                                'turn canceled'
+                                                ])    
         
     # -----------------------------------------------------------------------------------------------------    
     def testHistory2messagesShowdown(self):
@@ -276,11 +278,12 @@ class PokerGameHistoryTestCase(unittest.TestCase):
                         
         subject, message = self.GetMessagesFromHistory(history, str, True)
         self.failUnlessEqual(subject, '')
-        message1 = 'Board: Ad As'
-        message2 = 'Cards player 1: 4d Ts'
-        message3 = 'Cards player 2: 3h Kc'
-
-        self.failUnlessEqual(message,  [message1, message2, message3, message2])
+        self.failUnlessEqual(message,  [
+                                                'Board: Ad As',
+                                                'Cards player 1: 4d Ts',
+                                                'Cards player 2: 3h Kc',
+                                                'Cards player 1: 4d Ts'
+                                                ])
         
     # -----------------------------------------------------------------------------------------------------    
     def testHistory2messagesRound(self):
@@ -294,30 +297,30 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         history =   [ \
                         ('round', 'round1', board, { 1 : hand1, 2 : hand2}), \
                         ('round', 'round2', pokercards.PokerCards(), {1 : hand1, 2 : nocards}), \
+                        ('round', 'round3', pokercards.PokerCards(), {}), \
                         ]
                         
         subject, message = self.GetMessagesFromHistory(history, str, True)
         self.failUnlessEqual(subject, '')
         
-        message1 = 'round1, 2 players'
-        message2 = 'Board: Ad As'
-        message3 = 'Cards player 1: 4d Ts'
-        message4 = 'Cards player 2: 3h Kc'
-        message5 = 'round2, 2 players'
-
-        self.failUnlessEqual(message,  [message1, message2, message3, message4, message5, message3])
+        self.failUnlessEqual(message,  [
+                                                'round1, 2 players',
+                                                'Board: Ad As',
+                                                'Cards player 1: 4d Ts',
+                                                'Cards player 2: 3h Kc',
+                                                'round2, 2 players',
+                                                'Cards player 1: 4d Ts',
+                                                'round3'
+                                                ])
         
     # -----------------------------------------------------------------------------------------------------    
     def testHistory2messagesEnd(self):
         """Test Poker Game History to end message"""
         
-        winners = [1]
-        player_list = [1, 2]
-        
         # The player 1 wins because all the other players are fold
         game_state ={ 'serial2share': { 1: 500 } }
         
-        history =   [ ('end', winners, [game_state]) ]
+        history =   [ ('end', [1], [game_state]) ]
         
         subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
@@ -338,7 +341,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
                                                     }
                             }
                             
-        history =   [ ('end', winners, [game_state, invalid_frame]) ]
+        history =   [ ('end', [1], [game_state, invalid_frame]) ]
         
         subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
@@ -351,7 +354,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
                     'chips_left' : 10
                     }
                     
-        history =   [ ('end', winners, [game_state, frame]) ]
+        history =   [ ('end', [1], [game_state, frame]) ]
         
         subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
@@ -364,7 +367,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
                     'uncalled' : 10
                     }
                 
-        history =   [ ('end', winners, [game_state, frame]) ]
+        history =   [ ('end', [1], [game_state, frame]) ]
         subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
         self.failUnlessEqual(message,  ['returning uncalled bet 0.10 to 1'])
@@ -372,28 +375,41 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         # Resolve frame
         frame = { 
                     'type': 'resolve',
-                    'serials' : [1],
-                    'serial2share': { 1: 500 }
+                    'serials' : [1, 2],
+                    'serial2share': { 1: 300, 2 : 200 },
+                    'hi' : [1, 2],
+                    'pot' : 500,
+                    'chips_left' : 3
                     }
                     
         hand1 = pokercards.PokerCards(['Ad', 'As'])
+        hand2 = pokercards.PokerCards(['Kd', '3c'])
         board = pokercards.PokerCards(['9d', '6s', 'Td', '4d', '4h'])
         
         game_state ={ 
                             'serial2best' : { 1 : 
                                                             {   'hi' : self.game.eval.best('hi', hand1.tolist(True) + board.tolist(True), []), 
                                                                 'low' : self.game.eval.best('low', hand1.tolist(True) + board.tolist(True), []) 
+                                                            },
+                                                       2 : 
+                                                            {   'hi' : self.game.eval.best('hi', hand2.tolist(True) + board.tolist(True), []), 
+                                                                'low' : self.game.eval.best('low', hand2.tolist(True) + board.tolist(True), []) 
                                                             }
                                                     }
                             }
                 
-        history =   [ ('end', winners, [game_state, frame]) ]
+        history =   [ ('end', [1], [game_state, frame]) ]
         subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
-        message1 = '1 shows Two pairs Aces and Fours, Ten kicker for hi '
-        message2 = '1 receives 5'
-        self.failUnlessEqual(message,  [message1, message2])
-    
+        self.failUnlessEqual(message,  [
+                                                '1 shows Two pairs Aces and Fours, Ten kicker for hi ',
+                                                '2 mucks loosing hand',
+                                                '1 2 tie for hi ',
+                                                'winners share a pot of 5 (minus 3 odd chips)',
+                                                '1 receives 3',
+                                                '2 receives 2'
+                                                ])
+            
     # -----------------------------------------------------------------------------------------------------    
     def testHistory2messagesEmpty(self):
         """Test Poker Game History to message empty"""
@@ -401,12 +417,13 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         history =   [ \
                         ('player_list', [1, 2]), \
                         ('position', 1), \
+                        ('blind_request', 1, 1000, 100, 'big_and_dead'), \
                         ('wait_blind', 1), \
                         ('rebuy', 1, 500), \
                         ('ante_request', 1, 100), \
                         ('leave', [(1, 2), (2, 7)]), \
                         ('finish', 1), \
-                        # TODO
+                        ('muck', (1,2)), \
                         ('Unknown',) \
                         ]
         
@@ -418,6 +435,77 @@ class PokerGameHistoryTestCase(unittest.TestCase):
     def testHistoryReduce(self):
         """Test Poker Game History reduce"""
         
+        game_time = time.time()
+        
+        board = pokercards.PokerCards() 
+        hand1 = pokercards.PokerCards(['4d', 'Ts'])
+        hand2 = pokercards.PokerCards(['3h', 'Kc'])
+        
+        # SitOut & Wait blind
+        history =   [
+                        ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
+                        ('position', 0),
+                        ('sitOut', 1),
+                        ('position', 1),
+                        ('wait_blind', 2),
+                        ('sitOut', 3),
+                        ('position', 3)
+                        ]
+                        
+        self.game.turn_history = history
+        
+        self.game.historyReduce()
+        self.failUnlessEqual(self.game.historyGet(),   [
+                                                                    ('game', 1, 2, 3, game_time, 'variant','betting_structure', [4], 7, { 4 : 800 }),
+                                                                    ('position', 0)
+                                                                    ])
+            
+        # Player list
+        history =   [
+                        ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
+                        ('player_list', [1, 2, 3]),
+                        ('player_list', [1, 2])
+                        ]
+                        
+        self.game.turn_history = history
+        
+        self.game.historyReduce()
+        self.failUnlessEqual(self.game.historyGet(),   [
+                                                                    ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
+                                                                    ('player_list', [1, 2])
+                                                                    ])
+                                                                    
+        # Blind Request
+        history =   [
+                        ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
+                        ('blind_request', 1, 500, 0, 'small'),
+                        ('blind_request', 2, 1000, 100, 'big_and_dead')
+                        ]
+                        
+        self.game.turn_history = history
+        
+        self.game.historyReduce()
+        self.failUnlessEqual(self.game.historyGet(),   [
+                                                                    ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
+                                                                    ('blind_request', 2, 1000, 100, 'big_and_dead')
+                                                                    ])
+                                                                    
+        # Ante Request
+        history =   [
+                        ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
+                        ('ante_request', 1, 100),
+                        ('ante_request', 2, 100)
+                        ]
+                        
+        self.game.turn_history = history
+        
+        self.game.historyReduce()
+        self.failUnlessEqual(self.game.historyGet(),   [
+                                                                    ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
+                                                                    ('ante_request', 2, 100)
+                                                                    ])
+                        
+                        
         
     # -----------------------------------------------------------------------------------------------------    
     def GetMessagesFromHistory(self, history, serial2name = str, pocket_messages = False):

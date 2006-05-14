@@ -1,6 +1,15 @@
-Fri May 12 2006  Loic Dachary  <loic@dachary.org>
+Sun May 14 2006  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.15
+
+	* tests/test-*.py.in: many more unit tests
+	
+	* pokerengine/pokercards.py (PokerCards.setVisible): don't alter NOCARD
+
+	* pokerengine/pokercards.py (PokerCards.hasCard): fix to work with no cards
+	  also
+
+Fri May 12 2006  Loic Dachary  <loic@dachary.org>
 
 	* pokerengine/pokergame.py (PokerGame.playersInPotCount): last_round was always
 	  'total' because this index was added after playersInPotCount implementation.

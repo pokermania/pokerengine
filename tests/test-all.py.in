@@ -101,7 +101,7 @@ if __name__ == '__main__':
     
     test_module_name = None
     test_verbosity_level = 0
-    test_directory = os.getcwd()
+    test_directory = None
     test_coverage_activated = False
     
     try:
@@ -119,13 +119,18 @@ if __name__ == '__main__':
         PrintUsage()
         os._exit(1)
         
+    if not test_directory:
+        print 'Test directory not specified'
+        PrintUsage()
+        os._exit(0)
+        
     if test_coverage_activated: StartCoverageTest()    
         
     tested_modules = GetTestModules(test_directory, test_module_name)
     if not tested_modules:
         print 'No module find'
         PrintUsage()
-        os._exit(1)
+        os._exit(0)
         
     test_suite = unittest.TestSuite(map(unittest.defaultTestLoader.loadTestsFromModule, tested_modules)) 
     

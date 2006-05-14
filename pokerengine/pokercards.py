@@ -159,7 +159,10 @@ class PokerCards:
 
     def hasCard(self, value):
         for card in self.cards:
-            if card & PokerCards.VALUE_CARD_MASK == value:
+            if value == self.nocard():
+               if card == self.nocard():
+                   return True
+            elif card & PokerCards.VALUE_CARD_MASK == value:
                 return True
         return False
 
@@ -182,6 +185,9 @@ class PokerCards:
         return True
         
     def setVisible(self, value, visible):
+        if value == self.nocard():
+            return
+           
         for i in xrange(len(self.cards)):
             if self.cards[i] & PokerCards.VALUE_CARD_MASK == value:
                 if visible:

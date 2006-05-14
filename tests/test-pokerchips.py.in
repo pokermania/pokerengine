@@ -41,7 +41,7 @@ class PokerChipsTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testInit(self):
-        """Test Poker Chips initialisation"""
+        """Test Poker Chips : Initialisation"""
         
         values = [5, 10, 20]
         pokerchip = pokerchips.PokerChips(values)
@@ -60,7 +60,7 @@ class PokerChipsTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testOperatorEqu(self):
-        """Test Poker Chips equality operator"""
+        """Test Poker Chips : Equality"""
         
         values = [5, 10, 20]
         pokerchip1 = pokerchips.PokerChips(values, 153)
@@ -76,7 +76,7 @@ class PokerChipsTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testToInt(self):
-        """Test Poker Chips integer transformation"""
+        """Test Poker Chips : To integer"""
         
         values = [5, 10, 20]
         pokerchip = pokerchips.PokerChips(values)
@@ -90,7 +90,7 @@ class PokerChipsTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testAdd(self):
-        """Test Poker Chips addition"""
+        """Test Poker Chips : Addition"""
         
         values = [5, 10, 20]
         pokerchip1 = pokerchips.PokerChips(values, 155)
@@ -101,7 +101,7 @@ class PokerChipsTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testSub(self):
-        """Test Poker Chips substraction"""
+        """Test Poker Chips : Substraction"""
         
         values = [5, 10, 20]
         pokerchip1 = pokerchips.PokerChips(values, [3, 2, 1])
@@ -120,7 +120,7 @@ class PokerChipsTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testToString(self):
-        """Test Poker Chips string representation"""
+        """Test Poker Chips : String representation"""
         
         self.failUnlessEqual(pokerchips.PokerChips.tostring(0), '0')
         self.failUnlessEqual(pokerchips.PokerChips.tostring(1), '0.01')
@@ -133,7 +133,7 @@ class PokerChipsTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testToFloat(self):
-        """Test Poker Chips float representation"""
+        """Test Poker Chips : To float"""
         
         self.failUnlessEqual(pokerchips.PokerChips.tofloat(0), 0)
         self.failUnlessEqual(pokerchips.PokerChips.tofloat(1), 0.01)
@@ -142,7 +142,7 @@ class PokerChipsTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testInt2Chips(self):
-        """Test Poker Chips from int"""
+        """Test Poker Chips : From integer"""
         
         values = [5, 10, 20]
         self.failUnlessEqual(pokerchips.PokerChips.int2chips([], pokerchips.INT2CHIPS_FACTOR, 15), ([], 15))
@@ -156,7 +156,7 @@ class PokerChipsTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testToList(self):
-        """Test Poker Chips to list"""
+        """Test Poker Chips : To list"""
         
         values = [5, 10, 20]
         self.failUnlessEqual(pokerchips.PokerChips(values, 0).tolist(), [])
@@ -173,7 +173,7 @@ class PokerChipsTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testlimitChips(self):
-        """Test Poker Chips limit chips"""
+        """Test Poker Chips : Limit chips"""
         
         values = [5, 10, 20]
         chips = pokerchips.PokerChips(values, [pokerchips.MAX_CHIPS_PER_STACK + 2, 0, 0])
@@ -185,7 +185,7 @@ class PokerChipsTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testStrOperator(self):
-        """Test Poker Chips Str operator"""
+        """Test Poker Chips : String representation"""
         
         values = [5, 10, 20]
         pokerchip = pokerchips.PokerChips(values, 93)
@@ -193,7 +193,7 @@ class PokerChipsTestCase(unittest.TestCase):
     
     # -----------------------------------------------------------------------------------------------------    
     def testReprOperator(self):
-        """Test Poker Chips Repr operator"""
+        """Test Poker Chips : Representation"""
         
         values = [5, 10, 20]
         pokerchip = pokerchips.PokerChips(values, 93)
@@ -201,7 +201,7 @@ class PokerChipsTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testCopy(self):
-        """Test Poker Chips copy"""
+        """Test Poker Chips : Copy"""
         values = [5, 10, 20]
         
         pokerchip1 = pokerchips.PokerChips(values, 93)

@@ -28,6 +28,7 @@ import libxml2
 import os.path
 import types
 import shutil
+import tempfile
 
 from pokerengine import version
 from pokerengine import version_number
@@ -37,9 +38,7 @@ class PokerEngineConfigTestCase(unittest.TestCase):
     
     TestConfDirectory = '@srcdir@/test-data/conf'
     TestUpgradeDirectory = '@srcdir@/test-data/upgrade'
-    
-    TestConfigTemporaryFile = 'unittest.config.temporary.xml'
-
+        
     TestConfigInvalidFile = 'unittest.config.invalid.xml'
     TestConfigNotFoundFile = 'unittest.config.notfound.xml'
     TestConfigTemplateFile = 'unittest.config.template.xml'
@@ -47,12 +46,15 @@ class PokerEngineConfigTestCase(unittest.TestCase):
     TestUpgradeInvalidFile = 'unittest.config.invalid.xsl'
     TestUpgradeTemplateFile = 'unittest.config.template.xsl'
     
+    TestConfigTemporaryFile = 'unittest.config.xml'
+    
+    
     # -----------------------------------------------------------------------------------------------------
     def setUp(self):
-        self.Config = pokerengineconfig.Config(['.', PokerEngineConfigTestCase.TestConfDirectory, '~/conf'])
+        self.Config = pokerengineconfig.Config(['.', PokerEngineConfigTestCase.TestConfDirectory, '~/conf', tempfile.gettempdir()])
         
         self.ConfigTmplFile = os.path.join(PokerEngineConfigTestCase.TestConfDirectory, PokerEngineConfigTestCase.TestConfigTemplateFile)
-        self.ConfigTempFile = os.path.join(PokerEngineConfigTestCase.TestConfDirectory, PokerEngineConfigTestCase.TestConfigTemporaryFile)
+        self.ConfigTempFile = os.path.join(tempfile.gettempdir(), PokerEngineConfigTestCase.TestConfigTemporaryFile)
         
         self.UpgradeTmplFile = os.path.join(PokerEngineConfigTestCase.TestUpgradeDirectory, PokerEngineConfigTestCase.TestUpgradeTemplateFile)
         self.UpgradeInvalidFile = os.path.join(PokerEngineConfigTestCase.TestUpgradeDirectory, PokerEngineConfigTestCase.TestUpgradeInvalidFile)
@@ -62,29 +64,29 @@ class PokerEngineConfigTestCase(unittest.TestCase):
     
     # -----------------------------------------------------------------------------------------------------    
     def tearDown(self):
-        self.DeleteFile(self.ConfigTempFile)
-        
+        # self.DeleteFile(self.ConfigTempFile)
+        pass
     # -----------------------------------------------------------------------------------------------------    
     def testHeaderGet(self):
-        """Test header get attribut value"""
+        """Test Poker Engine : Get header value"""
         
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'TestHeader', {'key' : 'val'}):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         pokerengineconfig.Config.upgrades_repository = None
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
         
         self.failUnlessEqual(self.Config.headerGet('/bet/TestHeader/@key'), 'val')
         
     # -----------------------------------------------------------------------------------------------------    
     def testHeaderSet(self):
-        """Test header set attribut value"""
+        """Test Poker Engine : Set header value"""
         
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet','TestHeader', {'key1' : 'val1'}):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         pokerengineconfig.Config.upgrades_repository = None
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
         
         self.Config.headerSet('/bet/TestHeader/@key1','val2')
         self.failUnlessEqual(self.Config.headerGet('/bet/TestHeader/@key1'), 'val2')
@@ -95,13 +97,13 @@ class PokerEngineConfigTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testHeaderGetInt(self):
-        """Test header get attribut value as integer"""
+        """Test Poker Engine : Get attribute value as integer"""
         
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'TestInt', {'int' : '500'}):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         pokerengineconfig.Config.upgrades_repository = None
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
         
         self.failUnlessEqual(self.Config.headerGetInt('/bet/TestInt/@int'),500)
         
@@ -113,13 +115,13 @@ class PokerEngineConfigTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testHeaderGetList(self):
-        """Test header get list"""
+        """Test Poker Engine : Get list"""
         
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'TestList', {'attribute1' : 'val1', 'attribute2' : 'val2', 'attribute3' : 'val3'}):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         pokerengineconfig.Config.upgrades_repository = None
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
         
         values = self.Config.headerGetList('/bet/TestList/@*')
         values.sort()
@@ -127,65 +129,65 @@ class PokerEngineConfigTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------    
     def testHeaderGetProperties(self):
-        """Test header get properties"""
+        """Test Poker Engine : Get properties"""
         
         properties = {'attribute1' : 'val1', 'attribute2' : 'val2', 'attribute3' : 'val3'}
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'TestProperties', properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         pokerengineconfig.Config.upgrades_repository = None
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
         
         self.failUnlessEqual(self.Config.headerGetProperties('/bet/TestProperties')[0], properties)
         
     # -----------------------------------------------------------------------------------------------------    
     def testSave(self):
-        """Test configuration file save"""
+        """Test Poker Engine : Save"""
         
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', None, {'attribute1' : 'val1'}):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         self.failUnlessEqual(self.Config.save(), None)
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
         self.failUnlessEqual(self.Config.save(), None)
         
     # -----------------------------------------------------------------------------------------------------
     def testConfigLoadFileNotFound(self):
-        """Test loading configuration file not found"""
+        """Test Poker Engine : Load file not found"""
         
-        self.failUnlessEqual(self.Config.load(PokerEngineConfigTestCase.TestConfigNotFoundFile), False)
+        self.failIf(self.Config.load(PokerEngineConfigTestCase.TestConfigNotFoundFile))
         
     # -----------------------------------------------------------------------------------------------------
     def testConfigLoadInvalidFile(self):
-        """Test loading invalid configuration file"""
+        """Test Poker Engine : Load invalid file"""
                 
         self.failUnlessRaises(libxml2.parserError,self.Config.load,PokerEngineConfigTestCase.TestConfigInvalidFile)
         
     # -----------------------------------------------------------------------------------------------------
     def testConfigLoadValidFile(self):
-        """Test loading valid configuration file"""
+        """Test Poker Engine : Load file"""
         
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', None, {'poker_engine_version' : version_number}):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         pokerengineconfig.Config.upgrades_repository = None
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
         
         pokerengineconfig.Config.upgrades_repository = './NotFound'
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
         
         pokerengineconfig.Config.upgrades_repository = PokerEngineConfigTestCase.TestUpgradeDirectory
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
         
     # -----------------------------------------------------------------------------------------------------
     def testConfigReload(self):
-        """Test reloading configuration file"""
+        """Test Poker Engine : Reload file"""
         
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'TestReload', {'key' : 'val1'}):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
         
         pokerengineconfig.Config.upgrades_repository = None
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
         
         key_value = self.Config.headerGet('/bet/TestReload/@key')
         self.failUnlessEqual(key_value, 'val1')
@@ -202,18 +204,18 @@ class PokerEngineConfigTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------
     def testConfigCheckVersionUpToDate(self):
-        """Test check file version up to date"""
+        """Test Poker Engine : Check version up to date"""
         
         pokerengineconfig.Config.upgrades_repository = None
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', None, {'poker_engine_version' : version_number}):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
-        self.failUnlessEqual(self.Config.checkVersion('poker_engine_version',version_number,None), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
+        self.failUnless(self.Config.checkVersion('poker_engine_version',version_number,None))
         
     # -----------------------------------------------------------------------------------------------------
     def testConfigCheckVersionWithoutVersion(self):
-        """Test check file version without version attribute"""
+        """Test Poker Engine : Check file version without version attribute"""
         
         pokerengineconfig.Config.upgrades_repository = None        
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', None):
@@ -221,15 +223,15 @@ class PokerEngineConfigTestCase(unittest.TestCase):
         
         # Save the version information
         pokerengineconfig.Config.upgrade_dry_run = False
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
-        self.failUnlessEqual(self.Config.checkVersion('poker_engine_version',version_number,None,version_number), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
+        self.failUnless(self.Config.checkVersion('poker_engine_version',version_number,None,version_number))
         
         self.Config.reload()
         self.failUnlessEqual(self.Config.headerGet('/bet/@poker_engine_version'), version_number)
         
     # -----------------------------------------------------------------------------------------------------
     def testConfigCheckVersionWithInvalidVersion(self):
-        """Test check file version with invalid version"""
+        """Test Poker Engine : Check file version with invalid version attribute"""
         
         pokerengineconfig.Config.upgrades_repository = None
         ver = version.Version(version_number)
@@ -237,12 +239,12 @@ class PokerEngineConfigTestCase(unittest.TestCase):
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', None, {'poker_engine_version' : str(ver + 1)}):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
         self.failUnlessRaises(Exception,self.Config.checkVersion,'poker_engine_version',str(ver), None)
         
     # -----------------------------------------------------------------------------------------------------
     def testConfigCheckVersionUpgrade(self):
-        """Test check file version upgrade"""
+        """Test Poker Engine : Check file version upgrade"""
         
         pokerengineconfig.Config.upgrade_dry_run = True
         pokerengineconfig.Config.upgrades_repository = None
@@ -251,23 +253,23 @@ class PokerEngineConfigTestCase(unittest.TestCase):
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', None, {'poker_engine_version' : str(ver), 'upgrade' : 'ToUpgrade'}):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
-        self.failUnlessEqual(self.Config.checkVersion('poker_engine_version',str(ver+1),None), False)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
+        self.failIf(self.Config.checkVersion('poker_engine_version',str(ver+1),None))
         
         upgrade_file = 'upgrade' + str(ver) + '-' + str(ver + 1) + '.xsl'
-        upgrade_file = os.path.join(PokerEngineConfigTestCase.TestUpgradeDirectory,upgrade_file)
+        upgrade_file = os.path.join(tempfile.gettempdir(),upgrade_file)
         if not self.CopyFile(self.UpgradeTmplFile, upgrade_file):
             self.fail('Error during creation of upgrade file ' + upgrade_file)
         
         pokerengineconfig.Config.upgrade_dry_run = False
-        self.failUnlessEqual(self.Config.checkVersion('poker_engine_version',str(ver+1),PokerEngineConfigTestCase.TestUpgradeDirectory), False)
+        self.failIf(self.Config.checkVersion('poker_engine_version',str(ver+1),tempfile.gettempdir()))
         self.failUnlessEqual(self.Config.headerGet('/bet/@upgrade'), 'Upgraded')
         
         self.DeleteFile(upgrade_file)
         
     # -----------------------------------------------------------------------------------------------------
     def testConfigCheckVersionInvalidUpgrade(self):
-        """Test check file version invalid upgrade"""
+        """Test Poker Engine : Check file version invalid upgrade"""
         
         pokerengineconfig.Config.upgrade_dry_run = False
         pokerengineconfig.Config.upgrades_repository = None
@@ -276,14 +278,14 @@ class PokerEngineConfigTestCase(unittest.TestCase):
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', None, {'poker_engine_version' : str(ver), 'upgrade' : 'ToUpgrade'}):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
-        self.failUnlessEqual(self.Config.load(self.ConfigTempFile), True)
+        self.failUnless(self.Config.load(PokerEngineConfigTestCase.TestConfigTemporaryFile))
     
         upgrade_file = 'upgrade' + str(ver) + '-' + str(ver + 1) + '.xsl'
-        upgrade_file = os.path.join(PokerEngineConfigTestCase.TestUpgradeDirectory,upgrade_file)
+        upgrade_file = os.path.join(tempfile.gettempdir(),upgrade_file)
         if not self.CopyFile(self.UpgradeInvalidFile, upgrade_file):
             self.fail('Error during creation of upgrade file ' + upgrade_file)
     
-        self.failUnlessRaises(libxml2.parserError,self.Config.checkVersion, 'poker_engine_version',str(ver+1),PokerEngineConfigTestCase.TestUpgradeDirectory)        
+        self.failUnlessRaises(libxml2.parserError,self.Config.checkVersion, 'poker_engine_version',str(ver+1),tempfile.gettempdir())        
         self.DeleteFile(upgrade_file)
         
     # -----------------------------------------------------------------------------------------------------
