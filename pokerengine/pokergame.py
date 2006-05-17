@@ -2028,6 +2028,7 @@ class PokerGame:
             return
         if not self.state == GAME_STATE_MUCK:
             self.error("muck: game state muck expected, found %s" % self.state)            
+            return
         if not self.muckable_serials:          
             self.showdown()
             self.endState()
