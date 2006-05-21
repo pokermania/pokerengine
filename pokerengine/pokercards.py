@@ -186,7 +186,7 @@ class PokerCards:
         
     def setVisible(self, value, visible):
         if value == self.nocard():
-            return
+            return #pragma no cover
            
         for i in xrange(len(self.cards)):
             if self.cards[i] & PokerCards.VALUE_CARD_MASK == value:
