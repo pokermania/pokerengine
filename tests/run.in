@@ -34,7 +34,14 @@ case "$1" in
 
 *coverage-reset) @PYTHON@ ${srcdir}/coverage.py -e ;;
 
-*coverage-report) @PYTHON@ ${srcdir}/coverage.py -m -r ${srcdir}/../pokerengine/*.py ;;
+*coverage-report) 
+        output=$( @PYTHON@ ${srcdir}/coverage.py -m -r ${srcdir}/../pokerengine/*.py )
+        echo "$output"
+        if ! echo "$output" | grep 'TOTAL.*100%' > /dev/null ; then
+            echo 'FAIL: tests do not cover 100% of the poker-engine code'
+            exit 1
+        fi
+        ;;
 
 *.py) @PYTHON@ ${srcdir}/coverage.py -x "$1" ;;
 
@@ -43,3 +50,4 @@ case "$1" in
         exit 1
         ;;
 esac
+exit 0
