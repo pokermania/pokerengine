@@ -1,3 +1,13 @@
+Tue May 23 2006  Loic Dachary  <loic@dachary.org>
+
+	* Release 1.0.16
+
+	* tests/test-*.py.in: reach 100% coverage
+
+	* pokerengine/pokertournament.py (PokerTournament.endTurn): factorize redundant code
+
+	* pokerengine/poker{game,cards,chips}.py: #pragma no cover for a few lines that can't be tested
+
 Sun May 14 2006  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.15

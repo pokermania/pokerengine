@@ -133,8 +133,10 @@ class PokerChips:
 
         if self.remainder > 0:
             if list:
-                if list[0] == 1:
-                  raise UserWarning, "pokerchips.py:tolist unexpected remainder > 0 when first chip value is 1 : " + str(self)
+                if list[0] == 1:                
+                    # Can not be tested
+                    # If the first value is equal to 1, the remainder can not be different than 0
+                    raise UserWarning, "pokerchips.py:tolist unexpected remainder > 0 when first chip value is 1 : " + str(self) #pragma: no cover
                 else:
                     list.insert(0, self.remainder)
                     list.insert(0, 1)

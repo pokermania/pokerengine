@@ -1,5 +1,10 @@
 # -*- mode: python -*-
-# Copyright (C) 2006 Pierre-Andre
+# Copyright (C) 2006 Mekensleep
+#
+# Mekensleep
+# 24 rue vieille du temple
+# 75004 Paris
+#       licensing@mekensleep.com
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +21,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#  Pierre-Andre Vieillard-Baron
+#  Pierre-Andre
 #  Loic Dachary <loic@gnu.org>
 #
 
@@ -109,6 +114,40 @@ class PokerGameTestCase(unittest.TestCase):
         
         self.failUnlessEqual(pokergame.uniq([1, 4, 4, 7]).sort(), [1, 4, 7].sort())
         self.failUnlessEqual(pokergame.uniq([1, 4, 4, 7, 3, 3, 3, 9, 7]).sort(), [1, 3, 4, 7, 9].sort())
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testPokerRandom(self):
+        """Test Poker Game : Poker Random"""
+        
+        # Only available on *nix systemes
+        if os.name != "posix": return
+            
+        # Standard random dev
+        random1 = pokergame.PokerRandom(False)
+        # Paranoid random dev
+        random2 = pokergame.PokerRandom(True)
+        
+        # These functions are not implemented
+        self.failUnlessEqual(random1.getstate(), None)
+        self.failUnlessEqual(random1.setstate('Ignore'), None)
+        self.failUnlessEqual(random1.jumpahead('Ignore'), None)
+        
+        # Re open the random dev
+        random1.seed(None)
+        random2.seed(None)
+                
+        numbers1 = []
+        numbers2 = []
+        for num in range(20):
+            numbers1.append(random1.random())
+            numbers2.append(random2.random())
+        
+        # All the numbers should be different
+        pokergame.uniq(numbers1)
+        pokergame.uniq(numbers2)
+        
+        self.failUnlessEqual(len(numbers1), 20)
+        self.failUnlessEqual(len(numbers2), 20)
         
     # -----------------------------------------------------------------------------------------------------    
     def testGetSerialByNameNoCase(self):
@@ -542,7 +581,7 @@ class PokerGameTestCase(unittest.TestCase):
                                 'big' : '2000',
                             }
                                 
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         # Reload the betting structure
@@ -558,7 +597,7 @@ class PokerGameTestCase(unittest.TestCase):
                                 'big' : '4000'
                             }
         
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
                                 
         # Reload the betting structure
@@ -579,7 +618,7 @@ class PokerGameTestCase(unittest.TestCase):
                            { 'small' : 2500, 'big' : 5000, 'value' : 250, 'bring-in' : 500 }
                             ]
                             
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
         
         # Reload the betting structure
@@ -611,7 +650,7 @@ class PokerGameTestCase(unittest.TestCase):
                              'bring-in' : '200'
                           }
         
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/ante', None, ante_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
                                 
         # Reload the betting structure
@@ -632,7 +671,7 @@ class PokerGameTestCase(unittest.TestCase):
                            { 'small' : 2500, 'big' : 5000, 'value' : 250, 'bring-in' : 500 }
                             ]
                             
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/ante', None, ante_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
         
         # Reload the betting structure
@@ -651,7 +690,7 @@ class PokerGameTestCase(unittest.TestCase):
                               'big' : '4000'
                             }
         
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
         
         # Change the ante properties        
@@ -682,7 +721,7 @@ class PokerGameTestCase(unittest.TestCase):
                                 'levels' : PokerGameTestCase.TestLevelsTemplateFile
                             }
         
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
         
         # Change the ante properties        
@@ -690,7 +729,7 @@ class PokerGameTestCase(unittest.TestCase):
                               'levels' : PokerGameTestCase.TestLevelsTemplateFile
                             }
         
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/ante', None, ante_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
         
         # Reload the betting structure
@@ -714,13 +753,13 @@ class PokerGameTestCase(unittest.TestCase):
         # Change the blind properties        
         blind_properties = { 'change' : 'invalid' }
         
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
         
         # Change the ante properties        
         ante_properties = { 'change' : 'invalid' }
         
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/ante', None, ante_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
         
         # Reload the betting structure
@@ -743,7 +782,7 @@ class PokerGameTestCase(unittest.TestCase):
                                 'levels' : PokerGameTestCase.TestLevelsTemplateFile
                                 }
         
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         # Change the ante properties        
@@ -935,7 +974,7 @@ class PokerGameTestCase(unittest.TestCase):
                                     'big' : '4000'
                                 }
                                 
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         # Reload the betting structure
@@ -1086,7 +1125,14 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.dealer, -1)
         self.failUnlessEqual(self.game.dealer_seat, -1)
         
+        # Create player 1
         player1 = self.AddPlayerAndSit(1, 2)
+        
+        self.failUnlessEqual(self.game.dealer_seat, 2)
+        self.game.dealerFromDealerSeat()
+        self.failUnlessEqual(self.game.dealer, -1)
+        
+        # Create player 2
         player2 = self.AddPlayerAndSit(2, 5)
         
         self.failUnlessEqual(self.game.dealer_seat, 2)
@@ -1377,9 +1423,8 @@ class PokerGameTestCase(unittest.TestCase):
         self.failIf(self.game.canAct(1))
         self.failIf(self.game.call(1))
         
-        player1.hand = pokercards.PokerCards(['Ad', 'As'])
-        player2.hand = pokercards.PokerCards(['4d', 'Ts'])
-        player3.hand = pokercards.PokerCards(['Kd', '3s'])
+        # Deal cards
+        self.game.dealCards()
         
         self.failUnless(self.game.callNraise(1, 100))
         
@@ -1795,6 +1840,43 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnless(self.game.betsNull())
         
     # -----------------------------------------------------------------------------------------------------
+    def testRoundCap(self):
+        """Test Poker Game : Round cap"""
+        
+        # Create players
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 7)
+        
+        # Round cap is 0 because the game is not running
+        self.failIf(self.game.isRunning())
+        self.failUnlessEqual(self.game.roundCap(), 0)
+        
+        # Blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # First round
+        self.game.nextRound()
+        self.game.initRound()
+        self.failUnless(self.game.isFirstRound())
+        
+        # The game is running
+        self.failUnless(self.game.isRunning())
+        
+        # First round cap initially equal to 3
+        self.failUnlessEqual(self.game.roundCap(), 3)
+        
+        # Change the cap of the first level
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/variants/round[@name="pre-flop"]', None, {'cap' : '20'}):
+            self.fail('Error during modification of variant file ' + self.ConfigTempFile)
+
+        # Reload the betting structure
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        # First round cap equal to 20
+        self.failUnlessEqual(self.game.roundCap(), 20)
+        
+    # -----------------------------------------------------------------------------------------------------
     def testBetLimits(self):
         """Test Poker Game : Bet limits"""
         
@@ -2074,7 +2156,7 @@ class PokerGameTestCase(unittest.TestCase):
                                     'big' : '4000'
                                 }
         
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         # Reload the betting structure
@@ -2118,7 +2200,7 @@ class PokerGameTestCase(unittest.TestCase):
                                 'unit' : 'minute',
                                 }
         
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         # Reload the betting structure
@@ -2146,7 +2228,7 @@ class PokerGameTestCase(unittest.TestCase):
                                 'unit' : 'hand',
                                 }
         
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         # Reload the betting structure
@@ -2170,7 +2252,7 @@ class PokerGameTestCase(unittest.TestCase):
                                 'unit' : 'Invalid',
                                 }
                                 
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         # Reload the betting structure
@@ -2377,11 +2459,16 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.initRound()
         self.failUnless(self.game.isFirstRound())
         
-        # Deal cards
-        self.game.dealCards()
-        
         # Change the variant name for cards evaluation
         self.game.variant = 'holdem'
+        
+        # No possible action because the cards are not dealt
+        self.failUnlessEqual(self.game.possibleActions(1), [])
+        self.game.botPlayer(1)
+        self.failIf(player1.talked_once)
+        
+        # Deal cards
+        self.game.dealCards()
         
         # Player 1 is a bot
         self.failUnlessEqual(self.game.possibleActions(1), ['raise', 'check'])
@@ -2396,7 +2483,8 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(player1.money, 1500)
         self.failUnless(player1.talked_once)
         
-        # Player 2 is also a bot
+        # Set the player 1 bet
+        # The player 2 has not enough money to raise
         player1.bet = player2.money
         self.failUnlessEqual(self.game.possibleActions(2), ['call', 'fold'])
         
@@ -2459,7 +2547,7 @@ class PokerGameTestCase(unittest.TestCase):
                               'unit' : 'minute'
                             }
 
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
         
         # Reload the betting structure
@@ -2811,6 +2899,14 @@ class PokerGameTestCase(unittest.TestCase):
         
         self.failUnlessEqual(self.game.dealer, 0)
         self.failUnlessEqual(self.game.serialsAllSorted(), [2, 3, 1])
+        
+        # Remove the player 1, do not reconstruct the player list
+        del self.game.serial2player[1]
+        self.failUnlessEqual(self.game.serialsAll(), [2, 3])
+        self.failUnlessEqual(self.game.player_list, [1, 2, 3])
+        
+        # The dealer can not be the player 2
+        self.failUnlessEqual(self.game.serialsAllSorted(), [3, 2])
         
     # -----------------------------------------------------------------------------------------------------
     def testBlind(self):
@@ -3376,7 +3472,7 @@ class PokerGameTestCase(unittest.TestCase):
                                     'big' : '2000',
                                 }
                                 
-        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'blind', blind_properties):
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         # Reload the betting structure
@@ -3639,7 +3735,7 @@ class PokerGameTestCase(unittest.TestCase):
         # Create players
         player1 = self.AddPlayerAndSit(1, 2)
         player2 = self.AddPlayerAndSit(2, 7)
-    
+        
         # Blind and ante turn
         self.game.beginTurn(1)
         self.failUnless(self.game.isBlindAnteRound())
@@ -3798,6 +3894,82 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.getPlayerMoney(1), 2200)
         self.failUnlessEqual(self.game.getPlayerMoney(2), 1000)
         
+        # The money has been already distributed
+        self.failUnless(self.game.moneyDistributed())
+        
+        # The distribution has no effect
+        self.game.distributeMoney()
+        
+        # Money amounts after 
+        self.failUnlessEqual(self.game.getPlayerMoney(1), 2200)
+        self.failUnlessEqual(self.game.getPlayerMoney(2), 1000)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testHighLowWinners(self):
+        """Test Poker Game : high low winners"""
+        
+        # Modify wins properties
+        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/wins', None, { 'ways' : '2'}):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        winner_properties = {
+                                    'id' : '2',
+                                    'type' : 'hand',
+                                    'order' : 'low8'
+                                    }
+                                    
+        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/wins', 'winner', winner_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
+        self.game.variant = 'holdem8'
+        
+        self.game.setMaxPlayers(3)
+        
+        # Create players
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        # High low game
+        self.failUnless(self.game.isHighLow())
+        
+        # Blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # Auto pay blind
+        for serial in self.game.serialsAll():
+            self.game.autoBlindAnte(serial)
+        
+        # Deal all the cards
+        while not self.game.isLastRound():
+            self.game.nextRound()
+            self.game.dealCards()
+            
+        # Check players money and bet
+        self.failUnlessEqual(player1.bet, 0)
+        self.failUnlessEqual(player2.bet, 500)
+        self.failUnlessEqual(player3.bet, 1000)
+        
+        self.failUnlessEqual(player1.money, 1600)
+        self.failUnlessEqual(player2.money, 1100)
+        self.failUnlessEqual(player3.money, 600)
+        
+        self.game.initRound()
+        
+        self.failUnless(self.game.callNraise(2,501))
+        self.failUnless(self.game.call(3))
+        self.failUnless(self.game.call(1))
+        
+        # 2 winners
+        self.failUnlessEqual(self.game.winners, [2, 3])
+        
+        # Check money distribution
+        self.failUnlessEqual(player1.money, 599)
+        self.failUnlessEqual(player2.money, 2101)
+        self.failUnlessEqual(player3.money, 2100)
+        
     # -----------------------------------------------------------------------------------------------------
     def testRemovePlayer(self):
         """Test Poker Game : Remove player"""
@@ -3824,15 +3996,21 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.seatsLeftCount(), 2)
         self.failUnlessEqual(self.game.seats_left, [7, 2])
         
-        # Add a new player on an invalid seat
+        # Add two players on the same seat
         player1 = self.AddPlayerAndSit(1)
-        player1.seat = 4
+        player2 = self.AddPlayerAndSit(2)
+        player2.seat = player1.seat
+        self.failUnlessEqual(self.game.seatsLeftCount(), 0)
         
         # Remove the player
         self.failUnless(self.game.removePlayer(1))
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
         
-        # The Player has been delete
-        self.failUnlessEqual(self.game.getPlayer(1), None)
+        # Remove the second player
+        self.failUnless(self.game.removePlayer(2))
+        
+        # The number of seat left is still the same
+        self.failUnlessEqual(self.game.seatsLeftCount(), 1)
         
     # -----------------------------------------------------------------------------------------------------
     def testCardsDealtThisRoundCount(self):
@@ -3972,6 +4150,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.beginTurn(1)
         self.failUnless(self.game.isBlindAnteRound())
         self.failUnlessEqual(self.game.playersInPotCount(self.game.getPots()), 0)
+        self.failIf(self.game.isSingleUncalledBet(self.game.getPots()))
         
         # The blind contribution has been added to the pots
         current_round = self.game.current_round
@@ -3982,6 +4161,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.autoBlindAnte(1)
         self.failUnlessEqual(player1.bet, 500)
         self.failUnlessEqual(self.game.playersInPotCount(self.game.getPots()), 1)
+        self.failUnless(self.game.isSingleUncalledBet(self.game.getPots()))
         
         # The pots has been updated
         pots['building'] += 500
@@ -3994,6 +4174,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.autoBlindAnte(2)
         self.failUnlessEqual(player2.bet, 1000)
         self.failUnlessEqual(self.game.playersInPotCount(self.game.getPots()), 2)
+        self.failIf(self.game.isSingleUncalledBet(self.game.getPots()))
         
         # First round
         self.failUnless(self.game.isFirstRound())
@@ -4239,13 +4420,13 @@ class PokerGameTestCase(unittest.TestCase):
         # Change the round turn properties
         round_turn_properties = {  'type' : 'high' }
                                 
-        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/round[@name="turn"]', 'position', round_turn_properties):
+        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/round[@name="turn"]/position', None, round_turn_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         # Change the round river properties
         round_river_properties = {  'type' : 'invalid' }
                                 
-        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/round[@name="river"]', 'position', round_river_properties):
+        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/round[@name="river"]/position', None, round_river_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         # Reload the variant structure
@@ -4340,13 +4521,13 @@ class PokerGameTestCase(unittest.TestCase):
         # Change the round flop properties
         round_flop_properties = {  'type' : 'low' }
                                 
-        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/round[@name="flop"]', 'position', round_flop_properties):
+        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/round[@name="flop"]/position', None, round_flop_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         # Change the round turn properties
         round_flop_properties = {  'type' : 'under-the-gun' }
                                 
-        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/round[@name="turn"]', 'position', round_flop_properties):
+        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/round[@name="turn"]/position', None, round_flop_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         # Reload the variant structure
@@ -4446,6 +4627,9 @@ class PokerGameTestCase(unittest.TestCase):
         # Client game
         self.game.is_directing = False
         
+        # Muck state has no effect
+        self.game.muckState(pokergame.AUTO_MUCK_ALWAYS)
+        
         # Muck has no effect
         self.game.muck(2, False)
         self.failUnlessEqual(self.game.muckable_serials, [2])
@@ -4459,6 +4643,529 @@ class PokerGameTestCase(unittest.TestCase):
         
         # The game is finished
         self.failUnlessEqual(self.game.state, pokergame.GAME_STATE_END)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testGetMaxBoardSize(self):
+        """Test Poker Game : Get max board size"""
+        
+        # The max board size is initially set to 5
+        self.failUnlessEqual(self.game.getMaxBoardSize(), 5)
+        
+        # Change the variant type
+        if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant', None, {'type' : 'NotCommunity'}):
+            self.fail('Error during modification of variant file ' + self.VariantTempFile)
+            
+        self.game.setVariant(PokerGameTestCase.TestVariantTemporaryFile)
+        
+        # Not a community variant, max board size set 0
+        self.failUnlessEqual(self.game.getMaxBoardSize(), 0)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testGetParamList(self):
+        """Test Poker Game : Get param list"""
+        
+        self.failUnlessEqual(len(self.game.getParamList('/bet/variants/round')), 4)
+        self.failUnlessEqual(len(self.game.getParamList('/poker/variant/community/position')), 5)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testGetParam(self):
+        """Test Poker Game : Get param"""
+        
+        self.failUnlessEqual(self.game.getParam('/bet/@buy-in'), '50')
+        self.failUnlessEqual(self.game.getParam('/poker/variant/@type'), 'community')
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testGetParamProperties(self):
+        """Test Poker Game : Get param properties"""
+        
+        bet_properties = {
+                                'buy-in' : '50',
+                                'max-buy-in' : '10000',
+                                'best-buy-in' : '1600',
+                                'unit' : '300'
+                                }
+        
+        properties = self.game.getParamProperties('/bet')[0]
+        for attribute, value in bet_properties.items():
+            self.failUnlessEqual(properties[attribute], value)
+        
+        variant_properties = {
+                                    'type' : 'community',
+                                    'name' : 'VariantName',
+                                    'id' : 'VariantTest'
+                                    }
+                                    
+        properties = self.game.getParamProperties('/poker/variant')[0]
+        for attribute, value in variant_properties.items():
+            self.failUnlessEqual(properties[attribute], value)
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testIsGameEndInformationValid(self):
+        """Test Poker Game : Is game end information are valid"""
+        
+        # The game state is not GAME_STATE_END
+        self.failIfEqual(self.game.state,pokergame.GAME_STATE_END)
+        self.failIf(self.game.isGameEndInformationValid())
+        
+        # Change the game state
+        self.game.changeState(pokergame.GAME_STATE_END)
+        self.failUnlessEqual(self.game.state,pokergame.GAME_STATE_END)
+        
+        # there is no winner
+        self.failUnlessEqual(len(self.game.winners),0)
+        self.failIf(self.game.isGameEndInformationValid())
+        
+        # Create players
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 7)
+        
+        # Set the winners
+        self.game.winners = [1]
+        
+        # The end information are valid
+        self.failUnless(self.game.isGameEndInformationValid())
+        
+        # Remove the winner from the player list
+        del self.game.serial2player[1]
+        
+        # The end information are now invalid
+        self.failIf(self.game.isGameEndInformationValid())
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testDispatchMuck(self):
+        """Test Poker Game : Dispatch Muck"""
+        
+        self.game.setVariant('holdem')
+        
+        self.game.setMaxPlayers(3)
+        
+        # Create players
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        # Blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # Deal all the cards
+        while not self.game.isLastRound():
+            self.game.nextRound()
+            self.game.dealCards()
+        
+        # Init winners
+        self.game.setWinners([1])
+        
+        # Init winners per side
+        self.game.side2winners = { 'hi': [], 'low': [] }
+    
+        # Winner because fold
+        self.game.win_condition = pokergame.WON_FOLD
+        self.failUnlessEqual(self.game.dispatchMuck(), ((), (1,)))
+        self.game.win_condition = pokergame.WON_REGULAR
+        
+        # Dealer is the player 2        
+        self.failUnlessEqual(self.game.dealer, 0)
+        
+        # The player 2 and 3 muck, the winner show his cards
+        self.failUnlessEqual(self.game.dispatchMuck(), ([1], [2,3]))
+        
+        # Init winners per side
+        self.game.side2winners = { 'hi': [2], 'low': [] }
+            
+        # The player 2 show also his cards
+        self.failUnlessEqual(self.game.dispatchMuck(), ([2, 3, 1], []))
+        
+        # Init winners per side
+        self.game.side2winners = { 'hi': [], 'low': [3] }
+            
+        # All the player show their cards
+        self.failUnlessEqual(self.game.dispatchMuck(), ([2,1], [3]))
+        
+        # Client game
+        self.game.is_directing = False
+        self.failUnlessEqual(self.game.dispatchMuck(),  None)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testAutoMuckNever(self):
+        """Test Poker Game : Auto muck never"""
+        
+        self.game.setMaxPlayers(3)
+        
+        # Create players
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        # Blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # Auto pay blind
+        for serial in self.game.serialsAll():
+            self.game.autoBlindAnte(serial)
+        
+        # Set auto muck state
+        self.game.autoMuck(1, pokergame.AUTO_MUCK_NEVER)
+        self.game.autoMuck(2, pokergame.AUTO_MUCK_NEVER)
+        self.game.autoMuck(3, pokergame.AUTO_MUCK_NEVER)
+        
+        # Players 1 and 2 fold
+        self.failUnless(self.game.fold(1))
+        self.failUnless(self.game.fold(2))
+        
+        # Player 3 is the winner and muckable
+        self.failUnlessEqual(self.game.winners, [3])
+        self.failUnlessEqual(self.game.muckable_serials, [3])
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testAutoMuckAlways(self):
+        """Test Poker Game : Auto muck always"""
+        
+        self.game.setMaxPlayers(3)
+        
+        # Create players
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        # Blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # Auto pay blind
+        for serial in self.game.serialsAll():
+            self.game.autoBlindAnte(serial)
+        
+        # Set auto muck state
+        self.game.autoMuck(1, pokergame.AUTO_MUCK_ALWAYS)
+        self.game.autoMuck(2, pokergame.AUTO_MUCK_ALWAYS)
+        self.game.autoMuck(3, pokergame.AUTO_MUCK_ALWAYS)
+        
+        # Players 1 and 2 fold
+        self.failUnless(self.game.fold(1))
+        self.failUnless(self.game.fold(2))
+        
+        # No muckable players
+        self.failUnlessEqual(self.game.winners, [3])
+        self.failUnlessEqual(self.game.muckable_serials, [])
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testAutoMuckWin(self):
+        """Test Poker Game : Auto muck win"""
+        
+        self.game.setMaxPlayers(3)
+        
+        # Create players
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        # Blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # Auto pay blind
+        for serial in self.game.serialsAll():
+            self.game.autoBlindAnte(serial)
+        
+        # Set auto muck state
+        self.game.autoMuck(1, pokergame.AUTO_MUCK_WIN)
+        self.game.autoMuck(2, pokergame.AUTO_MUCK_WIN)
+        self.game.autoMuck(3, pokergame.AUTO_MUCK_WIN)
+        
+        # Players 1 and 2 fold
+        self.failUnless(self.game.fold(1))
+        self.failUnless(self.game.fold(2))
+        
+        # Player 3 is the winner but not muckable
+        self.failUnless(self.game.isWinnerBecauseFold())
+        self.failUnlessEqual(self.game.winners, [3])
+        self.failUnlessEqual(self.game.muckable_serials, [])
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def testAutoMuckLose(self):
+        """Test Poker Game : Auto muck lose"""
+        
+        self.game.variant = 'holdem'
+        
+        self.game.setMaxPlayers(3)
+        
+        # Create players
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+        
+        # Blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # Auto pay blind
+        for serial in self.game.serialsAll():
+            self.game.autoBlindAnte(serial)
+        
+        # Set auto muck state
+        self.game.autoMuck(1, pokergame.AUTO_MUCK_LOSE)
+        self.game.autoMuck(2, pokergame.AUTO_MUCK_LOSE)
+        self.game.autoMuck(3, pokergame.AUTO_MUCK_LOSE)
+        
+        # Deal all the cards
+        while not self.game.isLastRound():
+            self.game.nextRound()
+            self.game.dealCards()
+        
+        self.game.initRound()
+        
+        self.failUnless(self.game.callNraise(2,100))
+        self.failUnless(self.game.call(3))
+        self.failUnless(self.game.call(1))
+        
+        # Player 3 is the winner but not muckable
+        self.failIf(self.game.isWinnerBecauseFold())
+        self.failUnlessEqual(self.game.winners, [3])
+        self.failUnlessEqual(self.game.muckable_serials, [])
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testUpdateBlinds(self):
+        """Test Poker Game : Update blinds"""
+        
+        self.game.setMaxPlayers(4)
+        
+        # Create 1 player
+        player1 = self.AddPlayerAndSit(1, 1)
+        
+        # Not enough player sit
+        # The wait_for attribute is reset if not equal to first round
+        player1.wait_for = 'first_round'
+        self.game.updateBlinds()
+        self.failUnlessEqual(player1.wait_for, 'first_round')
+        
+        player1.wait_for = 'big'
+        self.game.updateBlinds()
+        self.failUnlessEqual(player1.wait_for, False)
+        
+        # Create players
+        player2 = self.AddPlayerAndSit(2, 3)
+        player3 = self.AddPlayerAndSit(3, 6)
+        player4 = self.AddPlayerAndSit(4, 8)
+        
+        # Init players infos
+        self.game.playersBeginTurn()
+        
+        # Update blinds
+        blinds = {
+                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
+                    2 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
+                    3 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
+                    4 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False}
+                    }
+        
+        self.game.updateBlinds()
+        
+        # Check blinds
+        for player in blinds.keys():
+            for attribute, value in blinds[player].items():
+                self.failUnlessEqual(getattr(self.game.getPlayer(player), attribute), value)
+        
+        # Move the dealer
+        self.game.moveDealerLeft()
+        
+        # Update blinds
+        blinds = {
+                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
+                    2 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
+                    3 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
+                    4 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False}
+                    }
+        
+        self.game.updateBlinds()
+        
+        # Check blinds
+        for player in blinds.keys():
+            for attribute, value in blinds[player].items():
+                self.failUnlessEqual(getattr(self.game.getPlayer(player), attribute), value)
+                
+        # Move the dealer
+        self.game.moveDealerLeft()
+        
+        # Update blinds
+        blinds = {
+                    1 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
+                    2 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
+                    3 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
+                    4 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False}
+                    }
+        
+        self.game.updateBlinds()
+        
+        # Check blinds
+        for player in blinds.keys():
+            for attribute, value in blinds[player].items():
+                self.failUnlessEqual(getattr(self.game.getPlayer(player), attribute), value)
+                
+        # Forbid missed blinds
+        player1.missed_blind = 'small'
+        player1.wait_for = 'late'
+        
+        player2.missed_blind = 'small'
+        player3.missed_blind = 'small'
+        
+        self.game.updateBlinds()
+        
+        blinds = {
+                    1 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
+                    2 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
+                    3 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
+                    4 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False}
+                    }
+        
+        # Check blinds
+        for player in blinds.keys():
+            for attribute, value in blinds[player].items():
+                self.failUnlessEqual(getattr(self.game.getPlayer(player), attribute), value)
+                
+    # -----------------------------------------------------------------------------------------------------
+    def testUpdateSmallBlinds(self):
+        """Test Poker Game : Update small blinds"""
+        
+        self.game.setMaxPlayers(4)
+        
+        # Create players
+        player1 = self.AddPlayerAndSit(1, 1)
+        player2 = self.AddPlayerAndSit(2, 3)
+        player3 = self.AddPlayerAndSit(3, 6)
+        player4 = self.AddPlayerAndSit(4, 8)
+        
+        # Update blinds
+        blinds = {
+                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
+                    2 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
+                    3 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
+                    4 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False}
+                    }
+        
+        self.game.updateBlinds()
+        
+        # Check blinds
+        for player in blinds.keys():
+            for attribute, value in blinds[player].items():
+                self.failUnlessEqual(getattr(self.game.getPlayer(player), attribute), value)
+                
+        # Init players infos
+        self.game.playersBeginTurn()
+                
+        # Player 2 has already payed the blind => 
+        # Nothing is done
+        player2.blind = True
+        self.game.updateBlinds()
+        
+        blinds = {
+                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
+                    2 : { 'blind' :  True, 'missed_blind' : None, 'wait_for' : False},
+                    3 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
+                    4 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False}
+                    }
+                    
+        # Check blinds
+        for player in blinds.keys():
+            for attribute, value in blinds[player].items():
+                self.failUnlessEqual(getattr(self.game.getPlayer(player), attribute), value)
+                
+        # Init players infos
+        self.game.playersBeginTurn()
+        
+        # Player 2 has missed a blind
+        player2.missed_blind = 'small'
+        self.game.updateBlinds()
+        
+        blinds = {
+                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
+                    2 : { 'blind' :  None, 'missed_blind' : 'small', 'wait_for' : 'late'},
+                    3 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
+                    4 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False}
+                    }
+                    
+        # Check blinds
+        for player in blinds.keys():
+            for attribute, value in blinds[player].items():
+                self.failUnlessEqual(getattr(self.game.getPlayer(player), attribute), value)
+                
+    # -----------------------------------------------------------------------------------------------------
+    def testUpdateBigBlinds(self):
+        """Test Poker Game : Update big blinds"""
+        
+        self.game.setMaxPlayers(4)
+        
+        # Create players
+        player1 = self.AddPlayerAndSit(1, 1)
+        player2 = self.AddPlayerAndSit(2, 3)
+        player3 = self.AddPlayerAndSit(3, 6)
+        player4 = self.AddPlayerAndSit(4, 8)
+        
+        # Update blinds
+        blinds = {
+                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
+                    2 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
+                    3 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
+                    4 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False}
+                    }
+        
+        self.game.updateBlinds()
+        
+        # Check blinds
+        for player in blinds.keys():
+            for attribute, value in blinds[player].items():
+                self.failUnlessEqual(getattr(self.game.getPlayer(player), attribute), value)
+                
+        # Init players infos
+        self.game.playersBeginTurn()
+                
+        # Player 2 has already payed the blind => 
+        # Nothing is done
+        player3.blind = True
+        player3.wait_for = 'small'
+        self.game.updateBlinds()
+        
+        blinds = {
+                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
+                    2 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
+                    3 : { 'blind' :  True, 'missed_blind' : None, 'wait_for' : False},
+                    4 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False}
+                    }
+                    
+        # Check blinds
+        for player in blinds.keys():
+            for attribute, value in blinds[player].items():
+                self.failUnlessEqual(getattr(self.game.getPlayer(player), attribute), value)
+                
+    # -----------------------------------------------------------------------------------------------------
+    def testUpdateErrorSmallAndBigBlinds(self):
+        """Test Poker Game : Update error small and big blinds"""
+        
+        self.game.setMaxPlayers(pokergame.ABSOLUTE_MAX_PLAYERS)
+        
+        # Create players
+        for num in range(pokergame.ABSOLUTE_MAX_PLAYERS):
+            player = self.AddPlayerAndSit(num + 1)
+            player.wait_for = 'big'
+        self.game.getPlayer(1).wait_for = 'first_round'
+        
+        # Error small blind can not be assigned
+        self.game.updateBlinds()
+        
+        # Check player 1 blinds
+        blinds1 = {'blind' :  'late', 'missed_blind' : None, 'wait_for' : 'first_round'}
+            
+        # Check blinds
+        for attribute, value in blinds1.items():
+            self.failUnlessEqual(getattr(self.game.getPlayer(1), attribute), value)
+        
+        blinds = {'blind' :  'late', 'missed_blind' : None, 'wait_for' : 'big'}
+        
+        # Check players blinds
+        for num in range(1, pokergame.ABSOLUTE_MAX_PLAYERS):
+            for attribute, value in blinds.items():
+                self.failUnlessEqual(getattr(self.game.getPlayer(num + 1), attribute), value)
         
     # -----------------------------------------------------------------------------------------------------
     def AddPlayerAndSit(self, serial, seat = -1):
@@ -4488,11 +5195,7 @@ class PokerGameTestCase(unittest.TestCase):
                 
         node = node_parent
         if child:
-            child_path = node_parent.nodePath() + '/' + child
-            nodes = header.xpathEval(child_path)
-            if nodes: node = nodes[0]
-            else: 
-                node = node_parent.newChild(ns = None, name = child, content = None)
+            node = node_parent.newChild(ns = None, name = child, content = None)
         
         for attribute_name, attribute_value in attributes.items():
             if not node.hasProp(attribute_name):
@@ -4546,7 +5249,7 @@ class PokerGameTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------
     def InitGame(self):
-        self.game.verbose = True
+        self.game.verbose = 3
         self.game.setTime(0)
         
         if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):

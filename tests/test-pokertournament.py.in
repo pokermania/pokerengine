@@ -1,5 +1,10 @@
 # -*- mode: python -*-
-# Copyright (C) 2006 Pierre-Andre
+# Copyright (C) 2006 Mekensleep
+#
+# Mekensleep
+# 24 rue vieille du temple
+# 75004 Paris
+#       licensing@mekensleep.com
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +21,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#  Pierre-Andre Vieillard-Baron
+#  Pierre-Andre
 #  Loic Dachary <loic@gnu.org>
 #
 
@@ -524,26 +529,39 @@ class PokerTournamentTestCase(unittest.TestCase):
                             'verbose' : 3
                             }
                             
+        # Tournament => 2 complete games (6 players)
         tournament = pokertournament.PokerTournament(**arguments)
         for player in range(10):
             self.failUnless(tournament.register(player))
             
-        tournament.createGames()
-        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, 3, None), [])
-        
-        tournament = pokertournament.PokerTournament(**arguments)
-        for player in range(12):
-            self.failUnless(tournament.register(player))
-        
+        # Create games
         tournament.createGames()
         
-        self.failUnlessEqual(len(tournament.games), 3) 
-        
+        # Check games
+        self.failUnlessEqual(len(tournament.games), 2) 
         self.failUnlessEqual(tournament.games[0].allCount(), 5)
         self.failUnlessEqual(tournament.games[1].allCount(), 5)
-        self.failUnlessEqual(tournament.games[2].allCount(), 2)
         
-        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, 3, sys.stdout.write), [(1, 3, 7), (1, 3, 8), (2, 3, 2)])
+        # No need to equalize game
+        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, 3, None), [])
+        
+        # Tournament => 3 complete games (5 players), 1 partial (1 players) 
+        tournament = pokertournament.PokerTournament(**arguments)
+        for player in range(16):
+            self.failUnless(tournament.register(player))
+            
+        # Create games
+        tournament.createGames()
+            
+        # Check games
+        self.failUnlessEqual(len(tournament.games), 4) 
+        self.failUnlessEqual(tournament.games[0].allCount(), 5)
+        self.failUnlessEqual(tournament.games[1].allCount(), 5)
+        self.failUnlessEqual(tournament.games[2].allCount(), 5)
+        self.failUnlessEqual(tournament.games[3].allCount(), 1)
+        
+        # 2 games broken to complete the last one
+        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, 3, sys.stdout.write), [(1, 4, 11), (1, 4, 12), (2, 4, 6), (2, 4, 7)])
         
     # -----------------------------------------------------------------------------------------------------    
     def testBreakGame(self):
@@ -708,12 +726,79 @@ class PokerTournamentTestCase(unittest.TestCase):
         # The game 3 has won 3 players
         self.failUnlessEqual(len(tournament.games[2].serialsAll()), 5)
         
+    # -----------------------------------------------------------------------------------------------------    
+    def testEndTurn(self):
+        """Test Poker Tournament : End turn"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  10, \
+                            'seats_per_game' : 5, \
+                            'sit_n_go' : 'y', \
+                            'verbose' : 3
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        # Register the players
+        for player in range(10):
+            self.failUnless(tournament.register(player))
+        
+        # 2 games (5 players)
+        self.failUnlessEqual(len(tournament.games), 2)
+        
+        # Ten players in the tournament
+        self.failUnlessEqual(len(tournament.players), 10)
+        
+        # Get created games
+        game1 = tournament.id2game[1]
+        game2 = tournament.id2game[2]
+        
+        # Game 2, players 1, 2, 3 broke
+        players = game2.playersAll()
+        for num in range(3):
+            players[num].money = 0
+            self.failUnless(game2.isBroke(players[num].serial))
+        self.failUnlessEqual(game2.brokeCount(), 3)
+        
+        # End turn of game 2
+        self.failUnless(tournament.endTurn(2))
+        
+        # Players broke removed
+        # Game balanced
+        self.failUnlessEqual(len(game1.playersAll()), 3)
+        self.failUnlessEqual(len(game2.playersAll()), 4)
+        
+        # Game 2 players broke
+        players = game2.playersAll()
+        for num in range(len(players)):
+            players[num].money = 0
+            self.failUnless(game2.isBroke(players[num].serial))
+            
+        # End turn of game 2
+        self.failUnless(tournament.endTurn(2))
+        
+        # Game 2 break
+        self.failUnlessEqual(len(tournament.games), 1)
+        
+        # All the players of game 1 are borke except one
+        players = game1.playersAll()
+        for num in range(len(players) - 1):
+            players[num].money = 0
+            self.failUnless(game1.isBroke(players[num].serial))
+            
+        # End turn of game 1
+        self.failIf(tournament.endTurn(1))
+        
+        # End of the tounament
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_COMPLETE)
+        self.failUnlessEqual(len(tournament.games), 0)
+        self.failUnlessEqual(len(tournament.id2game), 0)
         
     # -----------------------------------------------------------------------------------------------------    
     def testGetRank(self):
         """Test Poker Tournament : Get rank"""
         
-        # TODO A little bit strange
         arguments =  { \
                             'dirs' : self.dirs, \
                             'players_quota' :  20, \

@@ -1063,10 +1063,8 @@ class PokerGame:
                     elif player.missed_blind == "n/a":
                         player.blind = "late"
                         player.wait_for = False
-                    elif player.blind == True:
-                        pass
-                    else:
-                        self.error("updateBlinds statement unexpectedly reached while evaluating late blind")
+                    else: #pragma: no cover
+                        self.error("updateBlinds statement unexpectedly reached while evaluating late blind") #pragma: no cover
                 else:
                     player.blind = None
             index += 1
@@ -1364,7 +1362,9 @@ class PokerGame:
         elif info["position"] == "low" or info["position"] == "high":
             self.last_to_talk = self.indexInGameAdd(self.position, -1)
         else:
-            raise UserWarning, "unknow position info %s" % info["position"]
+            # Impossible case
+            # The position value has already been tested at the beginning of the method
+            raise UserWarning, "unknow position info %s" % info["position"] #pragma: no cover
 
         for player in self.playersInGame():
             player.talked_once = False
@@ -2025,10 +2025,17 @@ class PokerGame:
 
     def __talked_muck(self):
         if not self.is_directing:
-            return
+            # Test impossible, at this point the game can not be a client game
+            # This method is called from muckstate and muck functions where this test is already done
+            return #pragma: no cover
+            
         if not self.state == GAME_STATE_MUCK:
-            self.error("muck: game state muck expected, found %s" % self.state)            
-            return
+            # Test impossible, at this point the game state can not be something else than GAME_STATE_MUCK
+            # This method is called from :
+            # - muckstate where the game state is set to the right state
+            # - muck where this test is already done
+            self.error("muck: game state muck expected, found %s" % self.state) #pragma: no cover
+            return #pragma: no cover
         if not self.muckable_serials:          
             self.showdown()
             self.endState()
@@ -2094,7 +2101,9 @@ class PokerGame:
               elif desired_action == "raise":
                   self.callNraise(serial, 0)
               else:
-                  self.error("__autoPlay: unexpected actions = %s" % actions)
+                  # Test impossible
+                  # The actions returned by the possibleActions method can not be somethin else than fold, chack, call or raise
+                  self.error("__autoPlay: unexpected actions = %s" % actions) #pragma: no cover
 
             else:
                 self.error("__autoPlay: no possible action")

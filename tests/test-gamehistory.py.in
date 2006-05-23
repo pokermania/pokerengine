@@ -1,5 +1,10 @@
 # -*- mode: python -*-
-# Copyright (C) 2006 Pierre-Andre
+# Copyright (C) 2006 Mekensleep
+#
+# Mekensleep
+# 24 rue vieille du temple
+# 75004 Paris
+#       licensing@mekensleep.com
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +21,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#  Pierre-Andre Vieillard-Baron
+#  Pierre-Andre
 #  Loic Dachary <loic@gnu.org>
 #
 
@@ -317,6 +322,8 @@ class PokerGameHistoryTestCase(unittest.TestCase):
     def testHistory2messagesEnd(self):
         """Test Poker Game History to end message"""
         
+        self.game.variant = 'holdem'
+        
         # The player 1 wins because all the other players are fold
         game_state ={ 'serial2share': { 1: 500 } }
         
@@ -372,7 +379,49 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.failUnlessEqual(subject, '')
         self.failUnlessEqual(message,  ['returning uncalled bet 0.10 to 1'])
         
-        # Resolve frame
+        # Resolve frame 1
+        frame = { 
+                    'type': 'resolve',
+                    'serials' : [1, 2],
+                    'serial2share': { 1: 300, 2 : 200 },
+                    'hi' : [1, 2],
+                    'low' : [1],
+                    'pot' : 500,
+                    'chips_left' : 3
+                    }
+                    
+        hand1 = pokercards.PokerCards(['8h', '2s'])
+        hand2 = pokercards.PokerCards(['Ac', '2c'])
+        board = pokercards.PokerCards(['9d', '5s', '3h', '4d', '5s'])
+        
+        game_state ={ 
+                            'serial2best' : { 1 : 
+                                                            {   'hi' : self.game.eval.best('hi', hand1.tolist(True) + board.tolist(True), []), 
+                                                                'low' : self.game.eval.best('low', hand1.tolist(True) + board.tolist(True), [])
+                                                            },
+                                                       2 : 
+                                                            {   'hi' : self.game.eval.best('hi', hand2.tolist(True) + board.tolist(True), []), 
+                                                                'low' : self.game.eval.best('low', hand2.tolist(True) + board.tolist(True), []) 
+                                                            }
+                                                    }
+                            }
+                
+        history =   [ ('end', [1], [game_state, frame]) ]
+        subject, message = self.GetMessagesFromHistory(history)
+        self.failUnlessEqual(subject, '')
+        
+        self.failUnlessEqual(message,  [
+                                                '1 shows High card Nine for hi ',
+                                                '1 shows 8, 5, 4, 3, 2 for low ',
+                                                '2 shows Straight Five to Ace for hi ',
+                                                '1 2 tie for hi ',
+                                                '1 wins low ',
+                                                'winners share a pot of 5 (minus 3 odd chips)',
+                                                '1 receives 3',
+                                                '2 receives 2'
+                                                ])
+                                                
+        # Resolve frame 2
         frame = { 
                     'type': 'resolve',
                     'serials' : [1, 2],
@@ -392,8 +441,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
                                                                 'low' : self.game.eval.best('low', hand1.tolist(True) + board.tolist(True), []) 
                                                             },
                                                        2 : 
-                                                            {   'hi' : self.game.eval.best('hi', hand2.tolist(True) + board.tolist(True), []), 
-                                                                'low' : self.game.eval.best('low', hand2.tolist(True) + board.tolist(True), []) 
+                                                            {   'hi' : self.game.eval.best('hi', hand2.tolist(True) + board.tolist(True), [])
                                                             }
                                                     }
                             }
@@ -504,9 +552,22 @@ class PokerGameHistoryTestCase(unittest.TestCase):
                                                                     ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
                                                                     ('ante_request', 2, 100)
                                                                     ])
+                                                                    
+                                                                    
+        # Unable to update position
+        history =   [
+                        ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
+                        ('position', 7),
+                        ]
                         
+        self.game.turn_history = history
                         
+        # The player 7 does not exist
+        self.game.historyReduce()
         
+        # The position has not been updated
+        self.failUnlessEqual(self.game.historyGet(),  history)
+    
     # -----------------------------------------------------------------------------------------------------    
     def GetMessagesFromHistory(self, history, serial2name = str, pocket_messages = False):
         

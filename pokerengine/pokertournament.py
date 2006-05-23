@@ -347,16 +347,11 @@ class PokerTournament:
         loosers = game.serialsBroke()
         loosers_count = len(loosers)
 
-        if loosers_count == 1:
-            self.winners.insert(0, loosers[0])
-            self.callback_remove_player(self, game_id, loosers[0])
-            if self.verbose > 2: self.message("winners %s" % self.winners)
-        elif loosers_count > 1:
-            for serial in loosers:
-                self.winners.insert(0, serial)
-                self.callback_remove_player(self, game_id, serial)
-            if self.verbose > 2: self.message("winners %s" % self.winners)
-
+        for serial in loosers:
+            self.winners.insert(0, serial)
+            self.callback_remove_player(self, game_id, serial)
+        if self.verbose > 2: self.message("winners %s" % self.winners)
+        
         if len(self.winners) + 1 == self.registered:
             game = self.games[0]
             player = game.playersAll()[0]
