@@ -1601,6 +1601,7 @@ class PokerGame:
         self.runCallbacks("end_round_last")
 
     def endState(self):
+        self.current_round = -2
         self.changeState(GAME_STATE_END)
         self.runCallbacks("end_round_last")
         self.endTurn()
