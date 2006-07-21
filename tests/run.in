@@ -57,7 +57,7 @@ case "$1" in
         # Don't bark on coverage being incomplete when not verbose : 
         # print statements are omited.
         #
-        if "$VERBOSE" == "3" ; then
+        if test "$VERBOSE" == "3" ; then
             if ! echo "$output" | grep 'TOTAL.*100%' > /dev/null ; then
                 echo 'FAIL: tests do not cover 100% of the poker-engine code'
                 exit 1
