@@ -73,6 +73,10 @@ install-data-local:
 	${PYTHON} ${top_builddir}/pokerconfigupgrade --verbose=1 --upgrades=${srcdir}/upgrades --reference=${srcdir}/conf "${DESTDIR}${pkgsysconfdir}"
 	chmod u+w "${DESTDIR}${pkgsysconfdir}"
 
+uninstall-local:
+	rm -f ${DESTDIR}${pkgsysconfdir}/*.{xml,template}
+	rmdir ${DESTDIR}${pkgsysconfdir}
+
 buildconf:
 	( \
 		echo '.01-.02 .01/.02 1 2 1' ; \
