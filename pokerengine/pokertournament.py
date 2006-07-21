@@ -86,7 +86,7 @@ def equalizeGames(games, verbose = 0, log_message = None):
             if not distributed:
                 break
 
-    if log_message and verbose and len(results) > 0:
+    if log_message and verbose > 0 and len(results) > 0:
         log_message("balanceGames equalizeGames: " + pformat(results))
 
     return results
@@ -120,7 +120,7 @@ def breakGames(games, verbose = 0, log_message = None):
         if len(to_break) < 2:
             break
 
-    if log_message and verbose and len(results) > 0:
+    if log_message and verbose > 0 and len(results) > 0:
         log_message("balanceGames breakGames: " + pformat(results))
 
     return results
@@ -236,7 +236,7 @@ class PokerTournament:
             else:
                 return self.register_time - now
         else:
-            if self.verbose: self.message("updateRegistering: should not be called while tournament is not in announced state")
+            if self.verbose > 0: self.message("updateRegistering: should not be called while tournament is not in announced state")
             return -1
             
     def changeState(self, state):
@@ -250,7 +250,7 @@ class PokerTournament:
         elif self.state == TOURNAMENT_STATE_RUNNING and state == TOURNAMENT_STATE_COMPLETE:
             self.finish_time = time.time()
         else:
-            print "PokerTournament:changeState: cannot change from state %s to state %s" % ( self.state, state )
+            if self.verbose >= 0: print "PokerTournament:changeState: cannot change from state %s to state %s" % ( self.state, state )
             return
         if self.verbose > 2: self.message("state change %s => %s" % ( self.state, state ))
         self.state = state
@@ -360,9 +360,9 @@ class PokerTournament:
             money = player.money
             player.money = 0
             expected = game.buyIn() * self.registered
-            if money != expected:
+            if money != expected and self.verbose >= 0:
                 self.message("ERROR winner has %d chips and should have %d chips" % ( money, expected ))
-            if self.verbose: self.message("winners %s" % self.winners)
+            if self.verbose > 0: self.message("winners %s" % self.winners)
             self.callback_destroy_game(self, game)
             self.games = []
             self.id2game = {}
@@ -390,7 +390,7 @@ class PokerTournament:
                 self.callback_destroy_game(self, game)
                 self.games.remove(game)
                 del self.id2game[game.id]
-            if self.verbose: self.message("balanceGames: broke tables %s" % to_break)
+            if self.verbose > 0: self.message("balanceGames: broke tables %s" % to_break)
             return True
         
         to_equalize = equalizeGames(self.games, self.verbose, self.message)
