@@ -5384,11 +5384,14 @@ def GetTestedModule():
   
 # -----------------------------------------------------------------------------------------------------
 def Run(verbose):
-    unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
+    return unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
     
 # -----------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    Run(int(os.environ.get('VERBOSE_T', 2)))
+    if Run(int(os.environ.get('VERBOSE_T', 2))).wasSuccessful():
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
 # Interpreted by emacs
 # Local Variables:

@@ -82,10 +82,13 @@ def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestDeal))
     verbosity = int(os.environ.get('VERBOSE_T', 2))
-    unittest.TextTestRunner(verbosity=verbosity).run(suite)
+    return unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':
-    run()
+    if run().wasSuccessful():
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
 # Interpreted by emacs
 # Local Variables:
