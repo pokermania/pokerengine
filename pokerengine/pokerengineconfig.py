@@ -71,7 +71,7 @@ class Config:
                 self.checkVersion("poker_engine_version", version, Config.upgrades_repository)
             return True
         else:
-            print "Config::load: unable to find %s in directories %s" % ( path, self.dirs )
+            if self.verbose >= 0: print "Config::load: unable to find %s in directories %s" % ( path, self.dirs )
             return False
 
     def checkVersion(self, version_attribute, software_version, upgrades_repository, default_version = "1.0.5"):
@@ -82,19 +82,19 @@ class Config:
             if not self.upgrade_dry_run:
                 self.save()
             file_version = Version(default_version)
-            if self.verbose: print "Config::checkVersion: " + self.path + ": set default version to " + default_version
+            if self.verbose > 0: print "Config::checkVersion: " + self.path + ": set default version to " + default_version
         else:
             file_version = Version(version_node[0].content)
 
         if software_version != file_version:
             if software_version > file_version:
-                if self.verbose: print "Config::checkVersion: " + self.path + ": launch upgrade from  " + str(file_version) + " to " + str(software_version) + " using repository " + upgrades_repository
+                if self.verbose > 0: print "Config::checkVersion: " + self.path + ": launch upgrade from  " + str(file_version) + " to " + str(software_version) + " using repository " + upgrades_repository
                 self.upgrade(version_attribute, file_version, software_version, upgrades_repository)
                 return False
             else:
                 raise Exception, "Config: %s requires an upgrade to software version %s or better" % ( self.path, str(file_version) )
         else:
-            if self.verbose: print "Config::checkVersion: " + self.path + ": up to date"
+            if self.verbose > 0: print "Config::checkVersion: " + self.path + ": up to date"
             return True
 
     def upgrade(self, version_attribute, file_version, software_version, upgrades_repository):
@@ -102,7 +102,7 @@ class Config:
             files = map(lambda file: upgrades_repository + "/" + file, os.listdir(upgrades_repository))
             files = filter(lambda file: isfile(file) and ".xsl" in file, files)
             for file in file_version.upgradeChain(software_version, files):
-                if self.verbose: print "Config::upgrade: " + self.path + " with " + file
+                if self.verbose > 0: print "Config::upgrade: " + self.path + " with " + file
                 styledoc = libxml2.parseFile(file)
                 style = libxslt.parseStylesheetDoc(styledoc)
                 result = style.applyStylesheet(self.doc, None)
@@ -115,14 +115,14 @@ class Config:
                 if not self.upgrade_dry_run:
                     self.reload()
         else:
-            if self.verbose: print "Config::upgrade: %s is not a directory, ignored" % str(upgrades_repository)
+            if self.verbose > 0: print "Config::upgrade: %s is not a directory, ignored" % str(upgrades_repository)
         if not self.upgrade_dry_run:
             self.headerSet("/child::*/@" + version_attribute, str(software_version))
             self.save()
         
     def save(self):
         if not self.path:
-            print "unable to write back, invalid path"
+            if self.verbose >= 0: print "unable to write back, invalid path"
             return
         self.doc.saveFile(self.path)
         
