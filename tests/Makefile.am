@@ -30,8 +30,8 @@ export PYTHON
 
 EXTRA_DIST = \
 	coverage.py \
+	test-data/pokerrake.py \
 	$(wildcard conf/*.xml) \
-	$(wildcard test-data/pokerrake.py) \
 	$(wildcard test-data/conf/*.xml) \
 	$(wildcard test-data/upgrade/*.xsl)
 
