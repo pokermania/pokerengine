@@ -42,8 +42,6 @@ dist_upgradepoker_DATA = \
 	$(wildcard ${top_srcdir}/upgrades/*.xsl)
 
 EXTRA_DIST = \
-	config/python.m4 \
-	config/python-depends.m4 \
 	examples/simple.py \
 	$(wildcard conf/*.template)
 	$(wildcard gentoo/dev-games/poker-eval/*.ebuild)
