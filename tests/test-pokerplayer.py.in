@@ -306,7 +306,7 @@ def Run(verbose):
     
 # -----------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    Run(int(os.environ.get('VERBOSE', 2)))
+    Run(int(os.environ.get('VERBOSE_T', 2)))
 
 # Interpreted by emacs
 # Local Variables:

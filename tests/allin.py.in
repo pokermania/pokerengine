@@ -47,10 +47,10 @@ class TestAllIn(unittest.TestCase):
         else:
             self.output_file = sys.stderr
         self.game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        self.game.verbose = int(os.environ.get('VERBOSE', 3))
+        self.game.verbose = int(os.environ.get('VERBOSE_T', 3))
         self.game.setVariant(variant)
         self.game.setBettingStructure(betting)
-        self.game.verbose = int(os.environ.get('VERBOSE', 3))
+        self.game.verbose = int(os.environ.get('VERBOSE_T', 3))
 
     def bestWithStrings(self, side, serial):
         (value, cards) = self.game.bestHand(side, serial)
@@ -574,7 +574,7 @@ def run():
     suite.addTest(unittest.makeSuite(TestOmaha8AllIn))
     suite.addTest(unittest.makeSuite(TestHoldemPlayBoard))
     suite.addTest(unittest.makeSuite(TestHoldemSplit))
-    verbosity = int(os.environ.get('VERBOSE', 2))
+    verbosity = int(os.environ.get('VERBOSE_T', 2))
     unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':

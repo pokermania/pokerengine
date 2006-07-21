@@ -35,7 +35,7 @@ class TestBuyIn(unittest.TestCase):
 
     def setUp(self):
         self.game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        self.game.verbose = int(os.environ.get('VERBOSE', 3))
+        self.game.verbose = int(os.environ.get('VERBOSE_T', 3))
         self.game.setVariant("holdem")
         self.game.setBettingStructure("2-4-limit")
 
@@ -94,7 +94,7 @@ class TestBuyIn(unittest.TestCase):
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestBuyIn))
-    verbosity = int(os.environ.get('VERBOSE', 2))
+    verbosity = int(os.environ.get('VERBOSE_T', 2))
     unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':

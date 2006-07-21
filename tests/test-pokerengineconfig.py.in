@@ -56,7 +56,7 @@ class PokerEngineConfigTestCase(unittest.TestCase):
     
     # -----------------------------------------------------------------------------------------------------
     def setUp(self):
-        self.verbose = int(os.environ.get('VERBOSE', 1))
+        self.verbose = int(os.environ.get('VERBOSE_T', 1))
         pokerengineconfig.Config.verbose = self.verbose
         def callback(ctx, str):
             if self.verbose >= 0: print "%s %s" % (ctx, str)
@@ -368,7 +368,7 @@ def Run(verbose):
     
 # -----------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    Run(int(os.environ.get('VERBOSE', 2)))
+    Run(int(os.environ.get('VERBOSE_T', 2)))
 
 # Interpreted by emacs
 # Local Variables:

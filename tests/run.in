@@ -33,13 +33,13 @@ export srcdir
 : ${top_srcdir:=..}
 export top_srcdir
 
-#DEFAULT_VERBOSE=-1 # show the test results automake level, hide error messages
-#DEFAULT_VERBOSE=0 # show the test results unittest level, hide informative messages
-DEFAULT_VERBOSE=3 # show very detailed information about everything (~2MB output 2006/07)
+#DEFAULT_VERBOSE_T=-1 # show the test results automake level, hide error messages
+#DEFAULT_VERBOSE_T=0 # show the test results unittest level, hide informative messages
+DEFAULT_VERBOSE_T=3 # show very detailed information about everything (~2MB output 2006/07)
 
-: ${VERBOSE:=$DEFAULT_VERBOSE}
+: ${VERBOSE_T:=$DEFAULT_VERBOSE_T}
 
-export VERBOSE
+export VERBOSE_T
 
 DEFAULT_COVERAGE_FILES=$(echo ${top_srcdir}/pokerengine/*.py) 
 : ${COVERAGE_FILES:=$DEFAULT_COVERAGE_FILES}
@@ -57,7 +57,7 @@ case "$1" in
         # Don't bark on coverage being incomplete when not verbose : 
         # print statements are omited.
         #
-        if test "$VERBOSE" == "3" ; then
+        if test "$VERBOSE_T" == "3" ; then
             if ! echo "$output" | grep 'TOTAL.*100%' > /dev/null ; then
                 echo 'FAIL: tests do not cover 100% of the poker-engine code'
                 exit 1

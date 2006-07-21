@@ -5353,7 +5353,7 @@ class PokerGameTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------
     def InitGame(self):
-        self.game.verbose = int(os.environ.get('VERBOSE', 3))
+        self.game.verbose = int(os.environ.get('VERBOSE_T', 3))
         self.game.setTime(0)
         
         if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
@@ -5388,7 +5388,7 @@ def Run(verbose):
     
 # -----------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    Run(int(os.environ.get('VERBOSE', 2)))
+    Run(int(os.environ.get('VERBOSE_T', 2)))
 
 # Interpreted by emacs
 # Local Variables:

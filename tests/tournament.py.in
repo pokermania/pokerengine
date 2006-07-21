@@ -40,7 +40,7 @@ class TestTournament(unittest.TestCase):
         self.games = []
         for i in xrange(NGAMES):
             game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-            game.verbose = int(os.environ.get('VERBOSE', 3))
+            game.verbose = int(os.environ.get('VERBOSE_T', 3))
             game.setVariant("7stud")
             game.setBettingStructure("0-0-limit")
             game.id = i
@@ -337,11 +337,11 @@ class TestBreak(TestTournament):
 class TestCreate(unittest.TestCase):
 
     def setUp(self):
-        self.verbose = int(os.environ.get('VERBOSE', 1))
+        self.verbose = int(os.environ.get('VERBOSE_T', 1))
         
     def test1(self):
         tourney = PokerTournament(name = 'Test create',
-                                  verbose = int(os.environ.get('VERBOSE', 3)),
+                                  verbose = int(os.environ.get('VERBOSE_T', 3)),
                                   players_quota = 4,
                                   dirs = [ '../conf', '@top_srcdir@/conf' ],
                                   seats_per_game = 4,
@@ -371,7 +371,7 @@ class TestCreate(unittest.TestCase):
         # One table sit-n-go
         #
         tourney = PokerTournament(name = 'Test create',
-                                       verbose = int(os.environ.get('VERBOSE', 3)),
+                                       verbose = int(os.environ.get('VERBOSE_T', 3)),
                                        players_quota = 4,
                                        dirs = [ '../conf', '@top_srcdir@/conf' ],
                                        seats_per_game = 4)
@@ -395,7 +395,7 @@ class TestCreate(unittest.TestCase):
         games_count = 2
         players_count = seats_per_game * games_count
         tourney = PokerTournament(name = 'Test create',
-                                  verbose = int(os.environ.get('VERBOSE', 3)),
+                                  verbose = int(os.environ.get('VERBOSE_T', 3)),
                                   players_quota = players_count,
                                   dirs = [ '../conf', '@top_srcdir@/conf' ],
                                   seats_per_game = seats_per_game)
@@ -478,7 +478,7 @@ def run():
     suite.addTest(unittest.makeSuite(TestBreak))
     suite.addTest(unittest.makeSuite(TestCreate))
     suite.addTest(unittest.makeSuite(TestPrizes))
-    verbosity = int(os.environ.get('VERBOSE', 2))
+    verbosity = int(os.environ.get('VERBOSE_T', 2))
     unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':

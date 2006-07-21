@@ -35,7 +35,7 @@ from pokerengine import pokerchips
 class TestChips(unittest.TestCase):
 
     def setUp(self):
-        self.verbose = int(os.environ.get('VERBOSE', 1))
+        self.verbose = int(os.environ.get('VERBOSE_T', 1))
     
     def tearDown(self):
         pass
@@ -133,7 +133,7 @@ class TestChips(unittest.TestCase):
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestChips))
-    verbosity = int(os.environ.get('VERBOSE', 2))
+    verbosity = int(os.environ.get('VERBOSE_T', 2))
     unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':

@@ -35,7 +35,7 @@ from pokerengine.pokergame import PokerGameServer
 class TestBlinds(unittest.TestCase):
 
     def setUp(self):
-        self.verbose = int(os.environ.get('VERBOSE', 3))
+        self.verbose = int(os.environ.get('VERBOSE_T', 3))
         self.game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
         self.game.verbose = self.verbose
         self.game.setVariant("holdem")
@@ -425,7 +425,7 @@ class TestBlinds(unittest.TestCase):
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestBlinds))
-    verbosity = int(os.environ.get('VERBOSE', 2))
+    verbosity = int(os.environ.get('VERBOSE_T', 2))
     unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':
