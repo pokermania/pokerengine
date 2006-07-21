@@ -1,5 +1,7 @@
 Release 1.0.16
 
+Major repackaging using pycentral when possible.
+
 100% test coverage.
 
 Release 1.0.15

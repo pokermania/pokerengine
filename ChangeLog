@@ -1,4 +1,62 @@
-Thu Jun 22 2006  Loic Dachary  <loic@dachary.org>
+2006-07-21  Loic Dachary  <loic@dachary.org>
+
+	* tests/allin.py.in, tests/blinds.py.in, tests/buyin.py.in, tests/chips.py.in, tests/deal.py.in, tests/eval.py.in, tests/history.py.in, tests/muck.py.in, tests/positions.py.in, tests/sit.py.in, tests/test-data/pokerrake.py, tests/test-game.py.in, tests/test-gamehistory.py.in, tests/test-pokercards.py.in, tests/test-pokerchips.py.in, tests/test-pokerengineconfig.py.in, tests/test-pokerplayer.py.in, tests/test-pokertournament.py.in, tests/test-version.py.in, tests/tournament.py.in, tests/upgrades.py.in:
+	control verbosity and individual launching
+
+	* tests/test-pokerrake.py.in: Poker rake engine.
+
+	* tests/run.in:
+	Control test verbosity. Only report 100% coverage if default verbosity (i.e. max verbosity) is set.
+
+	* tests/Makefile.am:
+	Add pokerrake.py, export top_srcdir for tests and kill tests leftovers
+
+	* debian/rules:
+	Rely on cdbs alone instead of complex rewrite depending on python versions.
+
+	* pokerengine/version.py: Verbosity control.
+
+	* pokerengine/pokertournament.py: Sort entries + add pokerrake.py
+
+	* pokerengine/pokerrake.py: Rake engine.
+
+	* pokerengine/pokergame.py: Copyright fixes.
+	Set and update uncalled amount and serial field to avoid complex guessing.
+	Implement rake.
+	Allow for negative verbosity.
+	Add last round field to side pots structure.
+
+	* pokerengine/pokerengineconfig.py: Allow for negative verbosity.
+
+	* pokerengine/pokerchips.py, pokerengine/pokercards.py:
+	Copyright fixes.
+
+	* pokerengine/Makefile.am: Sort entries + add pokerrake.py
+
+	* examples/simple.py: Fix path to run from top level source dir.
+	Buy in is in cent.
+
+	* debian/python-poker-engine.postrm, debian/python-poker-engine.preinst, debian/python-poker-engine.postinst, debian/python-poker-engine.dirs:
+	Remove python version tweaks.
+
+	* debian/pycompat: pycentral
+
+	* debian/control.unstable, debian/control.sarge, debian/control.hoary, debian/control.dapper, debian/control.breezy:
+	Remove python version tweaks
+
+	* debian/control, pokerconfigupgrade.in, poker-engine.pc.in:
+	Remove python version tweaks.
+
+	* configure.ac: Remove python version tweaks.
+	Depend on pypoker-eval 132.
+
+	* Makefile.am: Remove python version tweaks.
+
+2006-06-22  Loic Dachary  <loic@dachary.org>
+
+	* Makefile.am, ChangeLog: no arch .pc
+
+2006-06-22  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.16
 
