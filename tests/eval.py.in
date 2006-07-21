@@ -95,7 +95,13 @@ class TestPosition(unittest.TestCase):
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestPosition))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    verbosity = int(os.environ.get('VERBOSE', 2))
+    unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':
     run()
+
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/eval.py ) ; ( cd ../tests ; make TESTS='eval.py' check )"
+# End:

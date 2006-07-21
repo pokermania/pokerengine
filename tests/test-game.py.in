@@ -21,7 +21,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#  Pierre-Andre
+#  Pierre-Andre (05/2006)
 #  Loic Dachary <loic@gnu.org>
 #
 
@@ -1292,6 +1292,17 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.pot, 0)
         
     # -----------------------------------------------------------------------------------------------------
+    def testGetPotAmount(self):
+        """Test Poker Game : getPotAmount"""
+        
+        # Create players
+        player1 = self.AddPlayerAndSit(1)
+        player2 = self.AddPlayerAndSit(2)
+        
+        self.game.beginTurn(1)
+        self.failUnlessEqual(0 ,self.game.getPotAmount())
+        
+    # -----------------------------------------------------------------------------------------------------
     def testCancelState(self):
         """Test Poker Game : Cancel state"""
         
@@ -2445,6 +2456,8 @@ class PokerGameTestCase(unittest.TestCase):
             
         # Reload the betting structure
         self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        # Change the variant name for cards evaluation
+        self.game.variant = 'holdem'
         
         # Create players
         player1 = self.AddPlayerAndSit(1, 2)
@@ -2458,9 +2471,6 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.nextRound()
         self.game.initRound()
         self.failUnless(self.game.isFirstRound())
-        
-        # Change the variant name for cards evaluation
-        self.game.variant = 'holdem'
         
         # No possible action because the cards are not dealt
         self.failUnlessEqual(self.game.possibleActions(1), [])
@@ -2478,20 +2488,13 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(player1.auto_muck, pokergame.AUTO_MUCK_ALWAYS)
         self.failUnless(player1.isAuto())
         
-        # Player 1 automatically raise the min
+        # Player 1 automatically bet the minimum
         self.failUnlessEqual(player1.bet, 100)
         self.failUnlessEqual(player1.money, 1500)
         self.failUnless(player1.talked_once)
         
-        # Set the player 1 bet
-        # The player 2 has not enough money to raise
-        player1.bet = player2.money
-        self.failUnlessEqual(self.game.possibleActions(2), ['call', 'fold'])
-        
         # Player 2 automatically call
         self.game.botPlayer(2)
-        self.failUnless(player2.isAllIn())
-        self.failUnlessEqual(player2.money, 0)
         
         # The game is finished
         self.failUnlessEqual(self.game.state, pokergame.GAME_STATE_END)
@@ -3236,6 +3239,7 @@ class PokerGameTestCase(unittest.TestCase):
         
         # Create players
         player1 = self.AddPlayerAndSit(1, 2)
+        player1.money = 400
         player2 = self.AddPlayerAndSit(2, 7)
         
         # Blind and ante turn
@@ -3244,12 +3248,11 @@ class PokerGameTestCase(unittest.TestCase):
         
         # The players 1 automatically pay the blind
         self.game.autoBlindAnte(1)
-        self.failUnlessEqual(self.game.getPlayerMoney(1), 1100)
-        self.failUnlessEqual(player1.bet, 500)
+        self.failUnlessEqual(self.game.getPlayerMoney(1), 0)
+        self.failUnlessEqual(player1.bet, 400)
         self.failUnless(player1.blind)
         
         # Player 1 is all in
-        player1.all_in = True
         self.failUnless(player1.isAllIn())
         
         # The players 2 automatically pay the blind
@@ -3263,8 +3266,8 @@ class PokerGameTestCase(unittest.TestCase):
         
         # The player 1 win
         self.failUnlessEqual(self.game.winners, [1])
-        self.failUnlessEqual(player1.money, 1600 + 500)
-        self.failUnlessEqual(player2.money, 1600 - 500)
+        self.failUnlessEqual(player1.money, 400 + ( 400 - self.game.getRakedAmount() ))
+        self.failUnlessEqual(player2.money, 1600 - 400)
         self.failUnlessEqual(player1.bet, 0)
         self.failUnlessEqual(player2.bet, 0)
         self.failUnlessEqual(self.game.pot, 0)        
@@ -3378,8 +3381,10 @@ class PokerGameTestCase(unittest.TestCase):
         
         # The player 1 win
         self.failUnlessEqual(self.game.winners, [1])
-        self.failUnlessEqual(player1.money, 1600 + 900)
-        self.failUnlessEqual(player2.money, 1600 - 900)
+        rake = self.game.getRakedAmount()
+        self.failUnlessEqual(int(900 * 0.05), rake)
+        self.failUnlessEqual(player1.money, 1600 + ( 900 - rake ))
+        self.failUnlessEqual(player2.money, 1600 - ( 900 ))
         self.failUnlessEqual(self.game.pot, 0)        
         
     # -----------------------------------------------------------------------------------------------------
@@ -3515,6 +3520,91 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.allInCount(), 1)
         self.failUnlessEqual(self.game.serialsAllIn(), [1])
         self.failUnlessEqual(self.game.playersAllIn(), [player1])
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testUncalledInvalid(self):
+        """Test Poker Game : uncalled amount does not pass distributeMoney checks"""
+        
+        self.game.setVariant('holdem')
+
+        # Create players
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 7)
+        player2.money += player1.money
+        uncalled = player2.money
+        
+        # Blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The players are not initially all in
+        self.failIf(player1.isAllIn())
+        self.failIf(player2.isAllIn())
+        self.failUnlessEqual(self.game.allInCount(), 0)
+        
+        # First round
+        self.game.nextRound()
+        self.game.initRound()
+        self.failUnless(self.game.isFirstRound())
+        
+        # Deal cards
+        self.game.dealCards()
+        
+        # The player 1 put all his money
+        self.failUnless(self.game.call(1))
+        self.failUnless(self.game.callNraise(2, self.game.getPlayerMoney(2)))
+        self.failUnless(player2.isAllIn())
+        self.failUnlessEqual(self.game.allInCount(), 1)
+        self.failUnlessEqual(self.game.serialsAllIn(), [2])
+        self.failUnlessEqual(self.game.playersAllIn(), [player2])
+        self.failUnlessEqual(self.game.uncalled, uncalled)
+        distributeMoney = self.game.distributeMoney
+        def f():
+            self.game.uncalled = 42 # invalid value
+            distributeMoney()
+        self.game.distributeMoney = f
+        try:
+            self.game.call(1)
+        except UserWarning, arg:
+            self.failUnlessEqual(str(arg), "serial2side_pot[winner.serial] != self.uncalled (1600 != 42)")
+
+    # -----------------------------------------------------------------------------------------------------
+    def testRakeContributions(self):
+        """Test Poker Game : rake contributions"""
+        
+        self.game.setVariant('holdem')
+        # Create players
+        self.game.setMaxPlayers(3)
+        for i in xrange(1, 4):
+            self.AddPlayerAndSit(i)
+            self.game.botPlayer(i)
+        
+        self.game.beginTurn(1)
+
+        self.failIf(self.game.isRunning())
+        self.failUnlessEqual(150, self.game.getRakedAmount())
+        self.failUnlessEqual(3000, self.game.getPotAmount())
+        self.failUnlessEqual({1: 50, 2: 50, 3: 50}, self.game.getRakeContributions())
+        
+    # -----------------------------------------------------------------------------------------------------
+    def testRakeContributionsUncalled(self):
+        """Test Poker Game : rake contributions uncalled"""
+        
+        self.game.setVariant('holdem')
+        # Create players
+        self.game.setMaxPlayers(3)
+        for i in xrange(1, 4):
+            player = self.AddPlayerAndSit(i)
+            self.game.botPlayer(i)
+            player.money = 100
+        player.money = 3000
+        
+        self.game.beginTurn(1)
+
+        self.failIf(self.game.isRunning())
+        self.failUnlessEqual(15, self.game.getRakedAmount())
+        self.failUnlessEqual(700, self.game.getPotAmount())
+        self.failUnlessEqual({1: 5, 2: 5, 3: 5}, self.game.getRakeContributions())
         
     # -----------------------------------------------------------------------------------------------------
     def testDisconnected(self):
@@ -3814,7 +3904,7 @@ class PokerGameTestCase(unittest.TestCase):
         
         # All the players are now all in 
         # All the cards must be dealt
-        # Each player has 2 cards, and there is 5 cards in the board
+        # Each player has 2 cards, and there are 5 cards in the board
         hand1 = pokercards.PokerCards(['8s', 'As'])
         hand2 = pokercards.PokerCards(['3h', '6d'])
         board = pokercards.PokerCards(['4s', 'Qs', '6s', '6h', 'Ah'])
@@ -3827,8 +3917,10 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.winners, [1])
         self.failUnlessEqual(self.game.playersWinner(), [player1])
         
-        # Money amounts after 
-        self.failUnlessEqual(self.game.getPlayerMoney(1), 3200)
+        # Money amounts after
+        self.failUnlessEqual(self.game.getPotAmount(), 3200)
+        self.failUnlessEqual(self.game.getRakedAmount(), 160)
+        self.failUnlessEqual(self.game.getPlayerMoney(1), 3040)
         self.failUnlessEqual(self.game.getPlayerMoney(2), 0)
         
     # -----------------------------------------------------------------------------------------------------
@@ -3891,7 +3983,9 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.playersWinner(), [player1])
         
         # Money amounts after 
-        self.failUnlessEqual(self.game.getPlayerMoney(1), 2200)
+        self.failUnlessEqual(self.game.getPotAmount(), 1200)
+        self.failUnlessEqual(self.game.getRakedAmount(), 60)
+        self.failUnlessEqual(self.game.getPlayerMoney(1), 2140) # 2200 - 60
         self.failUnlessEqual(self.game.getPlayerMoney(2), 1000)
         
         # The money has been already distributed
@@ -3901,7 +3995,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.distributeMoney()
         
         # Money amounts after 
-        self.failUnlessEqual(self.game.getPlayerMoney(1), 2200)
+        self.failUnlessEqual(self.game.getPlayerMoney(1), 2140)
         self.failUnlessEqual(self.game.getPlayerMoney(2), 1000)
         
     # -----------------------------------------------------------------------------------------------------    
@@ -3966,9 +4060,13 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.winners, [2, 3])
         
         # Check money distribution
+        self.failUnlessEqual(self.game.getRakedAmount(), 150)
         self.failUnlessEqual(player1.money, 599)
-        self.failUnlessEqual(player2.money, 2101)
-        self.failUnlessEqual(player3.money, 2100)
+        #
+        # Each player gives his share to the rake, i.e. 150/2
+        #
+        self.failUnlessEqual(player2.money, 2026) # 2101 - (150/2) 
+        self.failUnlessEqual(player3.money, 2025) # 2100 - (150/2)
         
     # -----------------------------------------------------------------------------------------------------
     def testRemovePlayer(self):
@@ -4056,6 +4154,7 @@ class PokerGameTestCase(unittest.TestCase):
         pots =  {
                     'contributions': { 'total': {} },
                     'pots': [[0, 0]],
+                    'last_round': -1, 
                     'building': 0,
                     }
                     
@@ -4136,6 +4235,7 @@ class PokerGameTestCase(unittest.TestCase):
         pots =  {
                     'contributions': { 'total': {} },
                     'pots': [[0, 0]],
+                    'last_round': -1, 
                     'building': 0,
                     }
         
@@ -4187,12 +4287,13 @@ class PokerGameTestCase(unittest.TestCase):
         pots['contributions'][current_round][len(pots['pots']) -1][2] = 1000
         pots['contributions'][current_round + 1] = pots['contributions'][-1]
         del pots['contributions'][current_round]
+        pots['last_round'] = 0
         current_round += 1
     
         # Check pots
         self.failUnlessEqual(self.game.getPots(), pots)
     
-        # The player 1 raise 700
+        # The player 1 raises and is allin
         self.failUnless(self.game.callNraise(1, 700))
         self.failUnlessEqual(player1.bet, 1200)
                 
@@ -4217,6 +4318,7 @@ class PokerGameTestCase(unittest.TestCase):
         pots['contributions'][current_round][len(pots['pots']) -1][2] += 200
         
         current_round += 1
+        pots['last_round'] = 1
         pots['contributions'][current_round] = {}
         
         # Check pots
@@ -4235,6 +4337,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.playersInPotCount(self.game.getPots()), 0)
         
         # The pots has been updated
+        pots['last_round'] = 2
         pots['pots'][0] = [1200 + 1200 + 100 + 100, 1200 + 1200 + 100 + 100]
         pots['contributions']['total'][1] += 100
         pots['contributions']['total'][2] += 100
@@ -4279,7 +4382,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(player1.rebuy, 400)
         self.failUnlessEqual(player2.rebuy, 600)
         
-        # The rebuy is return to the player
+        # The rebuy is credited to the player
         self.game.endTurn()
         
         self.failUnlessEqual(player1.rebuy, 0)
@@ -4352,6 +4455,7 @@ class PokerGameTestCase(unittest.TestCase):
         side_pots_infos ={
                                 'contributions': { 'total': {} },
                                 'pots': [[0, 0]],
+                                'last_round': -1,
                                 'building': 0,
                                 }
                            
@@ -4628,7 +4732,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.is_directing = False
         
         # Muck state has no effect
-        self.game.muckState(pokergame.AUTO_MUCK_ALWAYS)
+        self.game.muckState(pokergame.WON_NULL)
         
         # Muck has no effect
         self.game.muck(2, False)
@@ -5249,7 +5353,7 @@ class PokerGameTestCase(unittest.TestCase):
         
     # -----------------------------------------------------------------------------------------------------
     def InitGame(self):
-        self.game.verbose = 3
+        self.game.verbose = int(os.environ.get('VERBOSE', 3))
         self.game.setTime(0)
         
         if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
@@ -5279,9 +5383,14 @@ def GetTestedModule():
     return pokergame
   
 # -----------------------------------------------------------------------------------------------------
-def Run(verbose = 2):
+def Run(verbose):
     unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
     
 # -----------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    Run()
+    Run(int(os.environ.get('VERBOSE', 2)))
+
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/test-game.py ) ; ( cd ../tests ; make COVERAGE_FILES='../pokerengine/pokergame.py' TESTS='coverage-reset test-game.py coverage-report' check )"
+# End:

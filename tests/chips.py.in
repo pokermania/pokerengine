@@ -35,13 +35,10 @@ from pokerengine import pokerchips
 class TestChips(unittest.TestCase):
 
     def setUp(self):
-        pass
+        self.verbose = int(os.environ.get('VERBOSE', 1))
     
     def tearDown(self):
         pass
-
-    def log(self, string):
-        print string
 
     def test1(self):
         """
@@ -52,7 +49,7 @@ class TestChips(unittest.TestCase):
         self.assertEqual(chips.chips, [0, 0, 0, 0, 0])
 
         chips = PokerChips(values, 20000)
-        print "%s" % chips
+        if self.verbose > 0: print "%s" % chips
         self.assertEqual(chips.toint(), 20000)
         self.assertEqual(chips.chips, [8, 6, 4, 6, 4])
         chips.add([150, 0, 0, 0, 0])
@@ -136,7 +133,13 @@ class TestChips(unittest.TestCase):
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestChips))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    verbosity = int(os.environ.get('VERBOSE', 2))
+    unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':
     run()
+
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/chips.py ) ; ( cd ../tests ; make TESTS='chips.py' check )"
+# End:

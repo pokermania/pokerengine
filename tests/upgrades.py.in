@@ -35,11 +35,12 @@ from pokerengine.version import version
 class TestUpgrades(unittest.TestCase):
 
     def test1(self):
+        verbose = os.environ.get('VERBOSE', '1')
         shutil.rmtree("conftest", ignore_errors = True)
         os.mkdir("conftest")
-        os.system("../pokerconfigupgrade --verbose=1 --upgrades=@top_srcdir@/upgrades --reference=@srcdir@/conf conftest")
+        os.system("../pokerconfigupgrade --verbose=" + verbose + " --upgrades=@top_srcdir@/upgrades --reference=@srcdir@/conf conftest")
         os.chmod("conftest", 0755)
-        os.system("../pokerconfigupgrade --verbose=1 --upgrades=@top_srcdir@/upgrades conftest")
+        os.system("../pokerconfigupgrade --verbose=" + verbose + " --upgrades=@top_srcdir@/upgrades conftest")
         config = Config(['conftest'])
         for file in os.listdir("conftest"):
             if ".xml" in file:
@@ -50,7 +51,8 @@ class TestUpgrades(unittest.TestCase):
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestUpgrades))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    verbosity = int(os.environ.get('VERBOSE', 2))
+    unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':
     run()

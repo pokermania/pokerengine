@@ -21,7 +21,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#  Pierre-Andre
+#  Pierre-Andre (05/2006)
 #  Loic Dachary <loic@gnu.org>
 #
 
@@ -301,9 +301,14 @@ def GetTestedModule():
     return pokergame
   
 # -----------------------------------------------------------------------------------------------------
-def Run(verbose = 2):
+def Run(verbose):
     unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
     
 # -----------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    Run()
+    Run(int(os.environ.get('VERBOSE', 2)))
+
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/test-pokerplayer.py ) ; ( cd ../tests ; make TESTS='test-pokerplayer.py' check )"
+# End:

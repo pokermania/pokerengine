@@ -21,7 +21,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#  Pierre-Andre
+#  Pierre-Andre (05/2006)
 #  Loic Dachary <loic@gnu.org>
 #
 
@@ -56,6 +56,11 @@ class PokerEngineConfigTestCase(unittest.TestCase):
     
     # -----------------------------------------------------------------------------------------------------
     def setUp(self):
+        self.verbose = int(os.environ.get('VERBOSE', 1))
+        pokerengineconfig.Config.verbose = self.verbose
+        def callback(ctx, str):
+            if self.verbose >= 0: print "%s %s" % (ctx, str)
+        libxml2.registerErrorHandler(callback, "-->")
         self.Config = pokerengineconfig.Config(['.', PokerEngineConfigTestCase.TestConfDirectory, '~/conf', tempfile.gettempdir()])
         
         self.ConfigTmplFile = os.path.join(PokerEngineConfigTestCase.TestConfDirectory, PokerEngineConfigTestCase.TestConfigTemplateFile)
@@ -358,9 +363,14 @@ def GetTestedModule():
     return pokerengineconfig
   
 # -----------------------------------------------------------------------------------------------------
-def Run(verbose = 2):
+def Run(verbose):
     unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
     
 # -----------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    Run()
+    Run(int(os.environ.get('VERBOSE', 2)))
+
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/test-pokerengineconfig.py ) ; ( cd ../tests ; make COVERAGE_FILES='../pokerengine/pokerengineconfig.py' TESTS='coverage-reset test-pokerengineconfig.py coverage-report' check )"
+# End:

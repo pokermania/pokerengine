@@ -41,7 +41,7 @@ class TestDeal(unittest.TestCase):
 
     def setUp(self):
         self.game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        self.game.verbose = 3
+        self.game.verbose = int(os.environ.get('VERBOSE', 3))
         self.game.setVariant("7stud")
         self.game.setBettingStructure("ante-10-20-limit")
 
@@ -81,7 +81,13 @@ class TestDeal(unittest.TestCase):
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestDeal))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    verbosity = int(os.environ.get('VERBOSE', 2))
+    unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':
     run()
+
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/deal.py ) ; ( cd ../tests ; make TESTS='deal.py' check )"
+# End:

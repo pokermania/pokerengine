@@ -21,7 +21,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#  Pierre-Andre
+#  Pierre-Andre (05/2006)
 #  Loic Dachary <loic@gnu.org>
 #
 
@@ -230,9 +230,14 @@ def GetTestedModule():
     return pokerchips
   
 # -----------------------------------------------------------------------------------------------------
-def Run(verbose = 2):
+def Run(verbose):
     unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
     
 # -----------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    Run()
+    Run(int(os.environ.get('VERBOSE', 2)))
+
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/test-pokerchips.py ) ; ( cd ../tests ; make COVERAGE_FILES='../pokerengine/pokerchips.py' TESTS='coverage-reset test-pokerchips.py coverage-report' check )"
+# End:

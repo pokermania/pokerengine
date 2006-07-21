@@ -21,8 +21,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#  Henry Precheur <henry@precheur.org>
 #  Loic Dachary <loic@gnu.org>
+#  Henry Precheur <henry@precheur.org> (2004)
 #
 
 import sys, os
@@ -47,10 +47,10 @@ class TestAllIn(unittest.TestCase):
         else:
             self.output_file = sys.stderr
         self.game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        self.game.verbose = 3
+        self.game.verbose = int(os.environ.get('VERBOSE', 3))
         self.game.setVariant(variant)
         self.game.setBettingStructure(betting)
-        self.game.verbose = 3
+        self.game.verbose = int(os.environ.get('VERBOSE', 3))
 
     def bestWithStrings(self, side, serial):
         (value, cards) = self.game.bestHand(side, serial)
@@ -169,6 +169,7 @@ class TestCommonAllIn(TestAllIn):
             [8000, 13000],
             [15000, 28000]
             ],
+                          'last_round': 0,
                           'contributions': {
             0: {0:
                 {1: 1000,
@@ -240,7 +241,7 @@ class TestAllInCase2(TestAllIn):
         game.call(1)             # calls 30 => all in
 
         self.assertEqual(game.side_pots,
-                         {'building': 0, 'pots': [[21800, 21800], [6000, 27800], [10000, 37800]], 'contributions': {0: {0: {1: 400, 2: 200, 3: 400, 5: 400}}, 1: {0: {1: 6800, 3: 6800, 5: 6800}, 1: {1: 3000, 3: 3000}, 2: {3: 10000}}, 'total': {1: 10200, 2: 200, 3: 20200, 5: 7200}}}
+                         {'building': 0, 'pots': [[21800, 21800], [6000, 27800], [10000, 37800]], 'last_round': 1, 'contributions': {0: {0: {1: 400, 2: 200, 3: 400, 5: 400}}, 1: {0: {1: 6800, 3: 6800, 5: 6800}, 1: {1: 3000, 3: 3000}, 2: {3: 10000}}, 'total': {1: 10200, 2: 200, 3: 20200, 5: 7200}}}
 )
         self.assertEqual(game.serial2player[1].side_pot_index, 1) # 277
         self.assertEqual(game.serial2player[3].side_pot_index, 2) # 377
@@ -443,6 +444,8 @@ class TestOmaha8AllIn(TestAllIn):
         self.prepareGame(5)
         self.dealCardsOne()
         game = self.game
+        game.uncalled_serial = 1
+        game.uncalled = 11000
         money = self.money
         player = self.player
         game.distributeMoney()
@@ -456,6 +459,8 @@ class TestOmaha8AllIn(TestAllIn):
         self.prepareGame(5)
         self.dealCardsOne()
         game = self.game
+        game.uncalled_serial = 1
+        game.uncalled = 11000
         money = self.money
         player = self.player
         game.muckState(pokergame.WON_ALLIN)
@@ -562,14 +567,20 @@ class TestHoldemSplit(TestAllIn):
 
 def run():
     suite = unittest.TestSuite()
-#    suite.addTest(unittest.makeSuite(TestRaise))
-#    suite.addTest(unittest.makeSuite(TestHoldemAllIn))
-#    suite.addTest(unittest.makeSuite(TestCommonAllIn))
-#    suite.addTest(unittest.makeSuite(TestAllInCase2))
-#    suite.addTest(unittest.makeSuite(TestOmaha8AllIn))
-#    suite.addTest(unittest.makeSuite(TestHoldemPlayBoard))
+    suite.addTest(unittest.makeSuite(TestRaise))
+    suite.addTest(unittest.makeSuite(TestHoldemAllIn))
+    suite.addTest(unittest.makeSuite(TestCommonAllIn))
+    suite.addTest(unittest.makeSuite(TestAllInCase2))
+    suite.addTest(unittest.makeSuite(TestOmaha8AllIn))
+    suite.addTest(unittest.makeSuite(TestHoldemPlayBoard))
     suite.addTest(unittest.makeSuite(TestHoldemSplit))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    verbosity = int(os.environ.get('VERBOSE', 2))
+    unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':
     run()
+
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/allin.py ) ; ( cd ../tests ; make TESTS='allin.py' check )"
+# End:

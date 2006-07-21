@@ -35,8 +35,9 @@ from pokerengine.pokergame import PokerGameServer
 class TestBlinds(unittest.TestCase):
 
     def setUp(self):
+        self.verbose = int(os.environ.get('VERBOSE', 3))
         self.game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        self.game.verbose = 3
+        self.game.verbose = self.verbose
         self.game.setVariant("holdem")
         self.game.setBettingStructure("2-4-limit")
 
@@ -74,10 +75,10 @@ class TestBlinds(unittest.TestCase):
         for player in players:
             (blind, missed, wait) = descriptions.pop(0)
             if(blind != player.blind or missed != player.missed_blind or wait != player.wait_for):
-                print "check_blinds FAILED actual %s != from expected %s" % ( (player.blind, player.missed_blind, player.wait_for), (blind, missed, wait) )
+                if self.verbose >= 0: print "check_blinds FAILED actual %s != from expected %s" % ( (player.blind, player.missed_blind, player.wait_for), (blind, missed, wait) )
                 fail = True
             else:
-                print "check_blinds %s == %s" % ( (player.blind, player.missed_blind, player.wait_for), (blind, missed, wait) )
+                if self.verbose > 0: print "check_blinds %s == %s" % ( (player.blind, player.missed_blind, player.wait_for), (blind, missed, wait) )
         if fail:
             self.fail()
             
@@ -424,7 +425,13 @@ class TestBlinds(unittest.TestCase):
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestBlinds))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    verbosity = int(os.environ.get('VERBOSE', 2))
+    unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':
     run()
+
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/blinds.py ) ; ( cd ../tests ; make TESTS='blinds.py' check )"
+# End:

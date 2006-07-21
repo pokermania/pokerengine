@@ -49,7 +49,7 @@ class TestMuck(unittest.TestCase):
 
     def setUp(self):
         self.game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        self.game.verbose = 3
+        self.game.verbose = int(os.environ.get('VERBOSE', 3))
         self.game.setVariant("holdem")
         self.game.setBettingStructure("2-4-limit")
         predefined_decks = [
@@ -215,8 +215,13 @@ class TestMuck(unittest.TestCase):
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestMuck))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    verbosity = int(os.environ.get('VERBOSE', 2))
+    unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':
     run()
 
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/muck.py ) ; ( cd ../tests ; make TESTS='muck.py' check )"
+# End:
