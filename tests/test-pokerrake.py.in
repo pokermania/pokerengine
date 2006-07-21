@@ -53,7 +53,7 @@ class PokerRakeTestCase(unittest.TestCase):
     # -----------------------------------------------------------------------------------------------------    
     def test02_AlternatePokerRake(self):
         """Test Poker rake : get_rake_instance alternate PokerRake"""
-        game = pokergame.PokerGameClient("unittest.%s.xml", ['nodir', 'test-data'])
+        game = pokergame.PokerGameClient("unittest.%s.xml", ['nodir', '@srcdir@/test-data'])
         game.verbose = int(os.environ.get('VERBOSE', 3))
         rake = pokerrake.get_rake_instance(game)
         self.failUnless(hasattr(rake, 'gotcha'))
