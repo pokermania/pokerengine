@@ -2,12 +2,38 @@
 
 	* Release 1.0.16
 
+	* tests/allin.py.in, tests/blinds.py.in, tests/buyin.py.in, tests/chips.py.in, tests/deal.py.in, tests/eval.py.in, tests/history.py.in, tests/run.in, tests/sit.py.in, tests/test-game.py.in, tests/test-gamehistory.py.in, tests/test-pokercards.py.in, tests/test-pokerchips.py.in, tests/test-pokerengineconfig.py.in, tests/test-pokerplayer.py.in, tests/test-pokerrake.py.in, tests/test-pokertournament.py.in, tests/test-version.py.in, tests/tournament.py.in, tests/upgrades.py.in:
+	exit status reflect tests results
+
+	* tests/positions.py.in:
+	use pre-defined decks to avoid random results in some specific cases
+
+	* debian/rules: specific name
+
+	* tests/allin.py.in, tests/blinds.py.in, tests/buyin.py.in, tests/chips.py.in, tests/deal.py.in, tests/eval.py.in, tests/history.py.in, tests/muck.py.in, tests/positions.py.in, tests/run.in, tests/sit.py.in, tests/test-game.py.in, tests/test-gamehistory.py.in, tests/test-pokercards.py.in, tests/test-pokerchips.py.in, tests/test-pokerengineconfig.py.in, tests/test-pokerplayer.py.in, tests/test-pokerrake.py.in, tests/test-pokertournament.py.in, tests/test-version.py.in, tests/tournament.py.in, tests/upgrades.py.in:
+	use non common name for verbose
+
+	* tests/test-pokerrake.py.in: get from srcdir
+
+	* tests/Makefile.am: pokerrake.py
+
+	* pokerengine/pokerengineconfig.py: stringify
+
+	* debian/control.unstable, debian/rules, debian/control, debian/control.breezy, debian/control.dapper, debian/control.hoary, debian/control.sarge:
+	fix python depends
+
+	* tests/run.in: test verbosity
+
+	* Makefile.am: uninstall conf files
+
+	* ChangeLog: *** empty log message ***
+
 	* Makefile.am: specific python m4 files are no longer needed
 
 	* debian/rules:
 	create config dir if needed (because there is no longer custom files in this directory it may be omited by checkout)
 
-	* ChangeLog, NEWS, config/python-depends.m4, config/python.m4, debian/python-poker-engine.install, debian/rules.mk:
+	* ChangeLog, NEWS, debian/python-poker-engine.install, debian/rules.mk:
 	rake implementation
 
 	* tests/allin.py.in, tests/blinds.py.in, tests/buyin.py.in, tests/chips.py.in, tests/deal.py.in, tests/eval.py.in, tests/history.py.in, tests/muck.py.in, tests/positions.py.in, tests/sit.py.in, tests/test-data/pokerrake.py, tests/test-game.py.in, tests/test-gamehistory.py.in, tests/test-pokercards.py.in, tests/test-pokerchips.py.in, tests/test-pokerengineconfig.py.in, tests/test-pokerplayer.py.in, tests/test-pokertournament.py.in, tests/test-version.py.in, tests/tournament.py.in, tests/upgrades.py.in:
