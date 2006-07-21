@@ -88,7 +88,7 @@ class Config:
 
         if software_version != file_version:
             if software_version > file_version:
-                if self.verbose > 0: print "Config::checkVersion: " + self.path + ": launch upgrade from  " + str(file_version) + " to " + str(software_version) + " using repository " + upgrades_repository
+                if self.verbose > 0: print "Config::checkVersion: " + str(self.path) + ": launch upgrade from  " + str(file_version) + " to " + str(software_version) + " using repository " + str(upgrades_repository)
                 self.upgrade(version_attribute, file_version, software_version, upgrades_repository)
                 return False
             else:
