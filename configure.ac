@@ -41,40 +41,29 @@ fi
 
 AM_MAINTAINER_MODE
 
-test x$prefix = xNONE && prefix="$ac_default_prefix"
-test x$exec_prefix = xNONE && exec_prefix="$prefix"
+AM_PATH_PYTHON([2.3])
 
-if test -z "$PYTHON_VERSION_CONSTRAINT" ; then PYTHON_VERSION_CONSTRAINT='>=2.3' ; fi
+PKG_CHECK_MODULES(PYPOKER_EVAL, pypoker-eval >= 132.0,, [AC_MSG_ERROR(pypoker-eval is a mandatory library)])
 
-m4_define([_AM_PYTHON_INTERPRETER_LIST], [python2.4 python2.3 python])
-AM_PATH_PYTHON([$PYTHON_VERSION_CONSTRAINT])
-eval pythonpath=$pythondir
-if eval test "$pythondir" != "$pyexecdir" ; then
-   eval pythonpath=$pythonpath:$pyexecdir
-fi
-AC_SUBST(pythonpath, [$pythonpath])
+python_script="
+import imp
+import sys
 
-PKG_CHECK_MODULES(PYPOKER_EVAL, pypoker-eval$PYTHON_VERSION >= 128.0, [
-  MAYBE_PYTHON_VERSION=$PYTHON_VERSION
-] , [
-  PKG_CHECK_MODULES(PYPOKER_EVAL, pypoker-eval >= 128.0,, [AC_MSG_ERROR(pypoker-eval is a mandatory library)])
-])
-pythonpath=`pkg-config --variable=pythonpath pypoker-eval$MAYBE_PYTHON_VERSION`:$pythonpath
-
-AC_SUBST(MAYBE_PYTHON_VERSION, [$MAYBE_PYTHON_VERSION])
-VERSIONED_PACKAGE=$PACKAGE$MAYBE_PYTHON_VERSION
-pkgdatadir=$datadir/$PACKAGE$MAYBE_PYTHON_VERSION
-AC_SUBST(pkgdatadir, [$pkgdatadir])
-pkgsysconfdir=$sysconfdir/$PACKAGE$MAYBE_PYTHON_VERSION
-AC_SUBST(pkgsysconfdir, [$pkgsysconfdir])
-AC_SUBST(pythondir, [`eval echo $pythondir`])
-
-AC_SUBST(POKER_ENGINE_PKGDATADIR, [`eval echo $datadir/$VERSIONED_PACKAGE`])
-
-PYTHON_DEPENDENCIES="$PYTHON_DEPENDENCIES libxml2"
-PYTHON_DEPENDENCIES="$PYTHON_DEPENDENCIES libxslt"
-
-AM_PYTHON_DEPENDS([$PYTHON_DEPENDENCIES])
+path = list()
+modules = sys.argv.pop(1)
+for module in modules.split('.'):
+        (file,  pathname, info) = imp.find_module(module, sys.path + path)
+        sys.stdout.write(pathname + ' ')
+        path = list(( pathname, ))
+"
+for module in libxml2 libxslt pokereval ; do
+    AC_MSG_CHECKING([wether python module $module is available])
+    if $PYTHON -c "$python_script" $module ; then
+       AC_MSG_RESULT([... yes])
+    else
+       AC_MSG_ERROR([failed])
+    fi
+done
 
 # Generate files
 AC_CONFIG_FILES([tests/run pokerconfigupgrade], [chmod 555 $ac_file])
@@ -100,6 +89,7 @@ AC_CONFIG_FILES([Makefile
                  tests/test-pokertournament.py
                  tests/test-game.py
                  tests/test-pokerchips.py
+                 tests/test-pokerrake.py
                  tests/test-pokerplayer.py
                  tests/test-version.py
                  tests/Makefile], [chmod -w $ac_file])
