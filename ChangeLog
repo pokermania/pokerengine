@@ -2,6 +2,27 @@
 
 	* Release 1.0.16
 
+	* debian/rules: dy_python is mandatory
+
+	* debian/python-poker-engine.postinst:
+	pycentral work must be done before pokerconfigupgrade can be called
+
+	* debian/control:
+	Add XB-Python-Version although supposed to be for binary only (says http://wiki.debian.org/DebianPython/NewPolicy)
+
+	* debian/control: explicit list
+
+	* debian/control: poker-engine-common once existed
+
+	* configure.ac: define pkgsysconfdir
+
+	* poker-engine.pc.in: pkgsysconfdir
+
+	* tests/tournament.py.in:
+	use predefined decks to speed up tournament resolution and avoid random behaviour
+
+	* ChangeLog: *** empty log message ***
+
 	* tests/allin.py.in, tests/blinds.py.in, tests/buyin.py.in, tests/chips.py.in, tests/deal.py.in, tests/eval.py.in, tests/history.py.in, tests/run.in, tests/sit.py.in, tests/test-game.py.in, tests/test-gamehistory.py.in, tests/test-pokercards.py.in, tests/test-pokerchips.py.in, tests/test-pokerengineconfig.py.in, tests/test-pokerplayer.py.in, tests/test-pokerrake.py.in, tests/test-pokertournament.py.in, tests/test-version.py.in, tests/tournament.py.in, tests/upgrades.py.in:
 	exit status reflect tests results
 
