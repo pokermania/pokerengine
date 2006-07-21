@@ -23,27 +23,49 @@
 #
 # Authors:
 #  Loic Dachary <loic@gnu.org>
-#  Henry Precheur <henry@precheur.org>
+#  Henry Precheur <henry@precheur.org> (2004)
 #
 # 
 set -e
 
 : ${srcdir:=.}
+export srcdir
+: ${top_srcdir:=..}
+export top_srcdir
+
+#DEFAULT_VERBOSE=-1 # show the test results automake level, hide error messages
+#DEFAULT_VERBOSE=0 # show the test results unittest level, hide informative messages
+DEFAULT_VERBOSE=3 # show very detailed information about everything (~2MB output 2006/07)
+
+: ${VERBOSE:=$DEFAULT_VERBOSE}
+
+export VERBOSE
+
+DEFAULT_COVERAGE_FILES=$(echo ${top_srcdir}/pokerengine/*.py) 
+: ${COVERAGE_FILES:=$DEFAULT_COVERAGE_FILES}
 
 case "$1" in 
 
 *coverage-reset) @PYTHON@ ${srcdir}/coverage.py -e ;;
 
 *coverage-report) 
-        output=$( @PYTHON@ ${srcdir}/coverage.py -m -r ${srcdir}/../pokerengine/*.py )
+        output=$( @PYTHON@ ${srcdir}/coverage.py -m -r ${COVERAGE_FILES} )
+        rm -fr annotated ; mkdir annotated
+        @PYTHON@ ${srcdir}/coverage.py -a -d annotated ${COVERAGE_FILES}
         echo "$output"
-        if ! echo "$output" | grep 'TOTAL.*100%' > /dev/null ; then
-            echo 'FAIL: tests do not cover 100% of the poker-engine code'
-            exit 1
+        #
+        # Don't bark on coverage being incomplete when not verbose : 
+        # print statements are omited.
+        #
+        if "$VERBOSE" == "3" ; then
+            if ! echo "$output" | grep 'TOTAL.*100%' > /dev/null ; then
+                echo 'FAIL: tests do not cover 100% of the poker-engine code'
+                exit 1
+            fi
         fi
         ;;
 
-*.py) @PYTHON@ ${srcdir}/coverage.py -x "$1" ;;
+*.py) @PYTHON@ -u ${srcdir}/coverage.py -x "$1" ;;
 
 *) 
         echo unknown test $1
