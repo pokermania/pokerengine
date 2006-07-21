@@ -31,6 +31,8 @@ from pokerengine import version_number
 
 class Version:
 
+    verbose = 0
+    
     version_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)$',
                             re.VERBOSE)
 
@@ -118,7 +120,7 @@ class Version:
                      and ( version_to > current_version and version_to <= desired_version ) ):
                     upgrade_matrix.setdefault(version_from, {})
                     if upgrade_matrix[version_from].has_key(version_to):
-                        print "Version: duplicate upgrade string (%s => %s) keep %s, ignore %s" % ( version_from, version_to, upgrade_matrix[version_from][version_to], string)
+                        if Version.verbose >= 0: print "Version: duplicate upgrade string (%s => %s) keep %s, ignore %s" % ( version_from, version_to, upgrade_matrix[version_from][version_to], string)
                     else:
                         upgrade_matrix[version_from][version_to] = string
         #
