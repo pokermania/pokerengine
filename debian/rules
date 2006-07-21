@@ -28,7 +28,7 @@ $(DEB_BUILDDIR)/config.status: $(DEB_SRCDIR)/configure
 	chmod a+x $(DEB_CONFIGURE_SCRIPT)
 	$(DEB_CONFIGURE_INVOKE) $(cdbs_configure_flags) $(DEB_CONFIGURE_EXTRA_FLAGS) $(DEB_CONFIGURE_USER_FLAGS)
 
-binary-install/python-pypoker-eval::
+binary-install/python-poker-engine::
 	-dh_pycentral -ppython-poker-engine
 	dh_python -ppython-poker-engine
 
