@@ -28,6 +28,7 @@ import sys, os
 sys.path.insert(0, "@top_srcdir@")
 sys.path.insert(0, "..")
 
+from string import split
 import unittest
 from pokerengine.pokergame import PokerGameServer, PokerGameClient, PokerGame
 from pokerengine.pokercards import PokerCards
@@ -36,6 +37,17 @@ from pokereval import PokerEval
 poker_eval = PokerEval()
 _initial_money = 1000
 
+class PokerPredefinedDecks:
+    def __init__(self, decks):
+        self.decks = decks
+        self.index = 0
+        
+    def shuffle(self, deck):
+        deck[:] = self.decks[self.index][:]
+        self.index += 1
+        if self.index >= len(self.decks):
+            self.index = 0
+        
 class TestPosition(unittest.TestCase):
 
     def setUp(self):
@@ -43,6 +55,10 @@ class TestPosition(unittest.TestCase):
         self.game.verbose = int(os.environ.get('VERBOSE_T', 3))
         self.game.setVariant("holdem")
         self.game.setBettingStructure("2-4-limit")
+        predefined_decks = [
+            "8d 2h 2c 8c 4c Kc Ad 9d Ts Jd 5h Tc 4d 9h 8h 7h 9c 2s 3c Kd 5s Td 5d Th 3s Kh Js Qh 7d 2d 3d 9s Qd Ac Jh Jc Qc 6c 7s Ks 5c 4h 7c 4s Qs 6s 6h Ah 6d As 3h 8s", # distributed from the end
+            ]
+        self.game.shuffler = PokerPredefinedDecks(map(lambda deck: self.game.eval.string2card(split(deck)), predefined_decks))
 
     def tearDown(self):
         del self.game
@@ -268,10 +284,13 @@ def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestPosition))
     verbosity = int(os.environ.get('VERBOSE_T', 2))
-    unittest.TextTestRunner(verbosity=verbosity).run(suite)
+    return unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':
-    run()
+    if run().wasSuccessful():
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
 # Interpreted by emacs
 # Local Variables:
