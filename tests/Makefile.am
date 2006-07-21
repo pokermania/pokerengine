@@ -31,6 +31,7 @@ export PYTHON
 EXTRA_DIST = \
 	coverage.py \
 	$(wildcard conf/*.xml) \
+	$(wildcard test-data/pokerrake.py) \
 	$(wildcard test-data/conf/*.xml) \
 	$(wildcard test-data/upgrade/*.xsl)
 
@@ -38,6 +39,8 @@ TESTS_ENVIRONMENT = ./run
 TESTS = coverage-reset test-*.py history.py deal.py positions.py tournament.py allin.py chips.py blinds.py sit.py upgrades.py muck.py coverage-report 
 
 clean-local:
-	rm -fr .coverage
+	rm -fr .coverage annotated */*.py[oc]
+
+export top_srcdir
 
 .PHONY: coverage-reset coverage-report
