@@ -33,4 +33,4 @@ binary-install/python-poker-engine::
 	dh_python -ppython-poker-engine
 
 # make check verbosity : very quiet
-export VERBOSE=-1
+export VERBOSE_T=-1
