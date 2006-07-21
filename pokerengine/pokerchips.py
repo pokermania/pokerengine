@@ -21,8 +21,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#  Henry Precheur <henry@precheur.org>
 #  Loic Dachary <loic@gnu.org>
+#  Henry Precheur <henry@precheur.org> (2004)
 #
 import sys
 from types import *
