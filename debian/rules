@@ -1,10 +1,35 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
 
-include debian/rules.mk
+#export DH_VERBOSE=1 
 
-DEB_BUILDDIR_python2.3-poker-engine := python2.3-poker-engine
-DEB_BUILDDIR_python2.4-poker-engine := python2.4-poker-engine
+include /usr/share/cdbs/1/rules/debhelper.mk
 
-$(patsubst %,install/%,$(DEB_PYTHON_PACKAGES)) :: 
-	cp $(DEB_DESTDIR)/usr/share/man/man8/pokerconfigupgrade.8 $(DEB_DESTDIR)/usr/share/man/man8/pokerconfigupgrade$(python_version).8
+clean:: $(DEB_BUILDDIR)/config.status
+	rm -f $(DEB_SRCDIR)/*cdbs-*
+
+include /usr/share/cdbs/1/class/autotools.mk
+
+DEB_MAKE_CLEAN_TARGET = maintainer-clean
+
+DEB_CONFIGURE_EXTRA_FLAGS = --enable-maintainer-mode
+
+DEB_MAKE_CHECK_TARGET = check
+
+is_debug_package=$(if $(findstring noopt,$(DEB_BUILD_OPTIONS)),yes,)
+
+$(DEB_SRCDIR)/configure:: $(DEB_SRCDIR)/configure.ac
+	autoreconf --install
+	chmod a+x $@
+
+# override in order to add dependency to configure (should be a :: rule instead of a : rule)
+$(DEB_BUILDDIR)/config.status: $(DEB_SRCDIR)/configure
+	chmod a+x $(DEB_CONFIGURE_SCRIPT)
+	$(DEB_CONFIGURE_INVOKE) $(cdbs_configure_flags) $(DEB_CONFIGURE_EXTRA_FLAGS) $(DEB_CONFIGURE_USER_FLAGS)
+
+binary-install/python-pypoker-eval::
+	-dh_pycentral -ppython-poker-engine
+	dh_python -ppython-poker-engine
+
+# make check verbosity : very quiet
+export VERBOSE=-1
