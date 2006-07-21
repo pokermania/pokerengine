@@ -60,7 +60,7 @@ class TestTournament(unittest.TestCase):
             game.setVariant("7stud")
             game.setBettingStructure("0-0-limit")
             game.id = i
-            self.game.shuffler = PokerPredefinedDecks(map(lambda deck: self.game.eval.string2card(split(deck)), predefined_decks))
+            game.shuffler = PokerPredefinedDecks(map(lambda deck: game.eval.string2card(split(deck)), predefined_decks))
             self.games.append(game)
 
     def tearDown(self):
