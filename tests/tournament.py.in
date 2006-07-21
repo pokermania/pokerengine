@@ -28,15 +28,31 @@ import sys, os
 sys.path.insert(0, "@top_srcdir@")
 sys.path.insert(0, "..")
 
+from string import split
+
 import unittest
 from pokerengine.pokergame import PokerGameServer
 from pokerengine.pokertournament import equalizeGames, breakGames, PokerTournament
 
 NGAMES = 5
 
+class PokerPredefinedDecks:
+    def __init__(self, decks):
+        self.decks = decks
+        self.index = 0
+        
+    def shuffle(self, deck):
+        deck[:] = self.decks[self.index][:]
+        self.index += 1
+        if self.index >= len(self.decks):
+            self.index = 0
+        
 class TestTournament(unittest.TestCase):
 
     def setUp(self):
+        predefined_decks = [
+            "8d 2h 2c 8c 4c Kc Ad 9d Ts Jd 5h Tc 4d 9h 8h 7h 9c 2s 3c Kd 5s Td 5d Th 3s Kh Js Qh 7d 2d 3d 9s Qd Ac Jh Jc Qc 6c 7s Ks 5c 4h 7c 4s Qs 6s 6h Ah 6d As 3h 8s", # distributed from the end
+            ]
         self.games = []
         for i in xrange(NGAMES):
             game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
@@ -44,6 +60,7 @@ class TestTournament(unittest.TestCase):
             game.setVariant("7stud")
             game.setBettingStructure("0-0-limit")
             game.id = i
+            self.game.shuffler = PokerPredefinedDecks(map(lambda deck: self.game.eval.string2card(split(deck)), predefined_decks))
             self.games.append(game)
 
     def tearDown(self):
