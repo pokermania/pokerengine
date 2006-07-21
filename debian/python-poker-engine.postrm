@@ -5,7 +5,7 @@ set -e
 if [ "${DH_VERBOSE:-0}" -gt 0 ] ; then set -x ; fi
 
 if [ "$1" = "purge" ]; then
-    rm -f /etc/poker-engine@PYTHON_VERSION@/poker.*.xml
+    rm -f /etc/poker-engine/poker.*.xml
 fi
 
 # dh_installdeb will replace this with shell code automatically

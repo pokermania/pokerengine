@@ -25,7 +25,6 @@
 #  Loic Dachary <loic@gnu.org>
 #
 import sys, os, getopt, stat, string
-sys.path = filter(lambda path: path not in sys.path, "@pythonpath@".split(":")) + sys.path
 sys.path.insert(0, "@top_srcdir@")
 
 def usage():

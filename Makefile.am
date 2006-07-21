@@ -26,14 +26,12 @@
 # 
 ACLOCAL_AMFLAGS = -I config
 
-pkgdatadir=@pkgdatadir@
-pkgsysconfdir=@pkgsysconfdir@
-pythondir=@pythondir@
-
 SUBDIRS = pokerengine tests 
 
+pkgsysconfdir=${sysconfdir}/poker-engine
+
 MAINTAINERCLEANFILES = INSTALL Makefile.in aclocal.m4 configure \
-	$(filter-out %.m4,$(wildcard config/[a-z]*)) 
+	$(wildcard config/*) 
 
 confpokerdir = ${pkgdatadir}/conf
 dist_confpoker_DATA = \
@@ -59,6 +57,9 @@ man_MANS = \
 sbin_SCRIPTS = \
 	pokerconfigupgrade
 
+TESTS_ENVIRONMENT = PYTHONPATH=. @PYTHON@ 
+TESTS = examples/simple.py 
+
 clean-local:
 	rm -f */*.py[co] 
 	rm -fr tests/conftest
@@ -73,17 +74,6 @@ install-data-local:
 	mkdir -p "${DESTDIR}${pkgsysconfdir}"
 	${PYTHON} ${top_builddir}/pokerconfigupgrade --verbose=1 --upgrades=${srcdir}/upgrades --reference=${srcdir}/conf "${DESTDIR}${pkgsysconfdir}"
 	chmod u+w "${DESTDIR}${pkgsysconfdir}"
-
-install-data-hook:
-	if [ "${MAYBE_PYTHON_VERSION}" ] ; then \
-		cp ${DESTDIR}${pkgconfigdir}/poker-engine.pc ${DESTDIR}${pkgconfigdir}/poker-engine${PYTHON_VERSION}.pc ; \
-		cp -a ${DESTDIR}${sbindir}/pokerconfigupgrade ${DESTDIR}${sbindir}/pokerconfigupgrade${PYTHON_VERSION} ; \
-	fi
-
-uninstall-local:
-	rm -fr "${DESTDIR}${pkgsysconfdir}"
-	rm -f ${DESTDIR}${sbindir}/pokerconfigupgrade${MAYBE_PYTHON_VERSION}
-	rm -f ${DESTDIR}${pkgconfigdir}/poker-engine${MAYBE_PYTHON_VERSION}.pc
 
 buildconf:
 	( \
