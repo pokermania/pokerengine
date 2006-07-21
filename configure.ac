@@ -43,6 +43,9 @@ AM_MAINTAINER_MODE
 
 AM_PATH_PYTHON([2.3])
 
+pkgsysconfdir=$sysconfdir/$PACKAGE
+AC_SUBST(pkgsysconfdir, [$pkgsysconfdir])
+
 PKG_CHECK_MODULES(PYPOKER_EVAL, pypoker-eval >= 132.0,, [AC_MSG_ERROR(pypoker-eval is a mandatory library)])
 
 python_script="
