@@ -19,6 +19,7 @@ DEB_MAKE_CHECK_TARGET = check
 is_debug_package=$(if $(findstring noopt,$(DEB_BUILD_OPTIONS)),yes,)
 
 $(DEB_SRCDIR)/configure:: $(DEB_SRCDIR)/configure.ac
+	mkdir -p config
 	autoreconf --install
 	chmod a+x $@
 
