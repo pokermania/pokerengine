@@ -1,0 +1,79 @@
+# -*- mode: python -*-
+# Copyright (C) 2006 Mekensleep
+#
+# Mekensleep
+# 24 rue vieille du temple
+# 75004 Paris
+#       licensing@mekensleep.com
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Authors:
+#  Pierre-Andre (05/2006)
+#  Loic Dachary <loic@gnu.org>
+#
+
+import sys, os
+sys.path.insert(0, "@top_srcdir@")
+
+import unittest
+import os.path
+import types
+
+from pokerengine import pokerrake, pokergame
+
+class PokerRakeTestCase(unittest.TestCase):
+        
+    # -----------------------------------------------------------------------------------------------------
+    def setUp(self):
+        pass
+    
+    # -----------------------------------------------------------------------------------------------------    
+    def tearDown(self):
+        pokerrake._get_rake_instance = None
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def test01_Init(self):
+        """Test Poker rake : get_rake_instance"""
+        game = pokergame.PokerGameClient("unittest.%s.xml", ['nodir'])
+        rake = pokerrake.get_rake_instance(game)
+        
+    # -----------------------------------------------------------------------------------------------------    
+    def test02_AlternatePokerRake(self):
+        """Test Poker rake : get_rake_instance alternate PokerRake"""
+        game = pokergame.PokerGameClient("unittest.%s.xml", ['nodir', 'test-data'])
+        game.verbose = int(os.environ.get('VERBOSE', 3))
+        rake = pokerrake.get_rake_instance(game)
+        self.failUnless(hasattr(rake, 'gotcha'))
+        
+# -----------------------------------------------------------------------------------------------------
+def GetTestSuite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(PokerRakeTestCase))
+    return suite
+    
+# -----------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------
+def Run(verbose):
+    unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
+    
+# -----------------------------------------------------------------------------------------------------
+if __name__ == '__main__':
+    Run(int(os.environ.get('VERBOSE', 2)))
+
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/test-pokerrake.py ) ; ( cd ../tests ; make COVERAGE_FILES='../pokerengine/pokerrake.py' TESTS='coverage-reset test-pokerrake.py coverage-report' check )"
+# End:
