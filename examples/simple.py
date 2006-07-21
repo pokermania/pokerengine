@@ -39,7 +39,7 @@ from pokerengine.pokergame import PokerGameServer
 # will be read from the conf/poker.holdem.xml and conf/poker.10-15-pot-limit.xml
 # files.
 #
-game = PokerGameServer("poker.%s.xml", ['../conf', '/etc/poker-engine'])
+game = PokerGameServer("poker.%s.xml", ['conf', '../conf', '/etc/poker-engine'])
 game.verbose = 1
 game.setVariant("holdem")
 game.setBettingStructure("10-15-pot-limit")
@@ -59,7 +59,7 @@ PLAYER4 = 4
 #
 for serial in xrange(PLAYER1, PLAYER4 + 1):
     game.addPlayer(serial)
-    game.payBuyIn(serial, 1500)
+    game.payBuyIn(serial, 1500*100)
     game.sit(serial)
     game.autoBlindAnte(serial)
 
