@@ -1634,7 +1634,6 @@ class PokerGame:
         return self.distributeRake(rake, total, serial2share)
 
     def distributeRake(self, rake, total, serial2share):
-
         #
         # Each player contributes to the rake in direct proportion
         # of their contribution to the global pot (uncalled bet does
@@ -1664,11 +1663,11 @@ class PokerGame:
           # very little rake participation has a chance to not be raked
           # at all instead of being raked for 1 unit).
           #
-          for serial in keys:
-            serial2rake[serial] += 1
-            rake -= 1
-            if rake <= 0: break
-        assert rake <= 0, "rake %d > 0" % rake
+          while rake > 0:
+            for serial in keys:
+              serial2rake[serial] += 1
+              rake -= 1
+              if rake <= 0: break
         return serial2rake
 
     def setMuckableSerials(self, muckable_serials):
