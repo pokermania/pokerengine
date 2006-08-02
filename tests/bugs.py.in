@@ -34,7 +34,7 @@ from pokerengine import pokergame
 from pokerengine.pokergame import PokerGameServer, PokerGame
 from pokerengine.pokercards import PokerCards
 
-class TestBug(unittest.TestCase):
+class TestBugUncalled(unittest.TestCase):
 
     def setUp(self):
         self.game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
@@ -122,7 +122,7 @@ class TestBug(unittest.TestCase):
 
 def run():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestBug))
+    suite.addTest(unittest.makeSuite(TestBugUncalled))
     verbosity = int(os.environ.get('VERBOSE_T', 2))
     return unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
@@ -134,5 +134,5 @@ if __name__ == '__main__':
 
 # Interpreted by emacs
 # Local Variables:
-# compile-command: "( cd .. ; ./config.status tests/bugs.py ) ; ( cd ../tests ; make TESTS='bugs.py' check )"
+# compile-command: "( cd .. ; ./config.stagtus tests/bugs.py ) ; ( cd ../tests ; make TESTS='bugs.py' check )"
 # End:
