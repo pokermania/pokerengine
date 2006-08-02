@@ -77,6 +77,7 @@ AC_CONFIG_FILES([Makefile
                  tests/allin.py
                  tests/blinds.py
                  tests/buyin.py
+                 tests/bugs.py
                  tests/chips.py
                  tests/deal.py
                  tests/eval.py
