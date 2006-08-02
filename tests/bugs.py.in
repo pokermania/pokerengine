@@ -54,15 +54,11 @@ class TestBugUncalled(unittest.TestCase):
         player = self.player
 
 	money = {}
-	money[65] = 5708818 
 	money[66] = 2000000
-	money[9] = 2452050
-	money[75] = 200000 
 	money[76] = 950000 
 	money[77] = 200000 
-	money[78] = 200000 
 
-        for serial in (65, 9, 66, 75, 76, 77, 78):
+        for serial in (66, 76, 77):
 	    self.assert_(game.addPlayer(serial))
             player[serial] = game.serial2player[serial]
 	    player[serial].money = 200000
@@ -72,19 +68,15 @@ class TestBugUncalled(unittest.TestCase):
             game.autoMuck(serial, pokergame.AUTO_MUCK_ALWAYS)
 	    player[serial].money = money[serial]
 
-        game.dealer_seat = 3
-        game.dealerFromDealerSeat()
+        game.dealer_seat = 0
 
         game.beginTurn(1)
 
-	player[9].blind = 'big_and_dead'
 	player[66].blind = 'big_and_dead'
 	player[76].blind = 'small'
 	player[77].blind = 'big'
 
-	game.setPosition(1)
-	game.blind(9, 20000, 10000)
-	game.setPosition(2)
+	game.setPosition(0)
 	game.blind(66, 20000, 10000)
 	game.blind(76, 10000, 0)
 	game.blind(77, 20000, 0)
@@ -97,28 +89,15 @@ class TestBugUncalled(unittest.TestCase):
         cards = PokerCards(['4h', '9s'])
 	cards.allHidden();
 	player[77].hand = cards;
-        cards = PokerCards(['7s', 'Kc'])
-	cards.allHidden();
-	player[78].hand = cards;
         cards = PokerCards(['Jh', '3h'])
 	cards.allHidden();
 	player[66].hand = cards;
-        cards = PokerCards(['9h', 'Ks'])
-	cards.allHidden();
-	player[75].hand = cards;
 
 	game.deck = ['7c', 'Qs', '6c', 'Qc', '2h']
 
-	game.call(78)
-	game.fold(65)
-	game.check(9)
 	game.callNraise(66, 2000000)
-	game.call(75)
 	game.call(76)
-	game.call(77)
-	game.call(78)
-	game.fold(9)
-
+	game.fold(77)
 
 def run():
     suite = unittest.TestSuite()
