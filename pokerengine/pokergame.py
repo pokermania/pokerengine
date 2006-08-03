@@ -2559,8 +2559,8 @@ class PokerGame:
                 showdown_stack.insert(0, frame)
                 serial2share.setdefault(winner.serial, 0)
                 if self.verbose >= 2:
-                  if serial2side_pot[winner.serial] != self.uncalled:
-                    raise UserWarning, "serial2side_pot[winner.serial] != self.uncalled (%d != %d)" % ( serial2side_pot[winner.serial], self.uncalled )
+                  if serial2side_pot[winner.serial] != (self.uncalled + winner.dead):
+                    raise UserWarning, "serial2side_pot[winner.serial] != self.uncalled + winner.dead (%d != %d + %d)" % ( serial2side_pot[winner.serial], self.uncalled, winner.dead)
                 serial2share[winner.serial] += serial2side_pot[winner.serial]
                 serial2delta[winner.serial] += serial2side_pot[winner.serial]
                 serial2side_pot[winner.serial] = 0
