@@ -1,6 +1,61 @@
-2006-07-21  Loic Dachary  <loic@dachary.org>
+2006-08-14  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.16
+
+	* tests/test-game.py.in:
+	In test bet to pot, remove useless / impossible tests of bets handled as dead blinds.
+	""" Test Poker Game : Allin with dead blind and lost to the winner although the winner has less money """
+	""" Test Poker Game : dead blind + a player has uncalled bet and is not the winner. """
+
+	* tests/bugs.py.in: Bugs integrated to test-game.py.in
+
+	* pokerengine/pokergame.py:
+	Dead blinds are not counted as a player contribution to the pot. As a consequence, the dead blinds are awarded to the winner(s) of the first / main pot. money2bet and bet2pot take an additional argument (dead_money) that clarifies the handling of the dead blinds.
+
+2006-08-14  izidor79  <izidor79@allin>
+
+	* pokerengine/pokergame.py:
+	changed max bet to sys.maxin instead of 10000000
+
+2006-08-08  proppy  <proppy@allin>
+
+	* pokerengine/pokergame.py: test fix uncalled bug
+
+2006-08-03  proppy  <proppy@allin>
+
+	* pokerengine/pokergame.py: reverted
+
+	* pokerengine/pokergame.py:
+	added winner.dead to self.uncalled to compare against side_pot[winner]
+
+2006-08-02  proppy  <proppy@allin>
+
+	* tests/bugs.py.in: removed log
+
+	* tests/bugs.py.in: better values
+
+	* tests/bugs.py.in: simpler test
+
+	* tests/bugs.py.in: TestBug -> TestBugUncalled
+
+	* configure.ac, tests/Makefile.am: added bugs.py
+
+	* tests/bugs.py.in: added bugs.py for bug entry
+
+2006-07-25  Loic Dachary  <loic@dachary.org>
+
+	* pokerengine/pokergame.py: Distribute all the rake.
+
+2006-07-24  Loic Dachary  <loic@dachary.org>
+
+	* debian/rules: call autotools with proper version
+
+2006-07-23  Loic Dachary  <loic@dachary.org>
+
+	* debian/control.breezy, debian/control.hoary:
+	fix xslt depends for hoary / breezy
+
+2006-07-21  Loic Dachary  <loic@dachary.org>
 
 	* debian/rules: dy_python is mandatory
 
