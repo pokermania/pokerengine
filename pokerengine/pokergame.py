@@ -1627,6 +1627,9 @@ class PokerGame:
         uncalled_serial = self.getUncalledSerial()
         side_pots = self.getPots()
 
+        #
+        # Uncalled bet is not raked
+        # 
         serial2share = side_pots['contributions']['total'].copy()
         if uncalled_serial > 0:
           serial2share[uncalled_serial] -= self.getUncalled()
@@ -1650,6 +1653,7 @@ class PokerGame:
           rake = 0
         else:
           for (serial, contribution) in serial2share.iteritems():
+            contribution += self.getPlayer(serial).dead
             player_rake = (total_rake * contribution) / total
             serial2rake[serial] = player_rake
             rake -= player_rake
@@ -1662,6 +1666,11 @@ class PokerGame:
           # lowest rake participation (with the idea that a player with
           # very little rake participation has a chance to not be raked
           # at all instead of being raked for 1 unit).
+          #
+          # Note: the rake rounding error can't be greater than the number
+          #       of players. But the above distribution is slightly flawed
+          #       because the dead blind is not accounted as a contribution
+          #       of the player to the pot, therefore the total is not 100%.
           #
           while rake > 0:
             for serial in keys:
@@ -1924,6 +1933,11 @@ class PokerGame:
         player = self.serial2player[serial]
         money = player.money
         if money < amount + dead:
+            #
+            # If the player does not have enough money to pay the blind,
+            # make sure the live blind is payed before puting money into
+            # the dead blind.
+            #
             if money < amount:
                 dead = 0
                 amount = money
@@ -1935,8 +1949,14 @@ class PokerGame:
             #
             # There is enough money to pay the amount, pay the dead, if any
             #
-            self.money2bet(serial, dead)
-            self.bet2pot(serial)
+            # Note about uncalled amounts : the dead is always lower than the
+            # blind, therefore if self.uncalled is updated (indirectly thru
+            # the self.money2bet in the line immediately following this comment)
+            # it will *always* be overriden by the self.uncalled
+            # self.money2bet of the blind.
+            #
+            self.money2bet(serial, dead, dead_money = True)
+            self.bet2pot(serial = serial, dead_money = True)
 
         self.money2bet(serial, amount)
         player.blind = True
@@ -2463,7 +2483,8 @@ class PokerGame:
 
         serial2delta = {}
         for (serial, share) in side_pots['contributions']['total'].iteritems():
-          serial2delta[serial] = - share
+          player_dead = self.getPlayer(serial).dead
+          serial2delta[serial] = - ( share + player_dead )
           
         if self.isWinnerBecauseFold():
             serial2rake = {}
@@ -2930,7 +2951,7 @@ class PokerGame:
         if self.verbose >= 2: self.message("player(s) %s win" % serials)
         self.winners = serials
 
-    def bet2pot(self, serial = 0):
+    def bet2pot(self, serial = 0, dead_money = False):
         if serial == 0:
             serials = self.player_list
         else:
@@ -2939,12 +2960,12 @@ class PokerGame:
             player = self.serial2player[serial]
             bet = player.bet
             self.pot += bet
-            if self.isBlindAnteRound() and self.blind_info:
+            if dead_money:
                 player.dead += bet
             player.bet = 0
             self.runCallbacks("bet2pot", serial, bet)
 
-    def money2bet(self, serial, amount):
+    def money2bet(self, serial, amount, dead_money = False):
         player = self.serial2player[serial]
 
         if amount > player.money:
@@ -2953,8 +2974,12 @@ class PokerGame:
         player.money -= amount
         player.bet += amount
         self.runCallbacks("money2bet", serial, amount)
-        self.__updateUncalled()
-        self.updatePots(serial, amount)
+        if dead_money:
+          pot_index = len(self.side_pots['pots']) - 1
+          self.side_pots['building'] += amount
+        else:
+          self.__updateUncalled()
+          self.updatePots(serial, amount)
         if player.money == 0:
             self.historyAdd("all-in", serial)
             player.all_in = True
