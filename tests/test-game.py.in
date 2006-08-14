@@ -2332,27 +2332,13 @@ class PokerGameTestCase(unittest.TestCase):
         
         InitCallback()
         player1.bet = 500
-        self.game.bet2pot(1)
+        self.game.bet2pot(serial = 1, dead_money = True)
         self.failUnlessEqual(player1.bet, 0)
         self.failUnlessEqual(player1.dead, 500)
         self.failUnlessEqual(self.game.pot, 500)
         
         self.failUnlessEqual(CallbackIds, [self.game.id])
         self.failUnlessEqual(CallbackArgs, [('bet2pot', 1, 500)])
-        
-        InitCallback()
-        player1.bet = 100
-        player2.bet = 1000
-        self.game.bet2pot()
-        self.failUnlessEqual(player1.bet, 0)
-        self.failUnlessEqual(player1.dead, 600)
-        self.failUnlessEqual(player2.bet, 0)
-        self.failUnlessEqual(player2.dead, 1000)
-        
-        self.failUnlessEqual(self.game.pot, 1600)
-        
-        self.failUnlessEqual(CallbackIds, [self.game.id, self.game.id])
-        self.failUnlessEqual(CallbackArgs, [('bet2pot', 1, 100), ('bet2pot', 2, 1000)])
         
     # -----------------------------------------------------------------------------------------------------
     def testDealCards(self):
@@ -5271,6 +5257,105 @@ class PokerGameTestCase(unittest.TestCase):
             for attribute, value in blinds.items():
                 self.failUnlessEqual(getattr(self.game.getPlayer(num + 1), attribute), value)
         
+    def testAllinWithDead(self):
+        """ Test Poker Game : Allin with dead blind and lost to the winner although the winner has less money """
+
+        game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
+        game.verbose = 3
+        game.setVariant("holdem")
+        game.setBettingStructure("100-200-no-limit")
+
+        player = {}
+
+	money = {}
+	money[66] = 30000
+	money[76] = 10000
+	money[77] = 20000
+
+        for serial in (66, 76, 77):
+	    self.assert_(game.addPlayer(serial))
+            player[serial] = game.serial2player[serial]
+	    player[serial].money = 2000000
+            player[serial].buy_in_payed = True
+            self.assert_(game.sit(serial))
+            #player[serial].auto_blind_ante = True
+	    player[serial].money = money[serial]
+            game.autoMuck(serial, pokergame.AUTO_MUCK_ALWAYS)
+
+        game.dealer_seat = 0
+
+        game.beginTurn(1)
+
+	player[66].blind = 'big_and_dead'
+	player[76].blind = 'small'
+	player[77].blind = 'big'
+
+        #
+        # 77 : 4c 8c
+        # 76 : 9s 4h
+        # 66 : 3h Jh
+        #
+	game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', '8c', '4h', 'Jh', '4c', '9s', '3h' ]
+
+	game.setPosition(0)
+	game.blind(66, 20000, 10000)
+	game.blind(76, 10000, 0)
+	game.blind(77, 20000, 0)
+
+        self.assertEqual("end", game.state)
+        self.assertEqual(40000, game.showdown_stack[0]['serial2delta'][77])
+
+    def testDeadWithUncalled(self):
+        """ Test Poker Game : dead blind + a player has uncalled bet and is not the winner.
+        """
+        game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
+        game.verbose = 3
+        game.setVariant("holdem")
+        game.setBettingStructure("100-200-no-limit")
+
+        player = {}
+
+	money = {}
+	money[66] = 2000000
+	money[76] = 1000000 
+	money[77] = 1000000 
+
+        for serial in (66, 76, 77):
+	    self.assert_(game.addPlayer(serial))
+            player[serial] = game.serial2player[serial]
+	    player[serial].money = 200000
+            player[serial].buy_in_payed = True
+            self.assert_(game.sit(serial))
+            #player[serial].auto_blind_ante = True
+            game.autoMuck(serial, pokergame.AUTO_MUCK_ALWAYS)
+	    player[serial].money = money[serial]
+
+        game.dealer_seat = 0
+
+        game.beginTurn(1)
+
+	player[66].blind = 'big_and_dead'
+	player[76].blind = 'small'
+	player[77].blind = 'big'
+
+        #
+        # 77 : 4c 8c
+        # 76 : 9s 4h
+        # 66 : 3h Jh
+        #
+	game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', '4h', 'Jh', '8c', '9s', '3h', '4c' ]
+
+	game.setPosition(0)
+	game.blind(66, 20000, 10000)
+	game.blind(76, 10000, 0)
+	game.blind(77, 20000, 0)
+
+        self.assertEqual(game.state, "pre-flop")
+
+	game.callNraise(66, 2000000)
+	game.call(76)
+	game.fold(77)
+
     # -----------------------------------------------------------------------------------------------------
     def AddPlayerAndSit(self, serial, seat = -1):
         self.failUnless(self.game.addPlayer(serial, seat))
