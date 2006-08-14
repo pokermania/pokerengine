@@ -45,60 +45,9 @@ class TestBugUncalled(unittest.TestCase):
     def tearDown(self):
 	del self.game
         
-    def test_bug1(self):
-	nplayers = 5
-        self.money = 1
-        self.player = {}
-        money = self.money
-        game = self.game
-        player = self.player
-
-	money = {}
-	money[66] = 2000000
-	money[76] = 1000000 
-	money[77] = 1000000 
-
-        for serial in (66, 76, 77):
-	    self.assert_(game.addPlayer(serial))
-            player[serial] = game.serial2player[serial]
-	    player[serial].money = 200000
-            player[serial].buy_in_payed = True
-            self.assert_(game.sit(serial))
-            #player[serial].auto_blind_ante = True
-            game.autoMuck(serial, pokergame.AUTO_MUCK_ALWAYS)
-	    player[serial].money = money[serial]
-
-        game.dealer_seat = 0
-
-        game.beginTurn(1)
-
-	player[66].blind = 'big_and_dead'
-	player[76].blind = 'small'
-	player[77].blind = 'big'
-
-	game.setPosition(0)
-	game.blind(66, 20000, 10000)
-	game.blind(76, 10000, 0)
-	game.blind(77, 20000, 0)
-
-        self.assertEqual(game.state, "pre-flop")
-
-        cards = PokerCards(['8c', '4c'])
-	cards.allHidden();
-	player[76].hand = cards;
-        cards = PokerCards(['4h', '9s'])
-	cards.allHidden();
-	player[77].hand = cards;
-        cards = PokerCards(['Jh', '3h'])
-	cards.allHidden();
-	player[66].hand = cards;
-
-	game.deck = ['7c', 'Qs', '6c', 'Qc', '2h']
-
-	game.callNraise(66, 2000000)
-	game.call(76)
-	game.fold(77)
-
+#    def test01_Bug(self):
+#        pass
+    
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestBugUncalled))
