@@ -2274,7 +2274,7 @@ class PokerGame:
         self.betting_structure = betting_structure
         self.betting_structure_name = self.getParam("/bet/description")
         self.buy_in = int(self.getParam('/bet/@buy-in') or "0")
-        self.max_buy_in = int(self.getParam('/bet/@max-buy-in') or "1000000000")
+        self.max_buy_in = int(self.getParam('/bet/@max-buy-in') or sys.maxint)
         self.best_buy_in = int(self.getParam('/bet/@best-buy-in') or "0")
         self.unit = int(self.getParam('/bet/@unit'))
 
