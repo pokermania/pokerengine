@@ -1,3 +1,11 @@
+2006-08-17  Loic Dachary  <loic@dachary.org>
+
+	* Release 1.0.16
+
+	* pokerengine/pokergame.py (PokerGame.__roundFinished): If there
+	is only one player left to talk, it is meaningless to ask for his
+	action, unless he something to call.
+
 2006-08-16  Cedric Pinson  <cpinson@freesheep.org>
 
 	* gentoo/dev-games/poker-engine/poker-engine-1.0.14-r1.ebuild, gentoo/dev-games/poker-engine/poker-engine-1.0.16-r1.ebuild:
@@ -23,8 +31,6 @@
 	changed max bet to sys.maxin instead of 10000000
 
 2006-08-14  Loic Dachary  <loic@dachary.org>
-
-	* Release 1.0.16
 
 	* tests/test-game.py.in:
 	In test bet to pot, remove useless / impossible tests of bets handled as dead blinds.
