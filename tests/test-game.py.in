@@ -5360,7 +5360,7 @@ class PokerGameTestCase(unittest.TestCase):
         """ Test Poker Game : player folds (although he could check) while a player is allin and
         another player is behind him. The turn ends now, the last player is not asked for his action.
         """
-        game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "../conf" ])
+        game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
         game.verbose = 3
         game.setVariant("holdem")
         game.setBettingStructure("100-200-no-limit")
