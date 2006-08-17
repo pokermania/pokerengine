@@ -2459,6 +2459,14 @@ class PokerGame:
         
         if self.first_betting_pass:
             if serial != self.getSerialLastToTalk():
+              if self.inGameCount() < 2:
+                #
+                # If there is only one player left to talk, it is
+                # meaningless to ask for his action, unless he has
+                # something to call. 
+                #
+                return self.betsEqual()
+              else:
                 return False
             else:
                 self.first_betting_pass = False
