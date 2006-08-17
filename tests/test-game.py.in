@@ -5356,6 +5356,59 @@ class PokerGameTestCase(unittest.TestCase):
 	game.call(76)
 	game.fold(77)
 
+    def testLastInGameDoesNotAct(self):
+        """ Test Poker Game : player folds (although he could check) while a player is allin and
+        another player is behind him. The turn ends now, the last player is not asked for his action.
+        """
+        game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "../conf" ])
+        game.verbose = 3
+        game.setVariant("holdem")
+        game.setBettingStructure("100-200-no-limit")
+
+        player = {}
+
+	money = {}
+	money[66] = 200000
+	money[76] = 3000000 
+	money[77] = 100000 
+
+        for serial in (66, 76, 77):
+	    self.assert_(game.addPlayer(serial))
+            player[serial] = game.serial2player[serial]
+	    player[serial].money = 200000
+            player[serial].buy_in_payed = True
+            self.assert_(game.sit(serial))
+            #player[serial].auto_blind_ante = True
+            game.autoMuck(serial, pokergame.AUTO_MUCK_ALWAYS)
+            game.autoBlindAnte(serial)
+	    player[serial].money = money[serial]
+
+        game.dealer_seat = 0
+
+        #
+        # 77 : 4c 8c
+        # 76 : 9s 4h
+        # 66 : 3h Jh
+        #
+	game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', '4h', 'Jh', '8c', '9s', '3h', '4c' ]
+        game.board = PokerCards(['9c', '3d', '2d', 'Qd', 'Ah'])
+
+        # player list: [66, 76, 77]
+        # dealer : 66
+        game.beginTurn(1)
+        game.call(66)
+        game.call(76)
+        game.check(77)
+        self.assertEqual(game.state, "flop")
+
+	game.callNraise(76, 150000)
+	game.call(77)
+        game.call(66)
+        self.assertEqual(game.state, "turn")
+
+        game.fold(76)
+        self.assertEqual(game.state, "end")
+
     # -----------------------------------------------------------------------------------------------------
     def AddPlayerAndSit(self, serial, seat = -1):
         self.failUnless(self.game.addPlayer(serial, seat))
