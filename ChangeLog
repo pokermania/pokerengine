@@ -1,6 +1,30 @@
-2006-08-17  Loic Dachary  <loic@dachary.org>
+2006-08-18  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.16
+
+	* pokerengine/pokergame.py:
+	 Special case : a player folds on the turn and the only other player left in the game
+	 did not bet. There is no reason for the player to fold : he forfeits a pot that
+	 he may win. Nevertheless, it can happen. In this case, and only if there is at least
+	 one player allin, the only other player left is awarded what looks like an uncalled
+	 bet.
+	 In this case the uncalled_serial is zero.
+
+2006-08-17  Loic Dachary  <loic@dachary.org>
+
+	* tests/test-game.py.in:
+	        """ Test Poker Game : player folds (although he could check) while a player is allin and
+	        another player is behind him. The turn ends now, the last player is not asked for his action.
+
+	* pokerengine/pokergame.py:
+	If there is only one player left to talk, it is meaningless to ask for his action, unless he something to call.
+
+2006-08-17  Cedric Pinson  <cpinson@allin>
+
+	* ChangeLog, tests/Makefile.am, tests/bugs.py.in:
+	put the uncalled bug in bugs.py.in and remove bugs.py from make check
+
+2006-08-17  Loic Dachary  <loic@dachary.org>
 
 	* pokerengine/pokergame.py (PokerGame.__roundFinished): If there
 	is only one player left to talk, it is meaningless to ask for his
