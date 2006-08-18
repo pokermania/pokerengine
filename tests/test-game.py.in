@@ -5391,7 +5391,7 @@ class PokerGameTestCase(unittest.TestCase):
         # 66 : 3h Jh
         #
 	game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', '4h', 'Jh', '8c', '9s', '3h', '4c' ]
-        game.board = PokerCards(['9c', '3d', '2d', 'Qd', 'Ah'])
+        game.board = pokercards.PokerCards(['9c', '3d', '2d', 'Qd', 'Ah'])
 
         # player list: [66, 76, 77]
         # dealer : 66
