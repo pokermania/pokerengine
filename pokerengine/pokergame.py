@@ -2583,11 +2583,19 @@ class PokerGame:
                 frame['type'] = 'uncalled'
                 frame['serial'] = winner.serial
                 frame['uncalled'] = serial2side_pot[winner.serial]
-                if winner.serial != self.uncalled_serial:
+                #
+                # Special case : a player folds on the turn and the only other player left in the game
+                # did not bet. There is no reason for the player to fold : he forfeits a pot that
+                # he may win. Nevertheless, it can happen. In this case, and only if there is at least
+                # one player allin, the only other player left is awarded what looks like an uncalled
+                # bet.
+                # In this case the uncalled_serial is zero.
+                #
+                if self.uncalled_serial != 0 and winner.serial != self.uncalled_serial:
                   raise UserWarning, "distributeMoney: unexpected winner.serial != uncalled_serial / %d != %d" % ( winner.serial, self.uncalled_serial ) #pragma: no cover
                 showdown_stack.insert(0, frame)
                 serial2share.setdefault(winner.serial, 0)
-                if self.verbose >= 2:
+                if self.verbose >= 2 and self.uncalled_serial != 0:
                   if serial2side_pot[winner.serial] != self.uncalled:
                     raise UserWarning, "serial2side_pot[winner.serial] != self.uncalled (%d != %d)" % ( serial2side_pot[winner.serial], self.uncalled )
                 serial2share[winner.serial] += serial2side_pot[winner.serial]
