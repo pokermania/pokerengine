@@ -2501,15 +2501,15 @@ class PokerGame:
             # everyone folded. Don't bother to evaluate.
             #
             (serial,) = self.serialsNotFold()
-            share = self.pot - self.getRakedAmount()
+            self.pot -= self.getRakedAmount()
             serial2rake[serial] = self.getRakedAmount()
-            serial2delta[serial] += share
+            serial2delta[serial] += self.pot
             self.showdown_stack = [ { 'type': 'game_state',
                                       'player_list': self.player_list,
                                       'side_pots': side_pots,
                                       'pot': pot_backup,
                                       'foldwin': True,
-                                      'serial2share': { serial: share },
+                                      'serial2share': { serial: self.pot },
                                       'serial2delta': serial2delta,
                                       'serial2rake': serial2rake },
                                     { 'type': 'resolve',
@@ -2690,6 +2690,7 @@ class PokerGame:
         serial2rake = self.distributeRake(self.getRakedAmount(), pot_backup, serial2rackable)
         for serial in serial2rake.keys():
           serial2share[serial] -= serial2rake[serial]
+          serial2delta[serial] -= serial2rake[serial]
           
         for (serial, share) in serial2share.iteritems():
             self.getPlayer(serial).money += share
