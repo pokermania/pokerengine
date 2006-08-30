@@ -1,3 +1,11 @@
+poker-engine (1.0.17-1) unstable; urgency=low
+
+  * upstream sync
+
+  * pycentral rocks (closes: #380892)
+
+ -- Loic Dachary (OuoU) <loic@debian.org>  Wed, 30 Aug 2006 22:31:31 +0200
+
 poker-engine (1.0.16-1) unstable; urgency=low
 
   * upstream sync
