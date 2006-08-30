@@ -3371,7 +3371,14 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(int(900 * 0.05), rake)
         self.failUnlessEqual(player1.money, 1600 + ( 900 - rake ))
         self.failUnlessEqual(player2.money, 1600 - ( 900 ))
-        self.failUnlessEqual(self.game.pot, 0)        
+        self.failUnlessEqual(self.game.pot, 0)
+
+        #
+        # The rake must be deduced from the delta
+        #
+        showdown_info = self.game.showdown_stack[0]
+        self.failUnlessEqual(900 - rake, showdown_info['serial2delta'][1])
+        self.failUnlessEqual(-900, showdown_info['serial2delta'][2])
         
     # -----------------------------------------------------------------------------------------------------
     def testPayAnte(self):
@@ -3845,7 +3852,9 @@ class PokerGameTestCase(unittest.TestCase):
         
         # Money amounts after 
         self.failUnlessEqual(self.game.getPlayerMoney(1), 1500)
-        self.failUnlessEqual(self.game.getPlayerMoney(2), 1700)
+        rake = self.game.getRakedAmount()
+        self.failUnlessEqual(10, rake)
+        self.failUnlessEqual(self.game.getPlayerMoney(2), 1700 - rake)
         
     # -----------------------------------------------------------------------------------------------------
     def testMuckStateWonAllIn(self):
@@ -5303,7 +5312,9 @@ class PokerGameTestCase(unittest.TestCase):
 	game.blind(77, 20000, 0)
 
         self.assertEqual("end", game.state)
-        self.assertEqual(40000, game.showdown_stack[0]['serial2delta'][77])
+        rake = game.getRakedAmount()
+        self.failUnlessEqual(3000, rake)
+        self.assertEqual(40000 - rake, game.showdown_stack[0]['serial2delta'][77])
 
     def testDeadWithUncalled(self):
         """ Test Poker Game : dead blind + a player has uncalled bet and is not the winner.
