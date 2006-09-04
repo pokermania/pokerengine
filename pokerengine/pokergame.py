@@ -2592,11 +2592,21 @@ class PokerGame:
                 # In this case the uncalled_serial is zero.
                 #
                 if self.uncalled_serial != 0 and winner.serial != self.uncalled_serial:
-                  raise UserWarning, "distributeMoney: unexpected winner.serial != uncalled_serial / %d != %d" % ( winner.serial, self.uncalled_serial ) #pragma: no cover
+                    pprint(self.showdown_stack) #pragma: no cover
+                    raise UserWarning, "distributeMoney: unexpected winner.serial != uncalled_serial / %d != %d" % ( winner.serial, self.uncalled_serial ) #pragma: no cover
                 showdown_stack.insert(0, frame)
                 serial2share.setdefault(winner.serial, 0)
-                if self.verbose >= 2 and self.uncalled_serial != 0:
-                  if serial2side_pot[winner.serial] != self.uncalled:
+                if self.verbose >= 2 and self.uncalled_serial != 0 and side_pots and side_pots.has_key('last_round') and side_pots['last_round'] >= 0:
+                  contributions = side_pots['contributions'][side_pots['last_round']]
+                  #
+                  # Player folds to a raise when heads up
+                  # in a betting round. Another player was allin in the previous 
+                  # round. The winner has an uncalled amount AND wins the pot 
+                  # in which the allin player was not.
+                  #
+                  heads_up_folded = len(contributions) == 1 and len(contributions.values()[0]) == 1
+                  if not heads_up_folded and serial2side_pot[winner.serial] != self.uncalled:
+                    pprint(self.showdown_stack)
                     raise UserWarning, "serial2side_pot[winner.serial] != self.uncalled (%d != %d)" % ( serial2side_pot[winner.serial], self.uncalled )
                 serial2share[winner.serial] += serial2side_pot[winner.serial]
                 serial2delta[winner.serial] += serial2side_pot[winner.serial]
