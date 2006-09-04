@@ -5426,7 +5426,7 @@ class PokerGameTestCase(unittest.TestCase):
             round. The winner has an uncalled amount AND wins the pot 
             in which the allin player was not.
         """
-        game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "../conf" ])
+        game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
         game.verbose = 3
         game.setVariant("holdem")
         game.setBettingStructure("100-200-no-limit")
