@@ -1,11 +1,13 @@
+2006-09-07  Loic Dachary  <loic@dachary.org>
+
+	* Release 1.0.19
+
 2006-09-04  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.18
 
-	* pokerengine/pokergame.py:  Player folds to a raise when heads up
-	 in a betting round. Another player was allin in the previous
-	 round. The winner has an uncalled amount AND wins the pot
-	 in which the allin player was not.
+	* pokerengine/pokergame.py:  uncalled safeguard checks that the value
+	  is lower than the pot instead of strictly equal.
 
 2006-08-31  Loic Dachary  <loic@dachary.org>
 
