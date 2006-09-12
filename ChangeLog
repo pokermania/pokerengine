@@ -1,6 +1,19 @@
-2006-09-07  Loic Dachary  <loic@dachary.org>
+2006-09-08  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.19
+
+	* conf/poker.level-15-30-no-limit.xml: bb is 30
+
+2006-09-07  Loic Dachary  <loic@dachary.org>
+
+	* conf/poker.level-15-30-no-limit.xml: no round cap in no-limit
+
+	* conf/poker.level-15-30-no-limit.xml:
+	1500/3000 instead of bugous 1000/1500
+
+	* conf/poker.level-no-limit.xml: 10-15 for first level is meaningless
+
+2006-09-07  Loic Dachary  <loic@dachary.org>
 
 	* conf/poker.razz.xml: razz
 
