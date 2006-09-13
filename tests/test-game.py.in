@@ -31,6 +31,7 @@ sys.path.insert(0, "@top_srcdir@")
 import unittest
 import os.path
 import shutil
+import platform
 import libxml2
 import time
 import string

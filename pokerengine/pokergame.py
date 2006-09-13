@@ -30,7 +30,7 @@ import sys
 import re
 import struct
 import random
-import os
+import platform
 
 from pokereval import PokerEval
 
@@ -80,7 +80,7 @@ class PokerRandom(random.Random):
     lsize = struct.calcsize('l')
     return abs(struct.unpack('l', self._file.read(lsize))[0])/(0.+(~(1L<<((8*lsize)-1))))
 
-if os.name == "posix":
+if platform.system() == "Linux":
   random._inst = PokerRandom()
 
 # muck constants
