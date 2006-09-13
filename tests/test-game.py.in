@@ -5271,7 +5271,7 @@ class PokerGameTestCase(unittest.TestCase):
         """ Test Poker Game : Allin with dead blind and lost to the winner although the winner has less money """
 
         game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        game.verbose = 3
+        game.verbose = int(os.environ.get('VERBOSE_T', 3))
         game.setVariant("holdem")
         game.setBettingStructure("100-200-no-limit")
 
@@ -5321,7 +5321,7 @@ class PokerGameTestCase(unittest.TestCase):
         """ Test Poker Game : dead blind + a player has uncalled bet and is not the winner.
         """
         game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        game.verbose = 3
+        game.verbose = int(os.environ.get('VERBOSE_T', 3))
         game.setVariant("holdem")
         game.setBettingStructure("100-200-no-limit")
 
@@ -5373,7 +5373,7 @@ class PokerGameTestCase(unittest.TestCase):
         another player is behind him. The turn ends now, the last player is not asked for his action.
         """
         game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        game.verbose = 3
+        game.verbose = int(os.environ.get('VERBOSE_T', 3))
         game.setVariant("holdem")
         game.setBettingStructure("100-200-no-limit")
 
@@ -5428,7 +5428,7 @@ class PokerGameTestCase(unittest.TestCase):
             in which the allin player was not.
         """
         game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        game.verbose = 3
+        game.verbose = int(os.environ.get('VERBOSE_T', 3))
         game.setVariant("holdem")
         game.setBettingStructure("100-200-no-limit")
 
