@@ -1,6 +1,19 @@
-2006-09-08  Loic Dachary  <loic@dachary.org>
+2006-09-13  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.19
+
+	* tests/test-game.py.in, pokerengine/pokergame.py:
+	use platform.system instead of os.name
+
+2006-09-12  Loic Dachary  <loic@dachary.org>
+
+	* debian/changelog: edgy & etch control files
+
+	* debian/control.etch, debian/control.edgy: edgy & etch
+
+	* conf/poker.level-10-20-no-limit.xml: 10-20 blinds
+
+2006-09-08  Loic Dachary  <loic@dachary.org>
 
 	* conf/poker.level-15-30-no-limit.xml: bb is 30
 
