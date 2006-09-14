@@ -46,69 +46,7 @@ class TestBugUncalled(unittest.TestCase):
 	del self.game
         
     def test01(self):
-        """ Test Poker Game : bug uncalled
-        """
-	game = self.game
-        player = {}
-
-#      6:publishPacket: current: type = POKER_PLAYER_CHIPS(124) serial = 7072 game_id = 102 bet = 0 money = 28401
-#      7:publishPacket: current: type = POKER_PLAYER_CHIPS(124) serial = 7073 game_id = 102 bet = 0 money = 165
-#      8:publishPacket: current: type = POKER_PLAYER_CHIPS(124) serial = 7074 game_id = 102 bet = 0 money = 873
-#      9:publishPacket: current: type = POKER_PLAYER_CHIPS(124) serial = 7075 game_id = 102 bet = 0 money = 100
-#     10:publishPacket: current: type = POKER_PLAYER_CHIPS(124) serial = 7082 game_id = 102 bet = 0 money = 3659
-#     11:publishPacket: current: type = POKER_PLAYER_CHIPS(124) serial = 7114 game_id = 102 bet = 0 money = 2413
-
-	money = {}
-	money[7072] = 28401
-	money[7073] = 165 
-	money[7074] = 873
-	money[7075] = 100
-	money[7082] = 3659
-	money[7114] = 2413
-
-
-        for serial in (7072, 7073, 7074, 7075, 7082, 7114):
-	    self.assert_(game.addPlayer(serial))
-            player[serial] = game.serial2player[serial]
-	    player[serial].money = 200000
-            player[serial].buy_in_payed = True
-            self.assert_(game.sit(serial))
-            #player[serial].auto_blind_ante = True
-            game.autoMuck(serial, pokergame.AUTO_MUCK_ALWAYS)
-	    player[serial].money = money[serial]
-
-        game.dealer_seat = 5
-
-        game.beginTurn(1)
-
-        #
-        #
-	game.deck = ['5d', '6d', '6s', 'Qd', '8d', '9c', '4c', '5d', '6d', 'Th', '8d', '9d', '4h', '5h', '6h', '6c', '8h']
-
-	game.setPosition(0)	
-	game.blind(7072, 12, 0)
-	game.blind(7073, 25, 0)
-        self.assertEqual(game.state, "pre-flop")
-	game.call(7074)
-	game.call(7075)
-	game.call(7082)	
-	game.call(7114)
-	game.call(7072)
-	game.check(7073)
-        self.assertEqual(game.state, "flop")
-	game.check(7072)
-	game.check(7073)
-	game.check(7074)
-	game.check(7075)
-	game.check(7082)
-	game.bet(7114, 150)
-	game.fold(7072)
-	game.call(7073)
-	game.fold(7074)
-	game.fold(7075)
-	game.callNraise(7082, 600)
-	game.fold(7114)
-
+	pass
     
 def run():
     suite = unittest.TestSuite()
