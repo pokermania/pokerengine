@@ -1,3 +1,9 @@
+poker-engine (1.0.20-1) unstable; urgency=low
+
+  * upstream sync
+
+ -- Loic Dachary (OuoU) <loic@debian.org>  Mon, 18 Sep 2006 15:23:34 +0200
+
 poker-engine (1.0.19-1) unstable; urgency=low
 
   * edgy & etch control files
