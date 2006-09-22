@@ -2,6 +2,14 @@
 
 	* Release 1.0.20
 
+	* ChangeLog, NEWS, debian/changelog, pokerengine/__init__.py:
+	version bump
+
+2006-09-18  cpinson  <cpinson@call>
+
+	* gentoo/dev-games/poker-engine/poker-engine-1.0.14-r1.ebuild:
+	remove old package
+
 2006-09-13  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.19
