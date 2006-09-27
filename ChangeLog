@@ -1,12 +1,12 @@
 2006-09-22  Cedric Pinson  <cpinson@freesheep.org>
 
+	* Release 1.0.20
+
 	* gentoo/dev-games/poker-engine/poker-engine-1.0.16-r1.ebuild:
 	* gentoo/dev-games/poker-engine/poker-engine-1.0.20-r1.ebuild:
 	update gentoo package
 
 2006-09-18  Loic Dachary  <loic@dachary.org>
-
-	* Release 1.0.20
 
 	* ChangeLog, NEWS, debian/changelog, pokerengine/__init__.py:
 	version bump
