@@ -2,8 +2,8 @@ Source: poker-engine
 Section: python
 Priority: optional
 Maintainer: Loic Dachary (OuoU) <loic@debian.org>
-Build-Depends-Indep: pkg-config, python-dev, python-libxml2, python-libxslt1, python-pypoker-eval (>= 132.0), perl, automake1.9, rsync
-Build-Depends: debhelper (>= 4.0.0), cdbs
+Build-Depends-Indep: pkg-config, python-dev, perl, automake1.9, rsync
+Build-Depends: debhelper (>= 4.0.0), cdbs, python-libxml2, python-libxslt1, python-pypoker-eval (>= 132.0)
 XS-Python-Version: >= 2.3
 Standards-Version: 3.6.1.1
 
