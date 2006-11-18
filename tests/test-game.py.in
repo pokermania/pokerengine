@@ -3260,6 +3260,54 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.pot, 0)        
         
     # -----------------------------------------------------------------------------------------------------
+    def testAutoPayBlindAllIn2(self):
+        """ Test Poker Game : Auto pay blind all in and a third player is to act"""
+        
+        self.game.variant = 'holdem'
+        
+        # Create players
+        self.game.setMaxPlayers(3)
+        player1 = self.AddPlayerAndSit(1, 2)
+        player1.money = 600
+        player2 = self.AddPlayerAndSit(2, 5)
+        player2.money = 400
+        player3 = self.AddPlayerAndSit(3, 7)
+        player3.money = 600
+        
+        # Blind and ante turn
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isBlindAnteRound())
+        
+        # The players 2 automatically pay the blind
+        self.game.autoBlindAnte(2)
+        self.failUnlessEqual(self.game.getPlayerMoney(2), 0)
+        self.failUnlessEqual(player2.bet, 400)
+        self.failUnless(player2.blind)
+        
+        # Player 2 is all in
+        self.failUnless(player2.isAllIn())
+        
+        # The players 3 automatically pay the blind
+        self.game.autoBlindAnte(3)
+
+        # The players 1 is to act and calls
+        self.failUnless(self.game.canAct(1))
+        self.failUnless(self.game.call(1))
+        
+        # The game is finished
+        self.failUnlessEqual(self.game.state, pokergame.GAME_STATE_END)
+        
+        # Check the end information
+        self.failUnless(self.game.isGameEndInformationValid())
+        
+        # The player 3 win
+        self.failUnlessEqual(self.game.winners, [3])
+        self.failUnlessEqual(player3.money, 600 + 600 + 400 - self.game.getRakedAmount() )
+        self.failUnlessEqual(player2.money, 0)
+        self.failUnlessEqual(player1.money, 0)
+        self.failUnlessEqual(self.game.pot, 0)        
+        
+    # -----------------------------------------------------------------------------------------------------
     def testAutoPayAnte(self):
         """ Test Poker Game : Auto pay ante"""
         
@@ -5590,6 +5638,7 @@ def GetTestedModule():
   
 # -----------------------------------------------------------------------------------------------------
 def Run(verbose):
+#    unittest.TestLoader.testMethodPrefix = "testAutoPayBlindAllIn2"
     return unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
     
 # -----------------------------------------------------------------------------------------------------

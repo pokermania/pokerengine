@@ -1316,7 +1316,7 @@ class PokerGame:
             # The player under the gun is the first to talk
             #
             count = self.inGameCount()
-            if count < 2:
+            if count < 2 and self.betsEqual():
                 raise UserWarning, "initialization but less than two players in game"
             if self.seatsCount() == 2:
                 self.position = self.dealer
@@ -2052,9 +2052,9 @@ class PokerGame:
                 self.historyAdd("player_list", self.player_list)
             self.dealerFromDealerSeat()
             self.first_turn = False
-            if self.inGameCount() < 2:
+            if self.inGameCount() < 2 and self.betsEqual():
                 #
-                # All players are all-in except one, distribute all
+                # All players are all-in (except one, maybe), distribute all
                 # cards and figure out who wins.
                 #
                 if self.verbose >= 2: self.message("less than two players not all-in")
