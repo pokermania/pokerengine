@@ -1,6 +1,15 @@
+poker-engine (1.0.21-1) unstable; urgency=low
+
+  * upstream sync
+
+ -- Loic Dachary (OuoU) <loic@debian.org>  Sat,  2 Dec 2006 20:38:25 +0100
+
 poker-engine (1.0.20-1) unstable; urgency=low
 
   * upstream sync
+  
+  * Moved python-pypoker-eval, python-libxml2
+    and python-libxslt1 to Build-Depends (closes: #391865)
 
  -- Loic Dachary (OuoU) <loic@debian.org>  Mon, 18 Sep 2006 15:23:34 +0200
 
