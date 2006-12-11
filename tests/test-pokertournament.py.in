@@ -1,4 +1,5 @@
 # -*- mode: python -*-
+# Copyright (C) 2006, 2007 Loic Dachary <loic@dachary.org>
 # Copyright (C) 2006 Mekensleep
 #
 # Mekensleep
@@ -157,7 +158,8 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         arguments =  { \
                             'dirs' : self.dirs, \
-                            'players_quota' :  5, \
+                            'players_quota' :  25, \
+                            'players_min' :  20, \
                             'sit_n_go' : 'n',  \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
                             }                                
@@ -194,16 +196,15 @@ class PokerTournamentTestCase(unittest.TestCase):
         # Change the tournament state
         tournament.changeState(pokertournament.TOURNAMENT_STATE_RUNNING)
         self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_RUNNING)
-        
+        # Players can not be regsitered
+        self.failIf(tournament.canRegister(3))
+        self.failIf(tournament.register(3))
+
+        tournament.can_register = True
         # Register the player
         self.failUnless(tournament.can_register)
         self.failUnless(tournament.canRegister(3))
         self.failUnless(tournament.register(3))
-        
-        # Players can not be regsitered
-        tournament.can_register = False
-        self.failIf(tournament.canRegister(3))
-        self.failIf(tournament.register(3))
         
     # -----------------------------------------------------------------------------------------------------    
     def testChangeState(self):
@@ -299,7 +300,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         arguments =  { \
                             'dirs' : self.dirs, \
                             'players_quota' :  10, \
-                            'seats_per_game' : 2, \
+                            'seats_per_game' : 3, \
                             'sit_n_go' : 'n', \
                             'variant' : 'holdem', \
                             'betting_structure' : 'level-15-30-no-limit', \
@@ -308,17 +309,18 @@ class PokerTournamentTestCase(unittest.TestCase):
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
-        for player in range(tournament.players_quota):
+        nplayers = 9
+        for player in xrange(1,nplayers+1):
             self.failUnless(tournament.register(player))
             
-        self.failUnlessEqual(tournament.registered, tournament.players_quota)
+        self.failUnlessEqual(tournament.registered, nplayers)
         self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
         
         self.failUnlessEqual(tournament.id2game, {})
         
         tournament.createGames()
-        self.failUnlessEqual(len(tournament.id2game), tournament.players_quota / tournament.seats_per_game)
-        self.failUnlessEqual(len(tournament.games), tournament.players_quota / tournament.seats_per_game)
+        self.failUnlessEqual(len(tournament.id2game), nplayers / tournament.seats_per_game)
+        self.failUnlessEqual(len(tournament.games), nplayers / tournament.seats_per_game)
         
         id = 1
         for game in tournament.games:
@@ -452,7 +454,8 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         arguments =  { \
                             'dirs' : self.dirs, \
-                            'players_quota' :  10, \
+                            'players_quota' :  25, \
+                            'players_min' :  20, \
                             'seats_per_game' : 5, \
                             'sit_n_go' : 'n', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
@@ -496,7 +499,8 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         arguments =  { \
                             'dirs' : self.dirs, \
-                            'players_quota' :  10, \
+                            'players_quota' :  20, \
+                            'players_min' :  15, \
                             'seats_per_game' : 5, \
                             'sit_n_go' : 'n', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
@@ -523,7 +527,8 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         arguments =  { \
                             'dirs' : self.dirs, \
-                            'players_quota' :  10, \
+                            'players_quota' :  25, \
+                            'players_min' :  20, \
                             'seats_per_game' : 5, \
                             'sit_n_go' : 'n', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
@@ -619,6 +624,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         arguments =  { \
                             'dirs' : self.dirs, \
                             'players_quota' :  50, \
+                            'players_min' :  25, \
                             'seats_per_game' : 5, \
                             'sit_n_go' : 'n', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
@@ -655,6 +661,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         arguments =  { \
                             'dirs' : self.dirs, \
                             'players_quota' :  20, \
+                            'players_min' :  15, \
                             'seats_per_game' : 5, \
                             'sit_n_go' : 'n', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
@@ -700,6 +707,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         arguments =  { \
                             'dirs' : self.dirs, \
                             'players_quota' :  20, \
+                            'players_min' :  15, \
                             'seats_per_game' : 5, \
                             'sit_n_go' : 'n', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
