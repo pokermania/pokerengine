@@ -1,4 +1,5 @@
 #
+# Copyright (C) 2006, 2007 Loic Dachary <loic@dachary.org>
 # Copyright (C) 2004, 2005, 2006 Mekensleep
 #
 # Mekensleep
@@ -170,6 +171,7 @@ class PokerTournament:
         self.serial = kwargs.get('serial', 1)
         self.verbose = kwargs.get('verbose', 0)
         self.players_quota = kwargs.get('players_quota', 10)
+        self.players_min = kwargs.get('players_min', 10)
         self.variant = kwargs.get('variant', 'holdem')
         self.betting_structure = kwargs.get('betting_structure', 'level-15-30-no-limit')
         self.dirs = kwargs.get('dirs', [])
@@ -217,7 +219,9 @@ class PokerTournament:
         print self.prefix + "[PokerTournament %s] " % self.name + message
         
     def canRun(self):
-        return self.start_time < time.time() and self.sit_n_go == 'y' and self.players_quota <= self.registered
+        return ( self.start_time < time.time() and
+                 ( ( self.sit_n_go == 'y' and self.registered >= self.players_quota ) or
+                   ( self.sit_n_go == 'n' and self.registered >= self.players_min ) ) )
 
     def getRank(self, serial):
         try:
@@ -238,15 +242,18 @@ class PokerTournament:
         else:
             if self.verbose > 0: self.message("updateRegistering: should not be called while tournament is not in announced state")
             return -1
-            
+
+    def updateRunning(self):
+            if self.state == TOURNAMENT_STATE_REGISTERING:
+                if self.canRun(): self.changeState(TOURNAMENT_STATE_RUNNING)
+        
     def changeState(self, state):
         if self.state == TOURNAMENT_STATE_ANNOUNCED and state == TOURNAMENT_STATE_REGISTERING:
             self.can_register = True
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_RUNNING:
             self.start_time = time.time()
             self.createGames()
-            if self.sit_n_go == 'y' or self.registered >= self.players_quota:
-                self.can_register = False
+            self.can_register = False
         elif self.state == TOURNAMENT_STATE_RUNNING and state == TOURNAMENT_STATE_COMPLETE:
             self.finish_time = time.time()
         else:
@@ -260,7 +267,7 @@ class PokerTournament:
         return serial in self.players
         
     def canRegister(self, serial):
-        if self.can_register:
+        if self.can_register and self.registered < self.players_quota:
             return not self.isRegistered(serial)
         else:
             return False
@@ -273,7 +280,7 @@ class PokerTournament:
             self.players.append(serial)
             self.registered += 1
             if self.state == TOURNAMENT_STATE_REGISTERING:
-                if self.canRun(): self.changeState(TOURNAMENT_STATE_RUNNING)
+                self.updateRunning()
             elif self.state == TOURNAMENT_STATE_RUNNING:
                 self.sitPlayer(serial)
             return True
