@@ -443,16 +443,17 @@ class PokerTournament:
             winners = int(candidates_count * 0.1)
 
         prizes = []
-        money_left = max(self.prize_min, buy_in * candidates_count)
+        prize_pool = max(self.prize_min, buy_in * candidates_count)
+        money_left = prize_pool
         while winners > 0:
-            if money_left / winners < int(buy_in * 2.5):
+            if money_left / winners < max(1, prize_pool / 100, int(buy_in * 2.5)):
                 prizes.extend([ money_left / winners ] * winners)
                 winners = 0
             else:
                 money_left /= 2
                 winners -= 1
                 prizes.append(money_left)
-        rest = buy_in * candidates_count - sum(prizes)
+        rest = prize_pool - sum(prizes)
         prizes[0] += rest
         return prizes
                 
