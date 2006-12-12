@@ -183,6 +183,7 @@ class PokerTournament:
         self.rebuy_delay = kwargs.get('rebuy_delay', 0)
         self.add_on = kwargs.get('add_on', 0)
         self.add_on_delay = kwargs.get('add_on_delay', 60)
+        self.prize_min = kwargs.get('prize_min', 0)
         self.prizes_specs = kwargs.get('prizes_specs', "table")
         self.rank2prize = None
         self.finish_time = -1
@@ -442,7 +443,7 @@ class PokerTournament:
             winners = int(candidates_count * 0.1)
 
         prizes = []
-        money_left = buy_in * candidates_count
+        money_left = max(self.prize_min, buy_in * candidates_count)
         while winners > 0:
             if money_left / winners < int(buy_in * 2.5):
                 prizes.extend([ money_left / winners ] * winners)
@@ -456,11 +457,11 @@ class PokerTournament:
         return prizes
                 
     def prizesTable(self, buy_in):
-        for ( max, payouts ) in self.payouts:
-            if self.registered <= max:
+        for ( maximum, payouts ) in self.payouts:
+            if self.registered <= maximum:
                 break
 
-        total = self.registered * buy_in
+        total = max(self.prize_min, self.registered * buy_in)
         prizes = map(lambda percent: int(total * percent), payouts)
         #
         # What's left because of rounding errors goes to the tournament winner
