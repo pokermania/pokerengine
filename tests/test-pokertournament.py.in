@@ -440,15 +440,15 @@ class PokerTournamentTestCase(unittest.TestCase):
             self.failUnless(tournament.register(player))
         
         tournament.prizes_specs = 'table'
-        tournament.rank2prize = None
+        tournament.rank2prize = {}
         self.failUnlessEqual(tournament.prizesTable(100), tournament.prizes(100))
         
         tournament.prizes_specs = 'algorithm'
-        tournament.rank2prize = None
+        tournament.rank2prize = {}
         self.failUnlessEqual(tournament.prizesAlgorithm(100), tournament.prizes(100))
         
         tournament.prizes_specs = 'invalid'
-        tournament.rank2prize = None
+        tournament.rank2prize = {}
         self.failUnlessEqual(tournament.prizes(100), None)
         
     # -----------------------------------------------------------------------------------------------------    
