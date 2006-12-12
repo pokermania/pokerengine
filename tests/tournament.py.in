@@ -445,47 +445,61 @@ class TestPrizes(unittest.TestCase):
         tourney.prizes_specs = "algorithm"
         
         tourney.registered = 10
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [32, 12, 6])
 
         tourney.registered = 20
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [57, 25, 12, 6])
 
         tourney.registered = 50
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [129, 62, 31, 7, 7, 7, 7])
                         
         tourney.registered = 200
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [506, 250, 125, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7])
 
         tourney.prizes_specs = "table"
         
         tourney.registered = 3
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [15])
 
         tourney.registered = 6
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [21, 9])
 
         tourney.registered = 30
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [75, 45, 30])
 
         tourney.registered = 50
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [100, 60, 40, 30, 20])
 
         tourney.registered = 200
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [300, 200, 125, 90, 80, 65, 50, 40, 30, 20])
                         
         tourney.registered = 300
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [453, 292, 180, 120, 97, 75, 52, 37, 26, 18, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15])
 
         tourney.registered = 500
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [641, 375, 250, 200, 125, 100, 75, 50, 43, 31, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18])
 
         tourney.registered = 700
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [717, 437, 315, 245, 175, 140, 105, 61, 52, 43, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17])
 
         tourney.registered = 1000
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [1026, 600, 450, 350, 250, 200, 150, 87, 75, 62, 47, 47, 47, 47, 47, 47, 47, 47, 47, 47, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10])
 
         tourney.registered = 5000
+        tourney.rank2prize = None
         self.assertEqual(tourney.prizes(5), [5036, 3000, 2000, 1500, 1250, 1000, 625, 437, 312, 250, 237, 237, 237, 237, 237, 237, 237, 237, 237, 237, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 174, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37])
 
                         
