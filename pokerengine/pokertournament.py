@@ -184,6 +184,7 @@ class PokerTournament:
         self.add_on = kwargs.get('add_on', 0)
         self.add_on_delay = kwargs.get('add_on_delay', 60)
         self.prizes_specs = kwargs.get('prizes_specs', "table")
+        self.rank2prize = None
         self.finish_time = -1
         if type(self.start_time) is StringType:
             self.start_time = int(time.mktime(time.strptime(self.start_time, "%Y/%m/%d %H:%M")))
@@ -414,12 +415,12 @@ class PokerTournament:
     def prizes(self, buy_in):
         if self.can_register:
             return None
-        if self.prizes_specs == "algorithm":
-            return self.prizesAlgorithm(buy_in)
-        elif self.prizes_specs == "table":
-            return self.prizesTable(buy_in)
-        else:
-            return None
+        if not self.rank2prize:
+            if self.prizes_specs == "algorithm":
+                self.rank2prize = self.prizesAlgorithm(buy_in)
+            elif self.prizes_specs == "table":
+                self.rank2prize = self.prizesTable(buy_in)
+        return self.rank2prize
 
     def prizesAlgorithm(self, buy_in):
         candidates_count = self.registered
