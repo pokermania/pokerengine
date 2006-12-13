@@ -263,7 +263,9 @@ class PokerTournament:
                     self.changeState(TOURNAMENT_STATE_RUNNING)
                 elif ready == None:
                     self.changeState(TOURNAMENT_STATE_CANCELED)
-        
+                elif ready == False:
+                    pass
+
     def changeState(self, state):
         if self.state == TOURNAMENT_STATE_ANNOUNCED and state == TOURNAMENT_STATE_REGISTERING:
             self.can_register = True
@@ -273,6 +275,7 @@ class PokerTournament:
             self.can_register = False
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_CANCELED:
             self.cancel()
+            self.finish_time = time.time()
         elif self.state == TOURNAMENT_STATE_RUNNING and state == TOURNAMENT_STATE_COMPLETE:
             self.finish_time = time.time()
         else:
