@@ -36,6 +36,7 @@ TOURNAMENT_STATE_ANNOUNCED = "announced"
 TOURNAMENT_STATE_REGISTERING = "registering"
 TOURNAMENT_STATE_RUNNING = "running"
 TOURNAMENT_STATE_COMPLETE = "complete"
+TOURNAMENT_STATE_CANCELED = "canceled"
             
 def equalizeCandidates(games):
     #
@@ -171,7 +172,7 @@ class PokerTournament:
         self.serial = kwargs.get('serial', 1)
         self.verbose = kwargs.get('verbose', 0)
         self.players_quota = kwargs.get('players_quota', 10)
-        self.players_min = kwargs.get('players_min', 10)
+        self.players_min = kwargs.get('players_min', 2)
         self.variant = kwargs.get('variant', 'holdem')
         self.betting_structure = kwargs.get('betting_structure', 'level-15-30-no-limit')
         self.dirs = kwargs.get('dirs', [])
@@ -206,6 +207,7 @@ class PokerTournament:
         self.callback_destroy_game = lambda tournament, game: True
         self.callback_move_player = lambda tournament, from_game_id, to_game_id, serial: self.movePlayer(from_game_id, to_game_id, serial)
         self.callback_remove_player = lambda tournament, game_id, serial: self.removePlayer(game_id, serial)
+        self.callback_cancel = lambda tournament: True
         self.loadPayouts()
         self.updateRegistering()
 
@@ -221,9 +223,18 @@ class PokerTournament:
         print self.prefix + "[PokerTournament %s] " % self.name + message
         
     def canRun(self):
-        return ( self.start_time < time.time() and
-                 ( ( self.sit_n_go == 'y' and self.registered >= self.players_quota ) or
-                   ( self.sit_n_go == 'n' and self.registered >= self.players_min ) ) )
+        if self.start_time < time.time():
+            if self.sit_n_go == 'y' and self.registered >= self.players_quota:
+                return True
+            elif self.sit_n_go == 'n':
+                if self.registered >= self.players_min:
+                    return True
+                else:
+                    return None
+            else:
+                return False
+        else:
+            return False
 
     def getRank(self, serial):
         try:
@@ -247,7 +258,11 @@ class PokerTournament:
 
     def updateRunning(self):
             if self.state == TOURNAMENT_STATE_REGISTERING:
-                if self.canRun(): self.changeState(TOURNAMENT_STATE_RUNNING)
+                ready = self.canRun()
+                if ready == True:
+                    self.changeState(TOURNAMENT_STATE_RUNNING)
+                elif ready == None:
+                    self.changeState(TOURNAMENT_STATE_CANCELED)
         
     def changeState(self, state):
         if self.state == TOURNAMENT_STATE_ANNOUNCED and state == TOURNAMENT_STATE_REGISTERING:
@@ -256,6 +271,8 @@ class PokerTournament:
             self.start_time = time.time()
             self.createGames()
             self.can_register = False
+        elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_CANCELED:
+            self.cancel()
         elif self.state == TOURNAMENT_STATE_RUNNING and state == TOURNAMENT_STATE_COMPLETE:
             self.finish_time = time.time()
         else:
@@ -297,6 +314,15 @@ class PokerTournament:
         else:
             return False
 
+    def cancel(self):
+        if self.state == TOURNAMENT_STATE_REGISTERING:
+            self.callback_cancel(self)
+            self.players = []
+            self.registered = 0
+            return True
+        else:
+            return False
+        
     def sitPlayer(self, serial):
         pass
 
