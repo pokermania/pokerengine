@@ -40,15 +40,15 @@ class PokerTournamentTestCase(unittest.TestCase):
     
     TestConfDirectory = '@top_srcdir@/conf'
         
-    # -----------------------------------------------------------------------------------------------------
+    # ---------------------------------------------------------
     def setUp(self):
         self.dirs = ['.', PokerTournamentTestCase.TestConfDirectory, '~/conf']
     
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def tearDown(self):
         pass
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testTournamentDefaultInitialisation(self):
         """Test Poker Tournament : Default initialisation"""
         
@@ -86,7 +86,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnless(tournament.can_register)
         
             
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testTournamentInitialisation(self):
         """Test Poker Tournament : Initialisation"""
         
@@ -128,7 +128,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         # TODO Payout
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testUpdateRegistering(self):
         """Test Poker Tournament : Update registering"""
         
@@ -152,7 +152,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         self.failUnlessEqual(tournament.updateRegistering(), -1)
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testRegister(self):
         """Test Poker Tounament : Register"""
         
@@ -160,6 +160,7 @@ class PokerTournamentTestCase(unittest.TestCase):
                             'dirs' : self.dirs, \
                             'players_quota' :  25, \
                             'players_min' :  20, \
+                            'start_time' : time.time() + 20000, \
                             'sit_n_go' : 'n',  \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
                             }                                
@@ -206,7 +207,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnless(tournament.canRegister(3))
         self.failUnless(tournament.register(3))
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testChangeState(self):
         """Test Poker Tournament : Change state"""
         
@@ -240,7 +241,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_COMPLETE)
         
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testCanUnregister(self):
         """Test Poker Tounament : Can unregister"""
         
@@ -264,7 +265,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failIfEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
         self.failIf(tournament.canUnregister(1))
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testUnregister(self):
         """Test Poker Tounament : Unregister"""
         
@@ -293,13 +294,15 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         self.failIf(tournament.unregister(1))
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testCreateGames(self):
         """Test Poker Tournament : Create games"""
         
         arguments =  { \
                             'dirs' : self.dirs, \
                             'players_quota' :  10, \
+                            'players_min' :  10, \
+                            'start_time' : time.time() + 20000, \
                             'seats_per_game' : 3, \
                             'sit_n_go' : 'n', \
                             'variant' : 'holdem', \
@@ -337,7 +340,7 @@ class PokerTournamentTestCase(unittest.TestCase):
 
             self.failIf(game.is_open)
             
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testPrizesAlgorithm(self):
         """Test Poker Tournament : Prizes algorithm"""
         
@@ -382,7 +385,7 @@ class PokerTournamentTestCase(unittest.TestCase):
             self.failUnless(tournament.register(player))
         self.failUnlessEqual(len(tournament.prizesAlgorithm(100)), int(298 * 0.10))
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testPrizesTable(self):
         """Test Poker Tournament : Prizes table"""
         
@@ -419,7 +422,7 @@ class PokerTournamentTestCase(unittest.TestCase):
             self.failUnless(tournament.register(player))
         self.failUnlessEqual(len(tournament.prizesTable(100)), 20)
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testPrizes(self):
         """Test Poker Tournament : Prizes"""
         
@@ -451,7 +454,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         tournament.rank2prize = {}
         self.failUnlessEqual(tournament.prizes(100), None)
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testMovePlayer(self):
         """Test Poker Tournament : Move player"""
         
@@ -459,6 +462,7 @@ class PokerTournamentTestCase(unittest.TestCase):
                             'dirs' : self.dirs, \
                             'players_quota' :  25, \
                             'players_min' :  20, \
+                            'start_time' : time.time() + 20000, \
                             'seats_per_game' : 5, \
                             'sit_n_go' : 'n', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
@@ -496,7 +500,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnless(player.isSitOut())
         self.failUnless(player.isBot())
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testEqualizeCandidates(self):
         """Test Poker Tournament : Equalize candidates"""
         
@@ -504,6 +508,7 @@ class PokerTournamentTestCase(unittest.TestCase):
                             'dirs' : self.dirs, \
                             'players_quota' :  20, \
                             'players_min' :  15, \
+                            'start_time' : time.time() + 20000, \
                             'seats_per_game' : 5, \
                             'sit_n_go' : 'n', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
@@ -524,7 +529,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(want, [[3, 3]])
         self.failUnlessEqual(provide, [(1, [7, 8]), (2, [2, 3])])
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testEqualizeGames(self):
         """Test Poker Tournament : Equalize games"""
         
@@ -532,6 +537,7 @@ class PokerTournamentTestCase(unittest.TestCase):
                             'dirs' : self.dirs, \
                             'players_quota' :  25, \
                             'players_min' :  20, \
+                            'start_time' : time.time() + 20000, \
                             'seats_per_game' : 5, \
                             'sit_n_go' : 'n', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
@@ -571,7 +577,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         # 2 games broken to complete the last one
         self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, int(os.environ.get('VERBOSE_T', 3)), sys.stdout.write), [(1, 4, 11), (1, 4, 12), (2, 4, 6), (2, 4, 7)])
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testBreakGame(self):
         """Test Poker Tournament : Break game"""
         
@@ -620,7 +626,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         to_fill_2['seats_left'] = 1
         self.failUnlessEqual(pokertournament.breakGame(to_break, [to_fill_1, to_fill_2]), [(1, 3, [1]), (1, 2, [2])])
 
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testBreakGames(self):
         """Test Poker Tournament : Break games"""
         
@@ -628,6 +634,7 @@ class PokerTournamentTestCase(unittest.TestCase):
                             'dirs' : self.dirs, \
                             'players_quota' :  50, \
                             'players_min' :  25, \
+                            'start_time' : time.time() + 20000, \
                             'seats_per_game' : 5, \
                             'sit_n_go' : 'n', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
@@ -657,7 +664,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         # Impossible to break less than 2 game
         self.failUnlessEqual(pokertournament.breakGames([tournament.games[0]]), [])
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testBalanceGames(self):
         """Test Poker Tournament : Balance games"""
         
@@ -665,6 +672,7 @@ class PokerTournamentTestCase(unittest.TestCase):
                             'dirs' : self.dirs, \
                             'players_quota' :  20, \
                             'players_min' :  15, \
+                            'start_time' : time.time() + 20000, \
                             'seats_per_game' : 5, \
                             'sit_n_go' : 'n', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
@@ -711,6 +719,7 @@ class PokerTournamentTestCase(unittest.TestCase):
                             'dirs' : self.dirs, \
                             'players_quota' :  20, \
                             'players_min' :  15, \
+                            'start_time' : time.time() + 20000, \
                             'seats_per_game' : 5, \
                             'sit_n_go' : 'n', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
@@ -737,7 +746,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         # The game 3 has won 3 players
         self.failUnlessEqual(len(tournament.games[2].serialsAll()), 5)
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testEndTurn(self):
         """Test Poker Tournament : End turn"""
         
@@ -806,7 +815,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(len(tournament.games), 0)
         self.failUnlessEqual(len(tournament.id2game), 0)
         
-    # -----------------------------------------------------------------------------------------------------    
+    # -------------------------------------------------------
     def testGetRank(self):
         """Test Poker Tournament : Get rank"""
         
@@ -814,6 +823,7 @@ class PokerTournamentTestCase(unittest.TestCase):
                             'dirs' : self.dirs, \
                             'players_quota' :  20, \
                             'seats_per_game' : 5, \
+                            'start_time' : time.time() + 20000, \
                             'sit_n_go' : 'n', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
                             }
@@ -833,21 +843,69 @@ class PokerTournamentTestCase(unittest.TestCase):
             if player not in tournament.winners:
                 self.failUnlessEqual(tournament.getRank(player), -1)
 
-# -----------------------------------------------------------------------------------------------------
+    # -------------------------------------------------------
+    def testCancel(self):
+        """Test Poker Tournament : Cancel"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  20, \
+                            'players_min' :  5, \
+                            'start_time' : time.time() + 20000, \
+                            'seats_per_game' : 5, \
+                            'sit_n_go' : 'n', \
+                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        for player in range(3):
+            self.failUnless(tournament.register(player))
+        
+        self.failUnlessEqual([0, 1, 2], tournament.players)
+        tournament.start_time = 0
+        self.assertEqual(None, tournament.canRun())
+        tournament.updateRunning()
+        self.failUnlessEqual([], tournament.players)
+        self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_CANCELED, tournament.state)
+        self.failIf(tournament.cancel())
+
+    # -------------------------------------------------------
+    def testRunRegular(self):
+        """Test Poker Tournament : Cancel"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  20, \
+                            'start_time' : time.time() + 20000, \
+                            'seats_per_game' : 5, \
+                            'sit_n_go' : 'n', \
+                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        self.failUnless(tournament.register(1))
+        tournament.start_time = 0
+        self.failUnless(tournament.register(2))
+        
+        self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_RUNNING, tournament.state)
+
+# ---------------------------------------------------------
 def GetTestSuite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(PokerTournamentTestCase))
     return suite
     
-# -----------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------
 def GetTestedModule():
     return pokertournament
   
-# -----------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------
 def Run(verbose):
     return unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
     
-# -----------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------
 if __name__ == '__main__':
     if Run(int(os.environ.get('VERBOSE_T', 2))).wasSuccessful():
         sys.exit(0)
