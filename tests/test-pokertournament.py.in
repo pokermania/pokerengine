@@ -346,6 +346,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         arguments =  { \
                             'dirs' : self.dirs, \
+                            'buy_in' : 100, \
                             'players_quota' :  300, \
                             'seats_per_game' : 2, \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
@@ -355,35 +356,35 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         for player in range(4):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(tournament.prizesAlgorithm(100), [400])
+        self.failUnlessEqual(tournament.prizesAlgorithm(), [400])
         
         for player in range(4, 8):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(tournament.prizesAlgorithm(100), [600, 200])
+        self.failUnlessEqual(tournament.prizesAlgorithm(), [600, 200])
         
         for player in range(8, 18):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(tournament.prizesAlgorithm(100), [1125, 450, 225])
+        self.failUnlessEqual(tournament.prizesAlgorithm(), [1125, 450, 225])
         
         for player in range(18, 28):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(tournament.prizesAlgorithm(100), [1575, 700, 350, 175])
+        self.failUnlessEqual(tournament.prizesAlgorithm(), [1575, 700, 350, 175])
         
         for player in range(28, 38):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(tournament.prizesAlgorithm(100), [1902, 950, 237, 237, 237, 237])
+        self.failUnlessEqual(tournament.prizesAlgorithm(), [1902, 950, 237, 237, 237, 237])
         
         for player in range(38, 48):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(len(tournament.prizesAlgorithm(100)), int(48 * 0.20))
+        self.failUnlessEqual(len(tournament.prizesAlgorithm()), int(48 * 0.20))
         
         for player in range(48, 198):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(len(tournament.prizesAlgorithm(100)), int(198 * 0.15))
+        self.failUnlessEqual(len(tournament.prizesAlgorithm()), int(198 * 0.15))
         
         for player in range(198, 298):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(len(tournament.prizesAlgorithm(100)), int(298 * 0.10))
+        self.failUnlessEqual(len(tournament.prizesAlgorithm()), int(298 * 0.10))
         
     # -------------------------------------------------------
     def testPrizesTable(self):
@@ -391,6 +392,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         arguments =  { \
                             'dirs' : self.dirs, \
+                            'buy_in' : 100, \
                             'players_quota' :  300, \
                             'seats_per_game' : 2, \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
@@ -400,27 +402,27 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         for player in range(2):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(tournament.prizesTable(100), [200])
+        self.failUnlessEqual(tournament.prizesTable(), [200])
         
         for player in range(4, 7):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(tournament.prizesTable(100), [350, 150])
+        self.failUnlessEqual(tournament.prizesTable(), [350, 150])
         
         for player in range(7, 28):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(tournament.prizesTable(100), [1300, 780, 520])
+        self.failUnlessEqual(tournament.prizesTable(), [1300, 780, 520])
         
         for player in range(28, 48):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(tournament.prizesTable(100), [1840, 1104, 736, 552, 368])
+        self.failUnlessEqual(tournament.prizesTable(), [1840, 1104, 736, 552, 368])
         
         for player in range(48, 198):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(tournament.prizesTable(100), [5880, 3920, 2450, 1764, 1568, 1274, 980, 784, 588, 392])
+        self.failUnlessEqual(tournament.prizesTable(), [5880, 3920, 2450, 1764, 1568, 1274, 980, 784, 588, 392])
         
         for player in range(198, 298):
             self.failUnless(tournament.register(player))
-        self.failUnlessEqual(len(tournament.prizesTable(100)), 20)
+        self.failUnlessEqual(len(tournament.prizesTable()), 20)
         
     # -------------------------------------------------------
     def testPrizes(self):
