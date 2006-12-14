@@ -83,6 +83,8 @@ class PokerRandom(random.Random):
 if platform.system() == "Linux":
   random._inst = PokerRandom()
 
+shuffler = random
+
 # muck constants
 AUTO_MUCK_NEVER  = 0x00
 AUTO_MUCK_WIN    = 0x01
@@ -486,7 +488,7 @@ class PokerGame:
         
         self.eval = PokerEval()
         if self.is_directing:
-          self.shuffler = random
+          self.shuffler = shuffler
         self.reset()
         self.rake = None
         self.raked_amount = 0
