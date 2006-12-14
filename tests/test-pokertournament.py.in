@@ -429,6 +429,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         arguments =  { \
                             'dirs' : self.dirs, \
                             'players_quota' :  20, \
+                            'buy_in' :  100, \
                             'seats_per_game' : 2, \
                             'sit_n_go' : 'y', \
                             'prizes_specs' :  'table', \
@@ -437,22 +438,22 @@ class PokerTournamentTestCase(unittest.TestCase):
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
-        self.failUnlessEqual(tournament.prizes(100), None)
+        self.failUnlessEqual(tournament.prizes(), None)
         
         for player in range(20):
             self.failUnless(tournament.register(player))
         
         tournament.prizes_specs = 'table'
-        tournament.rank2prize = {}
-        self.failUnlessEqual(tournament.prizesTable(100), tournament.prizes(100))
+        tournament.rank2prize = None
+        self.failUnlessEqual(tournament.prizesTable(), tournament.prizes())
         
         tournament.prizes_specs = 'algorithm'
-        tournament.rank2prize = {}
-        self.failUnlessEqual(tournament.prizesAlgorithm(100), tournament.prizes(100))
+        tournament.rank2prize = None
+        self.failUnlessEqual(tournament.prizesAlgorithm(), tournament.prizes())
         
         tournament.prizes_specs = 'invalid'
-        tournament.rank2prize = {}
-        self.failUnlessEqual(tournament.prizes(100), None)
+        tournament.rank2prize = None
+        self.failUnlessEqual(tournament.prizes(), None)
         
     # -------------------------------------------------------
     def testMovePlayer(self):
