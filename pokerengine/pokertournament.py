@@ -181,12 +181,14 @@ class PokerTournament:
         self.register_time = kwargs.get('register_time', 0)
         self.start_time = kwargs.get('start_time', 0)
         self.breaks_interval = kwargs.get('breaks_interval', 60)
+        self.buy_in = int(kwargs.get('buy_in', 0))
+        self.rake = int(kwargs.get('rake', 0))
         self.rebuy_delay = kwargs.get('rebuy_delay', 0)
         self.add_on = kwargs.get('add_on', 0)
         self.add_on_delay = kwargs.get('add_on_delay', 60)
         self.prize_min = kwargs.get('prize_min', 0)
         self.prizes_specs = kwargs.get('prizes_specs', "table")
-        self.rank2prize = {}
+        self.rank2prize = None
         self.finish_time = -1
         if type(self.start_time) is StringType:
             self.start_time = int(time.mktime(time.strptime(self.start_time, "%Y/%m/%d %H:%M")))
@@ -442,20 +444,18 @@ class PokerTournament:
         
         return len(to_equalize) > 0
 
-    def prizes(self, buy_in):
+    def prizes(self):
         if self.can_register:
             return None
-        if not self.rank2prize.has_key(buy_in):
+        if not self.rank2prize:
             if self.prizes_specs == "algorithm":
-                self.rank2prize[buy_in] = self.prizesAlgorithm(buy_in)
+                self.rank2prize = self.prizesAlgorithm()
             elif self.prizes_specs == "table":
-                self.rank2prize[buy_in] = self.prizesTable(buy_in)
-        if self.rank2prize.has_key(buy_in):
-            return self.rank2prize[buy_in]
-        else:
-            return None
+                self.rank2prize = self.prizesTable()
+        return self.rank2prize
 
-    def prizesAlgorithm(self, buy_in):
+    def prizesAlgorithm(self):
+        buy_in = self.buy_in
         candidates_count = self.registered
         if candidates_count < 5:
             winners = 1
@@ -489,7 +489,8 @@ class PokerTournament:
         prizes[0] += rest
         return prizes
                 
-    def prizesTable(self, buy_in):
+    def prizesTable(self):
+        buy_in = self.buy_in
         for ( maximum, payouts ) in self.payouts:
             if self.registered <= maximum:
                 break
