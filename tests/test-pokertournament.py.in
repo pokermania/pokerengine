@@ -34,7 +34,12 @@ import os.path
 import types
 import time
 
+class ConstantPlayerShuffler:
+    def shuffle(self, what):
+        what.sort()
+
 from pokerengine import pokertournament
+pokertournament.shuffler = ConstantPlayerShuffler()
 
 class PokerTournamentTestCase(unittest.TestCase):
     
