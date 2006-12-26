@@ -27,7 +27,9 @@
 from math import ceil
 from types import StringType
 from pprint import pformat
-import time, sys
+import time, sys, random
+
+shuffler = random
 
 from pokerengine.pokergame import PokerGameServer
 from pokerengine.pokerengineconfig import Config
@@ -358,6 +360,7 @@ class PokerTournament:
         games_count = int(ceil(self.registered / float(self.seats_per_game)))
         self.players_quota = games_count * self.seats_per_game
         players = self.players[:]
+        shuffler.shuffle(players)
         for id in xrange(1, games_count + 1):
             game = self.callback_create_game(self)
             game.verbose = self.verbose
