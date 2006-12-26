@@ -1,6 +1,13 @@
-2006-12-14  Loic Dachary  <loic@dachary.org>
+2006-12-26  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.21
+
+	* pokerengine/pokertournament.py:
+	shuffle players before filling the tables
+
+	* tests/test-pokertournament.py.in: don't shuffle players
+
+2006-12-14  Loic Dachary  <loic@dachary.org>
 
 	* tests/tournament.py.in, tests/test-pokertournament.py.in:
 	rake & buy_in are stored in tournament object
