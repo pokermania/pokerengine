@@ -376,7 +376,7 @@ class TestBlinds(unittest.TestCase):
         self.failUnless(self.game.state, "end")
         self.failUnless(self.game.serial2player[3].money, self.game.bestBuyIn())
 
-    def test0(self):
+    def test7(self):
         """
         """
         game = self.game
