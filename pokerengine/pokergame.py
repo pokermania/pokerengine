@@ -1,4 +1,5 @@
 #
+# Copyright (C) 2006, 2007 Loic Dachary <loic@dachary.org>
 # Copyright (C) 2004, 2005, 2006 Mekensleep
 #
 # Mekensleep
@@ -1323,7 +1324,8 @@ class PokerGame:
             if self.seatsCount() == 2:
                 self.position = self.dealer
             else:
-                self.position = self.indexInGameAdd(self.dealer, 3)
+                under_the_gun = self.indexNotFoldAdd(self.dealer, 2)
+                self.position = self.indexInGameAdd(under_the_gun, 1)
         elif info["position"] == "next-to-dealer":
             #
             # The player left to the dealer is first to talk
@@ -1353,7 +1355,7 @@ class PokerGame:
         # In theory, when there is a live bet from the blind/ant round,
         # last_bet should be set to big_blind - small_blind. However, this
         # is useless in practice because the minimum bet will always be
-        # high than this number. Since the last_bet purpose is to define
+        # higher than this number. Since the purpose of last_bet is to define
         # the minimum bet when this minimum is a consequence of a bet that
         # is larger than the minimum bet, setting it to zero is equivalent
         # to setting it to the actual difference between the big_blind and
@@ -1375,16 +1377,8 @@ class PokerGame:
         if self.isSecondRound():
             self.updateStatsFlop(False)
 
-        #
-        # Last to talk may not be computed before the blinds/ante
-        # are payed because players may be all-in because they had
-        # to pay the blind.
-        #
         if info["position"] == "under-the-gun":
-            if self.seatsCount() == 2:
-                self.last_to_talk = self.indexInGameAdd(self.dealer, 1)
-            else:
-                self.last_to_talk = self.indexInGameAdd(self.dealer, 2)
+            self.last_to_talk = self.indexInGameAdd(self.position, -1)
         elif info["position"] == "next-to-dealer":
             self.last_to_talk = dealer_or_before_him
         elif info["position"] == "low" or info["position"] == "high":
