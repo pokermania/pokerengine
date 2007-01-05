@@ -4,9 +4,9 @@ set -e
 
 if [ "${DH_VERBOSE:-0}" -gt 0 ] ; then set -x ; fi
 
-if [ "$1" = "upgrade" -a -n "$2" ] && dpkg --compare-versions "$2" lt-nl "1.0.16"; then
+if [ "$1" = "upgrade" -a -n "$2" ] && dpkg --compare-versions "$2" lt-nl "1.0.21"; then
     #
-    # Major changes in 1.0.16, forget about upgrading
+    # Major changes in 1.0.21, forget about upgrading
     #
     rm -f /etc/poker-engine/poker.*.xml
 fi
