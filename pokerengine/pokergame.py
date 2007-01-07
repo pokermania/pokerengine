@@ -1180,17 +1180,20 @@ class PokerGame:
 
     def initBlindAnte(self):
         self.side_pots['contributions'][self.current_round] = {}
-        if not self.is_directing:
-            return
-        
-        if self.blind_info and self.first_turn:
-            for player in self.playersAll():
-                player.missed_blind = None
 
-        if self.isTournament():
+        is_tournament = self.isTournament()
+
+        if is_tournament:
             for player in self.playersAll():
                 player.auto_blind_ante = True
                 
+        if not self.is_directing:
+            return
+        
+        if self.blind_info and ( self.first_turn or is_tournament ):
+            for player in self.playersAll():
+                player.missed_blind = None
+
         if self.blind_info:
             if self.seatsCount() == 2:
                 self.position = self.dealer
