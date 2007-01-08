@@ -1,6 +1,20 @@
-2007-01-02  Loic Dachary  <loic@dachary.org>
+2007-01-08  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.21
+
+	* pokerengine/pokergame.py: use pformat instead of pprint so that
+	messages are formated with the proper prefix
+
+2007-01-07  Loic Dachary  <loic@dachary.org>
+
+	* pokerengine/pokergame.py: no missed blinds on tournament tables
+
+2007-01-05  Loic Dachary  <loic@dachary.org>
+
+	* debian/python-poker-engine.preinst: don't upgrade version 21 configuration 
+	files, just replace them
+
+2007-01-02  Loic Dachary  <loic@dachary.org>
 
 	* tests/test-game.py.in:
 	test positions (first & last) when blinds are allin
