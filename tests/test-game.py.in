@@ -187,6 +187,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.position, 0)      
         
         # Blind and ante turn
+        self.game.forced_dealer_seat = 2
         self.game.beginTurn(1)
         self.failUnless(self.game.isBlindAnteRound())
         
