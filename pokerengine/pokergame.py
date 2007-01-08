@@ -26,7 +26,7 @@
 #  Henry Precheur <henry@precheur.org> (2004)
 #
 from string import split, join, lower
-from pprint import pprint
+from pprint import pformat
 import sys
 import re
 import struct
@@ -1344,7 +1344,7 @@ class PokerGame:
             values = []
             for player in self.playersInGame():
                 values.append(self.eval.evaln(player.hand.getVisible()))
-                if self.verbose > 2: print "%s : %d" % ( player.hand.getVisible(), values[-1] )
+                if self.verbose > 2: self.message("%s : %d" % ( player.hand.getVisible(), values[-1] ))
             if info["position"] == "low":
                 value = min(values)
             else:
@@ -1591,7 +1591,7 @@ class PokerGame:
            to_show, muckable_candidates_serials = self.dispatchMuck()
            
            if self.verbose > 2:
-              print "muckState: to_show = %s muckable_candidates = %s " % ( to_show, muckable_candidates_serials )
+              self.message("muckState: to_show = %s muckable_candidates = %s " % ( to_show, muckable_candidates_serials ))
            
            muckable_serials = []
            for serial in to_show:
@@ -1683,7 +1683,7 @@ class PokerGame:
         if muckable_serials:
             self.historyAdd("muck", tuple(self.muckable_serials))
         if self.verbose > 2:
-            print "setMuckableSerials: muckable = %s " % muckable_serials
+            self.message("setMuckableSerials: muckable = %s " % muckable_serials)
 
     def cancelState(self):
         self.current_round = -2
@@ -2515,7 +2515,7 @@ class PokerGame:
                                       'serial2share': { serial: pot_backup },
                                       'serials': [serial],
                                       'pot': pot_backup } ]
-            if self.verbose > 2: pprint(self.showdown_stack)
+            if self.verbose > 2: self.message(pformat(self.showdown_stack))
             self.pot2money(serial)
             self.setWinners([serial])
             return
@@ -2591,13 +2591,13 @@ class PokerGame:
                 # In this case the uncalled_serial is zero.
                 #
                 if self.uncalled_serial != 0 and winner.serial != self.uncalled_serial:
-                    pprint(self.showdown_stack) #pragma: no cover
+                    self.error(pformat(self.showdown_stack)) #pragma: no cover
                     raise UserWarning, "distributeMoney: unexpected winner.serial != uncalled_serial / %d != %d" % ( winner.serial, self.uncalled_serial ) #pragma: no cover
                 showdown_stack.insert(0, frame)
                 serial2share.setdefault(winner.serial, 0)
                 if self.verbose >= 2 and self.uncalled_serial != 0 and side_pots and side_pots.has_key('last_round') and side_pots['last_round'] >= 0:
                   if serial2side_pot[winner.serial] < self.uncalled:
-                    pprint(self.showdown_stack) #pragma: no cover
+                    self.error(pformat(self.showdown_stack)) #pragma: no cover
                     raise UserWarning, "serial2side_pot[winner.serial] < self.uncalled (%d != %d)" % ( serial2side_pot[winner.serial], self.uncalled ) #pragma: no cover
                 serial2share[winner.serial] += serial2side_pot[winner.serial]
                 serial2delta[winner.serial] += serial2side_pot[winner.serial]
@@ -2731,7 +2731,7 @@ class PokerGame:
                                    'serial2delta': serial2delta
                                    })
         self.showdown_stack = showdown_stack
-        if self.verbose > 2: pprint(self.showdown_stack)
+        if self.verbose > 2: self.message(pformat(self.showdown_stack))
 
     def divideChips(self, amount, divider):
         return ( amount / divider, amount % divider )
@@ -3548,7 +3548,7 @@ class PokerGame:
                 # del position + sitOut/wait_blind
                 #
                 if index < 1 or self.turn_history[index-1][0] != "position":
-                    if self.verbose >= 0: pprint(self.turn_history)
+                    if self.verbose >= 0: self.message(pformat(self.turn_history))
                     self.error("unable to update sitOut or wait_blind")
                     #
                     # help unit test : it is not meaningful to do anything on a corrupted
@@ -3602,7 +3602,7 @@ class PokerGame:
                 try:
                     self.turn_history[index] = ( event[0], game_event[player_list_index].index(position2serial[event[1]]) )
                 except:
-                    if self.verbose >= 0: pprint(self.turn_history)
+                    if self.verbose >= 0: self.message(pformat(self.turn_history))
                     self.error("unable to update position")
 
     def error(self, string):
