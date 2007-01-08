@@ -493,6 +493,7 @@ class PokerGame:
         self.reset()
         self.rake = None
         self.raked_amount = 0
+        self.forced_dealer_seat = -1
 #        print "__init__ PokerGame %s" % self
 
     def reset(self):
@@ -869,6 +870,8 @@ class PokerGame:
         self.changeState(GAME_STATE_BLIND_ANTE)
         if self.blind_info and self.is_directing and not self.first_turn:
             self.moveDealerLeft()
+        elif self.forced_dealer_seat >= 0:
+            self.dealer_seat = self.forced_dealer_seat
         self.dealerFromDealerSeat()
 
         self.historyAdd("game", self.getLevel(), self.hand_serial,
