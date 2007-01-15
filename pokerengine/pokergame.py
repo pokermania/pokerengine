@@ -1438,7 +1438,7 @@ class PokerGame:
             if info["change"] == "double":
                 blind_info["small"] = info["small_reference"] * pow(2, level - 1)
                 blind_info["big"] = info["big_reference"] * pow(2, level - 1)
-            elif info["change"] == "levels":
+            elif info["change"] == "levels" or info["change"] == "level":
                 level_info = info["levels"][level - 1]
                 blind_info["small"] = level_info["small"]
                 blind_info["big"] = level_info["big"]
@@ -2000,7 +2000,7 @@ class PokerGame:
         if self.is_directing:
             return
 
-        if self.inGameCount() < 2:
+        if self.inGameCount() < 2 and self.betsEqual():
             #
             # All players are all-in except one, distribute all
             # cards and figure out who wins.
