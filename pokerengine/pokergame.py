@@ -637,6 +637,7 @@ class PokerGame:
                 self.__talkedBlindAnte()
             else:
                 self.error("sitOut for player %d while paying the blinds although not in position" % serial)
+                return False
         return True
 
     def sit(self, serial):
