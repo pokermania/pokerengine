@@ -1,4 +1,5 @@
 # -*- mode: python -*-
+# Copyright (C) 2006, 2007 Loic Dachary <loic@dachary.org>
 # Copyright (C) 2006 Mekensleep
 #
 # Mekensleep
@@ -41,7 +42,7 @@ from pokerengine import pokergame
 CallbackIds = None
 CallbackArgs = None
 
-# -----------------------------------------------------------------------------------------------------    
+# ------------------------------------------------------------    
 def InitCallback():
     global CallbackIds
     global CallbackArgs
@@ -49,7 +50,7 @@ def InitCallback():
     CallbackIds = None
     CallbackArgs = None
 
-# -----------------------------------------------------------------------------------------------------    
+# ------------------------------------------------------------    
 def Callback(id, *args):
     global CallbackIds
     global CallbackArgs
@@ -60,25 +61,25 @@ def Callback(id, *args):
     CallbackIds.append(id)
     CallbackArgs.append(args)
 
-# -----------------------------------------------------------------------------------------------------    
+# ------------------------------------------------------------    
 class PokerGameHistoryTestCase(unittest.TestCase):
     
     TestConfDirectory = '@srcdir@/test-data/conf'
     TestConfigUrl = 'unittest.%s.xml'
     TestConfigFile = 'config'
     
-    # -----------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------
     def setUp(self):
         conf_dirs = ['.', PokerGameHistoryTestCase.TestConfDirectory, '~/conf']
         self.game = pokergame.PokerGameServer(PokerGameHistoryTestCase.TestConfigUrl, conf_dirs)
         self.game.verbose = int(os.environ.get('VERBOSE_T', 3))
         InitCallback()
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def tearDown(self):
         pass
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testPokerGameMessage(self):
         """Test Poker game messages"""
         
@@ -128,7 +129,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         # Check the callback calls
         self.failUnlessEqual(CallbackArgs, history)
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesGameEvent(self):
         """Test Poker Game History to message Game event"""
         
@@ -146,7 +147,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.failUnlessEqual(subject, 'hand #%d, %s, %s' % (hand_serial, variant, betting_structure))
         self.failUnlessEqual(message,  [])
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesWaitForEvent(self):
         """Test Poker Game History to message wait for event"""
         
@@ -162,7 +163,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         message2 = '2 waiting for late blind'
         self.failUnlessEqual(message,  [message1, message2])
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesCheck(self):
         """Test Poker Game History to message check"""
         
@@ -174,7 +175,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.failUnlessEqual(subject, '')
         self.failUnlessEqual(message,  ['1 checks'])    
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesFold(self):
         """Test Poker Game History to message fold"""
         
@@ -186,7 +187,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.failUnlessEqual(subject, '')
         self.failUnlessEqual(message,  ['1 folds'])    
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesRaise(self):
         """Test Poker Game History to message Raise"""
         
@@ -198,7 +199,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.failUnlessEqual(subject, '')
         self.failUnlessEqual(message,  ['1 raise 5'])    
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesAllIn(self):
         """Test Poker Game History to message All In"""
         
@@ -210,7 +211,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.failUnlessEqual(subject, '')
         self.failUnlessEqual(message,  ['1 is all in'])    
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesSitOut(self):
         """Test Poker Game History to message Sit out"""
         
@@ -222,7 +223,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.failUnlessEqual(subject, '')
         self.failUnlessEqual(message,  ['1 sits out'])    
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesAnte(self):
         """Test Poker Game History to message Ante"""
         
@@ -234,7 +235,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.failUnlessEqual(subject, '')
         self.failUnlessEqual(message,  ['1 pays 5 ante'])    
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesBlind(self):
         """Test Poker Game History to message blind"""
         
@@ -250,7 +251,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
                                                 '1 pays 10 blind'
                                                 ])    
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesCancelled(self):
         """Test Poker Game History to message blind"""
         
@@ -268,7 +269,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
                                                 'turn canceled'
                                                 ])    
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesShowdown(self):
         """Test Poker Game History to message showdown"""
         
@@ -291,7 +292,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
                                                 'Cards player 1: 4d Ts'
                                                 ])
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesRound(self):
         """Test Poker Game History to message showdown"""
         
@@ -319,7 +320,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
                                                 'round3'
                                                 ])
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesEnd(self):
         """Test Poker Game History to end message"""
         
@@ -459,7 +460,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
                                                 '2 receives 2'
                                                 ])
             
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistory2messagesEmpty(self):
         """Test Poker Game History to message empty"""
         
@@ -480,7 +481,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.failUnlessEqual(subject, '')
         self.failUnlessEqual(message,  [])
         
-    # -----------------------------------------------------------------------------------------------------    
+    # ------------------------------------------------------------    
     def testHistoryReduce(self):
         """Test Poker Game History reduce"""
         
@@ -569,7 +570,41 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         # The position has not been updated
         self.failUnlessEqual(self.game.historyGet(),  history)
     
-    # -----------------------------------------------------------------------------------------------------    
+        # the blind request is removed
+        history =   [
+                        ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
+                        ('position', 7),
+                        ('blind', 1, 0),
+                        ('position', 8),
+                        ('blind_request', 2, 0),
+                        ('blind', 2, 0),
+                        ('player_list', [1, 2]),
+                        ]
+                        
+        self.game.turn_history = history
+                        
+        self.game.historyReduce()
+
+        self.failUnlessEqual(('position', 8), self.game.turn_history[3])
+        self.failUnlessEqual(('blind', 2, 0), self.game.turn_history[4])
+
+        # the blind request is not removed because it is last
+        history =   [
+                        ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
+                        ('position', 7),
+                        ('blind', 1, 0),
+                        ('position', 8),
+                        ('blind_request', 2, 0),
+                        ]
+                        
+        self.game.turn_history = history
+                        
+        self.game.historyReduce()
+
+        self.failUnlessEqual(('position', 8), self.game.turn_history[3])
+        self.failUnlessEqual(('blind_request', 2, 0), self.game.turn_history[4])
+
+    # ------------------------------------------------------------    
     def GetMessagesFromHistory(self, history, serial2name = str, pocket_messages = False):
         
         self.game.turn_history = []
@@ -578,21 +613,21 @@ class PokerGameHistoryTestCase(unittest.TestCase):
                 
         return pokergame.history2messages(self.game, self.game.historyGet(), serial2name, pocket_messages, int(os.environ.get('VERBOSE_T', 0)))
     
-# -----------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------
 def GetTestSuite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(PokerGameHistoryTestCase))
     return suite
     
-# -----------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------
 def GetTestedModule():
     return pokergame
   
-# -----------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------
 def Run(verbose):
     return unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
     
-# -----------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------
 if __name__ == '__main__':
     if Run(int(os.environ.get('VERBOSE_T', 2))).wasSuccessful():
         sys.exit(0)
