@@ -1,6 +1,14 @@
-2007-01-15  Loic Dachary  <loic@dachary.org>
+2007-01-16  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.22
+
+	* tests/test-gamehistory.py.in:
+	specific tests for historyReduce of blind/blind_request entries
+
+	* tests/test-game.py.in: fix test blinds according to new policy :
+	don't sit out when out of position while the blind/ante phase
+
+2007-01-15  Loic Dachary  <loic@dachary.org>
 
 	* pokerengine/pokergame.py: return false status on error for
 	sitout http://www.pok3d.com/rt/Ticket/Display.html?id=1860 and
