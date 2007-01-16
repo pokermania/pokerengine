@@ -2724,17 +2724,19 @@ class PokerGameTestCase(unittest.TestCase):
     def testSitOut(self):
         """Test Poker Game : Sit out"""
         
-        self.game.setMaxPlayers(3)
+        self.game.setMaxPlayers(4)
         
-        player1 = self.AddPlayerAndSit(1, 2)
-        player2 = self.AddPlayerAndSit(2, 5)
-        player3 = self.AddPlayerAndSit(3, 7)
+        player1 = self.AddPlayerAndSit(1, 1)
+        player2 = self.AddPlayerAndSit(2, 3)
+        player3 = self.AddPlayerAndSit(3, 6)
+        player4 = self.AddPlayerAndSit(4, 8)
         
         # Blind and ante turn
         self.game.beginTurn(1)
         self.failUnless(self.game.isBlindAnteRound())
-        
+
         # Sit out        
+        self.game.setPosition(0)
         self.failIf(self.game.getSitOut(1))
         self.failUnless(self.game.sitOut(1))
         self.failUnless(self.game.getSitOut(1))
@@ -2745,17 +2747,27 @@ class PokerGameTestCase(unittest.TestCase):
         # the player is already sit out
         self.failIf(self.game.sitOut(1))
         
+        self.game.setPosition(1)
         self.failUnlessEqual(self.game.getSerialInPosition(), 2)
         
+        self.game.setPosition(2)
         self.failIf(self.game.getSitOut(3))
         self.failUnless(self.game.sitOut(3))
         self.failUnless(self.game.getSitOut(3))
         self.failIf(player3.sit_out_next_turn)
         self.failIf(player3.sit_requested)
         self.failIf(player3.wait_for)
-        
-        self.failUnlessEqual(self.game.getSerialInPosition(), 2)
-        
+
+        self.failUnlessEqual(self.game.getSerialInPosition(), 4)
+
+        #
+        # Check that autoPayBlindAnte skips players that are sit out for some reason.
+        #
+        player1.sit_out = True
+        self.game.setPosition(0)
+        self.assertEquals([1, 2, 3, 4], self.game.player_list)
+        self.game.autoPayBlindAnte()
+
     # ---------------------------------------------------------
     def testSit(self):
         """Test Poker Game : Sit"""
@@ -3195,18 +3207,20 @@ class PokerGameTestCase(unittest.TestCase):
         
         # The turn is still blind and ante
         self.failUnless(self.game.isBlindAnteRound())
+
+        # pay the blind for player 2
+        player2.auto_blind_ante = True
+        self.game.autoPayBlindAnte()
         
-        # The player 3 will sit out
+        # The player 3 sit out
         self.failUnless(self.game.sitOut(3))
         self.failUnless(player3.isSitOut())
-        
-        # The auto pay blind has no effect 
-        self.game.autoPayBlindAnte()
-        self.failIf(player3.isBlind())
-        
-        # The player 1 and 2 are auto
+        self.failUnlessEqual(self.game.getSerialInPosition(), 1)
+
+        # pay the blind for player 1
         player1.auto_blind_ante = True
-        player2.auto_blind_ante = True
+        self.game.autoPayBlindAnte()
+        self.failUnlessEqual(True, player1.isBlind())
         
         # The blind of the player 1 and 2 are automatically payed
         self.game.autoPayBlindAnte()
@@ -3444,6 +3458,8 @@ class PokerGameTestCase(unittest.TestCase):
         player2 = self.AddPlayerAndSit(2, 5)
         player3 = self.AddPlayerAndSit(3, 7)
         
+        self.game.variant = 'holdem'
+
         # Change the ante properties        
         ante_properties =   {  
                                     'value' : '100',
@@ -3485,6 +3501,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.failIf(self.game.isBlindAntePayed())
         
         # The player 3 is sit out
+        self.game.setPosition(2)
         self.failUnless(self.game.sitOut(3))
         
         # All antes are now payed
@@ -3814,7 +3831,6 @@ class PokerGameTestCase(unittest.TestCase):
         # The player 1 sit out because he is not a bot
         self.game.interactivePlayer(1)
         self.game.autoPlayer(1)
-        self.failUnless(self.game.getSitOut(1))
         
         # The blind is automatically payed because the player 2 is a bot
         self.game.botPlayer(2)
