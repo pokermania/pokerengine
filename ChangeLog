@@ -1,6 +1,26 @@
-2007-01-16  Cedric Pinson  <cpinson@freesheep.org>
+2007-01-18  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.22
+
+	* tests/history.py.in: Rake is no longer displayed in cents
+
+	* tests/test-gamehistory.py.in:
+	test history2Resolve safeguard against non existent hands
+	add coverage report to standalone tests emacs invocation
+
+	* tests/test-game.py.in: testUpdateHistoryEnd
+
+	* pokerengine/pokergame.py: rake is no longer displayed in cents
+
+	if a player at showdown does not have cards (happens in client side),
+	history2Resolve silently ignores it refuses to sitOut a player while
+	paying the blinds
+
+	patch the "end" entry of the history when in client mode (not
+	directing) because the information is not available when the end
+	history event is inserted
+
+2007-01-16  Cedric Pinson  <cpinson@freesheep.org>
 
 	* Update gentoo package
 
