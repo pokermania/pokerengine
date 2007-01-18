@@ -5594,6 +5594,15 @@ class PokerGameTestCase(unittest.TestCase):
         game.fold(66)
         self.assertEqual(game.state, "end")
 
+    def testUpdateHistoryEnd(self):
+        game = self.game
+        game.turn_history = [("one",),
+                             ("two",),
+                             ("end",),
+                             ("three",)]
+        game.updateHistoryEnd(winners = "winners", showdown_stack = "showdown_stack")
+        self.assertEqual(("end", "winners", "showdown_stack"), game.turn_history[2])
+
     # ---------------------------------------------------------
     def AddPlayerAndSit(self, serial, seat = -1):
         self.failUnless(self.game.addPlayer(serial, seat))
