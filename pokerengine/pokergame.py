@@ -224,6 +224,8 @@ def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame)
              'low': 0x0FFFFFFF }
     for serial in frame['serials']:
         for side in ('hi', 'low'):
+            if not hands.has_key(serial):
+                continue
             hand = hands[serial]
             if not hand.has_key(side):
                 continue
@@ -316,7 +318,7 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
 
         elif type == "rake":
             (type, amount, serial2rake) = event
-            messages.append("Rake %d" % amount)
+            messages.append("Rake %s" % PokerChips.tostring(amount))
 
         elif type == "position":
             pass
@@ -624,6 +626,9 @@ class PokerGame:
         player = self.serial2player[serial]
         if player.isSitOut():
             return False
+        if self.is_directing and self.isBlindAnteRound() and self.getSerialInPosition() != serial:
+            self.error("sitOut for player %d while paying the blinds although not in position" % serial)
+            return False
         if self.isPlaying(serial):
             self.historyAdd("sitOut", serial)
         player.sit_out = True
@@ -635,9 +640,7 @@ class PokerGame:
             self.updateBlinds()
             if self.getSerialInPosition() == serial:
                 self.__talkedBlindAnte()
-            else:
-                self.error("sitOut for player %d while paying the blinds although not in position" % serial)
-                return False
+            # the else is impossible because checked above
         return True
 
     def sit(self, serial):
@@ -2522,6 +2525,7 @@ class PokerGame:
             if self.verbose > 2: self.message(pformat(self.showdown_stack))
             self.pot2money(serial)
             self.setWinners([serial])
+            if not self.is_directing: self.updateHistoryEnd(self.winners, self.showdown_stack)
             return
 
         serial2side_pot = {}
@@ -2735,6 +2739,7 @@ class PokerGame:
                                    'serial2delta': serial2delta
                                    })
         self.showdown_stack = showdown_stack
+        if not self.is_directing: self.updateHistoryEnd(self.winners, showdown_stack)
         if self.verbose > 2: self.message(pformat(self.showdown_stack))
 
     def divideChips(self, amount, divider):
@@ -3523,6 +3528,12 @@ class PokerGame:
     def historyAdd(self, *args):
         self.runCallbacks(*args)
         self.turn_history.append(args)
+
+    def updateHistoryEnd(self, winners, showdown_stack):
+        for index in range(-1, - len(self.turn_history), -1):
+          if self.turn_history and self.turn_history[index][0] == "end":
+            self.turn_history[index] = ( "end", winners, showdown_stack )
+            break
 
     def historyGet(self):
         return self.turn_history
