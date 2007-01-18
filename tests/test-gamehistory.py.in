@@ -384,7 +384,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         # Resolve frame 1
         frame = { 
                     'type': 'resolve',
-                    'serials' : [1, 2],
+                    'serials' : [1, 2, 3],
                     'serial2share': { 1: 300, 2 : 200 },
                     'hi' : [1, 2],
                     'low' : [1],
@@ -636,5 +636,5 @@ if __name__ == '__main__':
 
 # Interpreted by emacs
 # Local Variables:
-# compile-command: "( cd .. ; ./config.status tests/test-gamehistory.py ) ; ( cd ../tests ; make TESTS='test-gamehistory.py' check )"
+# compile-command: "( cd .. ; ./config.status tests/test-gamehistory.py ) ; ( cd ../tests ; make COVERAGE_FILES='../pokerengine/pokergame.py'  TESTS='coverage-reset test-gamehistory.py coverage-report' check )"
 # End:
