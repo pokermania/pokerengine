@@ -335,7 +335,7 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
         elif type == "blind":
             (type, serial, amount, dead) = event
             if dead > 0:
-                dead_message = " and %d dead man" % dead
+                dead_message = " and %d dead" % dead
             else:
                 dead_message = ""
             messages.append("%s pays %s blind%s" % ( serial2name(serial), PokerChips.tostring(amount), dead_message ))
