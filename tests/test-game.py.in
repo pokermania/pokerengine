@@ -5603,6 +5603,10 @@ class PokerGameTestCase(unittest.TestCase):
         game.updateHistoryEnd(winners = "winners", showdown_stack = "showdown_stack")
         self.assertEqual(("end", "winners", "showdown_stack"), game.turn_history[2])
 
+    def testEmtpyShowdownStack(self):
+        turn_history = [("end", [], []),]
+        pokergame.history2messages(None, turn_history)
+
     # ---------------------------------------------------------
     def AddPlayerAndSit(self, serial, seat = -1):
         self.failUnless(self.game.addPlayer(serial, seat))
