@@ -377,25 +377,28 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
 
         elif type == "end":
             (type, winners, showdown_stack) = event
-            game_state = showdown_stack[0]
-            if not game_state.has_key('serial2best'):
-                serial = winners[0]
-                messages.append("%s receives %s (everyone else folded)" % ( serial2name(serial), PokerChips.tostring(game_state['serial2share'][serial]) ))
+            if showdown_statck:
+              game_state = showdown_stack[0]
+              if not game_state.has_key('serial2best'):
+                  serial = winners[0]
+                  messages.append("%s receives %s (everyone else folded)" % ( serial2name(serial), PokerChips.tostring(game_state['serial2share'][serial]) ))
+              else:
+                  serial2displayed = {}
+                  hands = showdown_stack[0]['serial2best']
+                  for frame in showdown_stack[1:]:
+                      message = None
+                      if frame['type'] == 'left_over':
+                          message = "%s receives %d odd chips" % ( serial2name(frame['serial']), frame['chips_left'])
+                      elif frame['type'] == 'uncalled':
+                          message = "returning uncalled bet %s to %s" % ( PokerChips.tostring(frame['uncalled']), serial2name(frame['serial']) )
+                      elif frame['type'] == 'resolve':
+                          messages.extend(__historyResolve2messages(game, hands, serial2name, serial2displayed, frame))
+                      else:
+                          if verbose >= 0: print "ERROR history2messages unexpected showdown_stack frame type %s" % frame['type']
+                      if message:
+                          messages.append(message)
             else:
-                serial2displayed = {}
-                hands = showdown_stack[0]['serial2best']
-                for frame in showdown_stack[1:]:
-                    message = None
-                    if frame['type'] == 'left_over':
-                        message = "%s receives %d odd chips" % ( serial2name(frame['serial']), frame['chips_left'])
-                    elif frame['type'] == 'uncalled':
-                        message = "returning uncalled bet %s to %s" % ( PokerChips.tostring(frame['uncalled']), serial2name(frame['serial']) )
-                    elif frame['type'] == 'resolve':
-                        messages.extend(__historyResolve2messages(game, hands, serial2name, serial2displayed, frame))
-                    else:
-                        if verbose >= 0: print "ERROR history2messages unexpected showdown_stack frame type %s" % frame['type']
-                    if message:
-                        messages.append(message)
+              print "ERROR history2messages ignored empty showdown_stack"
         elif type == "sitOut":
             (type, serial) = event
             messages.append("%s sits out" % ( serial2name(serial) ))
