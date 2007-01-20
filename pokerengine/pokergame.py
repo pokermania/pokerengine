@@ -275,7 +275,6 @@ def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame)
 
     return messages
 
-
 def history2messages(game, history, serial2name = str, pocket_messages = False, verbose = 0):
     messages = []
     subject = ''
@@ -377,7 +376,7 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
 
         elif type == "end":
             (type, winners, showdown_stack) = event
-            if showdown_statck:
+            if showdown_stack:
               game_state = showdown_stack[0]
               if not game_state.has_key('serial2best'):
                   serial = winners[0]
