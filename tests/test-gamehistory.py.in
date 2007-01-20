@@ -247,7 +247,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
         self.failUnlessEqual(message,  [
-                                                '1 pays 10 blind and 5 dead man',
+                                                '1 pays 10 blind and 5 dead',
                                                 '1 pays 10 blind'
                                                 ])    
         
