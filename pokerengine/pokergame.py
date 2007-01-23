@@ -610,9 +610,10 @@ class PokerGame:
         
     def sitOutNextTurn(self, serial):
         player = self.serial2player[serial]
-        if ( self.isPlaying(serial) and
-             not ( self.isBlindAnteRound() and
-                   self.getSerialInPosition() == serial ) ):
+        if ( self.state == GAME_STATE_MUCK or
+             ( self.isPlaying(serial) and
+               not ( self.isBlindAnteRound() and
+                     self.getSerialInPosition() == serial ) ) ):
             player.sit_out_next_turn = True
             player.sit_requested = False
             return False
@@ -3067,7 +3068,7 @@ class PokerGame:
         return self.uncalled_serial
 
     def getPotAmount(self):
-        if self.isRunning():
+        if self.isRunning() and self.state != GAME_STATE_MUCK:
           return self.pot
         else:
           if self.moneyDistributed():
@@ -3382,7 +3383,7 @@ class PokerGame:
     # Game Parameters.
     #
     def roundCap(self):
-        if self.isRunning():
+        if self.isRunning() and self.state != GAME_STATE_MUCK:
           return self.betInfo()["cap"]
         return 0
 
