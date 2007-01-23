@@ -1,6 +1,8 @@
 poker-engine (1.0.23-1) unstable; urgency=low
 
   * upstream sync
+  
+  * on edgy depend on python-dev-all
 
  -- Loic Dachary (OuoU) <loic@debian.org>  Tue, 23 Jan 2007 10:51:39 +0100
 
