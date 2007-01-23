@@ -2,6 +2,19 @@
 
 	* Release 1.0.23
 
+	* pokerengine/pokergame.py: fix https://gna.org/support/?1450
+	Sit out while in muck state must be denied by the server.
+	getPotAmount may return what's in the stack if in muck state.
+	roundCap returns zero if in muck state.
+
+	* tests/test-game.py.in: test sit out while in muck state
+
+	* tests/test-game.py.in:
+	testGetPotAmount test the case where the game is not running
+
+	* pokerengine/__init__.py, debian/changelog, NEWS, ChangeLog:
+	version bump
+
 2007-01-18  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.22
