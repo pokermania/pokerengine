@@ -1304,6 +1304,9 @@ class PokerGameTestCase(unittest.TestCase):
         
         self.game.beginTurn(1)
         self.failUnlessEqual(0 ,self.game.getPotAmount())
+
+        self.game.state = pokergame.GAME_STATE_END
+        self.failUnlessEqual(0 ,self.game.getPotAmount())
         
     # ---------------------------------------------------------
     def testCancelState(self):
