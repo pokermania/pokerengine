@@ -3882,6 +3882,14 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.playersNotPlaying(), [])
         
     # ---------------------------------------------------------
+    def testMuckStateSitOut(self):
+        """Test Poker Game : Muck state sit out"""
+        player1 = self.AddPlayerAndSit(1, 2)
+        self.game.state = pokergame.GAME_STATE_MUCK
+        self.failIf(self.game.sitOutNextTurn(1))
+        self.failUnlessEqual(True, self.game.getPlayer(1).sit_out_next_turn)
+
+    # ---------------------------------------------------------
     def testMuckStateWonFold(self):
         """Test Poker Game : Muck state won fold"""
         
@@ -5723,7 +5731,7 @@ def GetTestedModule():
   
 # ---------------------------------------------------------
 def Run(verbose):
-#    unittest.TestLoader.testMethodPrefix = "testAutoPayBlindAllIn2"
+#    unittest.TestLoader.testMethodPrefix = "testMuckStateSitOut"
     return unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
     
 # ---------------------------------------------------------
