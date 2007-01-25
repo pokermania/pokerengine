@@ -40,6 +40,9 @@ from pokerengine.pokerengineconfig import Config
 from pokerengine.pokerchips import PokerChips
 from pokerengine import pokerrake
 
+import gettext
+gettext.install("poker-engine")
+
 ABSOLUTE_MAX_PLAYERS = 10
 
 LEVELS_CACHE = {}
@@ -49,7 +52,7 @@ def uniq(elements):
   for element in elements:
     temp[element] = None
   return temp.keys()
-  
+ 
 class PokerRandom(random.Random):
   def __init__(self, paranoid=False):
     self._file = None
@@ -250,30 +253,31 @@ def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame)
             if show:
                 serial2displayed[serial] = True
                 value = game.readableHandValueLong(side, hand[1][0], hand[1][1:])
-                messages.append("%s shows %s for %s " % ( serial2name(serial), value, side ))
+                messages.append( _("%(name)s shows %(value)s for %(side)s ") % { 'name' : serial2name(serial), 'value' : value, 'side' : side })
             else:
-                messages.append("%s mucks loosing hand" % ( serial2name(serial) ))
+                messages.append( _("%(name)s mucks loosing hand") % { 'name' : serial2name(serial) })
 
     for side in ('hi', 'low'):
         if not frame.has_key(side):
             continue
         message = join([ serial2name(serial) for serial in frame[side] ])
         if len(frame[side]) > 1:
-            message += " tie for %s " % side
+            message += " tie for %(side)s " % { 'side' : side }
         else:
-            message += " wins %s " % side
+            message += _(" wins %(side)s ") % { 'side' : side }
         messages.append(message)
 
     if len(frame['serial2share']) > 1:
-        message = "winners share a pot of %s" % PokerChips.tostring(frame['pot'])
+        message = _("winners share a pot of %(pot)s") % { 'pot' : PokerChips.tostring(frame['pot']) }
         if frame.has_key('chips_left'):
-            message += " (minus %d odd chips)" % frame['chips_left']
+            message += _(" (minus %(chips_left)d odd chips)") % { 'chips_left' : frame['chips_left'] }
         messages.append(message)
 
     for (serial, share) in frame['serial2share'].iteritems():
-        messages.append("%s receives %s" % ( serial2name(serial), PokerChips.tostring(share) ))
+        messages.append( _("%(name)s receives %(amount)s") % { 'name' : serial2name(serial), 'amount' : PokerChips.tostring(share) })
 
     return messages
+
 
 def history2messages(game, history, serial2name = str, pocket_messages = False, verbose = 0):
     messages = []
@@ -282,11 +286,11 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
         type = event[0]
         if type == "game":
             (type, level, hand_serial, hands_count, time, variant, betting_structure, player_list, dealer, serial2chips) = event
-            subject = "hand #%d, %s, %s" % ( hand_serial, variant, betting_structure )
+            subject = _("hand #%(hand_serial)d, %(variant)s, %(betting_structure)s") % { 'hand_serial' : hand_serial, 'variant' : variant, 'betting_structure' : betting_structure }
 
         elif type == "wait_for":
             (type, serial, reason) = event
-            messages.append("%s waiting for " % serial2name(serial) +
+            messages.append( _("%(serial)s waiting for ") % { 'serial' : serial2name(serial) } +
                             "%s" % ( reason == "late" and "late blind" or "big blind"))
 
         elif type == "player_list":
@@ -295,29 +299,29 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
         elif type == "round":
             (type, name, board, pockets) = event
             if pockets:
-              messages.append("%s, %d players" % ( name, len(pockets) ))
+              messages.append( _("%(name)s, %(len_pockets)d players") % { 'name' : name, 'len_pockets' : len(pockets) })
             else:
               messages.append(name)
             if board and not board.isEmpty():
-                messages.append("Board: %s" % game.cards2string(board))
+                messages.append( _("Board: %(board)s") % { 'board' : game.cards2string(board) } )
             if pockets and pocket_messages:
               for (serial, pocket) in pockets.iteritems():
                 if not pocket.areAllNocard():
-                  messages.append("Cards player %s: %s" % ( serial2name(serial), game.cards2string(pocket) ))
+                  messages.append( _("Cards player %(name)s: %(card)s") % { 'name' : serial2name(serial), 'card' : game.cards2string(pocket) })
 
         elif type == "showdown":
             (type, board, pockets) = event
             if board and not board.isEmpty():
-                messages.append("Board: %s" % game.cards2string(board))
+                messages.append( _("Board: %(cards)s") % { 'cards' : game.cards2string(board) })
 
             if pockets and pocket_messages:
               for (serial, pocket) in pockets.iteritems():
                 if not pocket.areAllNocard():
-                  messages.append("Cards player %s: %s" % ( serial2name(serial), game.cards2string(pocket) ))
+                  messages.append( _("Cards player %(name)s: %(cards)s") % { 'name' : serial2name(serial), 'cards' : game.cards2string(pocket) })
 
         elif type == "rake":
             (type, amount, serial2rake) = event
-            messages.append("Rake %s" % PokerChips.tostring(amount))
+            messages.append( _("Rake %(amount)s") % { 'amount' : PokerChips.tostring(amount) } )
 
         elif type == "position":
             pass
@@ -334,45 +338,45 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
         elif type == "blind":
             (type, serial, amount, dead) = event
             if dead > 0:
-                dead_message = " and %d dead" % dead
+                dead_message = _(" and %(dead)d dead") % { 'dead' : dead }
             else:
                 dead_message = ""
-            messages.append("%s pays %s blind%s" % ( serial2name(serial), PokerChips.tostring(amount), dead_message ))
+            messages.append( _("%(name)s pays %(amount)s blind%(deadmsg)s") % { 'name' : serial2name(serial), 'amount' : PokerChips.tostring(amount), 'deadmsg' : dead_message })
 
         elif type == "ante_request":
             pass
 
         elif type == "ante":
             (type, serial, amount) = event
-            messages.append("%s pays %s ante" % ( serial2name(serial), PokerChips.tostring(amount) ))
+            messages.append( _("%(name)s pays %(amount)s ante") % { 'name' : serial2name(serial), 'amount' : PokerChips.tostring(amount) })
 
         elif type == "all-in":
             (type, serial) = event
-            messages.append("%s is all in" % serial2name(serial))
+            messages.append( _("%(name)s is all in") % { 'name' : serial2name(serial) })
 
         elif type == "call":
             (type, serial, amount) = event
-            messages.append("%s calls %s" % ( serial2name(serial), PokerChips.tostring(amount) ))
+            messages.append( _("%(name)s calls %(amount)s") % { 'name' : serial2name(serial), 'amount' : PokerChips.tostring(amount) })
 
         elif type == "check":
             (type, serial) = event
-            messages.append("%s checks" % serial2name(serial))
+            messages.append( _("%(name)s checks") % { 'name' : serial2name(serial)} )
 
         elif type == "fold":
             (type, serial) = event
-            messages.append("%s folds" % serial2name(serial))
+            messages.append( _("%(name)s folds") % { 'name' : serial2name(serial)} )
 
         elif type == "raise":
             (type, serial, amount) = event
-            messages.append("%s raise %s" % ( serial2name(serial), PokerChips.tostring(amount) ) )
+            messages.append( _("%(name)s raise %(amount)s" % { 'name' : serial2name(serial), 'amount' : PokerChips.tostring(amount) } ))
 
         elif type == "canceled":
             (type, serial, amount) = event
             if serial > 0 and amount > 0:
-                returned_message = " (%s returned to %s)" % ( PokerChips.tostring(amount), serial2name(serial) )
+                returned_message = _(" (%(amount)s returned to %(name)s)") % { 'amount' : PokerChips.tostring(amount), 'name' : serial2name(serial) }
             else:
                 returned_message = ""
-            messages.append("turn canceled%s" % returned_message)
+            messages.append( _("turn canceled%(message)s") % { 'message' : returned_message} )
 
         elif type == "end":
             (type, winners, showdown_stack) = event
@@ -380,16 +384,16 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
               game_state = showdown_stack[0]
               if not game_state.has_key('serial2best'):
                   serial = winners[0]
-                  messages.append("%s receives %s (everyone else folded)" % ( serial2name(serial), PokerChips.tostring(game_state['serial2share'][serial]) ))
+                  messages.append( _("%(name)s receives %(amount)s (everyone else folded)") % { 'name' : serial2name(serial), 'amount' : PokerChips.tostring(game_state['serial2share'][serial]) })
               else:
                   serial2displayed = {}
                   hands = showdown_stack[0]['serial2best']
                   for frame in showdown_stack[1:]:
                       message = None
                       if frame['type'] == 'left_over':
-                          message = "%s receives %d odd chips" % ( serial2name(frame['serial']), frame['chips_left'])
+                          message = _("%(name)s receives %(amount)d odd chips") % { 'name' :  serial2name(frame['serial']), 'amount' : frame['chips_left']}
                       elif frame['type'] == 'uncalled':
-                          message = "returning uncalled bet %s to %s" % ( PokerChips.tostring(frame['uncalled']), serial2name(frame['serial']) )
+                          message = _("returning uncalled bet %(amount)s to %(name)s") % { 'amount' : PokerChips.tostring(frame['uncalled']), 'name' : serial2name(frame['serial']) }
                       elif frame['type'] == 'resolve':
                           messages.extend(__historyResolve2messages(game, hands, serial2name, serial2displayed, frame))
                       else:
@@ -400,7 +404,7 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
               print "ERROR history2messages ignored empty showdown_stack"
         elif type == "sitOut":
             (type, serial) = event
-            messages.append("%s sits out" % ( serial2name(serial) ))
+            messages.append( _("%(name)s sits out") % { 'name' : serial2name(serial) })
 
         elif type == "leave":
             pass
