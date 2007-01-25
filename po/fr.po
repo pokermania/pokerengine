@@ -1,0 +1,158 @@
+# translation of poker2d.po to
+# French translations for pokerclient package.
+# Copyright (C) 2006 THE pokerclient'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the pokerclient package.
+# griim <griim.work@gmail.com>, 2006.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: poker-networl\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-01-25 10:09+0100\n"
+"PO-Revision-Date: 2007-01-13 23:45+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: pokerengine/pokergame.py:259
+#, python-format
+msgid "%(name)s shows %(value)s for %(side)s "
+msgstr "%(name)s montre %(value)s pour %(side)s"
+
+#: pokerengine/pokergame.py:261
+#, python-format
+msgid "%(name)s mucks loosing hand"
+msgstr "%(name)s couche sa main"
+
+#: pokerengine/pokergame.py:270
+#, python-format
+msgid " wins %(side)s "
+msgstr " gagne %(side)s "
+
+#: pokerengine/pokergame.py:274
+#, python-format
+msgid "winners share a pot of %(pot)s"
+msgstr "les gagnants se partagent le pot de %(pot)s"
+
+#: pokerengine/pokergame.py:276
+#, python-format
+msgid " (minus %(chips_left)d odd chips)"
+msgstr " (moins %(chips_left)d restant)"
+
+#: pokerengine/pokergame.py:280
+#, python-format
+msgid "%(name)s receives %(amount)s"
+msgstr "%(name)s reçoit %(amount)s"
+
+#: pokerengine/pokergame.py:293
+#, python-format
+msgid "hand #%(hand_serial)d, %(variant)s, %(betting_structure)s"
+msgstr "main #%(hand_serial)d, %(variant)s, %(betting_structure)s"
+
+#: pokerengine/pokergame.py:297
+#, python-format
+msgid "%(serial)s waiting for "
+msgstr "%(serial)s attent pour "
+
+#: pokerengine/pokergame.py:306
+#, python-format
+msgid "%(name)s, %(len_pockets)d players"
+msgstr "%(name)s, %(len_pockets)d joueurs"
+
+#: pokerengine/pokergame.py:310
+#, python-format
+msgid "Board: %(board)s"
+msgstr "Tableau: %(board)s"
+
+#: pokerengine/pokergame.py:314
+#, python-format
+msgid "Cards player %(name)s: %(card)s"
+msgstr "Cartes de %(name)s: %(card)s"
+
+#: pokerengine/pokergame.py:319
+#, python-format
+msgid "Board: %(cards)s"
+msgstr "Tableau: %(cards)s"
+
+#: pokerengine/pokergame.py:324
+#, python-format
+msgid "Cards player %(name)s: %(cards)s"
+msgstr "Cartes de %(name)s: %(cards)s"
+
+#: pokerengine/pokergame.py:328
+#, python-format
+msgid "Rake %(amount)s"
+msgstr "Commission %(amount)s"
+
+#: pokerengine/pokergame.py:345
+#, python-format
+msgid " and %(dead)d dead"
+msgstr " et %(dead)d d'argent mort"
+
+#: pokerengine/pokergame.py:348
+#, python-format
+msgid "%(name)s pays %(amount)s blind%(deadmsg)s"
+msgstr "%(name)s paye %(amount)s de blind%(deadmsg)s"
+
+#: pokerengine/pokergame.py:355
+#, python-format
+msgid "%(name)s pays %(amount)s ante"
+msgstr "%(name)s paye %(amount)s d'ante"
+
+#: pokerengine/pokergame.py:359
+#, python-format
+msgid "%(name)s is all in"
+msgstr "%(name)s fais tapis"
+
+#: pokerengine/pokergame.py:363
+#, python-format
+msgid "%(name)s calls %(amount)s"
+msgstr "%(name)s suit %(amount)s"
+
+#: pokerengine/pokergame.py:367
+#, python-format
+msgid "%(name)s checks"
+msgstr "%(name)s check"
+
+#: pokerengine/pokergame.py:371
+#, python-format
+msgid "%(name)s folds"
+msgstr "%(name)s couche"
+
+#: pokerengine/pokergame.py:375
+#, python-format
+msgid "%(name)s raise %(amount)s"
+msgstr "%(name)s relance de %(amount)s"
+
+#: pokerengine/pokergame.py:380
+#, python-format
+msgid " (%(amount)s returned to %(name)s)"
+msgstr " (%(amount)s redonné à %(name)s)"
+
+#: pokerengine/pokergame.py:383
+#, python-format
+msgid "turn canceled%(message)s"
+msgstr "tour annulé%(message)s"
+
+#: pokerengine/pokergame.py:390
+#, python-format
+msgid "%(name)s receives %(amount)s (everyone else folded)"
+msgstr "%(name)s reçoit %(amount)s (tous les autres joueurs se sont couché)"
+
+#: pokerengine/pokergame.py:397
+#, python-format
+msgid "%(name)s receives %(amount)d odd chips"
+msgstr "%(name)s recoit %(amount)d (jetons restants)"
+
+#: pokerengine/pokergame.py:399
+#, python-format
+msgid "returning uncalled bet %(amount)s to %(name)s"
+msgstr "retour de %(amount)s à %(name)s (mise non-suivie)"
+
+#: pokerengine/pokergame.py:408
+#, python-format
+msgid "%(name)s sits out"
+msgstr "%(name)s se lève"

@@ -1,0 +1,4 @@
+# List of source files containing translatable strings.
+#[encodine: UTF-8]
+pokerengine/pokergame.py
+
