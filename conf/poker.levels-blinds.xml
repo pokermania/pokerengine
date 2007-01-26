@@ -2,7 +2,7 @@
 <levels xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="levels.xsd" poker_engine_version="1.0.23">
   <level small="1500" big="2500"/>
   <level small="2500" big="5000"/>
-  <level small="5000" big="1000"/>
+  <level small="5000" big="10000"/>
   <level small="7500" big="15000"/>
 
   <level small="10000" big="20000"/>
