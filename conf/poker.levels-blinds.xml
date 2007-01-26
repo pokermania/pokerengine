@@ -25,4 +25,11 @@
   <level small="3500000" big="7000000"/>
   <level small="5000000" big="10000000"/>
   <level small="7500000" big="15000000"/>
+
+  <level small="10000000" big="20000000"/>
+  <level small="15000000" big="30000000"/>
+  <level small="25000000" big="30000000"/>
+  <level small="35000000" big="70000000"/>
+  <level small="50000000" big="100000000"/>
+  <level small="75000000" big="150000000"/>
 </levels>
