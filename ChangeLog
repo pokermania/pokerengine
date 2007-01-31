@@ -1,6 +1,15 @@
-2007-01-26  Loic Dachary  <loic@dachary.org>
+2007-01-31  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.23
+
+	* tests/blinds.py.in, pokerengine/pokergame.py:
+	ignore players entering during the blind round
+
+2007-01-26  Loic Dachary  <loic@dachary.org>
+
+	* conf/poker.levels-blinds.xml: add more levels
+
+2007-01-26  Loic Dachary  <loic@dachary.org>
 
 	* conf/poker.levels-blinds.xml: level 3 big blind was 10
 
