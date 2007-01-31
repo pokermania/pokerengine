@@ -1089,7 +1089,7 @@ class PokerGame:
                         else:
                             player.blind = "late"
                         player.wait_for = False
-                    elif player.missed_blind == "n/a":
+                    elif ( player.missed_blind == "n/a" and player.wait_for != "first_round" ):
                         player.blind = "late"
                         player.wait_for = False
                     else: #pragma: no cover

@@ -422,6 +422,35 @@ class TestBlinds(unittest.TestCase):
                            ]
                           )
 
+    def test8(self):
+        """
+        """
+        game = self.game
+        for (serial, seat) in ((1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6)):
+            self.make_new_bot(serial, seat)
+        game.player_list = [1, 3, 4, 5, 6]
+        game.dealer_seat = 3
+        for ( serial, blind_info ) in (
+            (1, ("big",  "n/a", False)),
+            (2, ("late", "n/a", "first_round")),
+            (3, (None,   None,  False)),
+            (4, (None,   "n/a", "late")),
+            (5, (None,   "n/a", "late")),
+            (6, (True,   None,  False)),
+            ):
+            player = game.getPlayer(serial)
+            ( player.blind, player.missed_blind, player.wait_for ) = blind_info
+
+        game.updateBlinds()
+        self.check_blinds([
+                ("big",  "n/a", False),
+                ("late", "n/a", "first_round"),
+                (None,   None,  False),
+                (None,   "n/a", "late"),
+                (None,   "n/a", "late"),
+                (True,   None,  False),
+                ])
+
 def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestBlinds))
