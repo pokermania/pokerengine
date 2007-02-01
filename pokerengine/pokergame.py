@@ -1285,7 +1285,7 @@ class PokerGame:
             if self.blind_info:
                 (amount, dead, state) = self.blindAmount(serial)
                 if amount > 0:
-                    self.historyAdd("position", self.position)
+                    self.historyAddNoDuplicate("position", self.position)
                     if player.isAutoBlindAnte():
                         self.payBlind(serial, amount, dead)
                         auto_payed = True
@@ -1294,7 +1294,7 @@ class PokerGame:
                         auto_payed = False
                         break
             if self.ante_info and player.ante == False:
-                self.historyAdd("position", self.position)
+                self.historyAddNoDuplicate("position", self.position)
                 if player.isAutoBlindAnte():
                     self.payAnte(serial, self.ante_info["value"])
                     auto_payed = True
@@ -3532,6 +3532,12 @@ class PokerGame:
         for callback in self.callbacks:
             callback(self.id, *args)
       
+    def historyAddNoDuplicate(self, *args):
+        if len(self.turn_history) < 1 or self.turn_history[-1] != args:
+          self.historyAdd(*args)
+        elif self.verbose >= 2:
+          self.message("ignore duplicate history event " + str(args))
+
     def historyAdd(self, *args):
         self.runCallbacks(*args)
         self.turn_history.append(args)
