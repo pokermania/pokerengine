@@ -1874,7 +1874,7 @@ class PokerGame:
 
     def check(self, serial):
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.error("player %d cannot check. state = %s, serial in position = %d (ignored)" % (serial, self.state, self.getSerialInPosition()))
+            self.error("player %d cannot check. state = %s (ignored)" % (serial, self.state))
             return False
 
         if not self.canCheck(serial):
@@ -1891,7 +1891,7 @@ class PokerGame:
 
     def fold(self, serial):
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.error("player %d cannot fold. state = %s, serial in position = %d (ignored)" % (serial, self.state, self.getSerialInPosition()))
+            self.error("player %d cannot fold. state = %s (ignored)" % (serial, self.state))
             return False
 
         if self.serial2player[serial].fold == True:
