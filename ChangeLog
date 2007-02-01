@@ -3,6 +3,10 @@
 	* Release 1.0.23
 
 	* pokerengine/pokergame.py:
+	bugous fold or check must not try to get serial in position as player_list may not exist
+	https://gna.org/bugs/?7809 (bug report of 2007/01/11).
+
+	* pokerengine/pokergame.py:
 	historyAddNoDuplicate so that position events are not repeated
 	https://gna.org/bugs/?7809 (bug report of 2007/01/03 16:54).
 
