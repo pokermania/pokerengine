@@ -1,9 +1,16 @@
-2007-01-31  Loic Dachary  <loic@dachary.org>
+2007-02-01  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.23
 
+	* pokerengine/pokergame.py:
+	historyAddNoDuplicate so that position events are not repeated
+	https://gna.org/bugs/?7809 (bug report of 2007/01/03 16:54).
+
+2007-01-31  Loic Dachary  <loic@dachary.org>
+
 	* tests/blinds.py.in, pokerengine/pokergame.py:
 	ignore players entering during the blind round
+	https://gna.org/bugs/?7809
 
 2007-01-26  Loic Dachary  <loic@dachary.org>
 
