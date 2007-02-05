@@ -69,8 +69,12 @@ for module in libxml2 libxslt pokereval ; do
     fi
 done
 
+# i18n
+AM_PO_SUBDIRS
+
 # Generate files
 AC_CONFIG_FILES([tests/run pokerconfigupgrade], [chmod 555 $ac_file])
+AC_CONFIG_FILES([po/Makefile], [AM_POSTPROCESS_PO_MAKEFILE])
 AC_CONFIG_FILES([Makefile
                  poker-engine.pc
                  pokerconfigupgrade.8
