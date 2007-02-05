@@ -5,7 +5,7 @@
 # Mekensleep
 # 24 rue vieille du temple
 # 75004 Paris
-#       licensing@mekensleep.com
+# licensing@mekensleep.com
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,8 +40,28 @@ from pokerengine.pokerengineconfig import Config
 from pokerengine.pokerchips import PokerChips
 from pokerengine import pokerrake
 
+import locale
 import gettext
-gettext.install("poker-engine")
+
+gettext.bind_textdomain_codeset('poker-engine','UTF-8')
+
+if platform.system() == "Windows":
+
+  lang = locale.getdefaultlocale()[0][:2]
+  try:
+    t = gettext.translation('poker-engine', localedir='./../../locale',languages=[lang])
+    _ = t.gettext
+  except IOError:
+    _ = lambda text:text
+
+else:
+
+  try:
+    t = gettext.translation('poker-engine')
+    _ = t.gettext
+  except IOError:
+    _ = lambda text:text
+
 
 ABSOLUTE_MAX_PLAYERS = 10
 
@@ -253,7 +273,7 @@ def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame)
             if show:
                 serial2displayed[serial] = True
                 value = game.readableHandValueLong(side, hand[1][0], hand[1][1:])
-                messages.append( _("%(name)s shows %(value)s for %(side)s ") % { 'name' : serial2name(serial), 'value' : value, 'side' : side })
+                messages.append( _("%(name)s shows %(value)s for %(side)s ") % { 'name' : serial2name(serial), 'value' : value, 'side' : _(side) })
             else:
                 messages.append( _("%(name)s mucks loosing hand") % { 'name' : serial2name(serial) })
 
@@ -262,9 +282,9 @@ def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame)
             continue
         message = join([ serial2name(serial) for serial in frame[side] ])
         if len(frame[side]) > 1:
-            message += " tie for %(side)s " % { 'side' : side }
+            message += " tie for %(side)s " % { 'side' : _(side) }
         else:
-            message += _(" wins %(side)s ") % { 'side' : side }
+            message += _(" wins %(side)s ") % { 'side' : _(side) }
         messages.append(message)
 
     if len(frame['serial2share']) > 1:
@@ -286,7 +306,7 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
         type = event[0]
         if type == "game":
             (type, level, hand_serial, hands_count, time, variant, betting_structure, player_list, dealer, serial2chips) = event
-            subject = _("hand #%(hand_serial)d, %(variant)s, %(betting_structure)s") % { 'hand_serial' : hand_serial, 'variant' : variant, 'betting_structure' : betting_structure }
+            subject = _("hand #%(hand_serial)d, %(variant)s, %(betting_structure)s") % { 'hand_serial' : hand_serial, 'variant' : _(variant), 'betting_structure' : _(betting_structure) }
 
         elif type == "wait_for":
             (type, serial, reason) = event
@@ -368,7 +388,7 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
 
         elif type == "raise":
             (type, serial, amount) = event
-            messages.append( _("%(name)s raise %(amount)s" % { 'name' : serial2name(serial), 'amount' : PokerChips.tostring(amount) } ))
+            messages.append( _("%(name)s raise %(amount)s") % { 'name' : serial2name(serial), 'amount' : PokerChips.tostring(amount) } )
 
         elif type == "canceled":
             (type, serial, amount) = event
@@ -1089,7 +1109,7 @@ class PokerGame:
                         else:
                             player.blind = "late"
                         player.wait_for = False
-                    elif ( player.missed_blind == "n/a" and player.wait_for != "first_round" ):
+                    elif player.missed_blind == "n/a":
                         player.blind = "late"
                         player.wait_for = False
                     else: #pragma: no cover
@@ -1285,7 +1305,7 @@ class PokerGame:
             if self.blind_info:
                 (amount, dead, state) = self.blindAmount(serial)
                 if amount > 0:
-                    self.historyAddNoDuplicate("position", self.position)
+                    self.historyAdd("position", self.position)
                     if player.isAutoBlindAnte():
                         self.payBlind(serial, amount, dead)
                         auto_payed = True
@@ -1294,7 +1314,7 @@ class PokerGame:
                         auto_payed = False
                         break
             if self.ante_info and player.ante == False:
-                self.historyAddNoDuplicate("position", self.position)
+                self.historyAdd("position", self.position)
                 if player.isAutoBlindAnte():
                     self.payAnte(serial, self.ante_info["value"])
                     auto_payed = True
@@ -1874,7 +1894,7 @@ class PokerGame:
 
     def check(self, serial):
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.error("player %d cannot check. state = %s (ignored)" % (serial, self.state))
+            self.error("player %d cannot check. state = %s, serial in position = %d (ignored)" % (serial, self.state, self.getSerialInPosition()))
             return False
 
         if not self.canCheck(serial):
@@ -1891,7 +1911,7 @@ class PokerGame:
 
     def fold(self, serial):
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.error("player %d cannot fold. state = %s (ignored)" % (serial, self.state))
+            self.error("player %d cannot fold. state = %s, serial in position = %d (ignored)" % (serial, self.state, self.getSerialInPosition()))
             return False
 
         if self.serial2player[serial].fold == True:
@@ -2860,30 +2880,30 @@ class PokerGame:
         if value == "NoPair":
             if side == "low":
                 if cards[0][0] == '5':
-                    return "The wheel"
+                    return _("The wheel")
                 else:
                     return join(map(lambda card: card[0], cards), ", ")
             else:
-                return "High card %s" % letter2name[cards[0][0]]
+                return _("High card %(card)s") % { 'card' : _(letter2name[cards[0][0]]) }
         elif value == "OnePair":
-            return "A pair of %s, %s kicker" % ( letter2names[cards[0][0]], letter2name[cards[2][0]] )
+            return _("A pair of %(card)s") % { 'card' : _(letter2names[cards[0][0]]) } + _(", %(card)s kicker") % { 'card' : _(letter2name[cards[2][0]]) }
         elif value == "TwoPair":
-            return "Two pairs %s and %s, %s kicker" % ( letter2names[cards[0][0]], letter2names[cards[2][0]], letter2name[cards[4][0]] )
+            return _("Two pairs %(card1)s and %(card2)s") % { 'card1' : _(letter2names[cards[0][0]]), 'card2' : _(letter2names[cards[2][0]]) } + _(", %(card)s kicker") % { 'card' : _(letter2name[cards[4][0]]) }
         elif value == "Trips":
-            return "Three of a kind %s, %s kicker" % ( letter2names[cards[0][0]], letter2name[cards[3][0]] )
+            return _("Three of a kind %(card)s") % { 'card' : _(letter2names[cards[0][0]]) } + _(", %(card)s kicker") % { 'card' : _(letter2name[cards[3][0]]) }
         elif value == "Straight":
-            return "Straight %s to %s" % ( letter2name[cards[0][0]], letter2name[cards[4][0]] )
+            return _("Straight %(card1)s to %(card2)s") % { 'card1' : _(letter2name[cards[0][0]]), 'card2' : _(letter2name[cards[4][0]]) }
         elif value == "Flush":
-            return "Flush %s high" % letter2name[cards[0][0]] 
+            return _("Flush %(card)s high") % { 'card' : _(letter2name[cards[0][0]]) }
         elif value == "FlHouse":
-            return "Full house, %s over %s" % ( letter2name[cards[0][0]], letter2name[cards[3][0]] )
+            return _("Full house, %(card1)s over %(card2)s") % { 'card1' : _(letter2name[cards[0][0]]), 'card2' : _(letter2name[cards[3][0]]) }
         elif value == "Quads":
-            return "Four of a kind %s, %s kicker" % ( letter2names[cards[0][0]], letter2name[cards[4][0]] )
+            return _("Four of a kind %(card)s") % { 'card' : _(letter2names[cards[0][0]]) } + _(", %(card)s kicker") % { 'card' : _(letter2name[cards[4][0]]) }
         elif value == "StFlush":
             if letter2name[cards[0][0]] == 'Ace':
-                return "Royal flush"
+                return _("Royal flush")
             else:
-                return "Straight flush %s high" % letter2name[cards[0][0]]
+                return _("Straight flush %(card)s high") % { 'card' : _(letter2name[cards[0][0]]) }
         return value
         
     def readableHandValueShort(self, side, value, cards):
@@ -2891,30 +2911,30 @@ class PokerGame:
         if value == "NoPair":
             if side == "low":
                 if cards[0][0] == '5':
-                    return "The wheel"
+                    return _("The wheel")
                 else:
                     return join(map(lambda card: card[0], cards), ", ")
             else:
-                return "High card %s" % letter2name[cards[0][0]]
+                return _("High card %(card)s") % { 'card' : _(letter2name[cards[0][0]]) }
         elif value == "OnePair":
-            return "Pair of %s" % letter2names[cards[0][0]]
+            return _("Pair of %(card)s") % { 'card' : _(letter2names[cards[0][0]]) }
         elif value == "TwoPair":
-            return "Pairs of %s and %s" % ( letter2names[cards[0][0]], letter2names[cards[2][0]] )
+            return _("Pairs of %(card1)s and %(card2)s") % { 'card1' : _(letter2names[cards[0][0]]), 'card2' : _(letter2names[cards[2][0]]) }
         elif value == "Trips":
-            return "Trips %s" % ( letter2names[cards[0][0]] )
+            return _("Trips %(card)s") % { 'card' : _(letter2names[cards[0][0]]) }
         elif value == "Straight":
-            return "Straight %s high" % letter2name[cards[0][0]]
+            return _("Straight %(card)s high") % { 'card' : _(letter2name[cards[0][0]]) }
         elif value == "Flush":
-            return "Flush %s high" % letter2name[cards[0][0]] 
+            return _("Flush %(card)s high") % { 'card' : _(letter2name[cards[0][0]]) }
         elif value == "FlHouse":
-            return "Full %s over %s" % ( letter2name[cards[0][0]], letter2name[cards[3][0]] )
+            return _("Full %(card1)s over %(card2)s") % { 'card1' : _(letter2name[cards[0][0]]), 'card2' : _(letter2name[cards[3][0]]) }
         elif value == "Quads":
-            return "Quads %s, %s kicker" % ( letter2names[cards[0][0]], letter2name[cards[4][0]] )
+            return _("Quads %(card)s") % { 'card' : _(letter2names[cards[0][0]]) } + ", %(card)s kicker" % { 'card' : _(letter2name[cards[4][0]]) }
         elif value == "StFlush":
             if letter2name[cards[0][0]] == 'Ace':
-                return "Royal flush"
+                return _("Royal flush")
             else:
-                return "Straight flush"
+                return _("Straight flush")
         return value
         
     def bestHands(self, serials):
