@@ -1,0 +1,94 @@
+# -*- mode: python -*-
+# Copyright (C) 2006 Mekensleep
+#
+# Mekensleep
+# 24 rue vieille du temple
+# 75004 Paris
+# licensing@mekensleep.com
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Authors:
+#   Jerome Jeannin <griim.work@gmail.com>
+#
+
+import sys, os
+sys.path.insert(0, "@top_srcdir@")
+
+import unittest
+from pokerengine import pokergame
+
+#---------------------------
+class FakePlatform:
+
+  def __init__(self, system):
+    self._system = system
+
+  def system(self):
+    return self._system
+
+class FakeLocale:
+
+  def __init__(self, lang):
+    self._lang = lang
+
+  def getdefaultlocale(self):
+    return (self._lang, None)
+
+# ---------------------------------------------------------    
+class PokerI18NTest(unittest.TestCase):
+         
+    # ---------------------------------------------------------    
+    def testTranslationFails(self):
+        """Test I18N : domains/lang fails"""
+        
+        pokergame.init_i18n(None)
+        self.failUnlessEqual(pokergame._("Ace"), "Ace")
+        
+    # ---------------------------------------------------------    
+    def testWindowsFails(self):
+        """Test I18N : windows fails"""
+        
+	pokergame.platform = FakePlatform("Windows")
+        pokergame.locale = FakeLocale("french")
+        pokergame.init_i18n(None)
+        self.failUnlessEqual(pokergame._("Ace"), "Ace")
+
+    # ---------------------------------------------------------    
+    def testWindowsFails(self):
+        """Test I18N : windows fails"""
+        
+	pokergame.platform = FakePlatform("Windows")
+        pokergame.locale = FakeLocale("french")
+        pokergame.init_i18n("./tmp")
+        self.failUnlessEqual(pokergame._("Ace"), "As")
+
+# ---------------------------------------------------------
+def run():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(PokerI18NTest))
+    verbosity = int(os.environ.get('VERBOSE_T', 2))
+    return unittest.TextTestRunner(verbosity=verbosity).run(suite)
+    
+if __name__ == '__main__':
+    if run().wasSuccessful():
+        sys.exit(0)
+    else:
+        sys.exit(1)
+
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/test-i18n.py ) ; ( cd ../tests ; make TESTS='test-i18n.py' check )"
+# End:
