@@ -45,23 +45,23 @@ import gettext
 
 gettext.bind_textdomain_codeset('poker-engine','UTF-8')
 
-if platform.system() == "Windows":
+def init_i18n(locale_dir):
 
-  lang = locale.getdefaultlocale()[0][:2]
+  global _
+  lang = ''
+
+  if platform.system() == "Windows":
+    lang = locale.getdefaultlocale()[0][:2]
+    if locale_dir == None:
+      locale_dir = './../../locale'
+
   try:
-    t = gettext.translation('poker-engine', localedir='./../../locale',languages=[lang])
+    t = gettext.translation('poker-engine', localedir=locale_dir, languages=[lang])
     _ = t.gettext
   except IOError:
     _ = lambda text:text
 
-else:
-
-  try:
-    t = gettext.translation('poker-engine')
-    _ = t.gettext
-  except IOError:
-    _ = lambda text:text
-
+init_i18n(None)
 
 ABSOLUTE_MAX_PLAYERS = 10
 
