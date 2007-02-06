@@ -8,7 +8,9 @@
 
 	* pokerengine/pokergame.py:
 	historyAddNoDuplicate so that position events are not repeated
-	https://gna.org/bugs/?7809 (bug report of 2007/01/03 16:54).
+	https://gna.org/bugs/?7809 (bug report of 2007/01/03 16:54)
+	http://www.pok3d.com/rt/Ticket/Display.html?id=2106
+	
 
 2007-01-31  Loic Dachary  <loic@dachary.org>
 
