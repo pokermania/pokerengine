@@ -101,5 +101,6 @@ AC_CONFIG_FILES([Makefile
                  tests/test-pokerrake.py
                  tests/test-pokerplayer.py
                  tests/test-version.py
+                 tests/test-i18n.py
                  tests/Makefile], [chmod -w $ac_file])
 AC_OUTPUT
