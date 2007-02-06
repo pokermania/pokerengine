@@ -43,7 +43,7 @@ export VERBOSE_T
 
 # build context for i18n testing
 mkdir -p ./tmp/fr/LC_MESSAGES/
-msgfmt ../po/fr.po -o ./tmp/fr/LC_MESSAGES/poker-engine.mo
+msgfmt @top_srcdir@/po/fr.po -o ./tmp/fr/LC_MESSAGES/poker-engine.mo
 
 DEFAULT_COVERAGE_FILES=$(echo ${top_srcdir}/pokerengine/*.py) 
 : ${COVERAGE_FILES:=$DEFAULT_COVERAGE_FILES}
