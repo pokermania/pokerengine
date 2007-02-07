@@ -43,7 +43,8 @@ from pokerengine import pokerrake
 import locale
 import gettext
 
-gettext.bind_textdomain_codeset('poker-engine','UTF-8')
+if float(sys.version[0:3]) > 2.3:
+  gettext.bind_textdomain_codeset('poker-engine','UTF-8')
 
 def init_i18n(locale_dir):
 
@@ -53,7 +54,7 @@ def init_i18n(locale_dir):
   if platform.system() == "Windows":
     lang = locale.getdefaultlocale()[0][:2]
     if locale_dir == None:
-      locale_dir = './../../locale'
+      locale_dir = './../../../../locale'
 
   try:
     t = gettext.translation('poker-engine', localedir=locale_dir, languages=[lang])
