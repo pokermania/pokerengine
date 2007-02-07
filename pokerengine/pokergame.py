@@ -54,7 +54,7 @@ def init_i18n(locale_dir):
   if platform.system() == "Windows":
     lang = locale.getdefaultlocale()[0][:2]
     if locale_dir == None:
-      locale_dir = './../../../../locale'
+      locale_dir = './../../locale'
 
   try:
     t = gettext.translation('poker-engine', localedir=locale_dir, languages=[lang])
