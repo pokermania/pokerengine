@@ -67,7 +67,7 @@ class PokerI18NTest(unittest.TestCase):
         self.failUnlessEqual(pokergame._("Ace"), "Ace")
 
     # ---------------------------------------------------------    
-    def testWindowsFails(self):
+    def testWindowsSuccess(self):
         """Test I18N : windows fails"""
         
 	pokergame.platform = FakePlatform("Windows")
