@@ -260,7 +260,7 @@ MOSTLYCLEANFILES += stamp-poT
 MOSTLYCLEANFILES += core core.* *.stackdump $(DOMAIN).po $(DOMAIN).1po $(DOMAIN).2po *.new.po
 MOSTLYCLEANFILES += *.o
 
-DISTCLEANFILES = *.mo
+DISTCLEANFILES = *.mo stamp-po
 
 MAINTAINERCLEANFILES = stamp-po $(GMOFILES)
 
