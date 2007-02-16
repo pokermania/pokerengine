@@ -3886,6 +3886,7 @@ class PokerGameTestCase(unittest.TestCase):
         """Test Poker Game : Muck state sit out"""
         player1 = self.AddPlayerAndSit(1, 2)
         self.game.state = pokergame.GAME_STATE_MUCK
+        self.game.player_list = [ 1 ] 
         self.failIf(self.game.sitOutNextTurn(1))
         self.failUnlessEqual(True, self.game.getPlayer(1).sit_out_next_turn)
 
