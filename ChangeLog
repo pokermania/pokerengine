@@ -1,8 +1,16 @@
-2007-02-12  Loic Dachary  <loic@dachary.org>
-
+2007-02-16  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.24
 
+	* pokerengine/pokergame.py: function isEndOrNull : not in a turn
+	END or NULL state.  function isInTurn : same as isRunning but
+	includes MUCK state.  sitOutNextTurn does not sit_out_next turn if
+	in muck state regardless of the player status.  remove useless
+	test self.isRunning() and self.state != GAME_STATE_MUCK.  change
+	beginturn warning to include MUCK state.
+	
+	* poker-engine/tests/test-game.py.in: muck state sitout test requires player_list set
+	
 2007-02-01  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.23
