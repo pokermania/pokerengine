@@ -612,6 +612,11 @@ class PokerGame:
     def isInPosition(self, serial):
         return self.isPlaying(serial) and self.getSerialInPosition() == serial
       
+    def isInTurn(self, serial):
+        return ( not self.isEndOrNull() and
+                 self.serial2player.has_key(serial) and
+                 serial in self.player_list )
+
     def isPlaying(self, serial):
         return ( self.isRunning() and
                  self.serial2player.has_key(serial) and
@@ -635,10 +640,9 @@ class PokerGame:
         
     def sitOutNextTurn(self, serial):
         player = self.serial2player[serial]
-        if ( self.state == GAME_STATE_MUCK or
-             ( self.isPlaying(serial) and
-               not ( self.isBlindAnteRound() and
-                     self.getSerialInPosition() == serial ) ) ):
+        if ( self.isInTurn(serial) and
+             not ( self.isBlindAnteRound() and
+                   self.getSerialInPosition() == serial ) ):
             player.sit_out_next_turn = True
             player.sit_requested = False
             return False
@@ -840,7 +844,7 @@ class PokerGame:
             return False
 
     def removePlayer(self, serial):
-        if self.isPlaying(serial):
+        if self.isInTurn(serial):
             self.serial2player[serial].remove_next_turn = True
             if self.isBlindAnteRound():
                 self.sitOut(serial)
@@ -873,8 +877,8 @@ class PokerGame:
             self.error("seatSeats: wanted %s but got %s" % ( seats, self.seats() ))
     
     def beginTurn(self, hand_serial):
-        if self.isRunning():
-            self.error("beginTurn: already running")
+        if not self.isEndOrNull():
+            self.error("beginTurn: turn is not over yet")
             return
 
         self.hand_serial = hand_serial
@@ -3093,7 +3097,7 @@ class PokerGame:
         return self.uncalled_serial
 
     def getPotAmount(self):
-        if self.isRunning() and self.state != GAME_STATE_MUCK:
+        if self.isRunning():
           return self.pot
         else:
           if self.moneyDistributed():
@@ -3408,7 +3412,7 @@ class PokerGame:
     # Game Parameters.
     #
     def roundCap(self):
-        if self.isRunning() and self.state != GAME_STATE_MUCK:
+        if self.isRunning():
           return self.betInfo()["cap"]
         return 0
 
@@ -3540,7 +3544,10 @@ class PokerGame:
         self.state = state
 
     def isRunning(self):
-        return not ( self.state == GAME_STATE_NULL or self.state == GAME_STATE_END or self.state == GAME_STATE_MUCK )
+        return not ( self.isEndOrNull() or self.state == GAME_STATE_MUCK )
+
+    def isEndOrNull(self):
+        return self.state == GAME_STATE_NULL or self.state == GAME_STATE_END
 
     def registerCallback(self, callback):
         if not callback in self.callbacks:
