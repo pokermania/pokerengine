@@ -197,7 +197,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         
         subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
-        self.failUnlessEqual(message,  ['1 raise 5'])    
+        self.failUnlessEqual(message,  ['1 raises 5'])    
         
     # ------------------------------------------------------------    
     def testHistory2messagesAllIn(self):
