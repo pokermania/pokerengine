@@ -1,6 +1,11 @@
-2007-02-16  Loic Dachary  <loic@dachary.org>
+2007-03-06  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.24
+
+	* pokerengine/pokergame.py: s/raise/raises/ and update corresponding
+	  translations.
+
+2007-02-16  Loic Dachary  <loic@dachary.org>
 
 	* pokerengine/pokergame.py: function isEndOrNull : not in a turn
 	END or NULL state.  function isInTurn : same as isRunning but
@@ -9,7 +14,8 @@
 	test self.isRunning() and self.state != GAME_STATE_MUCK.  change
 	beginturn warning to include MUCK state.
 	
-	* poker-engine/tests/test-game.py.in: muck state sitout test requires player_list set
+	* poker-engine/tests/test-game.py.in: muck state sitout test
+	requires player_list set
 	
 2007-02-01  Loic Dachary  <loic@dachary.org>
 
