@@ -389,7 +389,7 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
 
         elif type == "raise":
             (type, serial, amount) = event
-            messages.append( _("%(name)s raise %(amount)s") % { 'name' : serial2name(serial), 'amount' : PokerChips.tostring(amount) } )
+            messages.append( _("%(name)s raises %(amount)s") % { 'name' : serial2name(serial), 'amount' : PokerChips.tostring(amount) } )
 
         elif type == "canceled":
             (type, serial, amount) = event
