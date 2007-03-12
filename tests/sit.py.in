@@ -75,7 +75,7 @@ class TestSit(unittest.TestCase):
                 self.fail()
             
             
-    def test1(self):
+    def test1_player_arrive_during_blinds(self):
         for (serial, seat) in ((1, 0), (2, 1)):
             self.make_new_player(serial, seat)
         self.game.beginTurn(1)
@@ -102,6 +102,36 @@ class TestSit(unittest.TestCase):
         self.game.beginTurn(3)
         self.assertEqual(self.game.player_list, [1,2,3])
         self.pay_blinds()
+
+    def test2_player_sitout_during_blinds(self):
+        for (serial, seat) in ((1, 0), (2, 1), (3, 2)):
+            self.make_new_player(serial, seat)
+        self.game.beginTurn(1)
+        #
+        # player 1 deals
+        # player 2 small blind
+        # player 3 big blind
+        #
+        # player 3 sits out while player 2 is in position : she is
+        # marked as sit_out_next_turn because she is not in position
+        #
+        self.assertEqual(2, self.game.getSerialInPosition())
+        self.game.sitOutNextTurn(3)
+        player3 = self.game.getPlayer(3)
+        self.assertEqual("big", player3.blind)
+        self.failUnless(player3.isSit())
+        self.assertEqual(True, player3.sit_out_next_turn)
+        #
+        # player 3 sits back and because she is sit_out_next_turn,
+        # which can only happen in the blind/ante round if she 
+        # sat out after being included in the player list for the
+        # turn, she is sit. By contrast, if she had been sit
+        # during the blind/ante turn, she would have been marked
+        # wait_for = "first_round"
+        #
+        self.game.sit(3)
+        self.assertEqual(False, player3.sit_out_next_turn)
+        self.assertEqual(False, player3.wait_for)
 
 def run():
     suite = unittest.TestSuite()
