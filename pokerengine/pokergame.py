@@ -680,13 +680,24 @@ class PokerGame:
         if not player.isBuyInPayed() or self.isBroke(serial):
             if self.verbose > 0: self.error("sit: refuse to sit player %d because buy in == %s instead of True or broke == %s instead of False" % ( serial, player.buy_in_payed, self.isBroke(serial) ))
             return False
-        player.sit_out_next_turn = False
         player.sit_requested = False
         player.sit_out = False
         if player.wait_for == "big":
             player.wait_for = False
-        if self.isRunning() and self.isBlindAnteRound():
+        #
+        # Rationale of player.sit_out_next_turn == False
+        # This condition happens when the player sitout + sit
+        # while not having the position during the blind/ante round it.
+        # In this particular case, instead of instructing her to wait
+        # for the first round, she sits back. This is important because
+        # she was included in the player list at the begining of the turn.
+        # If she is marked wait_for = "first_round", she will be removed 
+        # from the player list at the end of the blind/ante round, which
+        # is exactly the opposite of what we want.
+        #
+        if self.isRunning() and self.isBlindAnteRound() and player.sit_out_next_turn == False:
             player.wait_for = "first_round"
+        player.sit_out_next_turn = False
         player.auto = False
         if self.sitCount() < 2:
             self.first_turn = True
