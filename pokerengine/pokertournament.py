@@ -29,6 +29,9 @@ from types import StringType
 from pprint import pformat
 import time, sys, random
 
+def seconds():
+    return time.time()
+
 shuffler = random
 
 from pokerengine.pokergame import PokerGameServer
@@ -227,7 +230,7 @@ class PokerTournament:
         print self.prefix + "[PokerTournament %s] " % self.name + message
         
     def canRun(self):
-        if self.start_time < time.time():
+        if self.start_time < seconds():
             if self.sit_n_go == 'y' and self.registered >= self.players_quota:
                 return True
             elif self.sit_n_go == 'n':
@@ -250,7 +253,7 @@ class PokerTournament:
         
     def updateRegistering(self):
         if self.state == TOURNAMENT_STATE_ANNOUNCED:
-            now = time.time()
+            now = seconds()
             if now - self.register_time > 0.0:
                 self.changeState(TOURNAMENT_STATE_REGISTERING)
                 return -1
@@ -274,14 +277,14 @@ class PokerTournament:
         if self.state == TOURNAMENT_STATE_ANNOUNCED and state == TOURNAMENT_STATE_REGISTERING:
             self.can_register = True
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_RUNNING:
-            self.start_time = time.time()
+            self.start_time = seconds()
             self.createGames()
             self.can_register = False
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_CANCELED:
             self.cancel()
-            self.finish_time = time.time()
+            self.finish_time = seconds()
         elif self.state == TOURNAMENT_STATE_RUNNING and state == TOURNAMENT_STATE_COMPLETE:
-            self.finish_time = time.time()
+            self.finish_time = seconds()
         else:
             if self.verbose >= 0: print "PokerTournament:changeState: cannot change from state %s to state %s" % ( self.state, state )
             return
