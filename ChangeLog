@@ -1,6 +1,10 @@
-2007-04-20  Loic Dachary  <loic@pokerdev.pokersource.info>
+2007-04-25  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.0.25
+
+	* pokerengine/pokertournament.py: Store tournament break information.
+
+2007-04-20  Loic Dachary  <loic@dachary.org>
 
 	* pokerengine/pokertournament.py: Wrap time() calls in seconds()
 	  module function for substitution in tests.
