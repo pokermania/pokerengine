@@ -40,6 +40,8 @@ from pokerengine.pokerengineconfig import Config
 TOURNAMENT_STATE_ANNOUNCED = "announced"
 TOURNAMENT_STATE_REGISTERING = "registering"
 TOURNAMENT_STATE_RUNNING = "running"
+TOURNAMENT_STATE_BREAK_WAIT = "breakwait"
+TOURNAMENT_STATE_BREAK = "break"
 TOURNAMENT_STATE_COMPLETE = "complete"
 TOURNAMENT_STATE_CANCELED = "canceled"
             
@@ -188,6 +190,9 @@ class PokerTournament:
         self.breaks_first = kwargs.get('breaks_first', 7200)
         self.breaks_interval = kwargs.get('breaks_interval', 3600)
         self.breaks_duration = kwargs.get('breaks_duration', 300)
+        self.breaks_running_since = -1
+        self.breaks_since = -1
+        self.breaks_count = 0
         self.buy_in = int(kwargs.get('buy_in', 0))
         self.rake = int(kwargs.get('rake', 0))
         self.rebuy_delay = kwargs.get('rebuy_delay', 0)
@@ -210,7 +215,7 @@ class PokerTournament:
         self.games = []
         self.id2game = {}
         
-        self.callback_new_state = lambda tournament: True
+        self.callback_new_state = lambda tournament, old_state, new_state: True
         self.callback_create_game = lambda tournament: PokerGameServer("poker.%s.xml", tournament.dirs)
         self.callback_game_filled = lambda tournament, game: True
         self.callback_destroy_game = lambda tournament, game: True
@@ -266,33 +271,84 @@ class PokerTournament:
             return -1
 
     def updateRunning(self):
-            if self.state == TOURNAMENT_STATE_REGISTERING:
-                ready = self.canRun()
-                if ready == True:
-                    self.changeState(TOURNAMENT_STATE_RUNNING)
-                elif ready == None:
-                    self.changeState(TOURNAMENT_STATE_CANCELED)
-                elif ready == False:
-                    pass
+        if self.state == TOURNAMENT_STATE_REGISTERING:
+            ready = self.canRun()
+            if ready == True:
+                self.changeState(TOURNAMENT_STATE_RUNNING)
+            elif ready == None:
+                self.changeState(TOURNAMENT_STATE_CANCELED)
+            elif ready == False:
+                pass
 
+    def remainingBreakSeconds(self):
+        if self.breaks_since > 0:
+            return self.breaks_duration - ( tournament_seconds() - self.breaks_since )
+        else:
+            return None
+        
+    def updateBreak(self, game_id = None):
+        if self.breaks_duration <= 0:
+            return False
+
+        if self.state == TOURNAMENT_STATE_RUNNING:
+            running_duration = tournament_seconds() - self.breaks_running_since
+            if self.breaks_count > 0:
+                running_max = self.breaks_interval
+            else:
+                running_max = self.breaks_first
+            if running_duration >= running_max:
+                self.breaks_games_id = []
+                self.changeState(TOURNAMENT_STATE_BREAK_WAIT)
+                
+        if self.state == TOURNAMENT_STATE_BREAK_WAIT:
+            self.breaks_games_id.append(game_id)
+            on_break = True
+            for game in self.games:
+                if game.id not in self.breaks_games_id:
+                    on_break = False
+                    break
+            if on_break:
+                del self.breaks_games_id
+                self.changeState(TOURNAMENT_STATE_BREAK)
+
+        if self.state == TOURNAMENT_STATE_BREAK:
+            if self.remainingBreakSeconds() <= 0:
+                self.changeState(TOURNAMENT_STATE_RUNNING)
+
+        if self.state not in (TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT, TOURNAMENT_STATE_BREAK):
+            if self.verbose >= 0: print "PokerTournament:updateBreak: is not supposed to be called while in state %s" % self.state
+            return None
+        
+        return True
+        
     def changeState(self, state):
         if self.state == TOURNAMENT_STATE_ANNOUNCED and state == TOURNAMENT_STATE_REGISTERING:
             self.can_register = True
+        elif self.state == TOURNAMENT_STATE_RUNNING and state == TOURNAMENT_STATE_BREAK_WAIT:
+            pass
+        elif self.state == TOURNAMENT_STATE_BREAK_WAIT and state == TOURNAMENT_STATE_BREAK:
+            self.breaks_since = tournament_seconds()
+        elif self.state == TOURNAMENT_STATE_BREAK and state == TOURNAMENT_STATE_RUNNING:
+            self.breaks_since = -1
+            self.breaks_running_since = tournament_seconds()
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_RUNNING:
             self.start_time = tournament_seconds()
+            self.breaks_running_since = self.start_time
             self.createGames()
             self.can_register = False
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_CANCELED:
             self.cancel()
             self.finish_time = tournament_seconds()
-        elif self.state == TOURNAMENT_STATE_RUNNING and state == TOURNAMENT_STATE_COMPLETE:
+        elif ( self.state in ( TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT ) and
+               state == TOURNAMENT_STATE_COMPLETE ):
             self.finish_time = tournament_seconds()
         else:
             if self.verbose >= 0: print "PokerTournament:changeState: cannot change from state %s to state %s" % ( self.state, state )
             return
         if self.verbose > 2: self.message("state change %s => %s" % ( self.state, state ))
+        old_state = self.state
         self.state = state
-        self.callback_new_state(self)
+        self.callback_new_state(self, old_state, self.state)
 
     def isRegistered(self, serial):
         return serial in self.players
@@ -418,6 +474,8 @@ class PokerTournament:
             return False
         else:
             if loosers_count > 0 or self.need_balance: self.balanceGames()
+            if self.id2game.has_key(game_id):
+                self.updateBreak(game_id)
             return True
         
     def balanceGames(self):
