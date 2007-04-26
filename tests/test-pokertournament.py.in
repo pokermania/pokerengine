@@ -899,16 +899,100 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_RUNNING, tournament.state)
 
+class Breaks(unittest.TestCase):
+
+    def setUp(self):
+        self.now = time.time() + 20000
+        pokertournament.tournament_seconds = self.seconds
+        
+    def seconds(self):
+        return self.now
+    
+    def test_remainingBreakSeconds(self):
+        arguments = { 
+            'dirs' : [ '@top_srcdir@/conf' ],
+            'players_quota' :  20,
+            'start_time' : self.seconds(),
+            'seats_per_game' : 5,
+            'sit_n_go' : 'n',
+            'verbose' : int(os.environ.get('VERBOSE_T', 3)),
+            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        self.assertEqual(None, tournament.remainingBreakSeconds())
+        tournament.breaks_since = self.now - 1
+        tournament.breaks_duration = 2
+        self.assertEqual(1, tournament.remainingBreakSeconds())
+
+    def test_updateBreak(self):
+        
+        arguments ={ 
+            'dirs' : [ '@top_srcdir@/conf' ],
+            'players_quota' :  20,
+            'start_time' : self.seconds(),
+            'seats_per_game' : 5,
+            'sit_n_go' : 'n',
+            'verbose' : int(os.environ.get('VERBOSE_T', 3)),
+            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        tournament.state = pokertournament.TOURNAMENT_STATE_RUNNING
+        #
+        # No break, updateBreak does nothing
+        #
+        tournament.breaks_duration = 0
+        self.assertEqual(False, tournament.updateBreak(0))
+        #
+        # RUNNING but not time to break yet
+        #
+        tournament.breaks_duration = 5
+        tournament.breaks_running_since = tournament.start_time
+        tournament.breaks_first = 10
+        tournament.breaks_interval = 10
+        tournament.breaks_duration = 1
+        tournament.breaks_count = 1
+        self.failUnless(tournament.updateBreak())
+        tournament.breaks_count = 0
+        self.failUnless(tournament.updateBreak())
+        #
+        # RUNNING -> BREAK_WAIT 
+        #
+        self.now = tournament.breaks_running_since + tournament.breaks_first
+        class Game:
+            def __init__(self, id):
+                self.id = id
+                
+        tournament.games = [Game(1), Game(2)]
+        self.failUnless(tournament.updateBreak(1))
+        self.failUnless(hasattr(tournament, 'breaks_games_id'))
+        self.assertEqual([1],tournament.breaks_games_id)
+        self.assertEqual(pokertournament.TOURNAMENT_STATE_BREAK_WAIT, tournament.state)
+        #
+        # BREAK_WAIT -> BREAK
+        #
+        self.failUnless(tournament.updateBreak(2))
+        self.failIf(hasattr(tournament, 'breaks_games_id'))
+        self.assertEqual(pokertournament.TOURNAMENT_STATE_BREAK, tournament.state)
+        self.assertEqual(self.now, tournament.breaks_since)
+        #
+        # BREAK -> RUNNING
+        #
+        self.now += tournament.breaks_duration
+        self.failUnless(tournament.updateBreak())
+        self.assertEqual(self.now, tournament.breaks_running_since)
+        #
+        # Call with invalid state
+        #
+        tournament.state = pokertournament.TOURNAMENT_STATE_CANCELED
+        self.assertEqual(None, tournament.updateBreak())
+
 # ---------------------------------------------------------
 def GetTestSuite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(PokerTournamentTestCase))
+    suite.addTest(unittest.makeSuite(Breaks))
     return suite
     
-# ---------------------------------------------------------
-def GetTestedModule():
-    return pokertournament
-  
 # ---------------------------------------------------------
 def Run(verbose):
     return unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
