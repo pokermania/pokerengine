@@ -45,8 +45,9 @@ dist_upgradepoker_DATA = \
 EXTRA_DIST = \
 	examples/simple.py \
         po/raw.string \
-	$(wildcard conf/*.template)
-	$(wildcard gentoo/dev-games/poker-eval/*.ebuild)
+	$(wildcard conf/*.template) \
+	$(wildcard gentoo/dev-games/poker-eval/*.ebuild) \
+	Makefile.cygwin
 
 pkgconfigdir = ${datadir}/pkgconfig
 pkgconfig_DATA = poker-engine.pc
