@@ -5,7 +5,7 @@ Maintainer: Loic Dachary (OuoU) <loic@debian.org>
 Build-Depends-Indep: pkg-config, python-all-dev (>= 2.3.5-11), perl, automake1.9, rsync
 Build-Depends: debhelper (>= 5.0.37.2), cdbs, python-libxml2, python-libxslt1, python-pypoker-eval (>= 132.0)
 XS-Python-Version: >=2.3
-Standards-Version: 3.7.2
+Standards-Version: 3.7.3
 
 Package: python-poker-engine
 Section: python
