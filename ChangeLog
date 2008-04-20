@@ -1,3 +1,10 @@
+2008-04-20  Loic Dachary  <loic@pokerdev.pokersource.info>
+
+	* Release 1.2.0
+
+	* implement method minMoney to get the minimum amount of money
+	  a user must have to be dealt a hand at the table.
+
 2007-05-16  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.1.0

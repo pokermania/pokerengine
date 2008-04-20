@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<poker xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="poker.xsd" poker_engine_version="1.0.25">
+<poker xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="poker.xsd" poker_engine_version="1.2.0">
 
     <variant type="7stud" name="Razz" id="razz">
 
