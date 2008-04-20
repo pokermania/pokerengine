@@ -14,7 +14,7 @@ Conflicts: python2.3-poker-eval (<< 1.0.16), python2.4-poker-engine (<< 1.0.16),
 XB-Python-Version: ${python:Versions}
 Depends: ${python:Depends}, python-pypoker-eval (>= 132.0), python-libxml2, python-libxslt1, rsync
 Description: multiplayer poker engine with abstract variants specifications
- poker-engine is a python library that implements poker rules according
+ poker-engine is a Python library that implements poker rules according
  to variants and betting structures specified in configuration files.
  It designed to be used by a multiplayer poker server, a poker AI or a
  poker client.
