@@ -1,5 +1,5 @@
 # -*- mode: python -*-
-# Copyright (C) 2006, 2007 Loic Dachary <loic@dachary.org>
+# Copyright (C) 2006, 2007, 2008 Loic Dachary <loic@dachary.org>
 # Copyright (C) 2006 Mekensleep
 #
 # Mekensleep
@@ -9,7 +9,7 @@
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -3510,6 +3510,47 @@ class PokerGameTestCase(unittest.TestCase):
         # All antes are now payed
         self.failUnless(self.game.isBlindAntePayed())
         
+    # ---------------------------------------------------------
+    def testMinMoney(self):
+        """Test Poker Game : min money"""
+
+        #
+        # game with blinds
+        #
+        self.failUnless(self.game.minMoney() > self.game.blind_info["big"]);
+
+        #
+        # game with antes
+        #
+        # Change the ante properties        
+        ante_properties =   {  
+                                    'value' : '100',
+                                    'bring-in' : '200'
+                                    }
+        
+        if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
+            self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
+            
+        # Reload the betting structure
+        self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        
+        # Reset the blind infos
+        self.game.blind_info = None
+        self.failUnless(self.game.minMoney() > self.game.ante_info["bring-in"]);
+
+        #
+        # tournament
+        #
+        self.game.ante_info["change"] = True;
+        self.failUnlessEqual(self.game.minMoney(), 0)
+
+        #
+        # no blinds, no antes
+        #
+        self.game.blind_info = None
+        self.game.ante_info = None
+        self.failUnlessEqual(self.game.minMoney(), 0)
+
     # ---------------------------------------------------------
     def testIsBroke(self):
         """Test Poker Game : Is broke"""
