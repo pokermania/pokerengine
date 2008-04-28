@@ -1,9 +1,79 @@
-2008-04-20  Loic Dachary  <loic@pokerdev.pokersource.info>
+2008-04-28  Loic Dachary <loic@dachary.org>
 
 	* Release 1.2.0
 
-	* implement method minMoney to get the minimum amount of money
-	  a user must have to be dealt a hand at the table.
+	* pokerengine/pokergame.py: V full over W use plural
+	* pokerconfigupgrade.8.in: nroff comments are \" not '''
+	* debian/copyright: Make lintian happy about the copyright notice.
+	* tests/test-game.py.in: Fix message strings for Full House.
+	* pokerengine/pokergame.py: Vs full of Ws is better than Full Vs
+	  over Ws.
+
+2008-04-20  Loic Dachary <loic@dachary.org>
+
+	* debian/control, debian/control.unstable: standard is now 3.7.3
+	* debian/control: s/python/Python/
+	* COPYING, ChangeLog, Makefile.am, NEWS,
+	  conf/poker..01-.02-no-limit.xml,
+	  conf/poker..01-.02-pot-limit.xml, conf/poker..02-.04-limit.xml,
+	  conf/poker..02-.04-no-limit.xml,
+	  conf/poker..02-.04-pot-limit.xml, conf/poker..02..04-limit.xml,
+	  conf/poker..05-.10-limit.xml, conf/poker..05-.10-no-limit.xml,
+	  conf/poker..05-.10-pot-limit.xml, conf/poker..05..10-limit.xml,
+	  conf/poker..10-.25-limit.xml, conf/poker..10-.25-no-limit.xml,
+	  conf/poker..10-.25-pot-limit.xml, conf/poker..25-.50-limit.xml,
+	  conf/poker..25-.50-no-limit.xml,
+	  conf/poker..25-.50-pot-limit.xml, conf/poker..25..50-limit.xml,
+	  conf/poker..50-1-limit.xml, conf/poker..50-1-no-limit.xml,
+	  conf/poker..50-1-pot-limit.xml, conf/poker..50.1-limit.xml,
+	  conf/poker.0-0-limit.xml, conf/poker.1-2-limit.xml,
+	  conf/poker.1-2-no-limit.xml, conf/poker.1-2-pot-limit.xml,
+	  conf/poker.10-15-limit.xml, conf/poker.10-15-pot-limit.xml,
+	  conf/poker.10-20-limit.xml, conf/poker.10-20-no-limit.xml,
+	  conf/poker.10-20-pot-limit.xml, conf/poker.100-200-limit.xml,
+	  conf/poker.100-200-no-limit.xml,
+	  conf/poker.100-200-pot-limit.xml, conf/poker.15-30-limit.xml,
+	  conf/poker.150-300-limit.xml, conf/poker.2-4-limit.xml,
+	  conf/poker.2-4-no-limit.xml, conf/poker.2-4-pot-limit.xml,
+	  conf/poker.200-400-limit.xml, conf/poker.3-6-limit.xml,
+	  conf/poker.3-6-no-limit.xml, conf/poker.3-6-pot-limit.xml,
+	  conf/poker.30-60-limit.xml, conf/poker.30-60-no-limit.xml,
+	  conf/poker.30-60-pot-limit.xml, conf/poker.4-8-limit.xml,
+	  conf/poker.5-10-limit.xml, conf/poker.5-10-no-limit.xml,
+	  conf/poker.5-10-pot-limit.xml, conf/poker.50-100-limit.xml,
+	  conf/poker.50-100-no-limit.xml, conf/poker.50-100-pot-limit.xml,
+	  conf/poker.7stud.xml, conf/poker.ante-.04-.08-limit.xml,
+	  conf/poker.ante-.10-.20-limit.xml,
+	  conf/poker.ante-.25-.50-limit.xml,
+	  conf/poker.ante-.50-1-limit.xml, conf/poker.ante-1-2-limit.xml,
+	  conf/poker.ante-10-20-limit.xml, conf/poker.ante-2-4-limit.xml,
+	  conf/poker.ante-3-6-limit.xml, conf/poker.ante-30-60-limit.xml,
+	  conf/poker.ante-5-10-limit.xml, conf/poker.holdem.xml,
+	  conf/poker.level-001.xml, conf/poker.level-10-15-pot-limit.xml,
+	  conf/poker.level-10-20-no-limit.xml,
+	  conf/poker.level-15-30-no-limit.xml,
+	  conf/poker.level-2-4-limit.xml, conf/poker.level-no-limit.xml,
+	  conf/poker.levels-blinds.xml, conf/poker.omaha.xml,
+	  conf/poker.omaha8.xml, conf/poker.payouts.xml,
+	  conf/poker.razz.xml, configure.ac, debian/changelog,
+	  examples/simple.py, pokerconfigupgrade.8.in,
+	  pokerconfigupgrade.in, pokerengine/Makefile.am,
+	  pokerengine/__init__.py, pokerengine/pokercards.py,
+	  pokerengine/pokerchips.py, pokerengine/pokerengineconfig.py,
+	  pokerengine/pokerrake.py, pokerengine/pokertournament.py,
+	  pokerengine/version.py, tests/Makefile.am, tests/allin.py.in,
+	  tests/blinds.py.in, tests/bugs.py.in, tests/buyin.py.in,
+	  tests/chips.py.in, tests/deal.py.in, tests/eval.py.in,
+	  tests/history.py.in, tests/muck.py.in, tests/positions.py.in,
+	  tests/run.in, tests/sit.py.in, tests/test-gamehistory.py.in,
+	  tests/test-i18n.py.in, tests/test-pokercards.py.in,
+	  tests/test-pokerchips.py.in, tests/test-pokerengineconfig.py.in,
+	  tests/test-pokerplayer.py.in, tests/test-pokerrake.py.in,
+	  tests/test-pokertournament.py.in, tests/test-version.py.in,
+	  tests/tournament.py.in, tests/upgrades.py.in: GPLv2+ to GPLv3+
+	* pokerengine/pokergame.py, tests/test-game.py.in: implement method
+	  minMoney to get the minimum amount of money a user must have to
+	  be dealt a hand at the table.
 
 2007-05-16  Loic Dachary  <loic@dachary.org>
 
@@ -1076,3 +1146,6 @@ Thu Apr 28 2005  Loic Dachary  <loic@gnu.org>
 
 	* Release 1.0.0
 
+Local Variables:
+compile-command: "svn update ; svn2cl --group-by-day --authors=$(echo $HOME)/.svn2cl --stdout | head -2000 | sed -n '0,/^2008-03-20/p'"
+End:
