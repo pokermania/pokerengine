@@ -2921,7 +2921,7 @@ class PokerGame:
         elif value == "Flush":
             return _("Flush %(card)s high") % { 'card' : _(letter2name[cards[0][0]]) }
         elif value == "FlHouse":
-            return _("%(card1)s full of %(card2)s") % { 'card1' : _(letter2name[cards[0][0]]), 'card2' : _(letter2name[cards[3][0]]) }
+            return _("%(card1)ss full of %(card2)ss") % { 'card1' : _(letter2name[cards[0][0]]), 'card2' : _(letter2name[cards[3][0]]) }
         elif value == "Quads":
             return _("Four of a kind %(card)s") % { 'card' : _(letter2names[cards[0][0]]) } + _(", %(card)s kicker") % { 'card' : _(letter2name[cards[4][0]]) }
         elif value == "StFlush":
@@ -2952,7 +2952,7 @@ class PokerGame:
         elif value == "Flush":
             return _("Flush %(card)s high") % { 'card' : _(letter2name[cards[0][0]]) }
         elif value == "FlHouse":
-            return _("%(card1)s full of %(card2)s") % { 'card1' : _(letter2name[cards[0][0]]), 'card2' : _(letter2name[cards[3][0]]) }
+            return _("%(card1)ss full of %(card2)ss") % { 'card1' : _(letter2name[cards[0][0]]), 'card2' : _(letter2name[cards[3][0]]) }
         elif value == "Quads":
             return _("Quads %(card)s") % { 'card' : _(letter2names[cards[0][0]]) } + ", %(card)s kicker" % { 'card' : _(letter2name[cards[4][0]]) }
         elif value == "StFlush":
