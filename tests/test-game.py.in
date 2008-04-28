@@ -1985,7 +1985,7 @@ class PokerGameTestCase(unittest.TestCase):
         bestHand = pokercards.PokerCards(['Ad', 'Ah', 'As', '4d', '4h'])
         hand = self.game.bestHand('hi', 1)
         self.failUnlessEqual(pokercards.PokerCards(hand[1][1:]), bestHand)
-        self.failUnlessEqual(self.game.readablePlayerBestHand('hi', 1), 'Full house, Ace over Four: As, Ad, Ah, 4d, 4h')
+        self.failUnlessEqual(self.game.readablePlayerBestHand('hi', 1), 'Aces full of Fours: As, Ad, Ah, 4d, 4h')
     
         self.game.variant = 'omaha'
         bestHand = pokercards.PokerCards(['Ad', 'Ah', '4d', '4h', 'Td'])
@@ -2024,7 +2024,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnless(results.has_key(1))
         self.failUnless(results[1].has_key('hi'))
         self.failUnlessEqual(pokercards.PokerCards(results[1]['hi'][1][1:]), bestHand1)
-        self.failUnlessEqual(self.game.readablePlayerBestHands(1), 'Full house, Ace over Four: As, Ad, Ah, 4d, 4h')
+        self.failUnlessEqual(self.game.readablePlayerBestHands(1), 'Aces full of Fours: As, Ad, Ah, 4d, 4h')
         
         # Player 2 hand        
         self.failUnless(results.has_key(2))
@@ -2076,8 +2076,8 @@ class PokerGameTestCase(unittest.TestCase):
         
         player1.hand = pokercards.PokerCards(['Qh', 'Qs', 'Qc', 'Ts', 'Td'])
         cards = self.game.bestHandCards('hi', 1)
-        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Full Queen over Ten')
-        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Full house, Queen over Ten')
+        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Queens full of Tens')
+        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Queens full of Tens')
         
         player1.hand = pokercards.PokerCards(['6h', '6s', '6d', '6c', 'Qs'])
         cards = self.game.bestHandCards('hi', 1)
