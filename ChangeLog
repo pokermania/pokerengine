@@ -1,3 +1,14 @@
+2008-05-19  Loic Dachary <loic@dachary.org>
+
+	* Release 1.3.0
+
+	* tests/coverage.py: upgrade from
+	  http://nedbatchelder.com/code/modules/coverage.html
+
+2008-05-09  Loic Dachary <loic@dachary.org>
+
+	* AUTHORS: update names and dates
+
 2008-04-28  Loic Dachary <loic@dachary.org>
 
 	* Release 1.2.0
