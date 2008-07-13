@@ -38,6 +38,7 @@ import time
 import string
 import tempfile
 import math
+from types import *
 
 from pokerengine import pokercards
 from pokerengine import pokergame
@@ -4870,7 +4871,12 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnless(self.game.isBlindAnteRound())
         
         # Init the muckable serials
-        self.game.setMuckableSerials([1,2])
+        self.game.setMuckableSerials([10,20])
+        self.failUnlessEqual(self.game.muckable_serials, [10,20])
+
+        # Init the muckable serials
+        self.game.setMuckableSerials((1,2))
+        self.failUnlessEqual(ListType, type(self.game.muckable_serials));
         self.failUnlessEqual(self.game.muckable_serials, [1,2])
         
         # Muck not available

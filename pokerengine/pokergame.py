@@ -1738,11 +1738,11 @@ class PokerGame:
         return serial2rake
 
     def setMuckableSerials(self, muckable_serials):
-        self.muckable_serials = muckable_serials
+        self.muckable_serials = list(muckable_serials)
         if muckable_serials:
-            self.historyAdd("muck", tuple(self.muckable_serials))
+            self.historyAdd("muck", self.muckable_serials[:])
         if self.verbose > 2:
-            self.message("setMuckableSerials: muckable = %s " % muckable_serials)
+            self.message("setMuckableSerials: muckable = %s " % self.muckable_serials)
 
     def cancelState(self):
         self.current_round = -2
