@@ -53,6 +53,7 @@ class PokerPlayerTestCase(unittest.TestCase):
                                     'wait_for' , \
                                     'auto_muck' , \
                                     'missed_blind' , \
+                                    'missed_big_blind_count' , \
                                     'blind' , \
                                     'buy_in_payed' , \
                                     'ante' , \

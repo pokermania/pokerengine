@@ -1,5 +1,6 @@
 #
 # Copyright (C) 2006, 2007, 2008 Loic Dachary <loic@dachary.org>
+# Copyright (C)             2008 Bradley M. Kuhn <bkuhn@ebb.org>
 # Copyright (C) 2004, 2005, 2006 Mekensleep
 #
 # Mekensleep
@@ -132,6 +133,7 @@ class PokerPlayer:
         self.auto_muck = AUTO_MUCK_ALWAYS # AUTO_MUCK_NEVER, AUTO_MUCK_WIN, AUTO_MUCK_LOSE, AUTO_MUCK_ALWAYS
         self.wait_for = False # True, False, "late", "big", "first_round" ##
         self.missed_blind = "n/a" # None, "n/a", "big", "small"
+        self.missed_big_blind_count = 0
         self.blind = "late" # True, None, "late", "big", "small", "big_and_dead" ##
         self.buy_in_payed = False ##
         self.ante = False
@@ -160,6 +162,7 @@ class PokerPlayer:
         other.auto_muck = self.auto_muck
         other.wait_for = self.wait_for
         other.missed_blind = self.missed_blind
+        other.missed_big_blind_count = self.missed_big_blind_count
         other.blind = self.blind
         other.buy_in_payed = self.buy_in_payed
         other.ante = self.ante
@@ -176,7 +179,7 @@ class PokerPlayer:
         return other
 
     def __str__(self):
-        return "serial = %d, name = %s, fold = %s, remove_next_turn = %s, sit_out = %s, sit_out_next_turn = %s, sit_requested = %s, bot = %s, auto = %s, auto_blind_ante = %s, wait_for = %s, auto_muck = %d, missed_blind = %s, blind = %s, buy_in_payed = %s, ante = %s, all_in = %s, side_pot_index = %d, seat = %d, hand = %s, money = %d, rebuy = %d, bet = %d, dead = %d, talked_once = %s, user_data = %s" % (self.serial, self.name, self.fold, self.remove_next_turn, self.sit_out, self.sit_out_next_turn, self.sit_requested, self.bot, self.auto, self.auto_blind_ante, self.wait_for, self.auto_muck, self.missed_blind, self.blind, self.buy_in_payed, self.ante, self.all_in, self.side_pot_index, self.seat, self.hand, self.money, self.rebuy, self.bet, self.dead, self.talked_once, self.user_data)
+        return "serial = %d, name = %s, fold = %s, remove_next_turn = %s, sit_out = %s, sit_out_next_turn = %s, sit_requested = %s, bot = %s, auto = %s, auto_blind_ante = %s, wait_for = %s, auto_muck = %d, missed_blind = %s, missed_big_blind_count = %d, blind = %s, buy_in_payed = %s, ante = %s, all_in = %s, side_pot_index = %d, seat = %d, hand = %s, money = %d, rebuy = %d, bet = %d, dead = %d, talked_once = %s, user_data = %s" % (self.serial, self.name, self.fold, self.remove_next_turn, self.sit_out, self.sit_out_next_turn, self.sit_requested, self.bot, self.auto, self.auto_blind_ante, self.wait_for, self.auto_muck, self.missed_blind, self.missed_big_blind_count, self.blind, self.buy_in_payed, self.ante, self.all_in, self.side_pot_index, self.seat, self.hand, self.money, self.rebuy, self.bet, self.dead, self.talked_once, self.user_data)
 
     def setUserData(self, user_data):
         self.user_data = user_data
@@ -241,6 +244,10 @@ class PokerPlayer:
 
     def isBuyInPayed(self):
         return self.buy_in_payed
+
+    def resetMissedBlinds(self):
+      self.missed_blind = None
+      self.missed_big_blind_count = 0
 
 def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame):
     messages = []
@@ -1014,7 +1021,7 @@ class PokerGame:
             # two players willing to join the game.
             #
             for player in self.playersAll():
-                player.missed_blind = None
+                player.resetMissedBlinds()
                 player.blind = None
                 if player.wait_for != 'first_round':
                     player.wait_for = False
@@ -1053,7 +1060,7 @@ class PokerGame:
             if self.verbose > 2: self.message("Forbid missed blinds")
             for player in players:
                 if player and player.isSit():
-                    player.missed_blind = None
+                    player.resetMissedBlinds()
                     if player.wait_for == "late":
                       player.wait_for = False
                 
@@ -1065,6 +1072,8 @@ class PokerGame:
                 player = players[index]
                 if player and player.wait_for != 'first_round' and player.missed_blind == None:
                     player.missed_blind = what
+                    if what == "big":
+                      player.missed_big_blind_count += 1
                 index += 1
             return index
 
@@ -1242,7 +1251,7 @@ class PokerGame:
         
         if self.blind_info and ( self.first_turn or is_tournament ):
             for player in self.playersAll():
-                player.missed_blind = None
+                player.resetMissedBlinds()
 
         if self.blind_info:
             if self.seatsCount() == 2:
@@ -2018,7 +2027,7 @@ class PokerGame:
 
         self.money2bet(serial, amount)
         player.blind = True
-        player.missed_blind = None
+        player.resetMissedBlinds()
         player.wait_for = False
 
     def ante(self, serial, amount = 0):

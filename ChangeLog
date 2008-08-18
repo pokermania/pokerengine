@@ -1,3 +1,28 @@
+2008-08-17  Bradley M. Kuhn  <bkuhn@ebb.org>
+
+	* tests/blinds.py.in
+	(TestBlinds.test4_fourPlayers_missedBoth_onlyBigRequired): Renamed test.
+	(TestBlinds.test9_fivePlayers_missedBothBlinds_onlyBigRequired):
+	Wrote test.
+	(TestBlinds.test10_sixPlayers_missedBothBlinds_bothRequired):
+	Wrote test
+	(TestBlinds.test7_specialTwoWaitForPost): Adapted and renamed.
+	(TestBlinds.test1): Adapted test for missed blind count.
+	(TestBlinds.test2): Adapted test for missed blind count.
+	(TestBlinds.test3): Adapted test for missed blind count.
+
+	* tests/testmessages.py: Added file, copied from poker-network.
+
+	* pokerengine/pokergame.py (PokerPlayer.resetMissedBlinds): Wrote
+	method.
+	(PokerGame.updateBlinds): changed player.missed_blinds = None to
+	resetMissedBlinds() call.
+	(PokerGame.initBlindAnte): changed player.missed_blinds = None to
+	resetMissedBlinds() call.
+	(PokerGame.payBlind): changed player.missed_blinds = None to
+	resetMissedBlinds() call.
+	(PokerGame.updateBlinds.updateMissed): Added increment of count.
+
 2008-07-13  Loic Dachary <loic@dachary.org>
 
 	* Release 1.3.0

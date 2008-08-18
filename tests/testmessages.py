@@ -28,47 +28,8 @@ import sys, os
 
 classes = []
 
-from pokerui import pokerinteractor
-classes.append(pokerinteractor.PokerInteractor)
-from pokerui import pokerrenderer
-classes.append(pokerrenderer.PokerRenderer)
-classes.append(pokerrenderer.PokerInteractors)
-from pokernetwork import currencyclient
-classes.append(currencyclient.FakeCurrencyClient)
-from pokernetwork import pokerchildren
-classes.append(pokerchildren.PokerChild)
-from pokernetwork import client
-classes.append(client.UGAMEClientFactory)
-from pokernetwork import protocol
-classes.append(protocol.UGAMEProtocol)
-from pokernetwork import pokerservice
-classes.append(pokerservice.PokerService)
-classes.append(pokerservice.PokerXML)
-from pokernetwork import pokerauth
-classes.append(pokerauth.PokerAuth)
-from pokernetwork import pokerlock
-classes.append(pokerlock.PokerLock)
-from pokernetwork import pokeravatar
-classes.append(pokeravatar.PokerAvatar)
-from pokernetwork import pokerexplain
-classes.append(pokerexplain.PokerExplain)
-from pokernetwork import pokertable
-classes.append(pokertable.PokerTable)
-from pokernetwork import pokercashier
-classes.append(pokercashier.PokerCashier)
-from pokernetwork import pokerdatabase
-classes.append(pokerdatabase.PokerDatabase)
 from pokerengine import pokergame
-classes.append(pokergame.PokerGame)
-from pokerengine import pokertournament
-classes.append(pokertournament.PokerTournament)
-from pokernetwork import upgrade
-classes.append(upgrade.CheckClientVersion)
-classes.append(upgrade.Upgrader)
-from pokernetwork import pokersite
-classes.append(pokersite.PokerResource)
-classes.append(pokersite.PokerImageUpload)
-classes.append(pokersite.PokerAvatarResource)
+classes.append(pokergame.PokerPlayer)
 
 from twisted.internet import defer
 
