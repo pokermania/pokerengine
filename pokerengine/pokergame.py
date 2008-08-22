@@ -1010,6 +1010,7 @@ class PokerGame:
         return sit_count
       
     def updateBlinds(self):
+
         if not self.blind_info:
             return
 
@@ -1070,10 +1071,12 @@ class PokerGame:
                       not players[index].isSit() or
                       players[index].wait_for == 'first_round' ) ):
                 player = players[index]
-                if player and player.wait_for != 'first_round' and player.missed_blind == None:
+                if player and player.wait_for != 'first_round':
+                  if player.missed_blind == None:
                     player.missed_blind = what
-                    if what == "big":
-                      player.missed_big_blind_count += 1
+                  if player.missed_blind == "big" and what == "big":
+                    player.missed_big_blind_count += 1
+                    if self.verbose > 5: self.message("%d big blind count is now %d because of %s" % (player.serial, player.missed_big_blind_count, what))
                 index += 1
             return index
 
