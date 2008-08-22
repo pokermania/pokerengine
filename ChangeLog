@@ -1,3 +1,11 @@
+2008-08-22  Bradley M. Kuhn  <bkuhn@ebb.org>
+
+	* tests/blinds.py.in
+	(TestBlinds.test11_sixPlayers_fiveSitsOutForALongTime): Wrote test.
+
+	* pokerengine/pokergame.py (PokerGame.updateBlinds.updateMissed):
+	Reworked logic.
+
 2008-08-17  Bradley M. Kuhn  <bkuhn@ebb.org>
 
 	* tests/blinds.py.in
