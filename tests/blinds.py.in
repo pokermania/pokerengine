@@ -992,7 +992,7 @@ class TestBlinds(unittest.TestCase):
         self.assertEquals(self.game.sit(102), True)
         self.check_blinds([(None, None, False, 0), # 100
                            (None, None, False, 0), # 101
-                           ('big_and_dead', None, False, missedCounterVerify), # 102
+                           (None, 'big', 'first_round', missedCounterVerify), # 102
                            (None, None, False, 0), # 103
                            ('small', None, False, 0), # 104
                            ('big', None, False, 0), # 105
@@ -1000,15 +1000,31 @@ class TestBlinds(unittest.TestCase):
                            ])
         self.pay_blinds()
         print self.game.turn_history
-        self.confirm_blind(self.game.turn_history, [(103, small, 0), (104, big, 0)])
+        self.confirm_blind(self.game.turn_history, [(104, small, 0), (105, big, 0)])
+
+        turn += 1
+        self.game.beginTurn(turn)
+        self.check_button(104)
+        self.assertEquals(self.game.isSit(102), True)
+        self.check_blinds([(None, None, False, 0), # 100
+                           (None, None, False, 0), # 101
+                           ('big_and_dead', 'big', False, missedCounterVerify), # 102
+                           (None, None, False, 0), # 103
+                           (None, None, False, 0), # 104
+                           ('small', None, False, 0), # 105
+                           ('big', None, False, 0), # 106
+                           ])
+        self.pay_blinds()
+        print self.game.turn_history
+        self.confirm_blind(self.game.turn_history, [(105, small, 0), (106, big, 0)])
 
  
 
 def run():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestBlinds))
-#    suite.addTest(unittest.makeSuite(TestBlinds, prefix =
-#                                     'test13'))
+#    suite.addTest(unittest.makeSuite(TestBlinds))
+    suite.addTest(unittest.makeSuite(TestBlinds, prefix =
+                                     'test13'))
     verbosity = int(os.environ.get('VERBOSE_T', 2))
     return unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
