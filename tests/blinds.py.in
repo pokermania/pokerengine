@@ -1006,7 +1006,6 @@ class TestBlinds(unittest.TestCase):
                            (None, None, False, 0), # 106
                            ])
         self.pay_blinds()
-        print self.game.turn_history
         self.confirm_blind(self.game.turn_history, [(104, small, 0), (105, big, 0)])
 
         turn += 1
@@ -1026,6 +1025,20 @@ class TestBlinds(unittest.TestCase):
         self.confirm_blind(self.game.turn_history, [(105, small, 0), (106, big, 0),
                                                     (102, big, small)])
 
+        turn += 1
+        self.game.beginTurn(turn)
+        self.check_button(105)
+        self.assertEquals(self.game.isSit(102), True)
+        self.check_blinds([('big', None, False, 0), # 100
+                           (None, None, False, 0), # 101
+                           (None, None, False, 0), # 102
+                           (None, None, False, 0), # 103
+                           (None, None, False, 0), # 104
+                           (None, None, False, 0), # 105
+                           ('small', None, False, 0), # 106
+                           ])
+        self.pay_blinds()
+        self.confirm_blind(self.game.turn_history, [(106, small, 0), (100, big, 0)])
     # --------------------------------------------------------------------------
     def test14_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment_beforeBlinds(self):
         """test14_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment_beforeBlinds
@@ -1056,15 +1069,28 @@ class TestBlinds(unittest.TestCase):
         # We find 102 has posted big and small, since he can now play again.
         self.confirm_blind(self.game.turn_history, [(104, small, 0), (105, big, 0),
                                                     (102, big, small)])
+        turn += 1
+        self.game.beginTurn(turn)
+        self.check_button(104)
+        self.assertEquals(self.game.isSit(102), True)
+        self.check_blinds([(None, None, False, 0), # 100
+                           (None, None, False, 0), # 101
+                           (None, None, False, 0), # 102
+                           (None, None, False, 0), # 103
+                           (None, None, False, 0), # 104
+                           ('small', None, False, 0), # 105
+                           ('big', None, False, 0), # 106
+                           ])
+        self.pay_blinds()
+        self.confirm_blind(self.game.turn_history, [(105, small, 0), (106, big, 0)])
 
 def run():
     suite = unittest.TestSuite()
-    # Comment out below and use line below it when you wish to run just
-    # one test by itself (change prefix as needed.
     suite.addTest(unittest.makeSuite(TestBlinds))
-#    suite.addTest(unittest.makeSuite(TestBlinds, prefix =
-#                                     'test14'))
-    verbosity = int(os.environ.get('VERBOSE_T', 2))
+    # Comment out above and use line below this when you wish to run just
+    # one test by itself (change prefix as needed.
+#        suite.addTest(unittest.makeSuite(TestBlinds, prefix =
+#                                         "test12"))
     return unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
 if __name__ == '__main__':
