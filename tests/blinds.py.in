@@ -33,6 +33,19 @@ sys.path.insert(0, "..")
 from pprint import pprint
 import unittest
 from pokerengine.pokergame import PokerGameServer
+from string import split
+
+class PokerPredefinedDecks:
+    def __init__(self, decks):
+        self.decks = decks
+        self.index = 0
+        
+    def shuffle(self, deck):
+        deck[:] = self.decks[self.index][:]
+        self.index += 1
+        if self.index >= len(self.decks):
+            self.index = 0
+        
 
 class TestBlinds(unittest.TestCase):
 
@@ -45,6 +58,10 @@ class TestBlinds(unittest.TestCase):
         self.amounts = {}
         self.amounts['big'] = 200
         self.amounts['small'] = 100
+        predefined_decks = [
+            "8d 2h 2c 8c 4c Kc Ad 9d Ts Jd 5h Tc 4d 9h 8h 7h 9c 2s 3c Kd 5s Td 5d Th 3s Kh Js Qh 7d 2d 3d 9s Qd Ac Jh Jc Qc 6c 7s Ks 5c 4h 7c 4s Qs 6s 6h Ah 6d As 3h 8s", # distributed from the end
+            ]
+        self.game.shuffler = PokerPredefinedDecks(map(lambda deck: self.game.eval.string2card(split(deck)), predefined_decks))
 
     def tearDown(self):
         del self.game
@@ -670,8 +687,11 @@ class TestBlinds(unittest.TestCase):
         missedSoFar = None
         self.assertEquals(self.game.sitOut(105), True)
         while turn < 100:
+            for serial in [100, 101, 102, 103, 104, 105]:
+                amount = self.game.maxBuyIn() - self.game.serial2player[serial].money
+                self.game.rebuy(serial, amount)
+
             turn += 1
-            print "Turn: %d" % turn
             self.game.beginTurn(turn)
             self.check_button(100)
             self.assertEquals(self.game.isSitOut(105), True)
