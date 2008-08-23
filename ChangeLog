@@ -5,6 +5,7 @@
 	rebuy in each iteration of loop.
 	(PokerPredefinedDecks): brought over deck class from history.py.in
 	(TestBlinds.setUp): Added use of predefined decks.
+	(TestBlinds.test12_fourPlayers_fourSitsOutForALongTime): Wrote test.
 
 2008-08-22  Bradley M. Kuhn  <bkuhn@ebb.org>
 

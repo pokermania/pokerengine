@@ -764,12 +764,251 @@ class TestBlinds(unittest.TestCase):
             self.pay_blinds(skipSerials = { 105 : 105 })
             self.confirm_blind(self.game.turn_history, [(100, small, 0), (101, big, 0)])
 
+    # --------------------------------------------------------------------------
+    def test12_fourPlayers_fourSitsOutForALongTime(self):
+        """test12_fourPlayers_fourSitsOutForALongTime
+        Tests four players where the fourth sits out for a long time and the counter runs.
+        """
+        big = self.amounts['big']
+        small = self.amounts['small']
+
+        for (serial, seat) in ((100, 0), (101, 1), (102, 2), (103, 3)):
+            self.make_new_bot(serial, seat)
+
+        turn = 0
+        missedCounterVerify = 0
+        missedSoFar = None
+        self.assertEquals(self.game.sitOut(103), True)
+        while turn < 100:
+            for serial in [100, 101, 102, 103]:
+                amount = self.game.maxBuyIn() - self.game.serial2player[serial].money
+                self.game.rebuy(serial, amount)
+
+            turn += 1
+            self.game.beginTurn(turn)
+            self.check_button(100)
+            self.assertEquals(self.game.isSitOut(103), True)
+            self.check_blinds([(None, None, False, 0), # 100
+                               ('small', None, False, 0), # 101
+                               ('big', None, False, 0), # 102
+                               (None, missedSoFar, False, missedCounterVerify), # 103
+                               ])
+            self.pay_blinds(skipSerials = { 103 : 103 })
+            self.confirm_blind(self.game.turn_history, [(101, small, 0), (102, big, 0)])
+
+            turn += 1
+            missedCounterVerify += 1
+            missedSoFar = 'big'
+            self.assertEquals(self.game.isSitOut(103), True)
+            self.game.beginTurn(turn)
+            self.check_button(101)
+            self.check_blinds([('big', None, False, 0), # 100
+                               (None, None, False, 0), # 101
+                               ('small', None, False, 0), # 102
+                               (None, missedSoFar, False, missedCounterVerify), # 103
+                               ])
+
+            self.pay_blinds(skipSerials = { 103 : 103 })
+            self.confirm_blind(self.game.turn_history, [(102, small, 0), (100, big, 0)])
+
+
+            turn += 1
+            self.assertEquals(self.game.isSitOut(103), True)
+            self.game.beginTurn(turn)
+            self.check_button(102)
+            self.check_blinds([('small', None, False, 0), # 100
+                               ('big', None, False, 0), # 101
+                               (None, None, False, 0), # 102
+                               (None, missedSoFar, False, missedCounterVerify), # 103
+                               ])
+
+            self.pay_blinds(skipSerials = { 103 : 103 })
+            self.confirm_blind(self.game.turn_history, [(100, small, 0), (101, big, 0)])
+
+    # --------------------------------------------------------------------------
+    def test13_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment(self):
+        """test13_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment
+        Tests seven players where the fifth sits out for a long time and the counter runs.
+        """
+        big = self.amounts['big']
+        small = self.amounts['small']
+
+        for (serial, seat) in ((100, 0), (101, 1), (102, 2), (103, 3), (104, 4), (105, 5), (106, 6)):
+            self.make_new_bot(serial, seat)
+
+        turn = 0
+        missedCounterVerify = 0
+        missedSoFar = None
+        turn += 1
+        self.game.beginTurn(turn)
+        self.check_button(100)
+        self.check_blinds([(None, None, False, 0), # 100
+                           ('small', None, False, 0), # 101
+                           ('big', None, False, 0), # 102
+                           (None, None, False, 0), # 103
+                           (None, None, False, 0), # 104
+                           (None, missedSoFar, False, missedCounterVerify), # 105
+                           (None, None, False, 0), # 106
+                           ])
+        self.pay_blinds()
+        self.confirm_blind(self.game.turn_history, [(101, small, 0), (102, big, 0)])
+
+        turn += 1
+        self.game.beginTurn(turn)
+        self.check_button(101)
+        self.check_blinds([(None, None, False, 0), # 100
+                           (None, None, False, 0), # 101
+                           ('small', None, False, 0), # 102
+                           ('big', None, False, 0), # 103
+                           (None, None, False, 0), # 104
+                           (None, None, False, 0), # 105
+                           (None, None, False, 0), # 106
+                           ])
+        self.pay_blinds()
+        self.confirm_blind(self.game.turn_history, [(102, small, 0), (103, big, 0)])
+
+
+        turn += 1
+        self.game.beginTurn(turn)
+        self.check_button(102)
+        self.check_blinds([(None, None, False, 0), # 100
+                           (None, None, False, 0), # 101
+                           (None, None, False, 0), # 102
+                           ('small', None, False, 0), # 103
+                           ('big', None, False, 0), # 104
+                           (None, None, False, 0), # 105
+                           (None, None, False, 0), # 106
+                           ])
+        self.pay_blinds()
+        self.confirm_blind(self.game.turn_history, [(103, small, 0), (104, big, 0)])
+
+        self.assertEquals(self.game.sitOut(102), True)
+        missedCounterVerify = 0
+        missedSoFar = None
+        
+        while turn < 100:
+            for serial in [100, 101, 102, 103, 104, 105, 106]:
+                amount = self.game.maxBuyIn() - self.game.serial2player[serial].money
+                self.game.rebuy(serial, amount)
+
+            turn += 1
+            self.game.beginTurn(turn)
+            self.check_button(103)
+            self.assertEquals(self.game.isSitOut(102), True)
+            self.check_blinds([(None, None, False, 0), # 100
+                               (None, None, False, 0), # 101
+                               (None, missedSoFar, False, missedCounterVerify), # 102
+                               (None, None, False, 0), # 103
+                               ('small', None, False, 0), # 104
+                               ('big', None, False, 0), # 105
+                               (None, None, False, 0), # 106
+                               ])
+            self.pay_blinds(skipSerials = { 102 : 102 })
+            self.confirm_blind(self.game.turn_history, [(104, small, 0), (105, big, 0)])
+
+            turn += 1
+            self.assertEquals(self.game.isSitOut(102), True)
+            self.game.beginTurn(turn)
+            self.check_button(104)
+            self.check_blinds([(None, None, False, 0), # 100
+                               (None, None, False, 0), # 101
+                               (None, missedSoFar, False, missedCounterVerify), # 102
+                               (None, None, False, 0), # 103
+                               (None, None, False, 0), # 104
+                               ('small', None, False, 0), # 105
+                               ('big', None, False, 0), # 106
+                               ])
+
+            self.pay_blinds(skipSerials = { 102 : 102 })
+            self.confirm_blind(self.game.turn_history, [(105, small, 0), (106, big, 0)])
+
+            turn += 1
+            self.assertEquals(self.game.isSitOut(102), True)
+            self.game.beginTurn(turn)
+            self.check_button(105)
+            self.check_blinds([('big', None, False, 0), # 100
+                               (None, None, False, 0), # 101
+                               (None, missedSoFar, False, missedCounterVerify), # 102
+                               (None, None, False, 0), # 103
+                               (None, None, False, 0), # 104
+                               (None, None, False, 0), # 105
+                               ('small', None, False, 0), # 106
+                               ])
+            self.pay_blinds(skipSerials = { 102 : 102 })
+            self.confirm_blind(self.game.turn_history, [(106, small, 0), (100, big, 0)])
+
+            turn += 1
+            self.assertEquals(self.game.isSitOut(102), True)
+            self.game.beginTurn(turn)
+            self.check_button(106)
+            self.check_blinds([('small', None, False, 0), # 100
+                               ('big', None, False, 0), # 101
+                               (None, missedSoFar, False, missedCounterVerify), # 102
+                               (None, None, False, 0), # 103
+                               (None, None, False, 0), # 104
+                               (None, None, False, 0), # 105
+                               (None, None, False, 0), # 106
+                               ]) 
+            self.pay_blinds(skipSerials = { 102 : 102 })
+            self.confirm_blind(self.game.turn_history, [(100, small, 0), (101, big, 0)])
+
+            turn += 1
+            missedCounterVerify += 1
+            missedSoFar = 'big'
+            self.game.beginTurn(turn)
+            self.check_button(100)
+            self.assertEquals(self.game.isSitOut(102), True)
+            self.check_blinds([(None, None, False, 0), # 100
+                               ('small', None, False, 0), # 101
+                               (None, missedSoFar, False, missedCounterVerify), # 102
+                               ('big', None, False, 0), # 103
+                               (None, None, False, 0), # 104
+                               (None, None, False, 0), # 105
+                               (None, None, False, 0), # 106
+                               ])
+            self.pay_blinds(skipSerials = { 102 : 102 })
+            self.confirm_blind(self.game.turn_history, [(101, small, 0), (103, big, 0)])
+
+
+            turn += 1
+            self.game.beginTurn(turn)
+            self.check_button(101)
+            self.assertEquals(self.game.isSitOut(102), True)
+            self.check_blinds([(None, None, False, 0), # 100
+                               (None, None, False, 0), # 101
+                               (None, missedSoFar, False, missedCounterVerify), # 102
+                               ('small', None, False, 0), # 103
+                               ('big', None, False, 0), # 104
+                               (None, None, False, 0), # 105
+                               (None, None, False, 0), # 106
+                               ])
+            self.pay_blinds(skipSerials = { 102 : 102 })
+            self.confirm_blind(self.game.turn_history, [(103, small, 0), (104, big, 0)])
+
+        # end of while, now let's try to sit back in!
+        turn += 1
+        self.game.beginTurn(turn)
+        self.check_button(103)
+        self.assertEquals(self.game.sit(102), True)
+        self.check_blinds([(None, None, False, 0), # 100
+                           (None, None, False, 0), # 101
+                           ('big_and_dead', None, False, missedCounterVerify), # 102
+                           (None, None, False, 0), # 103
+                           ('small', None, False, 0), # 104
+                           ('big', None, False, 0), # 105
+                           (None, None, False, 0), # 106
+                           ])
+        self.pay_blinds()
+        print self.game.turn_history
+        self.confirm_blind(self.game.turn_history, [(103, small, 0), (104, big, 0)])
+
  
 
 def run():
     suite = unittest.TestSuite()
-#    unittest.TestLoader.testMethodPrefix = "test11_sixPlayers"
     suite.addTest(unittest.makeSuite(TestBlinds))
+#    suite.addTest(unittest.makeSuite(TestBlinds, prefix =
+#                                     'test13'))
     verbosity = int(os.environ.get('VERBOSE_T', 2))
     return unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
