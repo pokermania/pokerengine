@@ -6,6 +6,11 @@
 	(PokerPredefinedDecks): brought over deck class from history.py.in
 	(TestBlinds.setUp): Added use of predefined decks.
 	(TestBlinds.test12_fourPlayers_fourSitsOutForALongTime): Wrote test.
+	(TestBlinds.test13_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment_duringBlinds):
+	Renamed test.
+	(TestBlinds.test14_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment_beforeBlinds):
+	Wrote test.
+	(TestBlinds.helperForTest13and14): Made helper function.
 
 2008-08-22  Bradley M. Kuhn  <bkuhn@ebb.org>
 

@@ -825,13 +825,10 @@ class TestBlinds(unittest.TestCase):
             self.pay_blinds(skipSerials = { 103 : 103 })
             self.confirm_blind(self.game.turn_history, [(100, small, 0), (101, big, 0)])
 
-    # --------------------------------------------------------------------------
-    def test13_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment(self):
-        """test13_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment
-        Tests seven players where the fifth sits out for a long time and the counter runs.
-        """
-        big = self.amounts['big']
-        small = self.amounts['small']
+    def helperForTest13and14(self, big, small):
+        """This just sets up a situation that can have two outcomes; after
+        sitting out for a very long time, the 102 player can sit in while
+        the blinds are being posted, or before they are."""
 
         for (serial, seat) in ((100, 0), (101, 1), (102, 2), (103, 3), (104, 4), (105, 5), (106, 6)):
             self.make_new_bot(serial, seat)
@@ -984,8 +981,18 @@ class TestBlinds(unittest.TestCase):
                                ])
             self.pay_blinds(skipSerials = { 102 : 102 })
             self.confirm_blind(self.game.turn_history, [(103, small, 0), (104, big, 0)])
+        return(turn, missedSoFar, missedCounterVerify)
+    # --------------------------------------------------------------------------
+    def test13_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment_duringBlinds(self):
+        """test13_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment_duringBlinds
+        Tests seven players where the fifth sits out for a long time and the counter runs.
+        """
+        big = self.amounts['big']
+        small = self.amounts['small']
 
-        # end of while, now let's try to sit back in!
+        (turn, missedSoFar, missedCounterVerify) = self.helperForTest13and14(big, small)
+        # end of while, now let's try to sit back in!  In this test, we
+        # sit back in during the blind posting period.
         turn += 1
         self.game.beginTurn(turn)
         self.check_button(103)
@@ -1015,16 +1022,48 @@ class TestBlinds(unittest.TestCase):
                            ('big', None, False, 0), # 106
                            ])
         self.pay_blinds()
-        print self.game.turn_history
-        self.confirm_blind(self.game.turn_history, [(105, small, 0), (106, big, 0)])
+        # We find 102 has posted big and small, since he can now play again.
+        self.confirm_blind(self.game.turn_history, [(105, small, 0), (106, big, 0),
+                                                    (102, big, small)])
 
- 
+    # --------------------------------------------------------------------------
+    def test14_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment_beforeBlinds(self):
+        """test14_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment_beforeBlinds
+        Tests seven players where the fifth sits out for a long time and
+        the counter runs.  Then, he sits abck but while they are posting
+        blinds.
+        """
+        big = self.amounts['big']
+        small = self.amounts['small']
+
+        (turn, missedSoFar, missedCounterVerify) = self.helperForTest13and14(big, small)
+        # end of while, now let's try to sit back in!  In this test, we
+        # sit back in before the blinds are posted
+        self.assertEquals(self.game.sit(102), True)
+        turn += 1
+        self.game.beginTurn(turn)
+        self.check_button(103)
+        self.assertEquals(self.game.isSit(102), True)
+        self.check_blinds([(None, None, False, 0), # 100
+                           (None, None, False, 0), # 101
+                           ('big_and_dead', 'big', False, missedCounterVerify), # 102
+                           (None, None, False, 0), # 103
+                           ('small', None, False, 0), # 104
+                           ('big', None, False, 0), # 105
+                           (None, None, False, 0), # 106
+                           ])
+        self.pay_blinds()
+        # We find 102 has posted big and small, since he can now play again.
+        self.confirm_blind(self.game.turn_history, [(104, small, 0), (105, big, 0),
+                                                    (102, big, small)])
 
 def run():
     suite = unittest.TestSuite()
-#    suite.addTest(unittest.makeSuite(TestBlinds))
-    suite.addTest(unittest.makeSuite(TestBlinds, prefix =
-                                     'test13'))
+    # Comment out below and use line below it when you wish to run just
+    # one test by itself (change prefix as needed.
+    suite.addTest(unittest.makeSuite(TestBlinds))
+#    suite.addTest(unittest.makeSuite(TestBlinds, prefix =
+#                                     'test14'))
     verbosity = int(os.environ.get('VERBOSE_T', 2))
     return unittest.TextTestRunner(verbosity=verbosity).run(suite)
     
