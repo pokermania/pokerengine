@@ -24,6 +24,7 @@
 #
 # Authors:
 #  Loic Dachary <loic@gnu.org>
+#  Bradley M. Kuhn <bkuhn@ebb.org>
 #  Henry Precheur <henry@precheur.org> (2004)
 #
 from string import split, join, lower

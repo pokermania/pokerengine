@@ -1,5 +1,7 @@
 2008-08-24  Bradley M. Kuhn  <bkuhn@ebb.org>
 
+	* AUTHORS: Added myself to file.
+
 	* tests/blinds.py.in
 	(TestBlinds.test4_fourPlayers_player4missedBothBlinds_onlyBigRequired):
 	Added test for getMissedRoundCount()
