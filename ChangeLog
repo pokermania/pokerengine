@@ -1,3 +1,26 @@
+2008-08-24  Bradley M. Kuhn  <bkuhn@ebb.org>
+
+	* tests/blinds.py.in
+	(TestBlinds.test4_fourPlayers_player4missedBothBlinds_onlyBigRequired):
+	Added test for getMissedRoundCount()
+	(TestBlinds.test5_sixPlayers_missedBothBlinds_bothRequired): Added
+	test for getMissedRoundCount()
+	(TestBlinds.test6_fivePlayers_multiDecline_noHandStarts): Added
+	test for getMissedRoundCount()
+	(TestBlinds.test9_fivePlayers_missedBothBlinds_onlyBigRequired):
+	Added test for getMissedRoundCount()
+	(run): Restored verbosity line accidently deleted previously.
+	(TestBlinds.test12_fourPlayers_fourSitsOutForALongTime): Added
+	test for getMissedRoundCount()
+	(TestBlinds.helperForTest13and14): Added test for getMissedRoundCount()
+	(TestBlinds.test13_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment_duringBlinds):
+	Added test for getMissedRoundCount()
+	(TestBlinds.test14_sevenPlayers_fiveSitsOutForALongTimeAfterInitialPayment_beforeBlinds):
+	Added test for getMissedRoundCount()
+
+	* pokerengine/pokergame.py (PokerPlayer.getMissedRoundCount):
+	Wrote method.
+
 2008-08-23  Bradley M. Kuhn  <bkuhn@ebb.org>
 
 	* tests/blinds.py.in

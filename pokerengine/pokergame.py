@@ -245,6 +245,9 @@ class PokerPlayer:
     def isBuyInPayed(self):
         return self.buy_in_payed
 
+    def getMissedRoundCount(self):
+      return self.missed_big_blind_count
+
     def resetMissedBlinds(self):
       self.missed_blind = None
       self.missed_big_blind_count = 0
