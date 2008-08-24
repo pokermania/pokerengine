@@ -574,6 +574,10 @@ def run():
     suite.addTest(unittest.makeSuite(TestOmaha8AllIn))
     suite.addTest(unittest.makeSuite(TestHoldemPlayBoard))
     suite.addTest(unittest.makeSuite(TestHoldemSplit))
+    # Comment out any of the above and use line below this when you wish
+    # to run just one test by itself (changing prefix as needed).
+#        suite.addTest(unittest.makeSuite(TestHoldemSplit, prefix =
+#                                         "test12"))
     verbosity = int(os.environ.get('VERBOSE_T', 2))
     return unittest.TextTestRunner(verbosity=verbosity).run(suite)
     

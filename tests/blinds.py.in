@@ -1088,7 +1088,7 @@ def run():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestBlinds))
     # Comment out above and use line below this when you wish to run just
-    # one test by itself (change prefix as needed.
+    # one test by itself (changing prefix as needed).
 #        suite.addTest(unittest.makeSuite(TestBlinds, prefix =
 #                                         "test12"))
     return unittest.TextTestRunner(verbosity=verbosity).run(suite)
