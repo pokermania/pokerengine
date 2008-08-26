@@ -58,9 +58,19 @@ def init_i18n(locale_dir, overrideTranslationFunction = None):
   # gettext() (i.e., to switch languages on the fly, as
   # pokernetwork.pokeravatar does).
 
+  # Note that we return the _() that is being replaced.  This is done so
+  # that the function can be restored by the caller, should it chose to do
+  # so.
+
+  # First, if our _() has never been defined, we simply set it to None
+  try:
+    oldTranslationFunction = _
+  except NameError:
+    oldTranslationFunction = None
+
   if callable(overrideTranslationFunction):
     _ = overrideTranslationFunction
-    return
+    return oldTranslationFunction
 
   lang = ''
 
@@ -74,6 +84,8 @@ def init_i18n(locale_dir, overrideTranslationFunction = None):
     _ = t.gettext
   except IOError:
     _ = lambda text:text
+
+    return oldTranslationFunction
 
 init_i18n(None)
 

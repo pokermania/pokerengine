@@ -1,5 +1,14 @@
 2008-08-26  Bradley M. Kuhn  <bkuhn@ebb.org>
 
+	* tests/test-i18n.py.in (PokerI18NTest.testTranslationFails):
+	Added test to make sure old _() is returned.
+	(PokerI18NTest.testUserWrittenTranslationFunction): Added test to
+	make sure old _() is returned.
+
+	* pokerengine/pokergame.py (init_i18n): Now return the function
+	that was previously the value of _(), so that users of the
+	function can restore it.
+
 	* tests/blinds.py.in
 	(TestBlinds.test12_fourPlayers_fourSitsOutForALongTime): Decreased
 	number of loop iterations per dachary.

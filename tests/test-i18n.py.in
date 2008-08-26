@@ -54,8 +54,10 @@ class PokerI18NTest(unittest.TestCase):
     # ---------------------------------------------------------    
     def testTranslationFails(self):
         """Test I18N : domains/lang fails"""
-        
-        pokergame.init_i18n(None)
+
+        # When we do the init, we've already set it to an _() that returns
+        # text.
+        self.assertEquals(pokergame.init_i18n(None)("ANYTHING"), "ANYTHING")
         self.failUnlessEqual(pokergame._("Ace"), "Ace")
         
     # ---------------------------------------------------------    
@@ -79,9 +81,11 @@ class PokerI18NTest(unittest.TestCase):
     # ---------------------------------------------------------    
     def testUserWrittenTranslationFunction(self):
         """Test I18N : user written translation function"""
-        pokergame.init_i18n(None, 
+        self.assertEquals(pokergame.init_i18n(None, 
                             lambda text : 
                             "All your string are translated to us.")
+                          ("DUMMY TEXT RETURN"),
+                          "DUMMY TEXT RETURN")
         self.failUnlessEqual(pokergame._("Ace"),
                              "All your string are translated to us.")
 # ---------------------------------------------------------
