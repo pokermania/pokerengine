@@ -1,5 +1,13 @@
 2008-08-26  Bradley M. Kuhn  <bkuhn@ebb.org>
 
+	* tests/blinds.py.in
+	(TestBlinds.test12_fourPlayers_fourSitsOutForALongTime): Decreased
+	number of loop iterations per dachary.
+	(TestBlinds.test11_sixPlayers_fiveSitsOutForALongTime): Decreased
+	number of loop iterations per dachary.
+	(TestBlinds.helperForTest13and14): Decreased
+	number of loop iterations per dachary.
+
 	* tests/test-i18n.py.in
 	(PokerI18NTest.testUserWrittenTranslationFunction): Wrote test.
 

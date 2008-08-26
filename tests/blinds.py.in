@@ -691,7 +691,7 @@ class TestBlinds(unittest.TestCase):
         missedCounterVerify = 0
         missedSoFar = None
         self.assertEquals(self.game.sitOut(105), True)
-        while turn < 100:
+        while missedCounterVerify < 4:
             for serial in [100, 101, 102, 103, 104, 105]:
                 amount = self.game.maxBuyIn() - self.game.serial2player[serial].money
                 self.game.rebuy(serial, amount)
@@ -784,7 +784,7 @@ class TestBlinds(unittest.TestCase):
         missedCounterVerify = 0
         missedSoFar = None
         self.assertEquals(self.game.sitOut(103), True)
-        while turn < 100:
+        while missedCounterVerify < 4:
             for serial in [100, 101, 102, 103]:
                 amount = self.game.maxBuyIn() - self.game.serial2player[serial].money
                 self.game.rebuy(serial, amount)
@@ -895,7 +895,7 @@ class TestBlinds(unittest.TestCase):
         missedSoFar = None
         
         self.assertEquals(self.game.serial2player[102].getMissedRoundCount(), 0)
-        while turn < 100:
+        while missedCounterVerify < 4:
             for serial in [100, 101, 102, 103, 104, 105, 106]:
                 amount = self.game.maxBuyIn() - self.game.serial2player[serial].money
                 self.game.rebuy(serial, amount)
