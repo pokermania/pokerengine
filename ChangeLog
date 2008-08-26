@@ -1,3 +1,11 @@
+2008-08-26  Bradley M. Kuhn  <bkuhn@ebb.org>
+
+	* tests/test-i18n.py.in
+	(PokerI18NTest.testUserWrittenTranslationFunction): Wrote test.
+
+	* pokerengine/pokergame.py (init_i18n): Added user override option
+	for translation function.
+
 2008-08-24  Bradley M. Kuhn  <bkuhn@ebb.org>
 
 	* AUTHORS: Added myself to file.

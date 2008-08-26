@@ -48,9 +48,20 @@ import gettext
 if float(sys.version[0:3]) > 2.3:
   gettext.bind_textdomain_codeset('poker-engine','UTF-8')
 
-def init_i18n(locale_dir):
+def init_i18n(locale_dir, overrideTranslationFunction = None):
 
   global _
+
+  # If we've been fed the function that we know will work to translate
+  # text, then we just set _() to that.  This is to support the scenario
+  # where users of this library want to provide their own setup for
+  # gettext() (i.e., to switch languages on the fly, as
+  # pokernetwork.pokeravatar does).
+
+  if callable(overrideTranslationFunction):
+    _ = overrideTranslationFunction
+    return
+
   lang = ''
 
   if platform.system() == "Windows":

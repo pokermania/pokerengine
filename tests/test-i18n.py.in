@@ -1,4 +1,5 @@
 # -*- mode: python -*-
+# Copyright (C) 2008 Bradley M. Kuhn <bkuhn@ebb.org>
 # Copyright (C) 2006 Mekensleep
 #
 # Mekensleep
@@ -22,7 +23,7 @@
 #
 # Authors:
 #   Jerome Jeannin <griim.work@gmail.com>
-#
+#   Bradley M. Kuhn <bkuhn@ebb.org>
 
 import sys, os
 sys.path.insert(0, "@top_srcdir@")
@@ -68,13 +69,21 @@ class PokerI18NTest(unittest.TestCase):
 
     # ---------------------------------------------------------    
     def testWindowsSuccess(self):
-        """Test I18N : windows fails"""
+        """Test I18N : windows success"""
         
 	pokergame.platform = FakePlatform("Windows")
         pokergame.locale = FakeLocale("french")
         pokergame.init_i18n("./tmp")
         self.failUnlessEqual(pokergame._("Ace"), "As")
 
+    # ---------------------------------------------------------    
+    def testUserWrittenTranslationFunction(self):
+        """Test I18N : user written translation function"""
+        pokergame.init_i18n(None, 
+                            lambda text : 
+                            "All your string are translated to us.")
+        self.failUnlessEqual(pokergame._("Ace"),
+                             "All your string are translated to us.")
 # ---------------------------------------------------------
 def run():
     suite = unittest.TestSuite()
