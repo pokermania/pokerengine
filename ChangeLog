@@ -1,5 +1,7 @@
 2008-08-26  Bradley M. Kuhn  <bkuhn@ebb.org>
 
+	* Release 1.3.0
+
 	* tests/test-i18n.py.in (PokerI18NTest.testTranslationFails):
 	Added test to make sure old _() is returned.
 	(PokerI18NTest.testUserWrittenTranslationFunction): Added test to
@@ -96,8 +98,6 @@
 	(PokerGame.updateBlinds.updateMissed): Added increment of count.
 
 2008-07-13  Loic Dachary <loic@dachary.org>
-
-	* Release 1.3.0
 
 	* pokerengine/pokergame.py, tests/test-game.py.in:
 	  setMuckableSerials converts its argument into a list and copies
