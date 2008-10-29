@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fr\n"
 "Report-Msgid-Bugs-To: http://www.pokersource.info\n"
-"POT-Creation-Date: 2007-03-06 10:21+0100\n"
+"POT-Creation-Date: 2008-10-29 15:29+0000\n"
 "PO-Revision-Date: 2008-10-29 10:31+0100\n"
 "Last-Translator: Johan Euphrosine <proppy@aminche.com>\n"
 "Language-Team:  <pokersource-users@gna.org>\n"
@@ -20,236 +20,232 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: KBabel 1.11.4\n"
 
-#: pokerengine/pokergame.py:277
+#: pokerengine/pokergame.py:311
 #, python-format
 msgid "%(name)s shows %(value)s for %(side)s "
 msgstr "%(name)s montre %(value)s comme %(side)s"
 
-#: pokerengine/pokergame.py:279
+#: pokerengine/pokergame.py:313
 #, python-format
 msgid "%(name)s mucks loosing hand"
 msgstr "%(name)s couche sa main"
 
-#: pokerengine/pokergame.py:288
+#: pokerengine/pokergame.py:322
 #, python-format
 msgid " wins %(side)s "
 msgstr " gagne avec la %(side)s "
 
-#: pokerengine/pokergame.py:292
+#: pokerengine/pokergame.py:326
 #, python-format
 msgid "winners share a pot of %(pot)s"
 msgstr "les gagnants se partagent le pot de %(pot)s"
 
-#: pokerengine/pokergame.py:294
+#: pokerengine/pokergame.py:328
 #, python-format
 msgid " (minus %(chips_left)d odd chips)"
 msgstr " (moins %(chips_left)d restant)"
 
-#: pokerengine/pokergame.py:298
+#: pokerengine/pokergame.py:332
 #, python-format
 msgid "%(name)s receives %(amount)s"
 msgstr "%(name)s reçoit %(amount)s"
 
-#: pokerengine/pokergame.py:310
+#: pokerengine/pokergame.py:344
 #, python-format
 msgid "hand #%(hand_serial)d, %(variant)s, %(betting_structure)s"
 msgstr "main #%(hand_serial)d, %(variant)s, %(betting_structure)s"
 
-#: pokerengine/pokergame.py:314
+#: pokerengine/pokergame.py:348
 #, python-format
 msgid "%(serial)s waiting for "
 msgstr "%(serial)s attend pour "
 
-#: pokerengine/pokergame.py:323
+#: pokerengine/pokergame.py:357
 #, python-format
 msgid "%(name)s, %(len_pockets)d players"
 msgstr "%(name)s, %(len_pockets)d joueurs"
 
-#: pokerengine/pokergame.py:327
+#: pokerengine/pokergame.py:361
 #, python-format
 msgid "Board: %(board)s"
 msgstr "Tableau: %(board)s"
 
-#: pokerengine/pokergame.py:331
+#: pokerengine/pokergame.py:365
 #, python-format
 msgid "Cards player %(name)s: %(card)s"
 msgstr "Cartes de %(name)s: %(card)s"
 
-#: pokerengine/pokergame.py:336
+#: pokerengine/pokergame.py:370
 #, python-format
 msgid "Board: %(cards)s"
 msgstr "Tableau: %(cards)s"
 
-#: pokerengine/pokergame.py:341
+#: pokerengine/pokergame.py:375
 #, python-format
 msgid "Cards player %(name)s: %(cards)s"
 msgstr "Cartes de %(name)s: %(cards)s"
 
-#: pokerengine/pokergame.py:345
+#: pokerengine/pokergame.py:379
 #, python-format
 msgid "Rake %(amount)s"
 msgstr "Commission %(amount)s"
 
-#: pokerengine/pokergame.py:362
+#: pokerengine/pokergame.py:396
 #, python-format
 msgid " and %(dead)d dead"
 msgstr " et %(dead)d d'argent mort"
 
-#: pokerengine/pokergame.py:365
+#: pokerengine/pokergame.py:399
 #, python-format
 msgid "%(name)s pays %(amount)s blind%(deadmsg)s"
 msgstr "%(name)s paye %(amount)s de blind%(deadmsg)s"
 
-#: pokerengine/pokergame.py:372
+#: pokerengine/pokergame.py:406
 #, python-format
 msgid "%(name)s pays %(amount)s ante"
 msgstr "%(name)s paye %(amount)s d'ante"
 
-#: pokerengine/pokergame.py:376
+#: pokerengine/pokergame.py:410
 #, python-format
 msgid "%(name)s is all in"
 msgstr "%(name)s fais tapis"
 
-#: pokerengine/pokergame.py:380
+#: pokerengine/pokergame.py:414
 #, python-format
 msgid "%(name)s calls %(amount)s"
 msgstr "%(name)s suit %(amount)s"
 
-#: pokerengine/pokergame.py:384
+#: pokerengine/pokergame.py:418
 #, python-format
 msgid "%(name)s checks"
 msgstr "%(name)s passe"
 
-#: pokerengine/pokergame.py:388
+#: pokerengine/pokergame.py:422
 #, python-format
 msgid "%(name)s folds"
 msgstr "%(name)s se couche"
 
-#: pokerengine/pokergame.py:392
+#: pokerengine/pokergame.py:426
 #, python-format
 msgid "%(name)s raises %(amount)s"
 msgstr "%(name)s relance de %(amount)s"
 
-#: pokerengine/pokergame.py:397
+#: pokerengine/pokergame.py:431
 #, python-format
 msgid " (%(amount)s returned to %(name)s)"
 msgstr " (%(amount)s redonné à %(name)s)"
 
-#: pokerengine/pokergame.py:400
+#: pokerengine/pokergame.py:434
 #, python-format
 msgid "turn canceled%(message)s"
 msgstr "tour annulé%(message)s"
 
-#: pokerengine/pokergame.py:408
+#: pokerengine/pokergame.py:442
 #, python-format
 msgid "%(name)s receives %(amount)s (everyone else folded)"
-msgstr "%(name)s reçoit %(amount)s (les autres joueurs ont couchés leurs mains)"
+msgstr ""
+"%(name)s reçoit %(amount)s (les autres joueurs ont couchés leurs mains)"
 
-#: pokerengine/pokergame.py:415
+#: pokerengine/pokergame.py:449
 #, python-format
 msgid "%(name)s receives %(amount)d odd chips"
 msgstr "%(name)s recoit %(amount)d (jetons restants)"
 
-#: pokerengine/pokergame.py:417
+#: pokerengine/pokergame.py:451
 #, python-format
 msgid "returning uncalled bet %(amount)s to %(name)s"
 msgstr "retour de %(amount)s à %(name)s (mise non-suivie)"
 
-#: pokerengine/pokergame.py:428
+#: pokerengine/pokergame.py:462
 #, python-format
 msgid "%(name)s sits out"
 msgstr "%(name)s se lève"
 
-#: pokerengine/pokergame.py:2888 pokerengine/pokergame.py:2919
+#: pokerengine/pokergame.py:2947 pokerengine/pokergame.py:2978
 msgid "The wheel"
 msgstr "La roue"
 
-#: pokerengine/pokergame.py:2892 pokerengine/pokergame.py:2923
+#: pokerengine/pokergame.py:2951 pokerengine/pokergame.py:2982
 #, python-format
 msgid "High card %(card)s"
 msgstr "Carte haute %(card)s"
 
-#: pokerengine/pokergame.py:2894
+#: pokerengine/pokergame.py:2953
 #, python-format
 msgid "A pair of %(card)s"
 msgstr "Paire %(card)s"
 
-#: pokerengine/pokergame.py:2894 pokerengine/pokergame.py:2896
-#: pokerengine/pokergame.py:2898 pokerengine/pokergame.py:2906
+#: pokerengine/pokergame.py:2953 pokerengine/pokergame.py:2955
+#: pokerengine/pokergame.py:2957 pokerengine/pokergame.py:2965
 #, python-format
 msgid ", %(card)s kicker"
 msgstr ", %(card)s pour kicker"
 
-#: pokerengine/pokergame.py:2896
+#: pokerengine/pokergame.py:2955
 #, python-format
 msgid "Two pairs %(card1)s and %(card2)s"
 msgstr "Double paire : paire %(card1)s et paire %(card2)s"
 
-#: pokerengine/pokergame.py:2898
+#: pokerengine/pokergame.py:2957
 #, python-format
 msgid "Three of a kind %(card)s"
 msgstr "Brelan %(card)s"
 
-#: pokerengine/pokergame.py:2900
+#: pokerengine/pokergame.py:2959
 #, python-format
 msgid "Straight %(card1)s to %(card2)s"
 msgstr "Suite, %(card1)s à %(card2)s"
 
-#: pokerengine/pokergame.py:2902 pokerengine/pokergame.py:2933
+#: pokerengine/pokergame.py:2961 pokerengine/pokergame.py:2992
 #, python-format
 msgid "Flush %(card)s high"
 msgstr "Couleur, hauteur %(card)s"
 
-#: pokerengine/pokergame.py:2904
-#, python-format
-msgid "Full house, %(card1)s over %(card2)s"
+#: pokerengine/pokergame.py:2963 pokerengine/pokergame.py:2994
+#, fuzzy, python-format
+msgid "%(card1)ss full of %(card2)ss"
 msgstr "Full aux %(card1)s par les %(card2)s"
 
-#: pokerengine/pokergame.py:2906
+#: pokerengine/pokergame.py:2965
 #, python-format
 msgid "Four of a kind %(card)s"
 msgstr "Carré %(card)s"
 
-#: pokerengine/pokergame.py:2909 pokerengine/pokergame.py:2940
+#: pokerengine/pokergame.py:2968 pokerengine/pokergame.py:2999
 msgid "Royal flush"
 msgstr "Quinte flush royale"
 
-#: pokerengine/pokergame.py:2911
+#: pokerengine/pokergame.py:2970
 #, python-format
 msgid "Straight flush %(card)s high"
 msgstr "Suite, hauteur %(card)s "
 
-#: pokerengine/pokergame.py:2925
+#: pokerengine/pokergame.py:2984
 #, python-format
 msgid "Pair of %(card)s"
 msgstr "Paire %(card)s"
 
-#: pokerengine/pokergame.py:2927
+#: pokerengine/pokergame.py:2986
 #, python-format
 msgid "Pairs of %(card1)s and %(card2)s"
 msgstr "Double paire : paire %(card1)s et paire %(card2)s"
 
-#: pokerengine/pokergame.py:2929
+#: pokerengine/pokergame.py:2988
 #, python-format
 msgid "Trips %(card)s"
 msgstr "Brelan %(card)s"
 
-#: pokerengine/pokergame.py:2931
+#: pokerengine/pokergame.py:2990
 #, python-format
 msgid "Straight %(card)s high"
 msgstr "Suite, hauteur %(card)s"
 
-#: pokerengine/pokergame.py:2935
-#, python-format
-msgid "Full %(card1)s over %(card2)s"
-msgstr "Full aux %(card1)s par les %(card2)s"
-
-#: pokerengine/pokergame.py:2937
+#: pokerengine/pokergame.py:2996
 #, python-format
 msgid "Quads %(card)s"
 msgstr "Carré %(card)s"
 
-#: pokerengine/pokergame.py:2942
+#: pokerengine/pokergame.py:3001
 msgid "Straight flush"
 msgstr "Quinte flush"
 
@@ -365,3 +361,5 @@ msgstr "de Trois"
 msgid "Deuces"
 msgstr "de Deux"
 
+#~ msgid "Full house, %(card1)s over %(card2)s"
+#~ msgstr "Full aux %(card1)s par les %(card2)s"
