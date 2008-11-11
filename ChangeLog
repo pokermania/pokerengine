@@ -1,6 +1,17 @@
-2008-08-26  Bradley M. Kuhn  <bkuhn@ebb.org>
+2008-11-04  Loic Dachary <loic@dachary.org>
 
 	* Release 1.3.0
+
+	* debian/control.jaunty: preliminary jaunty support
+	* debian/control.intrepid: intrepid support
+
+2008-10-29  Johan Euphrosine <proppy@aminche.com>
+
+	* po/fr.po, po/poker-engine.pot: make update-po in poker-engine
+	* config: add config directory in poker-engine
+	* po/fr.po: update poker-engine french translation
+
+2008-08-26  Bradley M. Kuhn  <bkuhn@ebb.org>
 
 	* tests/test-i18n.py.in (PokerI18NTest.testTranslationFails):
 	Added test to make sure old _() is returned.
