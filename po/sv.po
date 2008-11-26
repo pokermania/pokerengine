@@ -1,357 +1,431 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR http://www.pokersource.info
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Skyrock Network
+# Copyright (C) 2002-2008 Orbus group
+# Devteam <devteam@orbus.fr>
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: poker-engine VERSION\n"
 "Report-Msgid-Bugs-To: http://www.pokersource.info\n"
 "POT-Creation-Date: 2008-11-25 18:50-0500\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2008-11-25 16:31+0200\n"
+"Last-Translator: devteam <devteam@orbus.fr>\n"
+"Language-Team: <pokersource-users@gna.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: plurals=2; plural=n != 1;\n"
 
+# Translation #58068 (sv)
 #: pokerengine/pokergame.py:311
-#, python-format
+#, fuzzy, python-format
 msgid "%(name)s shows %(value)s for %(side)s "
-msgstr ""
+msgstr "%(name)s visas %(value)s för %(side)s"
 
+# Translation #58069 (sv)
 #: pokerengine/pokergame.py:313
 #, python-format
 msgid "%(name)s mucks loosing hand"
-msgstr ""
+msgstr "%(name)s muck förlorar sin hand"
 
+# Translation #58070 (sv)
 #: pokerengine/pokergame.py:322
-#, python-format
+#, fuzzy, python-format
 msgid " wins %(side)s "
-msgstr ""
+msgstr "vinner %(side)s"
 
+# Translation #58071 (sv)
 #: pokerengine/pokergame.py:326
 #, python-format
 msgid "winners share a pot of %(pot)s"
-msgstr ""
+msgstr "vinnarna delar på potten %(pot)s"
 
+# Translation #58072 (sv)
 #: pokerengine/pokergame.py:328
-#, python-format
+#, fuzzy, python-format
 msgid " (minus %(chips_left)d odd chips)"
-msgstr ""
+msgstr "(minus %(chips_left)d odd chips)"
 
+# Translation #58073 (sv)
 #: pokerengine/pokergame.py:332
 #, python-format
 msgid "%(name)s receives %(amount)s"
-msgstr ""
+msgstr "%(name)s receives %(amount)s"
 
+# Translation #58074 (sv)
 #: pokerengine/pokergame.py:344
 #, python-format
 msgid "hand #%(hand_serial)d, %(variant)s, %(betting_structure)s"
-msgstr ""
+msgstr "hand #%(hand_serial)d, %(variant)s, %(betting_structure)s"
 
+# Translation #58075 (sv)
 #: pokerengine/pokergame.py:348
-#, python-format
+#, fuzzy, python-format
 msgid "%(serial)s waiting for "
-msgstr ""
+msgstr "%(serial)s väntar på"
 
+# Translation #58076 (sv)
 #: pokerengine/pokergame.py:357
 #, python-format
 msgid "%(name)s, %(len_pockets)d players"
-msgstr ""
+msgstr "%(name)s, %(len_pockets)d spelare"
 
+# Translation #58077 (sv)
 #: pokerengine/pokergame.py:361
 #, python-format
 msgid "Board: %(board)s"
-msgstr ""
+msgstr "Anslagstavla: %(board)s"
 
+# Translation #58078 (sv)
 #: pokerengine/pokergame.py:365
 #, python-format
 msgid "Cards player %(name)s: %(card)s"
-msgstr ""
+msgstr "Kortspelare %(name)s: %(card)s"
 
+# Translation #58079 (sv)
 #: pokerengine/pokergame.py:370
-#, python-format
+#, fuzzy, python-format
 msgid "Board: %(cards)s"
-msgstr ""
+msgstr "Anslagstavla: %(card)s"
 
+# Translation #58080 (sv)
 #: pokerengine/pokergame.py:375
 #, python-format
 msgid "Cards player %(name)s: %(cards)s"
-msgstr ""
+msgstr "Cards player %(name)s: %(cards)s"
 
+# Translation #58081 (sv)
 #: pokerengine/pokergame.py:379
 #, python-format
 msgid "Rake %(amount)s"
-msgstr ""
+msgstr "Spelavgift %(amount)s"
 
+# Translation #58082 (sv)
 #: pokerengine/pokergame.py:396
-#, python-format
+#, fuzzy, python-format
 msgid " and %(dead)d dead"
-msgstr ""
+msgstr "och %(dead)d dead"
 
+# Translation #58083 (sv)
 #: pokerengine/pokergame.py:399
 #, python-format
 msgid "%(name)s pays %(amount)s blind%(deadmsg)s"
-msgstr ""
+msgstr "%(name)s betalar %(amount)s blind%(deadmsg)s"
 
+# Translation #58084 (sv)
 #: pokerengine/pokergame.py:406
 #, python-format
 msgid "%(name)s pays %(amount)s ante"
-msgstr ""
+msgstr "%(name)s betalar %(amount)s ante"
 
+# Translation #58085 (sv)
 #: pokerengine/pokergame.py:410
 #, python-format
 msgid "%(name)s is all in"
-msgstr ""
+msgstr "%(name)s satsar all in"
 
+# Translation #58086 (sv)
 #: pokerengine/pokergame.py:414
 #, python-format
 msgid "%(name)s calls %(amount)s"
-msgstr ""
+msgstr "%(name)s gör en call på %(amount)s"
 
+# Translation #58087 (sv)
 #: pokerengine/pokergame.py:418
 #, python-format
 msgid "%(name)s checks"
-msgstr ""
+msgstr "%(name)s checkar"
 
+# Translation #58088 (sv)
 #: pokerengine/pokergame.py:422
 #, python-format
 msgid "%(name)s folds"
-msgstr ""
+msgstr "%(name)s gör en fold"
 
+# Translation #58089 (sv)
 #: pokerengine/pokergame.py:426
 #, python-format
 msgid "%(name)s raises %(amount)s"
-msgstr ""
+msgstr "%(name)s höjer %(amount)s"
 
+# Translation #58090 (sv)
 #: pokerengine/pokergame.py:431
-#, python-format
+#, fuzzy, python-format
 msgid " (%(amount)s returned to %(name)s)"
-msgstr ""
+msgstr "(%(amount)s återvänder till %(name)s)"
 
+# Translation #58091 (sv)
 #: pokerengine/pokergame.py:434
 #, python-format
 msgid "turn canceled%(message)s"
-msgstr ""
+msgstr "rundan avbruten %(message)s"
 
+# Translation #58092 (sv)
 #: pokerengine/pokergame.py:442
 #, python-format
 msgid "%(name)s receives %(amount)s (everyone else folded)"
-msgstr ""
+msgstr "%(name)s tar emot %(amount)s (alla andra har foldat)"
 
+# Translation #58093 (sv)
 #: pokerengine/pokergame.py:449
 #, python-format
 msgid "%(name)s receives %(amount)d odd chips"
-msgstr ""
+msgstr "%(name)s tar emot %(amount)d udda chips"
 
+# Translation #58094 (sv)
 #: pokerengine/pokergame.py:451
 #, python-format
 msgid "returning uncalled bet %(amount)s to %(name)s"
-msgstr ""
+msgstr "skickar tillbaka satsning på %(amount)s till %(name)s utan call"
 
+# Translation #58095 (sv)
 #: pokerengine/pokergame.py:462
 #, python-format
 msgid "%(name)s sits out"
-msgstr ""
+msgstr "%(name)s går ut"
 
+# Translation #58096 (sv)
 #: pokerengine/pokergame.py:2947 pokerengine/pokergame.py:2978
 msgid "The wheel"
-msgstr ""
+msgstr "Hjulet"
 
+# Translation #58097 (sv)
 #: pokerengine/pokergame.py:2951 pokerengine/pokergame.py:2982
 #, python-format
 msgid "High card %(card)s"
-msgstr ""
+msgstr "Höga kort %(card)s"
 
+# Translation #58098 (sv)
 #: pokerengine/pokergame.py:2953
 #, python-format
 msgid "A pair of %(card)s"
-msgstr ""
+msgstr "Ett par i %(card)s"
 
+# Translation #58099 (sv)
 #: pokerengine/pokergame.py:2953 pokerengine/pokergame.py:2955
 #: pokerengine/pokergame.py:2957 pokerengine/pokergame.py:2965
 #, python-format
 msgid ", %(card)s kicker"
-msgstr ""
+msgstr ", %(card)s kickar"
 
+# Translation #58100 (sv)
 #: pokerengine/pokergame.py:2955
 #, python-format
 msgid "Two pairs %(card1)s and %(card2)s"
-msgstr ""
+msgstr "Två par i %(card1)s och %(card2)s"
 
+# Translation #58101 (sv)
 #: pokerengine/pokergame.py:2957
 #, python-format
 msgid "Three of a kind %(card)s"
-msgstr ""
+msgstr "Tre %(card)s"
 
+# Translation #58102 (sv)
 #: pokerengine/pokergame.py:2959
 #, python-format
 msgid "Straight %(card1)s to %(card2)s"
-msgstr ""
+msgstr "Straight i %(card1)s till %(card2)s"
 
+# Translation #58103 (sv)
 #: pokerengine/pokergame.py:2961 pokerengine/pokergame.py:2992
 #, python-format
 msgid "Flush %(card)s high"
-msgstr ""
+msgstr "Färg %(card)s i höga kort"
 
+# Translation #58104 (sv)
 #: pokerengine/pokergame.py:2963 pokerengine/pokergame.py:2994
 #, python-format
 msgid "%(card1)ss full of %(card2)ss"
-msgstr ""
+msgstr "%(card1)ss full av %(card2)ss"
 
+# Translation #58105 (sv)
 #: pokerengine/pokergame.py:2965
 #, python-format
 msgid "Four of a kind %(card)s"
-msgstr ""
+msgstr "Fyra lika %(card)s"
 
+# Translation #58106 (sv)
 #: pokerengine/pokergame.py:2968 pokerengine/pokergame.py:2999
 msgid "Royal flush"
-msgstr ""
+msgstr "Royal flush"
 
+# Translation #58107 (sv)
 #: pokerengine/pokergame.py:2970
 #, python-format
 msgid "Straight flush %(card)s high"
-msgstr ""
+msgstr "Straight flush %(card)s i höga kort"
 
+# Translation #58108 (sv)
 #: pokerengine/pokergame.py:2984
 #, python-format
 msgid "Pair of %(card)s"
-msgstr ""
+msgstr "Par i %(card)s"
 
+# Translation #58109 (sv)
 #: pokerengine/pokergame.py:2986
 #, python-format
 msgid "Pairs of %(card1)s and %(card2)s"
-msgstr ""
+msgstr "Par i %(card1)s och %(card2)s"
 
+# Translation #58110 (sv)
 #: pokerengine/pokergame.py:2988
 #, python-format
 msgid "Trips %(card)s"
-msgstr ""
+msgstr "Triss i %(card)s"
 
+# Translation #58111 (sv)
 #: pokerengine/pokergame.py:2990
 #, python-format
 msgid "Straight %(card)s high"
-msgstr ""
+msgstr "Straight %(card)s i höga kort"
 
+# Translation #58112 (sv)
 #: pokerengine/pokergame.py:2996
 #, python-format
 msgid "Quads %(card)s"
-msgstr ""
+msgstr "Fyra lika i %(card)s"
 
+# Translation #58113 (sv)
 #: pokerengine/pokergame.py:3001
 msgid "Straight flush"
-msgstr ""
+msgstr "Straight flush"
 
+# Translation #58114 (sv)
 #: po/raw.string:1
 msgid "hi"
-msgstr ""
+msgstr "hög"
 
+# Translation #58115 (sv)
 #: po/raw.string:2
 msgid "low"
-msgstr ""
+msgstr "låg"
 
+# Translation #58116 (sv)
 #: po/raw.string:4
 msgid "Ace"
-msgstr ""
+msgstr "Ess"
 
+# Translation #58117 (sv)
 #: po/raw.string:5
 msgid "King"
-msgstr ""
+msgstr "Kung"
 
+# Translation #58118 (sv)
 #: po/raw.string:6
 msgid "Queen"
-msgstr ""
+msgstr "Dam"
 
+# Translation #58119 (sv)
 #: po/raw.string:7
 msgid "Jack"
-msgstr ""
+msgstr "Knekt"
 
+# Translation #58120 (sv)
 #: po/raw.string:8
 msgid "Ten"
-msgstr ""
+msgstr "Tia"
 
+# Translation #58121 (sv)
 #: po/raw.string:9
 msgid "Nine"
-msgstr ""
+msgstr "Nia"
 
+# Translation #58122 (sv)
 #: po/raw.string:10
 msgid "Eight"
-msgstr ""
+msgstr "Åtta"
 
+# Translation #58123 (sv)
 #: po/raw.string:11
 msgid "Seven"
-msgstr ""
+msgstr "Sjua"
 
+# Translation #58124 (sv)
 #: po/raw.string:12
 msgid "Six"
-msgstr ""
+msgstr "Sexa"
 
+# Translation #58125 (sv)
 #: po/raw.string:13
 msgid "Five"
-msgstr ""
+msgstr "Femma"
 
+# Translation #58126 (sv)
 #: po/raw.string:14
 msgid "Four"
-msgstr ""
+msgstr "Fyra"
 
+# Translation #58127 (sv)
 #: po/raw.string:15
 msgid "Trey"
-msgstr ""
+msgstr "Treor"
 
+# Translation #58128 (sv)
 #: po/raw.string:16
 msgid "Deuce"
-msgstr ""
+msgstr "Tvåa"
 
+# Translation #58129 (sv)
 #: po/raw.string:18
 msgid "Aces"
-msgstr ""
+msgstr "Ess"
 
+# Translation #58130 (sv)
 #: po/raw.string:19
 msgid "Kings"
-msgstr ""
+msgstr "Kungar"
 
+# Translation #58131 (sv)
 #: po/raw.string:20
 msgid "Queens"
-msgstr ""
+msgstr "Damer"
 
+# Translation #58132 (sv)
 #: po/raw.string:21
 msgid "Jacks"
-msgstr ""
+msgstr "Knektar"
 
+# Translation #58133 (sv)
 #: po/raw.string:22
 msgid "Tens"
-msgstr ""
+msgstr "Tior"
 
+# Translation #58134 (sv)
 #: po/raw.string:23
 msgid "Nines"
-msgstr ""
+msgstr "Nior"
 
+# Translation #58135 (sv)
 #: po/raw.string:24
 msgid "Eights"
-msgstr ""
+msgstr "Åttor"
 
+# Translation #58136 (sv)
 #: po/raw.string:25
 msgid "Sevens"
-msgstr ""
+msgstr "Sjuor"
 
+# Translation #58137 (sv)
 #: po/raw.string:26
 msgid "Sixes"
-msgstr ""
+msgstr "Sexor"
 
+# Translation #58138 (sv)
 #: po/raw.string:27
 msgid "Fives"
-msgstr ""
+msgstr "Femmor"
 
+# Translation #58139 (sv)
 #: po/raw.string:28
 msgid "Fours"
-msgstr ""
+msgstr "Fyror"
 
+# Translation #58140 (sv)
 #: po/raw.string:29
 msgid "Treys"
-msgstr ""
+msgstr "Treor"
 
+# Translation #58141 (sv)
 #: po/raw.string:30
 msgid "Deuces"
-msgstr ""
+msgstr "Tvåor"
