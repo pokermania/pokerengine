@@ -3,7 +3,7 @@
 # French translations for pokerclient package.
 # Copyright (C) 2006 THE pokerclient'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the pokerclient package.
-# 
+#
 # griim <griim.work@gmail.com>, 2006.
 # Johan Euphrosine <proppy@aminche.com>, 2008.
 # Skyrock Network
