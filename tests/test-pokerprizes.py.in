@@ -1,0 +1,203 @@
+# -*- mode: python -*-
+# Copyright (C)             2008 Bradley M. Kuhn <bkuhn@ebb.org>
+# Copyright (C) 2006, 2007, 2008 Loic Dachary <loic@dachary.org>
+# Copyright (C) 2006             Mekensleep <licensing@mekensleep.com>
+#                                24 rue vieille du temple, 75004 Paris
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Authors:
+#  Bradley M. Kuhn <bkuhn@ebb.org>
+#  Pierre-Andre (05/2006)
+#  Loic Dachary <loic@gnu.org>
+#
+
+import sys, os
+sys.path.insert(0, "@top_srcdir@")
+
+import unittest
+import os.path
+import types
+import time
+
+from testmessages import restore_all_messages, silence_all_messages, search_output, clear_all_messages, get_messages
+from pokerengine import pokerprizes
+
+class PokerPrizesTestCase(unittest.TestCase):
+    TestConfDirectory = '@top_srcdir@/conf'
+        
+    # ---------------------------------------------------------
+    def setUp(self):
+        silence_all_messages()
+        self.dirs = ['.', PokerPrizesTestCase.TestConfDirectory, '~/conf']
+    
+    # -------------------------------------------------------
+    def tearDown(self):
+        pass
+    # -------------------------------------------------------------------------
+    def test00_factory(self):
+        """test00_factory
+        basic factory interface tests."""
+        f = pokerprizes.PokerPrizesFactory()
+        clear_all_messages()
+        f.error("test")
+        self.assertEquals(get_messages(), ['ERROR test'])
+
+        self.failUnless(f.getClass(""), pokerprizes.PokerPrizesAlgorithm)
+
+        clear_all_messages()
+        self.assertEquals(f.getClass("DOESNOTEXIST"), pokerprizes.PokerPrizesAlgorithm)
+        self.assertEquals(get_messages(), ["ERROR 'module' object has no attribute 'PokerPrizesDOESNOTEXIST'"])
+    # -------------------------------------------------------
+    def test01_algorithmPrizeInterface(self):
+        """test01_algorithmPrizeInterface
+        Test the payout structure of the Algorithm prize interface"""
+        pa = pokerprizes.PokerPrizesFactory().getClass("Algorithm")(buyInAmount = 100, playerCount = 4)
+        self.assertEquals(pa.buy_in, 100)
+        self.assertEquals(pa.player_count, 4)
+
+        self.failUnlessEqual(pa.getPrizes(), [400])
+        
+        for cnt in range(5, 9):
+            pa.addPlayer()
+            self.failUnlessEqual(pa.player_count, cnt)
+            if cnt == 5:
+                pa.removePlayer()
+                self.assertEquals(pa.player_count, 4)
+                self.failUnlessEqual(pa.getPrizes(), [400])
+                pa.addPlayer()
+                self.assertEquals(pa.player_count, cnt) 
+                self.failUnlessEqual(pa.getPrizes(), [375, 125])
+
+        self.failUnlessEqual(pa.getPrizes(), [600, 200])
+
+        for cnt in range(9, 19):
+            pa.addPlayer()
+            self.failUnlessEqual(pa.player_count, cnt)
+        self.failUnlessEqual(pa.getPrizes(), [1125, 450, 225])
+        
+        for cnt in range(19, 29):
+            pa.addPlayer()
+            self.failUnlessEqual(pa.player_count, cnt)
+
+        self.failUnlessEqual(pa.getPrizes(), [1575, 700, 350, 175])
+        
+        for cnt in range(29, 39):
+            pa.addPlayer()
+            self.failUnlessEqual(pa.player_count, cnt)
+
+        self.failUnlessEqual(pa.getPrizes(), [1902, 950, 237, 237, 237, 237])
+        
+        for cnt in range(39, 49):
+            pa.addPlayer()
+            self.failUnlessEqual(pa.player_count, cnt)
+
+        self.failUnlessEqual(len(pa.getPrizes()), int(48 * 0.20))
+        
+        for cnt in range(49, 199):
+            pa.addPlayer()
+            self.failUnlessEqual(pa.player_count, cnt)
+
+        self.failUnlessEqual(len(pa.getPrizes()), int(198 * 0.15))
+        
+        for cnt in range(199, 299):
+            pa.addPlayer()
+            self.failUnlessEqual(pa.player_count, cnt)
+
+        self.failUnlessEqual(len(pa.getPrizes()), int(298 * 0.10))
+    # -------------------------------------------------------
+    def test02_tablePrizeInterface(self):
+        """test02_tablePrizeInterface
+        Test the payout structure of the table prize interface"""
+        pt = pokerprizes.PokerPrizesFactory().getClass("Table")(buyInAmount = 100, playerCount = 2, configDirs = self.dirs)
+        self.assertEquals(pt.buy_in, 100)
+        self.assertEquals(pt.player_count, 2)
+
+        self.failUnlessEqual(pt.getPrizes(), [200])
+        
+        for player in range(4, 7):
+            pt.addPlayer()
+            if player == 4:
+                pt.removePlayer()
+                self.assertEquals(pt.player_count, 2)
+                self.failUnlessEqual(pt.getPrizes(), [200])
+                pt.addPlayer()
+                self.assertEquals(pt.player_count, 3)
+                self.failUnlessEqual(pt.getPrizes(), [300])
+
+        self.failUnlessEqual(pt.getPrizes(), [350, 150])
+        
+        for player in range(7, 28):
+            pt.addPlayer()
+        self.failUnlessEqual(pt.getPrizes(), [1300, 780, 520])
+        
+        for player in range(28, 48):
+            pt.addPlayer()
+        self.failUnlessEqual(pt.getPrizes(), [1840, 1104, 736, 552, 368])
+        
+        for player in range(48, 198):
+            pt.addPlayer()
+        self.failUnlessEqual(pt.getPrizes(), [5880, 3920, 2450, 1764, 1568, 1274, 980, 784, 588, 392])
+        
+        for player in range(198, 298):
+            pt.addPlayer()
+        self.failUnlessEqual(len(pt.getPrizes()), 20)
+    # -------------------------------------------------------
+    def test03_virtualBaseClass(self):
+        """test03_virtualBaseClass
+        Test minor things not elsewhere covered for the base class"""
+        v = pokerprizes.PokerPrizes(5, playerCount = 3, guaranteeAmount = 100)
+        self.assertEquals(v.buy_in, 5)
+        self.assertEquals(v.player_count, 3)
+        self.assertEquals(v.guarantee_amount, 100)
+
+        clear_all_messages()
+        v.error("test")
+        self.assertEquals(get_messages(), ['ERROR test'])
+
+        clear_all_messages()
+        exceptCaught = False
+        try:
+            v.getPrizes()
+            self.failIf(True) # should not reach here
+        except NotImplementedError, nie:
+            exceptCaught = True
+            self.assertEquals(nie.__str__(), 'getPrizes NOT IMPLEMENTED IN ABSTRACT BASE CLASS')
+        self.failUnless(exceptCaught)
+        self.assertEquals(get_messages(), ['ERROR getPrizes NOT IMPLEMENTED IN ABSTRACT BASE CLASS'])
+# ---------------------------------------------------------
+def GetTestSuite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(PokerPrizesTestCase))
+    # Comment out above and use line below this when you wish to run just
+    # one test by itself (changing prefix as needed).
+#    suite.addTest(unittest.makeSuite(Breaks, prefix = "test2"))
+    return suite
+    
+# ---------------------------------------------------------
+def Run(verbose):
+    return unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
+    
+# ---------------------------------------------------------
+if __name__ == '__main__':
+    if Run(int(os.environ.get('VERBOSE_T', 2))).wasSuccessful():
+        sys.exit(0)
+    else:
+        sys.exit(1)
+
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/test-pokerprizes.py ) ; ( cd ../tests ; make COVERAGE_FILES='../pokerengine/pokerprizes.py' TESTS='coverage-reset test-pokerprizes.py coverage-report' check )"
+# End:

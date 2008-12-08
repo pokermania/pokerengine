@@ -96,6 +96,7 @@ AC_CONFIG_FILES([Makefile
                  tests/test-pokercards.py
                  tests/test-pokerengineconfig.py
                  tests/test-pokertournament.py
+                 tests/test-pokerprizes.py
                  tests/test-game.py
                  tests/test-pokerchips.py
                  tests/test-pokerrake.py

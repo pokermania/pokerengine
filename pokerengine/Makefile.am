@@ -34,5 +34,6 @@ pokerengine_PYTHON = \
 	pokerengineconfig.py \
 	pokergame.py \
 	pokerrake.py \
+	pokerprizes.py \
 	pokertournament.py \
 	version.py

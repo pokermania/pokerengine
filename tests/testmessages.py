@@ -5,18 +5,18 @@
 #
 # This software's license gives you freedom; you can copy, convey,
 # propagate, redistribute and/or modify this program under the terms of
-# the GNU Affero General Public License (AGPL) as published by the Free
-# Software Foundation (FSF), either version 3 of the License, or (at your
-# option) any later version of the AGPL published by the FSF.
+# the GNU General Public License (GPL) as published by the Free Software
+# Foundation (FSF), either version 3 of the License, or (at your option)
+# any later version of the GPL published by the FSF.
 #
 # This program is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
 #
-# You should have received a copy of the GNU Affero General Public License
+# You should have received a copy of the GNU General Public License
 # along with this program in a file in the toplevel directory called
-# "AGPLv3".  If not, see <http://www.gnu.org/licenses/>.
+# "GPLv3".  If not, see <http://www.gnu.org/licenses/>.
 #
 # Authors:
 #  Loic Dachary <loic@dachary.org>
@@ -25,59 +25,12 @@ import sys, os
 
 classes = []
 
-from pokerui import pokerinteractor
-classes.append(pokerinteractor.PokerInteractor)
-from pokerui import pokerrenderer
-classes.append(pokerrenderer.PokerRenderer)
-classes.append(pokerrenderer.PokerInteractors)
-from pokernetwork import currencyclient
-classes.append(currencyclient.FakeCurrencyClient)
-from pokernetwork import pokerchildren
-classes.append(pokerchildren.PokerChild)
-from pokernetwork import client
-classes.append(client.UGAMEClientFactory)
-from pokernetwork import protocol
-classes.append(protocol.UGAMEProtocol)
-from pokernetwork import pokerservice
-classes.append(pokerservice.PokerService)
-classes.append(pokerservice.PokerXML)
-from pokernetwork import pokerauth
-classes.append(pokerauth.PokerAuth)
-from pokernetwork import pokerlock
-classes.append(pokerlock.PokerLock)
-from pokernetwork import pokeravatar
-classes.append(pokeravatar.PokerAvatar)
-from pokernetwork import pokerexplain
-classes.append(pokerexplain.PokerExplain)
-from pokernetwork import pokertable
-classes.append(pokertable.PokerTable)
-from pokernetwork import pokercashier
-classes.append(pokercashier.PokerCashier)
-from pokernetwork import pokerdatabase
-classes.append(pokerdatabase.PokerDatabase)
 from pokerengine import pokergame
 classes.append(pokergame.PokerGame)
-from pokerengine import pokertournament
-classes.append(pokertournament.PokerTournament)
-from pokernetwork import upgrade
-classes.append(upgrade.CheckClientVersion)
-classes.append(upgrade.Upgrader)
-from pokernetwork import pokersite
-classes.append(pokersite.PokerResource)
-classes.append(pokersite.PokerImageUpload)
-classes.append(pokersite.PokerAvatarResource)
-classes.append(pokersite.PokerSite)
-from pokernetwork import userstats
-classes.append(userstats.UserStatsFactory)
-classes.append(userstats.UserStatsRankPercentileAccessor)
-classes.append(userstats.UserStatsRankPercentileLookup)
-from pokernetwork import attrpack
-classes.append(attrpack.AttrsFactory)
-classes.append(attrpack.AttrsAccessor)
-classes.append(attrpack.AttrsLookup)
-# that does not work because it gets imported in two different ways
-#from pokernetwork import proxyfilter
-#classes.append(proxyfilter.ProxyClientFactory)
+
+from pokerengine import pokerprizes
+classes.append(pokerprizes.PokerPrizesFactory)
+classes.append(pokerprizes.PokerPrizes)
 
 from twisted.internet import defer
 

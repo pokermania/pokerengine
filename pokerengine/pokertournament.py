@@ -1,11 +1,8 @@
 #
 # Copyright (C) 2006, 2007, 2008 Loic Dachary <loic@dachary.org>
-# Copyright (C) 2004, 2005, 2006 Mekensleep
-#
-# Mekensleep
-# 24 rue vieille du temple
-# 75004 Paris
-#       licensing@mekensleep.com
+# Copyright (C)             2008 Bradley M. Kuhn <bkuhn@ebb.org>
+# Copyright (C) 2004, 2005, 2006 Mekensleep <licensing@mekensleep.com>
+#                                24 rue vieille du temple, 75004 Paris
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +32,7 @@ def tournament_seconds():
 shuffler = random
 
 from pokerengine.pokergame import PokerGameServer
-from pokerengine.pokerengineconfig import Config
+from pokerengine.pokerprizes import PokerPrizesFactory
 
 TOURNAMENT_STATE_ANNOUNCED = "announced"
 TOURNAMENT_STATE_REGISTERING = "registering"
@@ -226,12 +223,7 @@ class PokerTournament:
         self.updateRegistering()
 
     def loadPayouts(self):
-        config = Config(self.dirs)
-        config.load("poker.payouts.xml")
-        self.payouts = []
-        for node in config.header.xpathEval("/payouts/payout"):
-            properties = config.headerNodeProperties(node)
-            self.payouts.append(( int(properties['max']), map(lambda percent: float(percent) / 100, node.content.split())))
+        self.prizes_object =  PokerPrizesFactory().getClass(self.prizes_specs.capitalize())(buyInAmount = self.buy_in, playerCount = self.registered, configDirs = self.dirs)
 
     def message(self, message):
         print self.prefix + "[PokerTournament %s] " % self.name + message
@@ -366,6 +358,7 @@ class PokerTournament:
         if self.can_register:
             self.players.append(serial)
             self.registered += 1
+            self.prizes_object.addPlayer()
             if self.state == TOURNAMENT_STATE_REGISTERING:
                 self.updateRunning()
             elif self.state == TOURNAMENT_STATE_RUNNING:
@@ -378,6 +371,7 @@ class PokerTournament:
         if self.state == TOURNAMENT_STATE_REGISTERING:
             self.players.remove(serial)
             self.registered -= 1
+            self.prizes_object.removePlayer()
             return True
         else:
             return False
@@ -511,60 +505,12 @@ class PokerTournament:
         return len(to_equalize) > 0
 
     def prizes(self):
+        # FIXME?: I left this test for self.can_register because it was
+        # here before PokerPrizes() class existed, but it is not clear to
+        # me that it should still be here.  I have made the tests cover it
+        # though.  -- bkuhn, 2008-12-07
         if self.can_register:
             return None
         if not self.rank2prize:
-            if self.prizes_specs == "algorithm":
-                self.rank2prize = self.prizesAlgorithm()
-            elif self.prizes_specs == "table":
-                self.rank2prize = self.prizesTable()
+            self.rank2prize = self.prizes_object.getPrizes()
         return self.rank2prize
-
-    def prizesAlgorithm(self):
-        buy_in = self.buy_in
-        candidates_count = self.registered
-        if candidates_count < 5:
-            winners = 1
-        elif candidates_count < 10:
-            winners = 2
-        elif candidates_count < 20:
-            winners = 3
-        elif candidates_count < 30:
-            winners = 4
-        elif candidates_count < 40:
-            winners = 6
-        elif candidates_count < 50:
-            winners = int(candidates_count * 0.2)
-        elif candidates_count < 200:
-            winners = int(candidates_count * 0.15)
-        else:
-            winners = int(candidates_count * 0.1)
-
-        prizes = []
-        prize_pool = max(self.prize_min, buy_in * candidates_count)
-        money_left = prize_pool
-        while winners > 0:
-            if money_left / winners < max(1, prize_pool / 100, int(buy_in * 2.5)):
-                prizes.extend([ money_left / winners ] * winners)
-                winners = 0
-            else:
-                money_left /= 2
-                winners -= 1
-                prizes.append(money_left)
-        rest = prize_pool - sum(prizes)
-        prizes[0] += rest
-        return prizes
-                
-    def prizesTable(self):
-        buy_in = self.buy_in
-        for ( maximum, payouts ) in self.payouts:
-            if self.registered <= maximum:
-                break
-
-        total = max(self.prize_min, self.registered * buy_in)
-        prizes = map(lambda percent: int(total * percent), payouts)
-        #
-        # What's left because of rounding errors goes to the tournament winner
-        #
-        prizes[0] += total - sum(prizes)
-        return prizes
