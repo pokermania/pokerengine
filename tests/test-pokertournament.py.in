@@ -38,7 +38,7 @@ class ConstantPlayerShuffler:
     def shuffle(self, what):
         what.sort()
 
-from testmessages import restore_all_messages, silence_all_messages, search_output, clear_all_messages, get_messages
+from tests.testmessages import restore_all_messages, silence_all_messages, search_output, clear_all_messages, get_messages
 
 from pokerengine import pokertournament
 from pokerengine.pokerprizes import PokerPrizesTable, PokerPrizesAlgorithm
