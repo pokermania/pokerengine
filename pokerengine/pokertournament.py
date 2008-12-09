@@ -32,7 +32,7 @@ def tournament_seconds():
 shuffler = random
 
 from pokerengine.pokergame import PokerGameServer
-from pokerengine.pokerprizes import PokerPrizesFactory
+from pokerengine import pokerprizes
 
 TOURNAMENT_STATE_ANNOUNCED = "announced"
 TOURNAMENT_STATE_REGISTERING = "registering"
@@ -223,7 +223,11 @@ class PokerTournament:
         self.updateRegistering()
 
     def loadPayouts(self):
-        self.prizes_object =  PokerPrizesFactory().getClass(self.prizes_specs.capitalize())(buyInAmount = self.buy_in, playerCount = self.registered, configDirs = self.dirs)
+        if self.sit_n_go == 'y':
+            player_count = self.players_quota
+        else:
+            player_count = self.registered
+        self.prizes_object =  pokerprizes.__dict__['PokerPrizes' + self.prizes_specs.capitalize()](buy_in_amount = self.buy_in, player_count = player_count, guarantee_amount = self.prize_min, config_dirs = self.dirs)
 
     def message(self, message):
         print self.prefix + "[PokerTournament %s] " % self.name + message
@@ -329,6 +333,7 @@ class PokerTournament:
             self.createGames()
             self.can_register = False
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_CANCELED:
+            self.can_register = False
             self.cancel()
             self.finish_time = tournament_seconds()
         elif ( self.state in ( TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT ) and
@@ -358,7 +363,9 @@ class PokerTournament:
         if self.can_register:
             self.players.append(serial)
             self.registered += 1
-            self.prizes_object.addPlayer()
+            if self.sit_n_go != 'y':
+                self.prizes_object.addPlayer()
+                self.rank2prize = None
             if self.state == TOURNAMENT_STATE_REGISTERING:
                 self.updateRunning()
             elif self.state == TOURNAMENT_STATE_RUNNING:
@@ -371,7 +378,9 @@ class PokerTournament:
         if self.state == TOURNAMENT_STATE_REGISTERING:
             self.players.remove(serial)
             self.registered -= 1
-            self.prizes_object.removePlayer()
+            if self.sit_n_go != 'y':
+                self.prizes_object.removePlayer()
+                self.rank2prize = None
             return True
         else:
             return False
@@ -505,12 +514,6 @@ class PokerTournament:
         return len(to_equalize) > 0
 
     def prizes(self):
-        # FIXME?: I left this test for self.can_register because it was
-        # here before PokerPrizes() class existed, but it is not clear to
-        # me that it should still be here.  I have made the tests cover it
-        # though.  -- bkuhn, 2008-12-07
-        if self.can_register:
-            return None
         if not self.rank2prize:
             self.rank2prize = self.prizes_object.getPrizes()
         return self.rank2prize
