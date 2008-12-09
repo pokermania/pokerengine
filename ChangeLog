@@ -2,6 +2,29 @@
 
 	* Release 1.3.1
 
+	* tests/tournament.py.in: calculation of the prize pool must be
+	  done on regular tournaments
+	* tests/testmessages.py: remove factory related tests.
+	* tests/test-pokertournament.py.in: rewrite all prizes related
+	  tests to exercise the pokertournament logic related to them and
+	  leave the tests related to the calculation of the prizes to
+	  test-pokerprizes
+	* tests/test-pokerprizes.py.in: remove factory related tests.
+	* pokerengine/pokertournament.py: loadPayouts creates prizes_object
+	  with a player_count depending on tie sit_n_go / regular state of
+	  the tournament and adds the guarantee_amount = prize_min argument
+	  to the constructor.
+	  When a tournament goes from TOURNAMENT_STATE_REGISTERING to
+	  TOURNAMENT_STATE_CANCELED, set can_register to false.
+	  In register and unregister, update the player count and clear the
+	  rank2prize cache if a sit_n_go tournament.
+	  In prizes, do not return None if not in registering mode.
+	  Use pokerprizes.__dict__['xx'] instead of obsoleted factory.
+	* pokerengine/pokerprizes.py: Add config_file_name argument to
+	  loadPayouts.
+	  Remove PokerPrizesFactory which is replaced by
+	  pokerprizes.__dict__['XXX'].
+	  Rename functions arguments as foo_bar instead of fooBar.
 	* tests/testmessages.py: remove twisted dependency
 
 2008-12-08  Loic Dachary <loic@dachary.org>
