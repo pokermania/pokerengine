@@ -29,7 +29,6 @@ from pokerengine import pokergame
 classes.append(pokergame.PokerGame)
 
 from pokerengine import pokerprizes
-classes.append(pokerprizes.PokerPrizesFactory)
 classes.append(pokerprizes.PokerPrizes)
 
 verbose = int(os.environ.get('VERBOSE_T', '-1'))
