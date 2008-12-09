@@ -23,63 +23,31 @@
 #  Loic Dachary <loic@gnu.org>
 #
 from pokerengine.pokerengineconfig import Config
-############################################################################
-class PokerPrizesFactory:
-    """PokerPrizes is designed to handle payout strcutres for poker
-    tournaments.  The Factory is used to generate different types of
-    payout structure builds.
 
-    The public interface usage looks something like this:
-    
-        prizes = pokerprizes.PokerPrizeFactory("Type")(buyInAmount = 100, playerCount = 5)
-        prizes.addPlayer()
-        prizeArray = prizes.getPrizes() 
-        # returns an list where index+1 st place gets the price, prizeArray[index]"""
-
-    def __init__(self, moduleStr = 'pokerprizes', classPrefix = "PokerPrizes", defaultClass = "PokerPrizesAlgorithm"):
-        self.moduleStr = moduleStr
-        self.classPrefix = classPrefix
-        self.defaultClass = defaultClass
-    # ----------------------------------------------------------------------
-    def error(self, string):
-        self.message("ERROR " + string)
-    # ----------------------------------------------------------------------
-    def message(self, string):
-        print string
-    # ----------------------------------------------------------------------
-    def getClass(self, classname):
-        classname = self.classPrefix + classname
-        try:
-            return getattr(__import__(self.moduleStr, globals(), locals(), [classname]), classname)
-        except AttributeError, ae:
-            self.error(ae.__str__())
-        classname = self.defaultClass
-        return getattr(__import__(self.moduleStr, globals(), locals(), [classname]), classname)
-############################################################################
 class PokerPrizes:
     """PokerPrizesVirtual base class for PokerPrizes"""
-    def __init__(self, buyInAmount, playerCount = 0, guaranteeAmount = 0, configDirs = None):
-        self.buy_in = buyInAmount
-        self.player_count = playerCount
-        self.guarantee_amount = guaranteeAmount
-    # ----------------------------------------------------------------------
+    def __init__(self, buy_in_amount, player_count = 0, guarantee_amount = 0, config_dirs = None):
+        self.buy_in = buy_in_amount
+        self.player_count = player_count
+        self.guarantee_amount = guarantee_amount
+
     def error(self, string):
         self.message("ERROR " + string)
-    # ----------------------------------------------------------------------
+
     def message(self, string):
         print "[PokerPrizes] " + string
-    # ----------------------------------------------------------------------
+
     def addPlayer(self):
         self.player_count += 1
-    # ----------------------------------------------------------------------
+
     def removePlayer(self):
         self.player_count -= 1
-    # ----------------------------------------------------------------------
+
     def getPrizes(self):
         errStr = "getPrizes NOT IMPLEMENTED IN ABSTRACT BASE CLASS"
         self.error(errStr)
         raise NotImplementedError(errStr)
-############################################################################
+
 class PokerPrizesAlgorithm(PokerPrizes):
     def getPrizes(self):
         buy_in = self.buy_in
@@ -115,23 +83,23 @@ class PokerPrizesAlgorithm(PokerPrizes):
         rest = prize_pool - sum(prizes)
         prizes[0] += rest
         return prizes
-############################################################################
-class PokerPrizesTable(PokerPrizes):
-    def __init__(self, buyInAmount, playerCount = 0, guaranteeAmount = 0, configDirs = ['.'],
-                 configFileName = "poker.payouts.xml"):
-        self._loadPayouts(configDirs)
 
-        PokerPrizes.__init__(self, buyInAmount = buyInAmount, playerCount = playerCount,
-                             guaranteeAmount = guaranteeAmount)
-    # ----------------------------------------------------------------------
-    def _loadPayouts(self, dirs):
+class PokerPrizesTable(PokerPrizes):
+    def __init__(self, buy_in_amount, player_count = 0, guarantee_amount = 0, config_dirs = ['.'],
+                 config_file_name = "poker.payouts.xml"):
+        self._loadPayouts(config_dirs, config_file_name)
+
+        PokerPrizes.__init__(self, buy_in_amount = buy_in_amount, player_count = player_count,
+                             guarantee_amount = guarantee_amount)
+
+    def _loadPayouts(self, dirs, config_file_name):
         config = Config(dirs)
-        config.load("poker.payouts.xml")
+        config.load(config_file_name)
         self.payouts = []
         for node in config.header.xpathEval("/payouts/payout"):
             properties = config.headerNodeProperties(node)
             self.payouts.append(( int(properties['max']), map(lambda percent: float(percent) / 100, node.content.split())))
-    # ----------------------------------------------------------------------
+
     def getPrizes(self):
         buy_in = self.buy_in
         for ( maximum, payouts ) in self.payouts:
