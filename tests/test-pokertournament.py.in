@@ -446,7 +446,7 @@ class PokerTournamentTestCase(unittest.TestCase):
             tournament = pokertournament.PokerTournament(**arguments)
         except Exception, e:
             caught = True
-            self.assertEquals('PokerPrizesInvalid', e.message)
+            self.failUnless('PokerPrizesInvalid' in str(e))
         self.assertTrue(caught)
 
         return
