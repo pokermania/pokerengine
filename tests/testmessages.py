@@ -32,8 +32,6 @@ from pokerengine import pokerprizes
 classes.append(pokerprizes.PokerPrizesFactory)
 classes.append(pokerprizes.PokerPrizes)
 
-from twisted.internet import defer
-
 verbose = int(os.environ.get('VERBOSE_T', '-1'))
 
 #
@@ -55,19 +53,6 @@ def call_messages():
         sys.stdout = stdout
 call_messages()
 
-messages_needle = ''
-messages_grep_hit = None
-def grep_output(needle):
-    messages_grep_hit = defer.Deferred()
-    messages_needle = needle
-    return messages_grep_hit
-
-def messages_grep(haystack):
-    if haystack.find(messages_needle):
-        hit = messages_grep_hit
-        messages_grep_hit = None
-        hit.callback(haystack)
-        
 def messages_append(string):
     if verbose > 3:
         print "OUTPUT: " + string
@@ -75,7 +60,6 @@ def messages_append(string):
         raise Exception, "Message comes in as non-stringifiable object" 
     string = string.__str__()
     messages_out.append(string)
-    messages_grep(string)
 
 class2message = {
     pokergame.PokerGame: lambda self, string: messages_append(self.prefix + "[PokerGame " + str(self.id) + "] " + string)
