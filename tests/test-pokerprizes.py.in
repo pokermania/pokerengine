@@ -46,25 +46,12 @@ class PokerPrizesTestCase(unittest.TestCase):
     # -------------------------------------------------------
     def tearDown(self):
         pass
-    # -------------------------------------------------------------------------
-    def test00_factory(self):
-        """test00_factory
-        basic factory interface tests."""
-        f = pokerprizes.PokerPrizesFactory()
-        clear_all_messages()
-        f.error("test")
-        self.assertEquals(get_messages(), ['ERROR test'])
 
-        self.failUnless(f.getClass(""), pokerprizes.PokerPrizesAlgorithm)
-
-        clear_all_messages()
-        self.assertEquals(f.getClass("DOESNOTEXIST"), pokerprizes.PokerPrizesAlgorithm)
-        self.assertEquals(get_messages(), ["ERROR 'module' object has no attribute 'PokerPrizesDOESNOTEXIST'"])
     # -------------------------------------------------------
     def test01_algorithmPrizeInterface(self):
         """test01_algorithmPrizeInterface
         Test the payout structure of the Algorithm prize interface"""
-        pa = pokerprizes.PokerPrizesFactory().getClass("Algorithm")(buyInAmount = 100, playerCount = 4)
+        pa = pokerprizes.__dict__["PokerPrizesAlgorithm"](buy_in_amount = 100, player_count = 4)
         self.assertEquals(pa.buy_in, 100)
         self.assertEquals(pa.player_count, 4)
 
@@ -121,7 +108,7 @@ class PokerPrizesTestCase(unittest.TestCase):
     def test02_tablePrizeInterface(self):
         """test02_tablePrizeInterface
         Test the payout structure of the table prize interface"""
-        pt = pokerprizes.PokerPrizesFactory().getClass("Table")(buyInAmount = 100, playerCount = 2, configDirs = self.dirs)
+        pt = pokerprizes.__dict__["PokerPrizesTable"](buy_in_amount = 100, player_count = 2, config_dirs = self.dirs)
         self.assertEquals(pt.buy_in, 100)
         self.assertEquals(pt.player_count, 2)
 
@@ -158,7 +145,7 @@ class PokerPrizesTestCase(unittest.TestCase):
     def test03_virtualBaseClass(self):
         """test03_virtualBaseClass
         Test minor things not elsewhere covered for the base class"""
-        v = pokerprizes.PokerPrizes(5, playerCount = 3, guaranteeAmount = 100)
+        v = pokerprizes.PokerPrizes(5, player_count = 3, guarantee_amount = 100)
         self.assertEquals(v.buy_in, 5)
         self.assertEquals(v.player_count, 3)
         self.assertEquals(v.guarantee_amount, 100)
