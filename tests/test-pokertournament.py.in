@@ -41,7 +41,7 @@ class ConstantPlayerShuffler:
 from tests.testmessages import restore_all_messages, silence_all_messages, search_output, clear_all_messages, get_messages
 
 from pokerengine import pokertournament
-from pokerengine.pokerprizes import PokerPrizesTable, PokerPrizesAlgorithm
+from pokerengine import pokerprizes
 pokertournament.shuffler = ConstantPlayerShuffler()
 
 class PokerTournamentTestCase(unittest.TestCase):
@@ -349,149 +349,8 @@ class PokerTournamentTestCase(unittest.TestCase):
             self.failIf(game.is_open)
             
     # -------------------------------------------------------
-    def testPrizesAlgorithm(self):
-        """Test Poker Tournament : Prizes algorithm"""
-        
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'buy_in' : 100, \
-                            'players_quota' :  300, \
-                            'seats_per_game' : 2, \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3)), \
-                            'prizes_specs' : 'algorithm'
-                            }
-        tournament = pokertournament.PokerTournament(**arguments)
-
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = True
-        
-        for player in range(4):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = False
-        tournament.rank2prize = None
-        self.failUnlessEqual(tournament.prizes(), [400])
-        tournament.can_register = True
-        
-        for player in range(4, 8):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = False
-        tournament.rank2prize = None
-        self.failUnlessEqual(tournament.prizes(), [600, 200])
-        tournament.can_register = True
-        
-        for player in range(8, 18):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = False
-        tournament.rank2prize = None
-        self.failUnlessEqual(tournament.prizes(), [1125, 450, 225])
-        tournament.can_register = True
-        
-        for player in range(18, 28):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = False
-        tournament.rank2prize = None
-        self.failUnlessEqual(tournament.prizes(), [1575, 700, 350, 175])
-        tournament.can_register = True
-        
-        for player in range(28, 38):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = False
-        tournament.rank2prize = None
-        self.failUnlessEqual(tournament.prizes(), [1902, 950, 237, 237, 237, 237])
-        tournament.can_register = True
-        
-        for player in range(38, 48):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = False
-        tournament.rank2prize = None
-        self.failUnlessEqual(len(tournament.prizes()), int(48 * 0.20))
-        tournament.can_register = True
-        
-        for player in range(48, 198):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = False
-        tournament.rank2prize = None
-        self.failUnlessEqual(len(tournament.prizes()), int(198 * 0.15))
-        tournament.can_register = True
-        
-        for player in range(198, 298):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = False
-        tournament.rank2prize = None
-        self.failUnlessEqual(len(tournament.prizes()), int(298 * 0.10))
-        tournament.can_register = True
-    # -------------------------------------------------------
-    def testPrizesTable(self):
-        """Test Poker Tournament : Prizes table"""
-        
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'buy_in' : 100, \
-                            'players_quota' :  300, \
-                            'seats_per_game' : 2, \
-                            'prizes_specs' : 'table', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
-        tournament = pokertournament.PokerTournament(**arguments)
-
-        for player in range(2):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = False
-        tournament.rank2prize = None
-        self.failUnlessEqual(tournament.prizes(), [200])
-        tournament.can_register = True
-        
-        for player in range(4, 7):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = False
-        tournament.rank2prize = None
-        self.failUnlessEqual(tournament.prizes(), [350, 150])
-        tournament.can_register = True
-        
-        for player in range(7, 28):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = False
-        tournament.rank2prize = None
-        self.failUnlessEqual(tournament.prizes(), [1300, 780, 520])
-        tournament.can_register = True
-        
-        for player in range(28, 48):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = False
-        tournament.rank2prize = None
-        self.failUnlessEqual(tournament.prizes(), [1840, 1104, 736, 552, 368])
-        tournament.can_register = True
-
-        for player in range(48, 198):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.rank2prize = None
-        tournament.can_register = False
-        self.failUnlessEqual(tournament.prizes(), [5880, 3920, 2450, 1764, 1568, 1274, 980, 784, 588, 392])
-        tournament.can_register = True
-        
-        for player in range(198, 298):
-            self.failUnless(tournament.register(player))
-        self.assertEquals(tournament.prizes(), None)
-        tournament.can_register = False
-        tournament.rank2prize = None
-        self.failUnlessEqual(len(tournament.prizes()), 20)
-        tournament.can_register = True
-    # -------------------------------------------------------
-    def testPrizes(self):
-        """Test Poker Tournament : Prizes"""
+    def testPrizesSnG(self):
+        """Test Poker Tournament : Prizes for SnG tournaments"""
         
         arguments =  { \
                             'dirs' : self.dirs, \
@@ -502,57 +361,96 @@ class PokerTournamentTestCase(unittest.TestCase):
                             'prizes_specs' :  'table', \
                             'verbose' : int(os.environ.get('VERBOSE_T', 3))
                             }
-                            
+
         tournament = pokertournament.PokerTournament(**arguments)
-        self.failUnlessEqual(tournament.prizes(), None)
-        for player in range(20):
-            self.failUnless(tournament.register(player))
+        prizes = tournament.prizes()
+        self.failUnless(tournament.register(1))
+        self.assertEquals(prizes, tournament.prizes())
+        self.failUnless(tournament.unregister(1))
+        self.assertEquals(prizes, tournament.prizes())
+
+    # -------------------------------------------------------
+    def testPrizesGuaranteeAmount(self):
+        """Test Poker Tournament : Prizes for tournaments with guarantee amount"""
+
+        prize_min = 1000
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  2, \
+                            'buy_in' :  100, \
+                            'seats_per_game' : 2, \
+                            'prize_min' : prize_min, \
+                            'start_time' : time.time() + 20000, \
+                            'sit_n_go' : 'n', \
+                            'prizes_specs' :  'table', \
+                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
+                            }
+
+        tournament = pokertournament.PokerTournament(**arguments)
+        self.assertEquals(prize_min, tournament.prizes()[0])
+
+    # -------------------------------------------------------
+    def testPrizesRegular(self):
+        """Test Poker Tournament : Prizes for regular tournaments"""
         
-        tournament.prizes_specs = 'table'
-        tournament.rank2prize = None
-        p = PokerPrizesTable(buyInAmount = 100, playerCount = 20, configDirs = self.dirs)
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  40, \
+                            'buy_in' :  100, \
+                            'start_time' : time.time() + 20000, \
+                            'seats_per_game' : 2, \
+                            'sit_n_go' : 'n', \
+                            'prizes_specs' :  'table', \
+                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
+                            }
+
+        #
+        # PrizesTable
+        #
+        tournament = pokertournament.PokerTournament(**arguments)
+        for player in range(1, 21):
+            self.failUnless(tournament.register(player))
+        self.failUnlessEqual(tournament.registered, 20)
+        p = pokerprizes.__dict__['PokerPrizesTable'](buy_in_amount = 100, player_count = 20, config_dirs = self.dirs)
         self.failUnlessEqual(tournament.prizes_object.player_count, p.player_count)
         self.failUnlessEqual(tournament.prizes_object.buy_in, p.buy_in)
         self.failUnlessEqual(tournament.prizes(), p.getPrizes())
 
+        #
+        # register/unregister updates the prizes a new player
+        #
+        self.assertEquals(True, tournament.register(21))
+        self.failUnlessEqual(tournament.registered, 21)
+        self.failIfEqual(tournament.prizes(), p.getPrizes())
+        tournament.unregister(21)
+        self.failUnlessEqual(tournament.prizes(), p.getPrizes())
+        
+        #
+        # PrizesAlgorithm
+        #
         arguments['prizes_specs'] = 'algorithm'
         tournament = pokertournament.PokerTournament(**arguments)
-        self.failUnlessEqual(tournament.prizes(), None)
         for player in range(20):
             self.failUnless(tournament.register(player))
-        tournament.rank2prize = None
-        p = PokerPrizesAlgorithm(buyInAmount = 100, playerCount = 20)
+        p = pokerprizes.__dict__['PokerPrizesAlgorithm'](buy_in_amount = 100, player_count = 20)
         self.failUnlessEqual(tournament.prizes_object.player_count, p.player_count)
         self.failUnlessEqual(tournament.prizes_object.buy_in, p.buy_in)
         self.failUnlessEqual(tournament.prizes(), p.getPrizes())
-        
 
-        silence_all_messages()
-
+        #
+        # Invalid prizes_specs
+        #
         arguments['prizes_specs'] = 'invalid'
-        tournament = pokertournament.PokerTournament(**arguments)
-        self.failUnlessEqual(tournament.prizes(), None)
-        for player in range(20):
-            self.failUnless(tournament.register(player))
-        tournament.rank2prize = None
+        caught = False
+        try:
+            tournament = pokertournament.PokerTournament(**arguments)
+        except Exception, e:
+            caught = True
+            self.assertEquals('PokerPrizesInvalid', e.message)
+        self.assertTrue(caught)
 
-        # Behavior before pokerprizes existed when prizes_specs was
-        # invalid in some way, it simply had nothing returned from
-        # tournament.prizes().  The test case, therefore, was as below:
+        return
 
-#        self.failUnlessEqual(tournament.prizes(), None) However, it makes
-
-        # However, it more sense to simply default to something if a prize
-        # spec is invalid, and print an error message.  That is what now
-        # happens, and that's what this test code does:
-
-        msgs = get_messages()
-        self.assertEquals(msgs[0], "ERROR 'module' object has no attribute 'PokerPrizesInvalid'")
-        p = PokerPrizesAlgorithm(buyInAmount = 100, playerCount = 20)
-        self.failUnlessEqual(tournament.prizes_object.player_count, p.player_count)
-        self.failUnlessEqual(tournament.prizes_object.buy_in, p.buy_in)
-        self.failUnlessEqual(tournament.prizes(), p.getPrizes())
-        restore_all_messages()
     # -------------------------------------------------------
     def testMovePlayer(self):
         """Test Poker Tournament : Move player"""
@@ -1081,10 +979,11 @@ class Breaks(unittest.TestCase):
 def GetTestSuite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(PokerTournamentTestCase))
+#    suite.addTest(unittest.makeSuite(PokerTournamentTestCase, prefix = "testPrizes"))
     suite.addTest(unittest.makeSuite(Breaks))
     # Comment out above and use line below this when you wish to run just
     # one test by itself (changing prefix as needed).
-#    suite.addTest(unittest.makeSuite(Breaks, prefix = "test2"))
+#    suite.addTest(unittest.makeSuite(Breaks, prefix = "testPrizes"))
     return suite
     
 # ---------------------------------------------------------
