@@ -8,7 +8,7 @@
 	  added to check the libxml2 deallocation functions are called
 	  where neeeded.
 
-2008-12-22  Loic Dachary  <loic@pokerdev.call.tld>
+2008-12-22  Loic Dachary  <loic@dachary.org>
 
 	* ChangeLog, NEWS, conf/poker..01-.02-no-limit.xml,
 	  conf/poker..01-.02-pot-limit.xml, conf/poker..02-.04-limit.xml,
