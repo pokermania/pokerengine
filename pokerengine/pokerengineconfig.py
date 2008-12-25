@@ -65,6 +65,7 @@ class Config:
             if exists(tmppath):
                 self.path = tmppath
                 break
+        self.free()
         if self.path:
             self.doc = libxml2.parseFile(self.path)
             self.header = self.doc.xpathNewContext()

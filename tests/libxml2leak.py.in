@@ -1,0 +1,157 @@
+# -*- mode: python -*-
+#
+# Copyright (C) 2008 Loic Dachary <loic@dachary.org>
+# Copyright (C) 2008 Bradley M. Kuhn <bkuhn@ebb.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+
+#
+# checks that the workarounds for the libxml2 memory leak are effective
+# read more about the leak at
+# https://mail.gna.org/public/pokersource-users/2008-12/msg00049.html
+#
+import sys, os, gc
+sys.path.insert(0, "@top_srcdir@")
+
+import unittest
+import libxml2
+
+from pokerengine import pokerengineconfig
+from pokerengine import pokergame
+
+def getVsize():
+    return int(os.popen("echo -n $(ps h -o vsize -p " + str(os.getpid()) + ")").read())
+
+class LeakTestCase(unittest.TestCase):
+
+    def leakWatch(self, func, message):
+        #
+        # check for memory usage every <chunk> iteration and iterate <chunk>*<iterations> times
+        #
+        chunk = 5
+        leaks = [0] * self.iterations
+        #
+        # stabilize memory usage
+        #
+        initial = 10
+        for j in range(0, initial):
+            func()
+        gc.collect()
+        leaks[0] = getVsize()
+        for i in range(1, self.iterations):
+            for j in range(0, chunk):
+                func()
+            gc.collect()
+            leaks[i] = getVsize()
+        #
+        # on most GNU/Linux systems, a page is 4K and it is acceptable to get 4K variations
+        #
+        epsilon=4
+        average = sum(leaks) / len(leaks)
+        for leak in leaks:
+            self.assertTrue(abs(leak - average) <= epsilon, message + " vsize " + str(leak) + " deviates from avarage " + str(average) + " more than epsilon=" + str(epsilon) + " all vsize (KB): " + str(leaks))
+                
+    def test01_config(self):
+        def func():
+            config = pokerengineconfig.Config(['@srcdir@/../conf'])
+            config.load('poker.holdem.xml')
+        self.leakWatch(func, "pokerengineconfig.Config")
+
+    def test02_libxml_freeDoc(self):
+        def func():
+            mydoc = libxml2.parseFile('@srcdir@/../conf/poker.holdem.xml')
+            mydoc.freeDoc()
+        self.leakWatch(func, "libxml2.freeDoc")
+
+    def test03_game_setVariant(self):
+        game = pokergame.PokerGame("poker.%s.xml", False, ['@srcdir@/../conf'])
+        def func():
+            game.setVariant("holdem")
+        self.leakWatch(func, "game.setVariant")
+
+    def test04_config_load(self):
+        config = pokerengineconfig.Config(['@srcdir@/../conf'])
+        def func():
+            config.load('poker.holdem.xml')
+        self.leakWatch(func, "Config.load")
+        config.free()
+
+    def test05_config_reload(self):
+        config = pokerengineconfig.Config(['@srcdir@/../conf'])
+        config.load('poker.holdem.xml')
+        def func():
+            config.reload()
+        self.leakWatch(func, "Config.reload")
+
+    def test06_config_save(self):
+        config = pokerengineconfig.Config(['@srcdir@/../conf'])
+        config.load('poker.holdem.xml')
+        config.path = "leaktmp"
+        def func():
+            config.save()
+        self.leakWatch(func, "Config.save")
+        os.unlink("leaktmp")
+
+    def test07_config_headerGet(self):
+        config = pokerengineconfig.Config(['@srcdir@/../conf'])
+        config.load('poker.holdem.xml')
+        def func():
+            config.headerGet("/poker/@poker_engine_version")
+        self.leakWatch(func, "Config.headerGet")
+
+    def test08_config_headerGetProperties(self):
+        config = pokerengineconfig.Config(['@srcdir@/../conf'])
+        config.load('poker.holdem.xml')
+        def func():
+            config.headerGetProperties("/poker")
+        self.leakWatch(func, "Config.headerGetProperties")
+
+class QuickLeakTestCase(LeakTestCase):
+
+    def setUp(self):
+        self.iterations = 100
+
+    
+class LongLeakTestCase(LeakTestCase):
+
+    def setUp(self):
+        self.iterations = 10000
+
+
+# ---------------------------------------------------------
+def GetTestSuite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(QuickLeakTestCase)) # , prefix = "test08"))
+#    suite.addTest(unittest.makeSuite(LongLeakTestCase)) # , prefix = "test08"))
+    return suite
+    
+# ---------------------------------------------------------
+def GetTestedModule():
+    return pokerengineconfig
+
+# ---------------------------------------------------------
+def Run(verbose):
+    return unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
+    
+# ---------------------------------------------------------
+if __name__ == '__main__':
+    if Run(int(os.environ.get('VERBOSE_T', 2))).wasSuccessful():
+        sys.exit(0)
+    else:
+        sys.exit(1)
+# Interpreted by emacs
+# Local Variables:
+# compile-command: "( cd .. ; ./config.status tests/libxml2leak.py ) ; ( cd ../tests ; make COVERAGE_FILES='../pokerengine/pokerengineconfig.py' TESTS='coverage-reset libxml2leak.py coverage-report' check )"
+# End:
