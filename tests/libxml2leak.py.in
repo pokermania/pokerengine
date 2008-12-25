@@ -55,13 +55,19 @@ class LeakTestCase(unittest.TestCase):
                 func()
             gc.collect()
             leaks[i] = getVsize()
-        #
-        # on most GNU/Linux systems, a page is 4K and it is acceptable to get 4K variations
-        #
-        epsilon=4
-        average = sum(leaks) / len(leaks)
+        increases = 0
+        previous = None
         for leak in leaks:
-            self.assertTrue(abs(leak - average) <= epsilon, message + " vsize=" + str(leak) + " deviates from average=" + str(average) + " more than epsilon=" + str(epsilon) + ". All vsize (KB): " + str(leaks))
+            if previous and previous < leak:
+                increases += 1
+            previous = leak
+        #
+        # It is almost impossible to be precise when watching the vsize of a process.
+        # This test suite is not about making sure the process never grows. It is
+        # designed to spot cases where the process grows most of the time, i.e. has
+        # a significant leak. 
+        #
+        self.assertTrue(increases < len(leaks) / 25, " vsize grows " + str(leaks))
                 
     def test01_config(self):
         def func():
@@ -127,7 +133,7 @@ class QuickLeakTestCase(LeakTestCase):
 class LongLeakTestCase(LeakTestCase):
 
     def setUp(self):
-        self.iterations = 10000
+        self.iterations = 1000
 
 
 # ---------------------------------------------------------
