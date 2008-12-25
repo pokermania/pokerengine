@@ -57,10 +57,17 @@ class LeakTestCase(unittest.TestCase):
             leaks[i] = getVsize()
         increases = 0
         previous = None
+        #
+        # keep track of the greater size found so that decreasing memory
+        # does not create false positive (i.e. 1000 996 1000 996 1000 996...)
+        #
+        greater = None
         for leak in leaks:
-            if previous and previous < leak:
+            if previous and previous < leak and leak > greater:
                 increases += 1
             previous = leak
+            if leak > greater:
+                greater = leak
         #
         # It is almost impossible to be precise when watching the vsize of a process.
         # This test suite is not about making sure the process never grows. It is
@@ -68,7 +75,7 @@ class LeakTestCase(unittest.TestCase):
         # a significant leak. 
         #
         self.assertTrue(increases < len(leaks) / 25, " vsize grows " + str(leaks))
-                
+
     def test01_config(self):
         def func():
             config = pokerengineconfig.Config(['@srcdir@/../conf'])
