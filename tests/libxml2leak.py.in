@@ -61,7 +61,7 @@ class LeakTestCase(unittest.TestCase):
         epsilon=4
         average = sum(leaks) / len(leaks)
         for leak in leaks:
-            self.assertTrue(abs(leak - average) <= epsilon, message + " vsize=" + str(leak) + " deviates from avarage=" + str(average) + " more than epsilon=" + str(epsilon) + ". All vsize (KB): " + str(leaks))
+            self.assertTrue(abs(leak - average) <= epsilon, message + " vsize=" + str(leak) + " deviates from average=" + str(average) + " more than epsilon=" + str(epsilon) + ". All vsize (KB): " + str(leaks))
                 
     def test01_config(self):
         def func():
