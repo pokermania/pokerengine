@@ -8,6 +8,10 @@
 	  spot cases where the process grows most of the time, i.e. has a
 	  significant leak.
 
+	* tests/libxml2leak.py.in: Keep track of the greater size found so
+	  that decreasing memory does not create false positive (i.e. 1000
+	  996 1000 996 1000 996...)
+
 	* configure.ac, pokerengine/pokerengineconfig.py,
 	  tests/Makefile.am, tests/libxml2leak.py.in: libxml2 leaks objects
 	  unless a deallocation function is explicitly called. tests are
