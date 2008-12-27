@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<levels xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="levels.xsd" poker_engine_version="1.3.2">
+<levels xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="levels.xsd" poker_engine_version="1.3.3">
   <level small="1500" big="2500"/>
   <level small="2500" big="5000"/>
   <level small="5000" big="10000"/>
