@@ -1,3 +1,34 @@
+2009-02-05  Bradley M. Kuhn  <bkuhn@ebb.org>
+
+	* pokerengine/pokertournament.py (PokerTournament.createGames):
+	Moved callback_game_filled() to be called in a secondary loop
+	after balanceGames() is called.
+	(PokerTournament.__init__): Added clarifying comment on what
+	calback_game_filled() means.
+	(PokerTournament.createGames): call game.close() only after the
+	game_filled() callback.
+
+2009-01-31  Bradley M. Kuhn  <bkuhn@ebb.org>
+
+	* tests/test-pokertournament.py.in
+	(PokerTournamentTestCase.testBalanceGames)
+	(PokerTournamentTestCase.testBreakGames)
+	(PokerTournamentTestCase.testEqualizeCandidates)
+	(PokerTournamentTestCase.testEqualizeGames)
+	(PokerTournamentTestCase.testMovePlayer): Reworked tests based on
+	fact that balanceGames() is called by default by createGames().
+
+2008-12-29  Bradley M. Kuhn  <bkuhn@ebb.org>
+
+	* pokerengine/pokertournament.py (PokerTournament.createGames):
+	Call self.balanceGames() at the end of game creation at start of
+	the tourney.
+
+	* tests/tournament.py.in
+	(TestCreate.test4_tourneyTableStartBalanced): Wrote test.
+	(TestCreate.tourneyTableStartBalancedHelper): Created helper
+	function.
+
 2008-12-27  Loic Dachary  <loic@dachary.org>
 
 	* Release 1.3.3

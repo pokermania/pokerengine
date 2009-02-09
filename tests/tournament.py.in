@@ -436,7 +436,36 @@ class TestCreate(unittest.TestCase):
         if self.verbose > 0:
             for serial in tourney.winners:
                 print "%d\thas rank %d" % ( serial, tourney.getRank(serial) )
+    # ----------------------------------------------------------------
+    def tourneyTableStartBalancedHelper(self, num_players, seats, num_tables, min_per_table):
+        """tourneyTableStartBalancedHelper
+        Helper function to test various scenarios of initial seating"""
 
+        tourney = PokerTournament(name = 'Only%d' % num_players,
+                                  verbose = int(os.environ.get('VERBOSE_T', 3)),
+                                  players_quota = num_players,
+                                  players_min = num_players,
+                                  dirs = [ '../conf', '@top_srcdir@/conf' ],
+                                  seats_per_game = seats,
+                                  betting_structure = "level-10-20-no-limit")
+
+        for serial in xrange(1,num_players+1):
+            self.failUnless(tourney.register(serial))
+
+        self.assertEquals(len(tourney.games), num_tables)
+        for game in tourney.games:
+            self.failUnless(len(game.serial2player.values()) >= min_per_table)
+    # ----------------------------------------------------------------
+    def test4_tourneyTableStartBalanced(self):
+        """test4_tourneyTableStartBalanced
+
+        Start with a table max of 5 players per table, and add 6 players
+        to it.  This should create two tables of 3.  Tests other scenarios
+        like this as well."""
+
+        self.tourneyTableStartBalancedHelper(6, 5, 2, 2)
+        self.tourneyTableStartBalancedHelper(13, 6, 3, 4)
+# ----------------------------------------------------------------
 class TestPrizes(unittest.TestCase):
 
     def test1(self):
@@ -519,7 +548,7 @@ def run():
     suite.addTest(unittest.makeSuite(TestPrizes))
     # Comment out above and use line below this when you wish to run just
     # one test by itself (changing prefix as needed).
-#    suite.addTest(unittest.makeSuite(TestPrizes, prefix = "test2"))
+#    suite.addTest(unittest.makeSuite(TestCreate, prefix = "test4"))
     verbosity = int(os.environ.get('VERBOSE_T', 2))
     return unittest.TextTestRunner(verbosity=verbosity).run(suite)
     

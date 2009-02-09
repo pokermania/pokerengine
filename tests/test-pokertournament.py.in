@@ -1,11 +1,8 @@
 # -*- mode: python -*-
-# Copyright (C) 2006, 2007, 2008 Loic Dachary <loic@dachary.org>
-# Copyright (C) 2006 Mekensleep
-#
-# Mekensleep
-# 24 rue vieille du temple
-# 75004 Paris
-#       licensing@mekensleep.com
+# Copyright (C) 2006, 2007, 2008  Loic Dachary <loic@dachary.org>
+# Copyright (C) 2009              Bradley M. Kuhn <bkuhn@ebb.org>
+# Copyright (C) 2006              Mekensleep <licensing@mekensleep.com>
+#                                 24 rue vieille du temple, 75004 Paris
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -471,8 +468,9 @@ class PokerTournamentTestCase(unittest.TestCase):
             self.failUnless(tournament.register(player))
             
         tournament.createGames()
+        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0])
         move = pokertournament.equalizeGames(tournament.games)
-        self.failUnlessEqual(move, [(1, 3, 7), (1, 3, 8), (2, 3, 2)])
+        self.failUnlessEqual(move, [(2, 1, 3), (3, 1, 0), (3, 1, 1)])
         
         from_game = tournament.id2game[move[0][0]]
         to_game = tournament.id2game[move[0][1]]
@@ -483,12 +481,12 @@ class PokerTournamentTestCase(unittest.TestCase):
         player.sit_out = True
         player.bot = True
         
-        self.failUnlessEqual(from_game.allCount(), 5)
+        self.failUnlessEqual(from_game.allCount(), 4)
         self.failUnlessEqual(to_game.allCount(), 2)
         
         tournament.movePlayer(from_game.id, to_game.id, player.serial)
         
-        self.failUnlessEqual(from_game.allCount(), 4)
+        self.failUnlessEqual(from_game.allCount(), 3)
         self.failUnlessEqual(to_game.allCount(), 3)
         
         player = to_game.getPlayer(move[0][2])
@@ -520,12 +518,21 @@ class PokerTournamentTestCase(unittest.TestCase):
             
         want, provide = pokertournament.equalizeCandidates(tournament.games)
         
-        self.failUnlessEqual(len(want), 1)
-        self.failUnlessEqual(len(provide), 2)
-        
-        self.failUnlessEqual(want, [[3, 3]])
-        self.failUnlessEqual(provide, [(1, [7, 8]), (2, [2, 3])])
-        
+        # Since balanceGames() is called by createGames(), we should find
+        # these results.
+
+        self.failUnlessEqual(len(want), 0)
+        self.failUnlessEqual(len(provide), 3)
+        self.failUnlessEqual(want, [])
+        self.failUnlessEqual(provide,  [(1, []), (2, [3]), (3, [0, 1])])
+
+        # Remove one from three and he should have one fewer to provide
+        tournament.removePlayer(tournament.games[2].id, tournament.games[2].serialsAll()[0])
+
+        want, provide = pokertournament.equalizeCandidates(tournament.games)
+        self.failUnlessEqual(len(want), 0)
+        self.failUnlessEqual(len(provide), 3)
+        self.failUnlessEqual(provide,  [(1, []), (2, [3]), (3, [1])])
     # -------------------------------------------------------
     def testEqualizeGames(self):
         """Test Poker Tournament : Equalize games"""
@@ -547,7 +554,7 @@ class PokerTournamentTestCase(unittest.TestCase):
             
         # Create games
         tournament.createGames()
-        
+
         # Check games
         self.failUnlessEqual(len(tournament.games), 2) 
         self.failUnlessEqual(tournament.games[0].allCount(), 5)
@@ -556,23 +563,27 @@ class PokerTournamentTestCase(unittest.TestCase):
         # No need to equalize game
         self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, 3, None), [])
         
-        # Tournament => 3 complete games (5 players), 1 partial (1 players) 
+        # Tournament => 3 , has two tables of 3, then two tables of 5 
         tournament = pokertournament.PokerTournament(**arguments)
         for player in range(16):
             self.failUnless(tournament.register(player))
             
         # Create games
         tournament.createGames()
-            
+
         # Check games
         self.failUnlessEqual(len(tournament.games), 4) 
-        self.failUnlessEqual(tournament.games[0].allCount(), 5)
-        self.failUnlessEqual(tournament.games[1].allCount(), 5)
+        self.failUnlessEqual(tournament.games[0].allCount(), 3)
+        self.failUnlessEqual(tournament.games[1].allCount(), 3)
         self.failUnlessEqual(tournament.games[2].allCount(), 5)
-        self.failUnlessEqual(tournament.games[3].allCount(), 1)
+        self.failUnlessEqual(tournament.games[3].allCount(), 5)
         
-        # 2 games broken to complete the last one
-        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, int(os.environ.get('VERBOSE_T', 3)), sys.stdout.write), [(1, 4, 11), (1, 4, 12), (2, 4, 6), (2, 4, 7)])
+        # Nothing to equalize at first
+        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, int(os.environ.get('VERBOSE_T', 3)), sys.stdout.write), [])
+
+        # Remove one player from first table, means players from 3 must be redistributed
+        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0])
+        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, int(os.environ.get('VERBOSE_T', 3)), sys.stdout.write), [(3, 1, 1), (3, 1, 2), (4, 1, 0)])
         
     # -------------------------------------------------------
     def testBreakGame(self):
@@ -646,17 +657,23 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         self.failUnlessEqual(len(tournament.games), 3) 
         
-        self.failUnlessEqual(tournament.games[0].allCount(), 5)
-        self.failUnlessEqual(tournament.games[1].allCount(), 5)
-        self.failUnlessEqual(tournament.games[2].allCount(), 2)
-        
+        self.failUnlessEqual(tournament.games[0].allCount(), 3)
+        self.failUnlessEqual(tournament.games[1].allCount(), 4)
+        self.failUnlessEqual(tournament.games[2].allCount(), 5)
+
+        # This remove leaves us with 2, 4, 5, which means that nothing can be broken.
         tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0])
-        tournament.removePlayer(tournament.games[1].id, tournament.games[1].serialsAll()[0])
+        self.failUnlessEqual(pokertournament.breakGames(tournament.games), [])
+
+        # This will leave us with 2, 4, 4, which means table 0 can be broken, and one player
+        #  wil be sent to each table.
+        tournament.removePlayer(tournament.games[2].id, tournament.games[2].serialsAll()[0])
+
+        player1 = tournament.games[0].serialsAll()[0]
+        player2 = tournament.games[0].serialsAll()[1]
         
-        player1 = tournament.games[2].serialsAll()[0]
-        player2 = tournament.games[2].serialsAll()[1]
-        
-        self.failUnlessEqual(pokertournament.breakGames(tournament.games), [(3, 2, [player1]), (3, 1, [player2])])
+        self.failUnlessEqual(pokertournament.breakGames(tournament.games), 
+                             [(1, 3, [player1]), (1, 2, [player2])])
         
         # Impossible to break less than 2 game
         self.failUnlessEqual(pokertournament.breakGames([tournament.games[0]]), [])
@@ -681,32 +698,45 @@ class PokerTournamentTestCase(unittest.TestCase):
         for player in range(12):
             self.failUnless(tournament.register(player))
         
-        # Create game, 2 with 5 players, the last one with 2
+        # Note: balanceGames() is called by createGames() so initially,
+        # the tables will be balanced as 3 players at first table, 4 at
+        # second, and 5 at third.  (This doesn't sound all that balanced,
+        # but it's consistent with the algorithm in
+        # pokertournament.equalizeGames()
+
         tournament.createGames()
-        
-        # Remove one player from the first two games
+        self.failUnlessEqual(len(tournament.games[0].serialsAll()), 3)
+        self.failUnlessEqual(len(tournament.games[1].serialsAll()), 4)
+        self.failUnlessEqual(len(tournament.games[2].serialsAll()), 5)
+
+        # Remove one player from every game.
         tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0])
         tournament.removePlayer(tournament.games[1].id, tournament.games[1].serialsAll()[0])
+        tournament.removePlayer(tournament.games[2].id, tournament.games[2].serialsAll()[0])
         
-        # Get the players of the last game
-        player1 = tournament.games[2].serialsAll()[0]
-        player2 = tournament.games[2].serialsAll()[1]
+        # Get the players of the first game
+        player1 = tournament.games[0].serialsAll()[0]
+        player2 = tournament.games[0].serialsAll()[1]
      
-        # The last game will be break 
-        self.failUnlessEqual(pokertournament.breakGames(tournament.games), [(3, 2, [player1]), (3, 1, [player2])])
+        # Ensure that the first game is the one selected for breaking
+        self.failUnlessEqual(pokertournament.breakGames(tournament.games),
+                             [(1, 3, [player1]), (1, 2, [player2])])
         
-        # The players of the last game are transfered in the other games
-        self.failUnless(tournament.id2game[3].getPlayer(player1))
+        # Test the balancing.  First, ensure that the players are still at
+        # the first game
+        self.failUnless(tournament.id2game[1].getPlayer(player1))
         self.failIf(tournament.id2game[2].getPlayer(player1))
+        self.failIf(tournament.id2game[3].getPlayer(player1))
         
-        self.failUnless(tournament.id2game[3].getPlayer(player2))
-        self.failIf(tournament.id2game[1].getPlayer(player2))
+        self.failUnless(tournament.id2game[1].getPlayer(player2))
+        self.failIf(tournament.id2game[2].getPlayer(player2))
+        self.failIf(tournament.id2game[3].getPlayer(player2))
         
         self.failUnless(tournament.balanceGames())
         
         self.failUnlessEqual(len(tournament.id2game), 2)
-        self.failUnless(tournament.id2game[2].getPlayer(player1))
-        self.failUnless(tournament.id2game[1].getPlayer(player2))
+        self.failUnless(tournament.id2game[3].getPlayer(player1))
+        self.failUnless(tournament.id2game[2].getPlayer(player2))
         
         self.failIf(tournament.need_balance)
         
@@ -728,20 +758,25 @@ class PokerTournamentTestCase(unittest.TestCase):
         for player in range(12):
             self.failUnless(tournament.register(player))
         
-        # Create game, 2 with 5 players, the last one with 2
+
+        # As above, note: balanceGames() is called by createGames() so
+        # initially, the tables will be balanced as 3 players at first
+        # table, 4 at second, and 5 at third.  (This doesn't sound all
+        # that balanced, but it's consistent with the algorithm in
+        # pokertournament.equalizeGames()
+
         tournament.createGames()
-        
-        # The players are moved from the 2 first games to complete the last one
-        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games), [(1, 3, 7), (1, 3, 8), (2, 3, 2)])
-        
-        self.failUnless(tournament.balanceGames())
-        
-        # The game 1 has lost 2 players
         self.failUnlessEqual(len(tournament.games[0].serialsAll()), 3)
-        # The game 2 has lost 1 players
         self.failUnlessEqual(len(tournament.games[1].serialsAll()), 4)
-        # The game 3 has won 3 players
         self.failUnlessEqual(len(tournament.games[2].serialsAll()), 5)
+        
+        # ...therefore, no table balancing should be needed ... so
+        # equalizeGames() should return nothing, and balance games should
+        # be False.
+
+        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games), [])
+        self.failIf(tournament.balanceGames())
+        
         
     # -------------------------------------------------------
     def testEndTurn(self):
@@ -979,7 +1014,7 @@ class Breaks(unittest.TestCase):
 def GetTestSuite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(PokerTournamentTestCase))
-#    suite.addTest(unittest.makeSuite(PokerTournamentTestCase, prefix = "testPrizes"))
+#    suite.addTest(unittest.makeSuite(PokerTournamentTestCase, prefix = "testBal"))
     suite.addTest(unittest.makeSuite(Breaks))
     # Comment out above and use line below this when you wish to run just
     # one test by itself (changing prefix as needed).

@@ -1,6 +1,6 @@
 #
 # Copyright (C) 2006, 2007, 2008 Loic Dachary <loic@dachary.org>
-# Copyright (C)             2008 Bradley M. Kuhn <bkuhn@ebb.org>
+# Copyright (C)       2008, 2009 Bradley M. Kuhn <bkuhn@ebb.org>
 # Copyright (C) 2004, 2005, 2006 Mekensleep <licensing@mekensleep.com>
 #                                24 rue vieille du temple, 75004 Paris
 #
@@ -20,6 +20,7 @@
 #
 # Authors:
 #  Loic Dachary <loic@gnu.org>
+#  Bradley M. Kuhn <bkuhn@ebb.org>
 #
 from math import ceil
 from types import StringType
@@ -214,6 +215,12 @@ class PokerTournament:
         
         self.callback_new_state = lambda tournament, old_state, new_state: True
         self.callback_create_game = lambda tournament: PokerGameServer("poker.%s.xml", tournament.dirs)
+        # I think callback_game_filled() is a misnomer because it's not
+        # about the table being "filled" (i.e., the table could have less
+        # than the max seated at it).  What really happens is that the
+        # callback_game_filled() is made when the table is deemed to have
+        # the number of players at it the tourney manager has decided
+        # belong there (which may or may not be "filled").
         self.callback_game_filled = lambda tournament, game: True
         self.callback_destroy_game = lambda tournament, game: True
         self.callback_move_player = lambda tournament, from_game_id, to_game_id, serial: self.movePlayer(from_game_id, to_game_id, serial)
@@ -445,9 +452,16 @@ class PokerTournament:
                 game.autoBlindAnte(player)
                 
             self.games.append(game)
+        self.id2game = dict(zip([ game.id for game in self.games ], self.games))
+        # Next, need to call balance games, because the table assignment
+        # algorithm above does not account for scenarios where the last
+        # few people end up a table too small.
+        self.balanceGames()
+        # Next, we can now notify via callback that all the games in
+        # self.games have been "filled".
+        for game in self.games:
             self.callback_game_filled(self, game)
             game.close()
-        self.id2game = dict(zip([ game.id for game in self.games ], self.games))
 
     def endTurn(self, game_id):
         game = self.id2game[game_id]
