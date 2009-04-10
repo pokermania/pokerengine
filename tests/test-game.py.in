@@ -122,7 +122,7 @@ class PokerGameTestCase(unittest.TestCase):
     def testPokerRandom(self):
         """Test Poker Game : Poker Random"""
         
-        # Only available on *nix systemes
+        # Only available on unix like systems
         if os.name != "posix": return
             
         # Standard random dev
