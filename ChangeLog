@@ -1,5 +1,7 @@
 2009-02-05  Bradley M. Kuhn  <bkuhn@ebb.org>
 
+	* Release 1.3.3
+
 	* pokerengine/pokertournament.py (PokerTournament.createGames):
 	Moved callback_game_filled() to be called in a secondary loop
 	after balanceGames() is called.
@@ -30,8 +32,6 @@
 	function.
 
 2008-12-27  Loic Dachary  <loic@dachary.org>
-
-	* Release 1.3.3
 
 	* ChangeLog, NEWS, conf/poker..01-.02-no-limit.xml,
 	  conf/poker..01-.02-pot-limit.xml, conf/poker..02-.04-limit.xml,
