@@ -2,6 +2,8 @@
 
 	* Release 1.3.3
 
+	* debian/control, debian/control.unstable: add python-central to
+	  source list
 	* debian/changelog: Closes: #517557
 	* pokerconfigupgrade.in: do not remove files when upgrading
 	* tests/test-game.py.in: typo
