@@ -108,7 +108,7 @@ def main():
             sys.exit(4)
         target = args[0]
         rsync_verbose = verbose and "-v" or ""
-        rsync_command = "@RSYNC@ --exclude CVS --delete -a " + rsync_verbose + " --ignore-existing " + reference + "/ " + target + "/"
+        rsync_command = "@RSYNC@ --exclude CVS -a " + rsync_verbose + " --ignore-existing " + reference + "/ " + target + "/"
         if verbose:
             print rsync_command
         if not dry_run:
