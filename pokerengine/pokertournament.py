@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006, 2007, 2008 Loic Dachary <loic@dachary.org>
+# Copyright (C) 2006, 2007, 2008, 2009 Loic Dachary <loic@dachary.org>
 # Copyright (C)       2008, 2009 Bradley M. Kuhn <bkuhn@ebb.org>
 # Copyright (C) 2004, 2005, 2006 Mekensleep <licensing@mekensleep.com>
 #                                24 rue vieille du temple, 75004 Paris
@@ -504,7 +504,10 @@ class PokerTournament:
         for (from_id, to_id, serials) in to_break:
             for serial in serials:
                 if self.verbose > 2: self.message("balanceGames: player %d moved from %d to %d" % ( serial, from_id, to_id ))
-                self.callback_move_player(self, from_id, to_id, serial)
+                if self.state == TOURNAMENT_STATE_REGISTERING:
+                    self.movePlayer(from_id, to_id, serial)
+                else:
+                    self.callback_move_player(self, from_id, to_id, serial)
             games_broken[from_id] = True
 
         if len(to_break) > 0:
@@ -519,7 +522,10 @@ class PokerTournament:
         to_equalize = equalizeGames(self.games, self.verbose, self.message)
         for (from_id, to_id, serial) in to_equalize:
             if self.verbose > 2: self.message("balanceGames: player %d moved from %d to %d" % ( serial, from_id, to_id ))
-            self.callback_move_player(self, from_id, to_id, serial)
+            if self.state == TOURNAMENT_STATE_REGISTERING:
+                self.movePlayer(from_id, to_id, serial)
+            else:
+                self.callback_move_player(self, from_id, to_id, serial)
 
         ( want_players, provide_players ) = equalizeCandidates(self.games)
         self.need_balance = want_players and not provide_players

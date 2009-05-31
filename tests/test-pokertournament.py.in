@@ -678,9 +678,71 @@ class PokerTournamentTestCase(unittest.TestCase):
         # Impossible to break less than 2 game
         self.failUnlessEqual(pokertournament.breakGames([tournament.games[0]]), [])
         
+    def testBalanceGamesRunning(self):
+        """Test Poker Tournament : Balance games when state RUNNING"""
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  20, \
+                            'players_min' :  15, \
+                            'start_time' : time.time() + 20000, \
+                            'seats_per_game' : 5, \
+                            'sit_n_go' : 'n', \
+                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        # Register the players
+        for player in range(12):
+            self.failUnless(tournament.register(player))
+        
+        # Note: balanceGames() is called by createGames() so initially,
+        # the tables will be balanced as 3 players at first table, 4 at
+        # second, and 5 at third.  (This doesn't sound all that balanced,
+        # but it's consistent with the algorithm in
+        # pokertournament.equalizeGames()
+
+        tournament.createGames()
+        tournament.state = pokertournament.TOURNAMENT_STATE_RUNNING
+        self.failUnlessEqual(len(tournament.games[0].serialsAll()), 3)
+        self.failUnlessEqual(len(tournament.games[1].serialsAll()), 4)
+        self.failUnlessEqual(len(tournament.games[2].serialsAll()), 5)
+
+        # Remove one player from every game.
+        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0])
+        tournament.removePlayer(tournament.games[1].id, tournament.games[1].serialsAll()[0])
+        tournament.removePlayer(tournament.games[2].id, tournament.games[2].serialsAll()[0])
+        
+        # Get the players of the first game
+        player1 = tournament.games[0].serialsAll()[0]
+        player2 = tournament.games[0].serialsAll()[1]
+     
+        # Ensure that the first game is the one selected for breaking
+        self.failUnlessEqual(pokertournament.breakGames(tournament.games),
+                             [(1, 3, [player1]), (1, 2, [player2])])
+        
+        # Test the balancing.  First, ensure that the players are still at
+        # the first game
+        self.failUnless(tournament.id2game[1].getPlayer(player1))
+        self.failIf(tournament.id2game[2].getPlayer(player1))
+        self.failIf(tournament.id2game[3].getPlayer(player1))
+        
+        self.failUnless(tournament.id2game[1].getPlayer(player2))
+        self.failIf(tournament.id2game[2].getPlayer(player2))
+        self.failIf(tournament.id2game[3].getPlayer(player2))
+        
+        self.failUnless(tournament.balanceGames())
+        
+        self.failUnlessEqual(len(tournament.id2game), 2)
+        self.failUnless(tournament.id2game[3].getPlayer(player1))
+        self.failUnless(tournament.id2game[2].getPlayer(player2))
+        
+        self.failIf(tournament.need_balance)
+
     # -------------------------------------------------------
-    def testBalanceGames(self):
-        """Test Poker Tournament : Balance games"""
+    def testBalanceGamesRegistering(self):
+        """Test Poker Tournament : Balance games when state REGISTERING"""
         
         arguments =  { \
                             'dirs' : self.dirs, \

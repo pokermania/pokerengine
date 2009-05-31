@@ -1,7 +1,13 @@
-2009-05-04  Loic Dachary  <loic@dachary.org>
+2009-05-30  Loic Dachary  <loic@pokerdev.call.tld>
 
 	* Release 1.3.4
 
+	* pokerengine/pokertournament.py (PokerTournament.balanceGames), 
+	  tests/test-pokertournament.py.in (PokerTournamentTestCase.testBalanceGamesRunning): the callback must
+	  not be invoked when the tournament is still in state REGISTERING (i.e. the tournament tables are about
+	  to be populated)
+	  https://gna.org/bugs/?13590
+	
 2009-04-10  Loic Dachary <loic@dachary.org>
 
 	* Release 1.3.3
