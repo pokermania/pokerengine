@@ -56,7 +56,7 @@ def equalizeCandidates(games):
         count = game.allCount()
         if count < threshold:
             want_players.append([ game.id, game.max_players - count ])
-        elif not game.isRunning():
+        elif game.isEndOrNull():
             serials = game.serialsAllSorted()
             provide_players.append((game.id, serials[:count - threshold]))
     return ( want_players, provide_players )
@@ -107,14 +107,14 @@ def breakGames(games, verbose = 0, log_message = None):
     # Games not running first, then games running.
     # Each is sorted with games that have least players first.
     #
-    games.sort(lambda a,b: a.isRunning() - b.isRunning() or int(a.allCount() - b.allCount()) )
+    games.sort(lambda a,b: b.isEndOrNull() - a.isEndOrNull() or int(a.allCount() - b.allCount()) )
 
     to_break = [ {
         "id": game.id,
         "seats_left": game.max_players - game.allCount(),
         "serials": game.serialsAll(),
         "to_add": [],
-        "running": game.isRunning() } for game in games ]
+        "running": not game.isEndOrNull() } for game in games ]
 
     if verbose > 2: log_message("balanceGames breakGames: %s" % to_break)
     results = []
