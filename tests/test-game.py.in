@@ -2039,6 +2039,28 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(len(results), 0)
 
     # ---------------------------------------------------------
+    def testBestHandsHoldemFlopStreet(self):
+        """Test Poker Game : Best hands, holdem viariant, flop street"""
+        
+        # Create players
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 7)
+        
+        # Players and board cards
+        player1.hand = pokercards.PokerCards(['Ad', 'As'])
+        player2.hand = pokercards.PokerCards(['Jh', '5c'])
+        self.game.board = pokercards.PokerCards(['9d', '6s', 'Td'])
+        
+        self.game.variant = 'holdem'
+        self.failUnless(self.game.isHigh())
+        
+        # Player 1 hand
+        self.failUnlessEqual(self.game.readablePlayerBestHands(1), 'A pair of Aces, Ten kicker: As, Ad, Td, 9d, 6s')
+        
+        # Player 2 hand        
+        self.failUnlessEqual(self.game.readablePlayerBestHands(2), 'High card Jack: Jh, Td, 9d, 6s, 5c')        
+
+    # ---------------------------------------------------------
     def testReadableHandValue(self):
         """Test Poker Game : Readable hand value"""
         
