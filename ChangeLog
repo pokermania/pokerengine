@@ -1,6 +1,24 @@
-2009-06-08  Loic Dachary <loic@dachary.org>
+2009-07-08  Loic Dachary <loic@dachary.org>
 
 	* Release 1.3.4
+
+	* pokerengine/pokertournament.py, tests/test-pokertournament.py.in:
+	  1) a tournament enters BREAK_WAIT
+	  2) all tables but table T1 finished their hand
+	  3) the table T1 finishes its hand AND is destroyed as a side
+	  effect of a call to balanceGames, because the T1 players
+	  are dispatched to the other tables.
+	  This is a special case where updateBreak will be called from
+	  endTurn
+	  with a game_id for a table that is gone. updateBreak must
+	  gracefully
+	  ignore the fact it is gone and proceed to BREAK state.
+
+2009-07-06  Johan Euphrosine <proppy@aminche.com>
+
+	* tests/test-game.py.in: add testBestHandsHoldemFlopStreet
+
+2009-06-08  Loic Dachary <loic@dachary.org>
 
 	* pokerengine/pokertournament.py: is isEndOrNull instead of
 	  isRunning when balancing tables because players cannot be moved
