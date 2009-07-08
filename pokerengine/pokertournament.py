@@ -490,9 +490,9 @@ class PokerTournament:
             self.changeState(TOURNAMENT_STATE_COMPLETE)
             return False
         else:
-            if loosers_count > 0 or self.need_balance: self.balanceGames()
-            if self.id2game.has_key(game_id):
-                self.updateBreak(game_id)
+            if loosers_count > 0 or self.need_balance:
+                self.balanceGames()
+            self.updateBreak(game_id)
             return True
         
     def balanceGames(self):

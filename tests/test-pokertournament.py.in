@@ -910,6 +910,88 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(len(tournament.id2game), 0)
         
     # -------------------------------------------------------
+    def testEndTurnFirstBreakAndBalance(self):
+        """Test Poker Tournament :
+        1) a tournament enters BREAK_WAIT
+        2) all tables but table T1 finished their hand
+        3) the table T1 finishes its hand AND is destroyed as a side
+           effect of a call to balanceGames, because the T1 players
+           are dispatched to the other tables.
+        This is a special case where updateBreak will be called from endTurn
+        with a game_id for a table that is gone. updateBreak must gracefully
+        ignore the fact it is gone and proceed to BREAK state.
+        """
+        
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  10, \
+                            'seats_per_game' : 5, \
+                            'sit_n_go' : 'y', \
+                            'verbose' : int(os.environ.get('VERBOSE_T', 3)), \
+                            'breaks_first' : 0
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        # Register the players
+        for player in range(10):
+            self.failUnless(tournament.register(player))
+        
+        # 2 games (5 players)
+        self.failUnlessEqual(len(tournament.games), 2)
+        
+        # Ten players in the tournament
+        self.failUnlessEqual(len(tournament.players), 10)
+        
+        # Get created games
+        game1 = tournament.id2game[1]
+        game2 = tournament.id2game[2]
+        
+        # Game 1, players 1 broke
+        players = game1.playersAll()
+        for num in range(1):
+            players[num].money = 0
+            self.failUnless(game1.isBroke(players[num].serial))
+        self.failUnlessEqual(game1.brokeCount(), 1)
+
+        # End turn of game 1
+        self.failUnless(tournament.endTurn(1))
+        self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_BREAK_WAIT, tournament.state)
+        self.failUnlessEqual([1], tournament.breaks_games_id)
+        
+        # Game 2, players 1, 2, 3, 4 broke as if 5 got all their chips
+        players = game2.playersAll()
+        for num in range(4):
+            players[num].money = 0
+            self.failUnless(game2.isBroke(players[num].serial))
+        self.failUnlessEqual(game2.brokeCount(), 4)
+        
+        # End turn of game 2
+        self.failUnless(tournament.endTurn(2))
+        
+        # Players broke removed
+        # Game balanced, game2 discarded, game1 left
+        self.failUnlessEqual(len(game1.playersAll()), 5)
+        self.failUnlessEqual([game1], tournament.games)
+        self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_BREAK, tournament.state)
+
+        tournament.state = pokertournament.TOURNAMENT_STATE_RUNNING
+        
+        # Game 1 players broke
+        players = game1.playersAll()
+        for num in range(len(players) - 1):
+            players[num].money = 0
+            self.failUnless(game1.isBroke(players[num].serial))
+            
+        # End turn of game 1
+        self.failIf(tournament.endTurn(1))
+        
+        # End of the tounament
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_COMPLETE)
+        self.failUnlessEqual(len(tournament.games), 0)
+        self.failUnlessEqual(len(tournament.id2game), 0)
+        
+    # -------------------------------------------------------
     def testGetRank(self):
         """Test Poker Tournament : Get rank"""
         
@@ -1076,7 +1158,7 @@ class Breaks(unittest.TestCase):
 def GetTestSuite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(PokerTournamentTestCase))
-#    suite.addTest(unittest.makeSuite(PokerTournamentTestCase, prefix = "testBal"))
+#    suite.addTest(unittest.makeSuite(PokerTournamentTestCase, prefix = "testEndTurnFirstBreakAndBalance"))
     suite.addTest(unittest.makeSuite(Breaks))
     # Comment out above and use line below this when you wish to run just
     # one test by itself (changing prefix as needed).
