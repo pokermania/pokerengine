@@ -304,7 +304,12 @@ class PokerTournament:
                 self.changeState(TOURNAMENT_STATE_BREAK_WAIT)
                 
         if self.state == TOURNAMENT_STATE_BREAK_WAIT:
-            self.breaks_games_id.append(game_id)
+            #
+            # game_id is 0 when updateBreak is called after a table was destroyed
+            # as a side effect of balanceGames
+            #
+            if game_id > 0:
+                self.breaks_games_id.append(game_id)
             on_break = True
             for game in self.games:
                 if game.id not in self.breaks_games_id:
@@ -492,7 +497,13 @@ class PokerTournament:
         else:
             if loosers_count > 0 or self.need_balance:
                 self.balanceGames()
-            self.updateBreak(game_id)
+            if self.id2game.has_key(game_id):
+                self.updateBreak(game_id)
+            else:
+                #
+                # This happens if game_id was destroyed by the call to balanceGames above
+                #
+                self.updateBreak(0)
             return True
         
     def balanceGames(self):
