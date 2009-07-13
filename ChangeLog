@@ -1,6 +1,12 @@
-2009-07-08  Loic Dachary <loic@dachary.org>
+2009-07-13  Loic Dachary <loic@dachary.org>
 
 	* Release 1.3.4
+
+	* pokerengine/pokertournament.py: updateBreak may get a 0 game_id
+	  in argument. This turns an implicit tricky case into an explicit
+	  exception. It will help remembering it.
+
+2009-07-08  Loic Dachary <loic@dachary.org>
 
 	* pokerengine/pokertournament.py, tests/test-pokertournament.py.in:
 	  1) a tournament enters BREAK_WAIT
