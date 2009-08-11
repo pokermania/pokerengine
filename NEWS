@@ -1,6 +1,10 @@
 Release 1.3.4
 
-Bug fixes.
+Fix bug that blocks a tournament in breakwait state.
+Fix bug that prevented balancing tables at the beginning of a tournament.
+Fix bug that invoked extra callbacks when balancing tables at the beginning of
+a tournament.
+Fix bug that balanced games while waiting for decisions to muck.
 
 Release 1.3.3
 
