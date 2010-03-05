@@ -1,8 +1,8 @@
 #
-# Copyright (C)             2008 Bradley M. Kuhn <bkuhn@ebb.org>
-# Copyright (C) 2006, 2007, 2008 Loic Dachary <loic@dachary.org>
+# Copyright (C) 2006 - 2010 Loic Dachary <loic@dachary.org>
+# Copyright (C) 2008 Bradley M. Kuhn <bkuhn@ebb.org>
 # Copyright (C) 2004, 2005, 2006 Mekensleep <licensing@mekensleep.com>
-#                                24 rue vieille du temple, 75004 Paris
+#                                26 rue des rosiers, 75004 Paris
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
+#  Loic Dachary <loic@dachary.org>
 #  Bradley M. Kuhn <bkuhn@ebb.org>
-#  Loic Dachary <loic@gnu.org>
 #
 from pokerengine.pokerengineconfig import Config
 

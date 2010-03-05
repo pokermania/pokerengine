@@ -3,7 +3,7 @@
 # Copyright (C) 2004, 2005, 2006 Mekensleep
 #
 # Mekensleep
-# 24 rue vieille du temple
+# 26 rue des rosiers
 # 75004 Paris
 #       licensing@mekensleep.com
 #

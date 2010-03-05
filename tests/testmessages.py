@@ -1,7 +1,7 @@
 #
 # Copyright (C) 2006, 2007, 2008 Loic Dachary <loic@dachary.org>
 # Copyright (C) 2006 Mekensleep <licensing@mekensleep.com>
-#                    24 rue vieille du temple, 75004 Paris
+#                    26 rue des rosiers, 75004 Paris
 #
 # This software's license gives you freedom; you can copy, convey,
 # propagate, redistribute and/or modify this program under the terms of

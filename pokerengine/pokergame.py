@@ -1,10 +1,10 @@
 #
-# Copyright (C) 2006, 2007, 2008, 2009 Loic Dachary <loic@dachary.org>
-# Copyright (C)             2008 Bradley M. Kuhn <bkuhn@ebb.org>
+# Copyright (C) 2006 - 2010 Loic Dachary <loic@dachary.org>
+# Copyright (C) 2008 Bradley M. Kuhn <bkuhn@ebb.org>
 # Copyright (C) 2004, 2005, 2006 Mekensleep
 #
 # Mekensleep
-# 24 rue vieille du temple
+# 26 rue des rosiers
 # 75004 Paris
 # licensing@mekensleep.com
 #
@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Authors:
-#  Loic Dachary <loic@gnu.org>
+#  Loic Dachary <loic@dachary.org>
 #  Bradley M. Kuhn <bkuhn@ebb.org>
 #  Henry Precheur <henry@precheur.org> (2004)
 #
