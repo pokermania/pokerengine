@@ -1,5 +1,7 @@
 2010-03-05  Loic Dachary <loic@dachary.org>
 
+	* Release 1.3.5
+
 	* ChangeLog, Makefile.am, configure.ac, debian/copyright,
 	  examples/simple.py, pokerconfigupgrade.8.in,
 	  pokerconfigupgrade.in, pokerengine/Makefile.am,
