@@ -1,5 +1,5 @@
 # -*- mode: python -*-
-# Copyright (C) 2006, 2007, 2008, 2009  Loic Dachary <loic@dachary.org>
+# Copyright (C) 2006, 2007, 2008, 2009, 2010  Loic Dachary <loic@dachary.org>
 # Copyright (C) 2009              Bradley M. Kuhn <bkuhn@ebb.org>
 # Copyright (C) 2006              Mekensleep <licensing@mekensleep.com>
 #                                 24 rue vieille du temple, 75004 Paris
@@ -37,6 +37,7 @@ class ConstantPlayerShuffler:
 
 from tests.testmessages import restore_all_messages, silence_all_messages, search_output, clear_all_messages, get_messages
 
+from pokerengine import pokergame
 from pokerengine import pokertournament
 from pokerengine import pokerprizes
 pokertournament.shuffler = ConstantPlayerShuffler()
@@ -992,6 +993,67 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(len(tournament.id2game), 0)
         
     # -------------------------------------------------------
+    def testEndTurnFirstBreakAndSinglePlayer(self):
+        """Test Poker Tournament :
+        On a two tables tournament with two players tables (but this applies to N tables)
+        1) table T1 finishes its hand and only has one player left
+           tournament is not on BREAK_WAIT
+        2) tournament break time is reached
+        3) table T2 finishes its hand, no player is busted.
+           endTurn is called and tournament enters BREAK_WAIT
+           T2 is added to the list of tables for which there
+           is not need to wait before declaring the tournament
+           on break. Because T1 has only one player left and
+           all other tables are expecting the break (i.e. no
+           hand will be played), it can be added to the list
+           of tables ready for the break.
+        """
+        arguments =  { \
+                            'dirs' : self.dirs, \
+                            'players_quota' :  4, \
+                            'seats_per_game' : 2, \
+                            'sit_n_go' : 'y', \
+                            'verbose' : int(os.environ.get('VERBOSE_T', 3)), \
+                            }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        # Register the players
+        for player in range(4):
+            self.failUnless(tournament.register(player))
+        
+        # 2 games (4 players)
+        self.failUnlessEqual(len(tournament.games), 2)
+        
+        # 4 players in the tournament
+        self.failUnlessEqual(len(tournament.players), 4)
+        
+        # Get created games
+        game1 = tournament.id2game[1]
+        game2 = tournament.id2game[2]
+        
+        # Game 2, players 1 broke as if 2 got all his chips
+        players = game2.playersAll()
+        players[0].money = 0
+        self.failUnless(game2.isBroke(players[0].serial))
+        self.failUnlessEqual(game2.brokeCount(), 1)
+
+        # End turn of game 2
+        self.failUnless(tournament.endTurn(2))
+        self.failUnlessEqual(len(game2.playersAll()), 1)
+        self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_RUNNING, tournament.state)
+
+        # break time is now
+        tournament.breaks_first = 0
+        
+        # End turn of game 1
+        self.failUnless(tournament.endTurn(1))
+        self.failUnlessEqual([game1,game2], tournament.games)
+        self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_BREAK, tournament.state)
+        self.failUnlessEqual(len(game1.playersAll()), 2)
+        self.failUnlessEqual(len(game2.playersAll()), 1)
+
+    # -------------------------------------------------------
     def testGetRank(self):
         """Test Poker Tournament : Get rank"""
         
@@ -1129,6 +1191,8 @@ class Breaks(unittest.TestCase):
         class Game:
             def __init__(self, id):
                 self.id = id
+            def playersAll(self):
+                return [1,2,3]
                 
         tournament.games = [Game(1), Game(2)]
         self.failUnless(tournament.updateBreak(1))
@@ -1158,7 +1222,7 @@ class Breaks(unittest.TestCase):
 def GetTestSuite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(PokerTournamentTestCase))
-#    suite.addTest(unittest.makeSuite(PokerTournamentTestCase, prefix = "testEndTurnFirstBreakAndBalance"))
+#    suite.addTest(unittest.makeSuite(PokerTournamentTestCase, prefix = "testEndTurnFirstBreakAndSinglePlayer"))
     suite.addTest(unittest.makeSuite(Breaks))
     # Comment out above and use line below this when you wish to run just
     # one test by itself (changing prefix as needed).

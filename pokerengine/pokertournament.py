@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006, 2007, 2008, 2009 Loic Dachary <loic@dachary.org>
+# Copyright (C) 2006, 2007, 2008, 2009, 2010 Loic Dachary <loic@dachary.org>
 # Copyright (C)       2008, 2009 Bradley M. Kuhn <bkuhn@ebb.org>
 # Copyright (C) 2004, 2005, 2006 Mekensleep <licensing@mekensleep.com>
 #                                24 rue vieille du temple, 75004 Paris
@@ -312,7 +312,30 @@ class PokerTournament:
                 self.breaks_games_id.append(game_id)
             on_break = True
             for game in self.games:
-                if game.id not in self.breaks_games_id:
+                #
+                # games with a single player must not be taken into account because
+                # nothing happens on them. Either it is the last game with a single
+                # player and must be considered ready to enter the break. Or there
+                # are still other tables playing and the game with a single player
+                # may be broken and the player moved to another table when the hand
+                # finishes at one of the other tables.
+                #
+                # If the games with a single player are not ignored, a two game
+                # tournament would enter a deadlock in the following situation:
+		#        1) table T1 finishes its hand and only has one player left
+		#           tournament is not on BREAK_WAIT
+		#        2) tournament break time is reached
+		#        3) table T2 finishes its hand, no player is busted.
+		#           endTurn is called and tournament enters BREAK_WAIT
+		#           T2 is added to the list of tables for which there
+		#           is not need to wait before declaring the tournament
+		#           on break. Because T1 has only one player left and
+		#           all other tables are expecting the break (i.e. no
+		#           hand will be played), it can be added to the list
+		#           of tables ready for the break.
+		#                
+                #
+                if game.id not in self.breaks_games_id and len(game.playersAll()) > 1:
                     on_break = False
                     break
             if on_break:
