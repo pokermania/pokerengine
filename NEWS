@@ -2,6 +2,9 @@ Release 1.3.5
 
 Bug fixes.
 
+Tourney block in BREAK_WAIT when one of the table has only one player
+https://gna.org/bugs/index.php?15488
+
 Release 1.3.4
 
 Fix bug that blocks a tournament in breakwait state.
