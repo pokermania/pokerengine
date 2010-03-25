@@ -46,6 +46,14 @@ AM_PATH_PYTHON([2.3])
 
 pkgsysconfdir=$sysconfdir/$PACKAGE
 AC_SUBST(pkgsysconfdir, [$pkgsysconfdir])
+pkglibdir=$libexecdir/$PACKAGE
+AC_SUBST(pkglibdir, [$pkglibdir])
+pkgdatadir=$datadir/$PACKAGE
+AC_SUBST(pkgdatadir, [$pkgdatadir])
+
+AC_SUBST(POKER_ENGINE_PKGDATADIR, [`eval eval eval echo $pkgdatadir`])
+AC_SUBST(POKER_ENGINE_PKGLIBDIR, [`eval eval eval echo $pkglibdir`])
+AC_SUBST(POKER_ENGINE_PKGSYSCONFDIR, [`eval eval eval echo $pkgsysconfdir`])
 
 PKG_CHECK_MODULES(PYPOKER_EVAL, pypoker-eval >= 132.0,, [AC_MSG_ERROR(pypoker-eval is a mandatory library)])
 

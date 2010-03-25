@@ -2,7 +2,9 @@
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@
-pkgsysconfdir=@pkgsysconfdir@
+pkgsysconfdir=@POKER_ENGINE_PKGSYSCONFDIR@
+pkgdatadir=@POKER_ENGINE_PKGDATADIR@
+pkglibdir=@POKER_ENGINE_PKGLIBDIR@
 
 Name: poker-engine
 Description: python library implementing poker rules
