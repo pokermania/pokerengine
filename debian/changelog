@@ -1,5 +1,7 @@
 poker-engine (1.3.6-1) unstable; urgency=low
 
+  * use dh_python2 (Closes: #616944).
+
   * upstream sync
 
  -- Loic Dachary (OuoU) <loic@debian.org>  Mon, 29 Mar 2010 21:33:40 +0200
