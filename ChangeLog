@@ -1,6 +1,72 @@
-2010-03-25  Johan Euphrosine <proppy@aminche.com>
+2011-03-18  Loic Dachary <loic@dachary.org>
 
 	* Release 1.3.6
+
+	* debian/rules: clean:: $(DEB_BUILDDIR)/config.status
+	  replaced by
+	  clean:: debian/stamp-autotools-configure
+	  for the sake of packaging-farm
+	* debian/changelog, debian/control, debian/control.breezy,
+	  debian/control.dapper, debian/control.edgy, debian/control.etch,
+	  debian/control.feisty, debian/control.gutsy,
+	  debian/control.hardy, debian/control.hoary,
+	  debian/control.intrepid, debian/control.jaunty,
+	  debian/control.lenny, debian/control.sarge,
+	  debian/control.squeeze, debian/control.unstable, debian/rules:
+	  release 1.3.6 and fix bug#616944
+
+2010-04-06  Loic Dachary <loic@dachary.org>
+
+	* debian/control.squeeze: squeeze support
+
+2010-03-29  Loic Dachary <loic@dachary.org>
+
+	* debian/changelog: version bump to 1.3.6
+	* ChangeLog, Makefile.am: version bump to 1.3.6
+	* NEWS, conf/poker..01-.02-no-limit.xml,
+	  conf/poker..01-.02-pot-limit.xml, conf/poker..02-.04-limit.xml,
+	  conf/poker..02-.04-no-limit.xml,
+	  conf/poker..02-.04-pot-limit.xml, conf/poker..02..04-limit.xml,
+	  conf/poker..05-.10-limit.xml, conf/poker..05-.10-no-limit.xml,
+	  conf/poker..05-.10-pot-limit.xml, conf/poker..05..10-limit.xml,
+	  conf/poker..10-.25-limit.xml, conf/poker..10-.25-no-limit.xml,
+	  conf/poker..10-.25-pot-limit.xml, conf/poker..25-.50-limit.xml,
+	  conf/poker..25-.50-no-limit.xml,
+	  conf/poker..25-.50-pot-limit.xml, conf/poker..25..50-limit.xml,
+	  conf/poker..50-1-limit.xml, conf/poker..50-1-no-limit.xml,
+	  conf/poker..50-1-pot-limit.xml, conf/poker..50.1-limit.xml,
+	  conf/poker.0-0-limit.xml, conf/poker.1-2-limit.xml,
+	  conf/poker.1-2-no-limit.xml, conf/poker.1-2-pot-limit.xml,
+	  conf/poker.10-15-limit.xml, conf/poker.10-15-pot-limit.xml,
+	  conf/poker.10-20-limit.xml, conf/poker.10-20-no-limit.xml,
+	  conf/poker.10-20-pot-limit.xml, conf/poker.100-200-limit.xml,
+	  conf/poker.100-200-no-limit.xml,
+	  conf/poker.100-200-pot-limit.xml, conf/poker.15-30-limit.xml,
+	  conf/poker.150-300-limit.xml, conf/poker.2-4-limit.xml,
+	  conf/poker.2-4-no-limit.xml, conf/poker.2-4-pot-limit.xml,
+	  conf/poker.200-400-limit.xml, conf/poker.3-6-limit.xml,
+	  conf/poker.3-6-no-limit.xml, conf/poker.3-6-pot-limit.xml,
+	  conf/poker.30-60-limit.xml, conf/poker.30-60-no-limit.xml,
+	  conf/poker.30-60-pot-limit.xml, conf/poker.4-8-limit.xml,
+	  conf/poker.5-10-limit.xml, conf/poker.5-10-no-limit.xml,
+	  conf/poker.5-10-pot-limit.xml, conf/poker.50-100-limit.xml,
+	  conf/poker.50-100-no-limit.xml, conf/poker.50-100-pot-limit.xml,
+	  conf/poker.7stud.xml, conf/poker.ante-.04-.08-limit.xml,
+	  conf/poker.ante-.10-.20-limit.xml,
+	  conf/poker.ante-.25-.50-limit.xml,
+	  conf/poker.ante-.50-1-limit.xml, conf/poker.ante-1-2-limit.xml,
+	  conf/poker.ante-10-20-limit.xml, conf/poker.ante-2-4-limit.xml,
+	  conf/poker.ante-3-6-limit.xml, conf/poker.ante-30-60-limit.xml,
+	  conf/poker.ante-5-10-limit.xml, conf/poker.holdem.xml,
+	  conf/poker.level-001.xml, conf/poker.level-10-15-pot-limit.xml,
+	  conf/poker.level-10-20-no-limit.xml,
+	  conf/poker.level-15-30-no-limit.xml,
+	  conf/poker.level-2-4-limit.xml, conf/poker.levels-blinds.xml,
+	  conf/poker.omaha.xml, conf/poker.omaha8.xml,
+	  conf/poker.payouts.xml, conf/poker.razz.xml, configure.ac,
+	  pokerengine/__init__.py: version bump to 1.3.6
+
+2010-03-25  Johan Euphrosine <proppy@aminche.com>
 
 	* configure.ac, poker-engine.pc.in: add pkgdatadir, pkglibdir
 	  support in poker-engine.pc.in
