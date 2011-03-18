@@ -20,11 +20,11 @@ is_debug_package=$(if $(findstring noopt,$(DEB_BUILD_OPTIONS)),yes,)
 
 $(DEB_SRCDIR)/configure:: $(DEB_SRCDIR)/configure.ac
 	mkdir -p config
-	AUTOMAKE=automake-1.9 ACLOCAL=aclocal-1.9 autoreconf --install
+	autoreconf --install
 	chmod a+x $@
 
 # override in order to add dependency to configure (should be a :: rule instead of a : rule)
-$(DEB_BUILDDIR)/config.status: $(DEB_SRCDIR)/configure
+debian/stamp-autotools-configure: $(DEB_SRCDIR)/configure
 	chmod a+x $(DEB_CONFIGURE_SCRIPT)
 	$(DEB_CONFIGURE_INVOKE) $(cdbs_configure_flags) $(DEB_CONFIGURE_EXTRA_FLAGS) $(DEB_CONFIGURE_USER_FLAGS)
 
