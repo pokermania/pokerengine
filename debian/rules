@@ -5,7 +5,7 @@ export DH_VERBOSE=1
 
 include /usr/share/cdbs/1/rules/debhelper.mk
 
-clean:: $(DEB_BUILDDIR)/config.status
+clean:: debian/stamp-autotools-configure
 	rm -f $(DEB_SRCDIR)/*cdbs-*
 
 include /usr/share/cdbs/1/class/autotools.mk
