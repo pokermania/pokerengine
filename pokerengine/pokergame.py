@@ -112,7 +112,9 @@ class PokerRandom(random.Random):
       except:
         pass
     if self._paranoid:
-      fname = '/dev/random'
+#     we don't support /dev/random because it can
+#     cause problems on several virtualization architectures
+      fname = '/dev/urandom'
     else:
       fname = '/dev/urandom'
     self._file = open(fname, 'r')
