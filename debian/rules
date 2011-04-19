@@ -5,7 +5,7 @@ export DH_VERBOSE=1
 
 include /usr/share/cdbs/1/rules/debhelper.mk
 
-clean:: $(DEB_BUILDDIR)/config.status
+clean:: debian/stamp-autotools-configure
 	rm -f $(DEB_SRCDIR)/*cdbs-*
 
 include /usr/share/cdbs/1/class/autotools.mk
@@ -20,17 +20,16 @@ is_debug_package=$(if $(findstring noopt,$(DEB_BUILD_OPTIONS)),yes,)
 
 $(DEB_SRCDIR)/configure:: $(DEB_SRCDIR)/configure.ac
 	mkdir -p config
-	AUTOMAKE=automake-1.9 ACLOCAL=aclocal-1.9 autoreconf --install
+	autoreconf --install
 	chmod a+x $@
 
 # override in order to add dependency to configure (should be a :: rule instead of a : rule)
-$(DEB_BUILDDIR)/config.status: $(DEB_SRCDIR)/configure
+debian/stamp-autotools-configure: $(DEB_SRCDIR)/configure
 	chmod a+x $(DEB_CONFIGURE_SCRIPT)
 	$(DEB_CONFIGURE_INVOKE) $(cdbs_configure_flags) $(DEB_CONFIGURE_EXTRA_FLAGS) $(DEB_CONFIGURE_USER_FLAGS)
 
 binary-install/python-poker-engine::
-	-dh_pycentral -ppython-poker-engine
-	dh_python -ppython-poker-engine
+	dh_python2 -ppython-poker-engine
 
 # make check verbosity : very quiet
 export VERBOSE_T=-1
