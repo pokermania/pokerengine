@@ -1771,11 +1771,15 @@ class PokerGame:
           #       because the dead blind is not accounted as a contribution
           #       of the player to the pot, therefore the total is not 100%.
           #
-          while rake > 0:
-            for serial in keys:
-              serial2rake[serial] += 1
-              rake -= 1
-              if rake <= 0: break
+          if keys:
+            while rake > 0:
+              for serial in keys:
+                serial2rake[serial] += 1
+                rake -= 1
+                if rake <= 0: break
+          else:
+            if self.verbose > 2:
+              self.message("distributeRake: have no keys --> no rake. serial2rake = %s" % serial2rake)
         return serial2rake
 
     def setMuckableSerials(self, muckable_serials):
