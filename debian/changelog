@@ -2,13 +2,13 @@ poker-engine (1.3.6-4) pokermania; urgency=low
 
   * added new pokermania betting structures
 
- -- Andor Goetzendorff <andor@pokermania.de>  Wed, 06 Jun 2010 13:46:54 +0200
+ -- Andor Goetzendorff <andor@pokermania.de>  Wed, 08 Jun 2010 13:46:54 +0200
 
 poker-engine (1.3.6-3) pokermania; urgency=low
 
   * corrected endless-loop bug in pokergame
 
- -- Andor Goetzendorff <andor@pokermania.de>  Wed, 06 Jun 2010 13:46:54 +0200
+ -- Andor Goetzendorff <andor@pokermania.de>  Mon, 06 Jun 2010 13:46:54 +0200
 
 poker-engine (1.3.6-2) pokermania; urgency=low
 
