@@ -934,8 +934,8 @@ class PokerGame:
         self.raked_amount = 0
         self.board = PokerCards()
         self.winners = []
-        if self.muckable_serials:
-           self.error("beginTurn: muckable_serials not empty %s" % self.muckable_serials)
+        if self.muckable_serials and self.verbose >= 1:
+            self.error("beginTurn: muckable_serials not empty %s" % self.muckable_serials)
         self.muckable_serials = []
         self.win_condition = WON_NULL
         self.serial2best = {}
