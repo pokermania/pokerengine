@@ -266,9 +266,7 @@ MAINTAINERCLEANFILES = stamp-po $(GMOFILES)
 
 EXTRA_DIST = remove-potcdate.sin LINGUAS $(POFILES) $(GMOFILES)
 
-# Hidden from automake, but really activated. Works around an automake-1.5 bug.
-#distdir: distdir1
-distdir1:
+distdir:
 	$(MAKE) update-po
 	if test -f $(srcdir)/$(DOMAIN).pot; then \
 	  for file in $(DOMAIN).pot stamp-po; do \
