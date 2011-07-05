@@ -8,9 +8,9 @@
     <all_in method="side"/> 
 
     <variants ids="holdem">
-      <round name="pre-flop" min="100000" cap="50000000"/>
-      <round name="flop" min="100000" cap="50000000"/>
-      <round name="turn" min="100000" cap="50000000"/>
-      <round name="river" min="100000" cap="50000000"/>
+      <round name="pre-flop" min="100000" cap="-1"/>
+      <round name="flop" min="100000" cap="-1"/>
+      <round name="turn" min="100000" cap="-1"/>
+      <round name="river" min="100000" cap="-1"/>
     </variants>
 </bet>
