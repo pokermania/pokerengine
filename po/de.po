@@ -1,6 +1,7 @@
 # Skyrock Network
 # Copyright (C) 2002-2008 Orbus group
-# Devteam <devteam@orbus.fr>
+# Copyright (C) 2009-2011 Pokermania GmbH
+# Devteam <support@pokermania.de>
 #
 msgid ""
 msgstr ""
@@ -31,7 +32,7 @@ msgstr "%(name)s verbirgt Verlierer-Hand"
 #: pokerengine/pokergame.py:322
 #, fuzzy, python-format
 msgid " wins %(side)s "
-msgstr "gewinnt %(side)s"
+msgstr " gewinnt %(side)s"
 
 # Translation #55537 (de)
 #: pokerengine/pokergame.py:326
@@ -43,7 +44,7 @@ msgstr "Gewinner teilen einen Pot von %(pot)s"
 #: pokerengine/pokergame.py:328
 #, fuzzy, python-format
 msgid " (minus %(chips_left)d odd chips)"
-msgstr "(minus %(chips_left)d odd chips)"
+msgstr " (minus %(chips_left)d odd chips)"
 
 # Translation #55539 (de)
 #: pokerengine/pokergame.py:332
@@ -103,7 +104,7 @@ msgstr "Einsatz %(amount)s"
 #: pokerengine/pokergame.py:396
 #, fuzzy, python-format
 msgid " and %(dead)d dead"
-msgstr "und %(dead)d dead"
+msgstr " und %(dead)d dead"
 
 # Translation #55552 (de)
 #: pokerengine/pokergame.py:399
@@ -133,7 +134,7 @@ msgstr "%(name)s geht mit %(amount)s"
 #: pokerengine/pokergame.py:418
 #, python-format
 msgid "%(name)s checks"
-msgstr "%(name)s passt"
+msgstr "%(name)s checkt"
 
 # Translation #55557 (de)
 #: pokerengine/pokergame.py:422
@@ -151,7 +152,7 @@ msgstr "%(name)s erhöht %(amount)s"
 #: pokerengine/pokergame.py:431
 #, python-format
 msgid " (%(amount)s returned to %(name)s)"
-msgstr "(%(amount)s gehen zurück an %(name)s)"
+msgstr " (%(amount)s gehen zurück an %(name)s)"
 
 # Translation #55560 (de)
 #: pokerengine/pokergame.py:434
@@ -163,7 +164,7 @@ msgstr "Turnier abgesagt %(message)s"
 #: pokerengine/pokergame.py:442
 #, python-format
 msgid "%(name)s receives %(amount)s (everyone else folded)"
-msgstr "%(name)s bekommt%(amount)s (alle anderen haben gepasst)"
+msgstr "%(name)s bekommt %(amount)s (alle anderen haben gepasst)"
 
 # Translation #55566 (de)
 #: pokerengine/pokergame.py:449
