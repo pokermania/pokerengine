@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<bet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="bet.xsd" name="no limit" type="no-limit" table-stakes="yes" unit="_UNIT_" buy-in="_BUY_IN_" max-buy-in="_BUY_IN_">
+
+    <description>No limit _NAME_</description>
+
+    <blind change="levels" levels="_BLIND_LEVEL_FILE_" frequency="_BLIND_FREQUENCY_" unit="_UNIT_"/>
+    <blind change="levels" levels="_ANTE_LEVEL_FILE_" frequency="_ANTE_FREQUENCY_" unit="_UNIT_"/>
+    <all_in method="side"/> 
+
+    <variants ids="omaha omaha8 holdem">
+      <round name="pre-flop" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
+      <round name="flop" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
+      <round name="turn" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
+      <round name="river" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
+    </variants>
+
+    <variants ids="7stud 7stud8">
+      <round name="first" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
+      <round name="third" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
+      <round name="fourth" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
+      <round name="fifth" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
+      <round name="sixth" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
+      <round name="seventh" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
+    </variants>
+</bet>
