@@ -319,7 +319,7 @@ def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame)
             continue
         message = join([ serial2name(serial) for serial in frame[side] ])
         if len(frame[side]) > 1:
-            message += " tie for %(side)s " % { 'side' : _(side) }
+            message += _(" tie for %(side)s ") % { 'side' : _(side) }
         else:
             message += _(" wins %(side)s ") % { 'side' : _(side) }
         messages.append(message)
