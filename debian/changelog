@@ -1,7 +1,7 @@
 poker-engine (1.3.6-7) pokermania; urgency=low
 
   * fixed gettext errors
-	* added new betting structures
+  * added new betting structures
 
  -- Andor Goetzendorff <andor@pokermania.de>  Fri, 01 Jul 2010 13:46:54 +0200
 
