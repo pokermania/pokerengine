@@ -1480,7 +1480,7 @@ class PokerGame:
         else:
             # Impossible case
             # The position value has already been tested at the beginning of the method
-            raise UserWarning, "unknow position info %s" % info["position"] #pragma: no cover
+            raise UserWarning, "unknown position info %s" % info["position"] #pragma: no cover
 
         for player in self.playersInGame():
             player.talked_once = False
@@ -1679,37 +1679,37 @@ class PokerGame:
     def muckState(self, win_condition):        
         self.current_round = -2
         if self.position != -1:
-          self.historyAdd("position", -1)
+            self.historyAdd("position", -1)
         self.position = -1
         
         self.win_condition = win_condition
         self.changeState(GAME_STATE_MUCK)
         
         if self.is_directing:
-           self.setRakedAmount(self.rake.getRake(self))
-           self.distributeMoney()
-           to_show, muckable_candidates_serials = self.dispatchMuck()
+            self.setRakedAmount(self.rake.getRake(self))
+            self.distributeMoney()
+            to_show, muckable_candidates_serials = self.dispatchMuck()
            
-           if self.verbose > 2:
-              self.message("muckState: to_show = %s muckable_candidates = %s " % ( to_show, muckable_candidates_serials ))
+            if self.verbose > 2:
+                self.message("muckState: to_show = %s muckable_candidates = %s " % ( to_show, muckable_candidates_serials ))
            
-           muckable_serials = []
-           for serial in to_show:
-              self.serial2player[serial].hand.allVisible()
-           for serial in muckable_candidates_serials:
-              auto_muck = self.serial2player[serial].auto_muck
-              if auto_muck == AUTO_MUCK_ALWAYS:
-                pass
-              elif auto_muck == AUTO_MUCK_WIN and self.isWinnerBecauseFold():
-                pass
-              elif auto_muck == AUTO_MUCK_LOSE and not self.isWinnerBecauseFold():
-                pass
-              else:
-                muckable_serials.append(serial)                
-           self.setMuckableSerials(muckable_serials)
-           self.__talked_muck()
+            muckable_serials = []
+            for serial in to_show:
+                self.serial2player[serial].hand.allVisible()
+            for serial in muckable_candidates_serials:
+                auto_muck = self.serial2player[serial].auto_muck
+                if auto_muck == AUTO_MUCK_ALWAYS:
+                    pass
+                elif auto_muck == AUTO_MUCK_WIN and self.isWinnerBecauseFold():
+                    pass
+                elif auto_muck == AUTO_MUCK_LOSE and not self.isWinnerBecauseFold():
+                    pass
+                else:
+                    muckable_serials.append(serial)                
+            self.setMuckableSerials(muckable_serials)
+            self.__talked_muck()
         else:
-           if self.verbose >= 2: self.message("muckState: not directing...")
+            if self.verbose >= 2: self.message("muckState: not directing...")
 
     def setRakedAmount(self, rake):
       if rake > 0:
@@ -1745,41 +1745,41 @@ class PokerGame:
         distributed_rake = 0
         serial2rake = {}
         if len(serial2share) == 1:
-          #
-          # Special case to avoid rounding errors
-          #
-          serial2rake[serial2share.keys()[0]] = rake
-          rake = 0
+            #
+            # Special case to avoid rounding errors
+            #
+            serial2rake[serial2share.keys()[0]] = rake
+            rake = 0
         else:
-          for (serial, contribution) in serial2share.iteritems():
-            contribution += self.getPlayer(serial).dead
-            player_rake = (total_rake * contribution) / total
-            serial2rake[serial] = player_rake
-            rake -= player_rake
+            for (serial, contribution) in serial2share.iteritems():
+                contribution += self.getPlayer(serial).dead
+                player_rake = (total_rake * contribution) / total
+                serial2rake[serial] = player_rake
+                rake -= player_rake
 
         if rake > 0:
-          keys = serial2rake.keys()
-          keys.sort(lambda a,b: cmp(serial2rake[a], serial2rake[b]) or cmp(a,b))
-          #
-          # rake distribution rounding error benefit the player with the
-          # lowest rake participation (with the idea that a player with
-          # very little rake participation has a chance to not be raked
-          # at all instead of being raked for 1 unit).
-          #
-          # Note: the rake rounding error can't be greater than the number
-          #       of players. But the above distribution is slightly flawed
-          #       because the dead blind is not accounted as a contribution
-          #       of the player to the pot, therefore the total is not 100%.
-          #
-          if keys:
-            while rake > 0:
-              for serial in keys:
-                serial2rake[serial] += 1
-                rake -= 1
-                if rake <= 0: break
-          else:
-            if self.verbose > 2:
-              self.message("distributeRake: have no keys --> no rake. serial2rake = %s" % serial2rake)
+            keys = serial2rake.keys()
+            keys.sort(lambda a,b: cmp(serial2rake[a], serial2rake[b]) or cmp(a,b))
+            #
+            # rake distribution rounding error benefit the player with the
+            # lowest rake participation (with the idea that a player with
+            # very little rake participation has a chance to not be raked
+            # at all instead of being raked for 1 unit).
+            #
+            # Note: the rake rounding error can't be greater than the number
+            #       of players. But the above distribution is slightly flawed
+            #       because the dead blind is not accounted as a contribution
+            #       of the player to the pot, therefore the total is not 100%.
+            #
+            if keys:
+                while rake > 0:
+                    for serial in keys:
+                        serial2rake[serial] += 1
+                        rake -= 1
+                        if rake <= 0: break
+            else:
+                if self.verbose > 2:
+                    self.message("distributeRake: have no keys --> no rake. serial2rake = %s" % serial2rake)
         return serial2rake
 
     def setMuckableSerials(self, muckable_serials):
@@ -1792,7 +1792,7 @@ class PokerGame:
     def cancelState(self):
         self.current_round = -2
         if self.position != -1:
-          self.historyAdd("position", -1)
+            self.historyAdd("position", -1)
         self.position = -1
         self.changeState(GAME_STATE_END)
         self.runCallbacks("end_round_last")
@@ -1813,12 +1813,11 @@ class PokerGame:
         return self.unit
       
     def willAct(self, serial):
-        if ( self.isRunning() and
-             serial in self.serialsInGame() ):
-          player = self.getPlayer(serial)
-          return not player.talked_once or self.canCall(serial)
+        if self.isRunning() and serial in self.serialsInGame():
+            player = self.getPlayer(serial)
+            return not player.talked_once or self.canCall(serial)
         else:
-          return False
+            return False
         
     def canAct(self, serial):
         return ( self.isRunning() and
@@ -2038,7 +2037,7 @@ class PokerGame:
         if money < amount + dead:
             #
             # If the player does not have enough money to pay the blind,
-            # make sure the live blind is payed before puting money into
+            # make sure the live blind is payed before putting money into
             # the dead blind.
             #
             if money < amount:
@@ -2562,15 +2561,15 @@ class PokerGame:
         
         if self.first_betting_pass:
             if serial != self.getSerialLastToTalk():
-              if self.inGameCount() < 2:
-                #
-                # If there is only one player left to talk, it is
-                # meaningless to ask for his action, unless he has
-                # something to call. 
-                #
-                return self.betsEqual()
-              else:
-                return False
+                if self.inGameCount() < 2:
+                    #
+                    # If there is only one player left to talk, it is
+                    # meaningless to ask for his action, unless he has
+                    # something to call. 
+                    #
+                    return self.betsEqual()
+                else:
+                    return False
             else:
                 self.first_betting_pass = False
         return self.betsEqual()
@@ -2701,24 +2700,24 @@ class PokerGame:
                 showdown_stack.insert(0, frame)
                 serial2share.setdefault(winner.serial, 0)
                 if self.verbose >= 2 and self.uncalled_serial != 0 and side_pots and side_pots.has_key('last_round') and side_pots['last_round'] >= 0:
-                  if serial2side_pot[winner.serial] < self.uncalled:
-                    self.error(pformat(self.showdown_stack)) #pragma: no cover
-                    raise UserWarning, "serial2side_pot[winner.serial] < self.uncalled (%d != %d)" % ( serial2side_pot[winner.serial], self.uncalled ) #pragma: no cover
+                    if serial2side_pot[winner.serial] < self.uncalled:
+                        self.error(pformat(self.showdown_stack)) #pragma: no cover
+                        raise UserWarning, "serial2side_pot[winner.serial] < self.uncalled (%d != %d)" % ( serial2side_pot[winner.serial], self.uncalled ) #pragma: no cover
                 serial2share[winner.serial] += serial2side_pot[winner.serial]
                 serial2delta[winner.serial] += serial2side_pot[winner.serial]
                 serial2side_pot[winner.serial] = 0
                 break
             
             for key in (self.win_orders + [ 'pot', 'chips_left' ]):
-              frame[key] = None
+                frame[key] = None
             frame['type'] = 'resolve'
             frame['serial2share'] = {}
             frame['serials'] = [ player.serial for player in potential_winners ]
 
             if self.verbose >= 2:
-              self.message("looking for winners with board %s" % self.getBoardAsString())
-              for player in potential_winners:
-                self.message("  => hand for player %d %s" % ( player.serial, self.getHandAsString(player.serial)))
+                self.message("looking for winners with board %s" % self.getBoardAsString())
+                for player in potential_winners:
+                    self.message("  => hand for player %d %s" % ( player.serial, self.getHandAsString(player.serial)))
             #
             #
             # Ask poker-eval to figure out who the winners actually are
