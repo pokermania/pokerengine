@@ -3,23 +3,23 @@
 
     <description>No limit _NAME_</description>
 
-    <blind change="levels" levels="_BLIND_LEVEL_FILE_" frequency="_BLIND_FREQUENCY_" unit="_UNIT_"/>
+    <blind change="levels" levels="_BLIND_LEVEL_FILE_" frequency="_BLIND_FREQUENCY_" unit="_BLIND_UNIT_"/>
 
     <all_in method="side"/> 
 
     <variants ids="omaha omaha8 holdem">
-      <round name="pre-flop" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
-      <round name="flop" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
-      <round name="turn" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
-      <round name="river" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
+      <round name="pre-flop" min="big" cap="-1"/>
+      <round name="flop" min="big" cap="-1"/>
+      <round name="turn" min="big" cap="-1"/>
+      <round name="river" min="big" cap="-1"/>
     </variants>
 
     <variants ids="7stud 7stud8">
-      <round name="first" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
-      <round name="third" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
-      <round name="fourth" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
-      <round name="fifth" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
-      <round name="sixth" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
-      <round name="seventh" min_pow_level="_MIN_POW_LEVEL_" cap="-1"/>
+      <round name="first" min="big" cap="-1"/>
+      <round name="third" min="big" cap="-1"/>
+      <round name="fourth" min="big" cap="-1"/>
+      <round name="fifth" min="big" cap="-1"/>
+      <round name="sixth" min="big" cap="-1"/>
+      <round name="seventh" min="big" cap="-1"/>
     </variants>
 </bet>

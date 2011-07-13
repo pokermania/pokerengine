@@ -82,16 +82,16 @@ uninstall-local:
 
 buildconf:
 	( \
-		echo 'wfrmtt 150000 poker.levels-blinds-colin.xml 10 minutes 500 poker.levels-ante-colin.xml 10 minutes 3000'; \
-		echo 'wsop 150000 poker.levels-blinds-colin.xml 6 minutes 500 poker.levels-ante-colin.xml 6 minutes 3000'; \
-	) | while read desc buy_in blind_level_file blind_frequency blind_unit min_pow_level ante_level_file ante_frequency min_pow_level ; do \
-		sed -e "s;_NAME_;$$name;g" -e "s/_BUY_IN_/$$buy_in/g" -e "s/_BLIND_LEVEL_FILE_/$$blind_level_file/g" -e "s/_BLIND_FREQUENCY_/$$blind_frequency/g" -e "s/_BLIND_UNIT_/$$blind_unit/g" -e "s/_ANTE_LEVEL_FILE_/$$ante_level_file/g" -e "s/_ANTE_FREQUENCY_/$$ante_frequency/g" -e "s/_MIN_POW_LEVEL_/$$min_pow_level/g" -e < conf/no-limit-levels-blind-ante.template > conf/poker.$${name}-pokermania-blind-ante.xml ; \
+		echo 'wfrmtt 150000 poker.levels-blinds-colin.xml 10 minutes 500 poker.levels-ante-colin.xml 10 minutes'; \
+		echo 'wsop 150000 poker.levels-blinds-colin.xml 6 minutes 500 poker.levels-ante-colin.xml 6 minutes'; \
+	) | while read name buy_in blind_level_file blind_frequency blind_unit unit ante_level_file ante_frequency ante_unit ; do \
+		sed -e "s;_NAME_;$$name;g" -e "s/_BUY_IN_/$$buy_in/g" -e "s/_BLIND_LEVEL_FILE_/$$blind_level_file/g" -e "s/_BLIND_FREQUENCY_/$$blind_frequency/g" -e "s/_BLIND_UNIT_/$$blind_unit/g" -e "s/_UNIT_/$$unit/g" -e "s/_ANTE_LEVEL_FILE_/$$ante_level_file/g" -e "s/_ANTE_FREQUENCY_/$$ante_frequency/g" -e "s/_ANTE_UNIT_/$$ante_unit/g" -e < conf/no-limit-levels-blind-ante.template > conf/poker.$${name}-pokermania-blind-ante.xml ; \
 	done
 
 	( \
-		echo 'lsng9 100000 poker.levels-blinds-lsng9.xml 6 minutes 500 2000'; \
-	) | while read desc buy_in blind_level_file blind_frequency blind_unit min_pow_level ; do \
-		sed -e "s;_NAME_;$$name;g" -e "s;_BUY_IN_;$$buy_in;g" -e "s/_BLIND_LEVEL_FILE_/$$blind_level_file/g" -e "s/_BLIND_FREQUENCY_/$$blind_frequency/g" -e "s/_UNIT_/$$unit/g" -e "s/_MIN_POW_LEVEL_/$$min_pow_level/g" -e < conf/no-limit-levels-blind.template > conf/poker.$${name}-pokermania-blind-ante.xml ; \
+		echo 'lsng9 100000 poker.levels-blinds-lsng9.xml 6 minutes 500'; \
+	) | while read name buy_in blind_level_file blind_frequency blind_unit unit ; do \
+		sed -e "s;_NAME_;$$name;g" -e "s;_BUY_IN_;$$buy_in;g" -e "s/_BLIND_LEVEL_FILE_/$$blind_level_file/g" -e "s/_BLIND_FREQUENCY_/$$blind_frequency/g" -e "s/_BLIND_UNIT_/$$blind_unit/g" -e "s/_UNIT_/$$unit/g" -e < conf/no-limit-levels-blind.template > conf/poker.$${name}-pokermania-blind-ante.xml ; \
 	done
 
 	( \
