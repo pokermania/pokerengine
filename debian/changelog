@@ -1,3 +1,9 @@
+poker-engine (1.3.6-10) pokermania; urgency=low
+
+  * removed min pow level from betting structures with levels
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Fri, 13 Jul 2010 16:00:00 +0200
+
 poker-engine (1.3.6-9) pokermania; urgency=low
 
   * graceful correction in betting structures' levels
