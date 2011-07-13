@@ -1527,9 +1527,12 @@ class PokerGame:
                 blind_info["small"] = info["small_reference"] * pow(2, level - 1)
                 blind_info["big"] = info["big_reference"] * pow(2, level - 1)
             elif info["change"] == "levels" or info["change"] == "level":
-                level_info = info["levels"][level - 1]
-                blind_info["small"] = level_info["small"]
-                blind_info["big"] = level_info["big"]
+                if level <= len(info["levels"]):
+                    level_info = info["levels"][level-1]
+                    blind_info["small"] = level_info["small"]
+                    blind_info["big"] = level_info["big"]
+                elif self.verbose >= 1:
+                    self.message("unexpected blind change level %d " % level)
             else:
                 blind_info = None
                 if self.verbose >= 1: self.message("unexpected blind change method %s " % info["change"])
@@ -1542,9 +1545,12 @@ class PokerGame:
                 ante_info["value"] = info["value_reference"] * pow(2, level - 1)
                 ante_info["bring-in"] = info["bring-in_reference"] * pow(2, level - 1)
             elif info["change"] == "levels":
-                level_info = info["levels"][level - 1]
-                ante_info["value"] = level_info["value"]
-                ante_info["bring-in"] = level_info["bring-in"]
+                if level <= len(info["levels"]):
+                    level_info = info["levels"][level-1]
+                    ante_info["value"] = level_info["value"]
+                    ante_info["bring-in"] = level_info["bring-in"]
+                elif self.verbose >= 1:
+                    self.message("unexpected ante change level %d " % level)
             else:
                 ante_info = None
                 if self.verbose >= 1: self.message("unexpected ante change method %s " % info["change"])
