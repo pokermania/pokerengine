@@ -46,46 +46,45 @@ import locale
 import gettext
 
 if float(sys.version[0:3]) > 2.3:
-  gettext.bind_textdomain_codeset('poker-engine','UTF-8')
+    gettext.bind_textdomain_codeset('poker-engine','UTF-8')
 
 def init_i18n(locale_dir, overrideTranslationFunction = None):
 
-  global _
+    global _
 
-  # If we've been fed the function that we know will work to translate
-  # text, then we just set _() to that.  This is to support the scenario
-  # where users of this library want to provide their own setup for
-  # gettext() (i.e., to switch languages on the fly, as
-  # pokernetwork.pokeravatar does).
-
-  # Note that we return the _() that is being replaced.  This is done so
-  # that the function can be restored by the caller, should it chose to do
-  # so.
-
-  # First, if our _() has never been defined, we simply set it to None
-  try:
-    oldTranslationFunction = _
-  except NameError:
-    oldTranslationFunction = None
-
-  if callable(overrideTranslationFunction):
-    _ = overrideTranslationFunction
-    return oldTranslationFunction
-
-  lang = ''
-
-  if platform.system() == "Windows":
-    lang = locale.getdefaultlocale()[0][:2]
-    if locale_dir == None:
-      locale_dir = './../../locale'
-
-  try:
-    t = gettext.translation('poker-engine', localedir=locale_dir, languages=[lang])
-    _ = t.gettext
-  except IOError:
-    _ = lambda text:text
-
-    return oldTranslationFunction
+    # If we've been fed the function that we know will work to translate
+    # text, then we just set _() to that.  This is to support the scenario
+    # where users of this library want to provide their own setup for
+    # gettext() (i.e., to switch languages on the fly, as
+    # pokernetwork.pokeravatar does).
+    
+    # Note that we return the _() that is being replaced.  This is done so
+    # that the function can be restored by the caller, should it chose to do
+    # so.
+    
+    # First, if our _() has never been defined, we simply set it to None
+    try:
+        oldTranslationFunction = _
+    except NameError:
+        oldTranslationFunction = None
+    
+    if callable(overrideTranslationFunction):
+        _ = overrideTranslationFunction
+        return oldTranslationFunction
+    
+    lang = ''
+    
+    if platform.system() == "Windows":
+        lang = locale.getdefaultlocale()[0][:2]
+        if locale_dir == None:
+            locale_dir = './../../locale'
+    
+    try:
+        t = gettext.translation('poker-engine', localedir=locale_dir, languages=[lang])
+        _ = t.gettext
+    except IOError:
+        _ = lambda text:text
+        return oldTranslationFunction
 
 init_i18n(None)
 
@@ -94,46 +93,46 @@ ABSOLUTE_MAX_PLAYERS = 10
 LEVELS_CACHE = {}
 
 def uniq(elements):
-  temp = {}
-  for element in elements:
-    temp[element] = None
-  return temp.keys()
+    temp = {}
+    for element in elements:
+        temp[element] = None
+    return temp.keys()
  
 class PokerRandom(random.Random):
-  def __init__(self, paranoid=False):
-    self._file = None
-    self._paranoid = paranoid
-    self.seed(None)
+    def __init__(self, paranoid=False):
+        self._file = None
+        self._paranoid = paranoid
+        self.seed(None)
 
-  def seed(self, ignore):
-    if self._file:
-      try:
-        close(self._file)
-      except:
+    def seed(self, ignore):
+        if self._file:
+            try:
+                close(self._file)
+            except:
+                pass
+        if self._paranoid:
+#           we don't support /dev/random because it can
+#           cause problems on several virtualization architectures
+            fname = '/dev/urandom'
+        else:
+            fname = '/dev/urandom'
+        self._file = open(fname, 'r')
+
+    def getstate(self):
+        return None
+
+    def setstate(self, ignore):
         pass
-    if self._paranoid:
-#     we don't support /dev/random because it can
-#     cause problems on several virtualization architectures
-      fname = '/dev/urandom'
-    else:
-      fname = '/dev/urandom'
-    self._file = open(fname, 'r')
 
-  def getstate(self):
-    return None
+    def jumpahead(self, ignore):
+        pass
 
-  def setstate(self, ignore):
-    pass
-
-  def jumpahead(self, ignore):
-    pass
-
-  def random(self):
-    lsize = struct.calcsize('l')
-    return abs(struct.unpack('l', self._file.read(lsize))[0])/(0.+(~(1L<<((8*lsize)-1))))
+    def random(self):
+        lsize = struct.calcsize('l')
+        return abs(struct.unpack('l', self._file.read(lsize))[0])/(0.+(~(1L<<((8*lsize)-1))))
 
 if platform.system() == "Linux":
-  random._inst = PokerRandom()
+    random._inst = PokerRandom()
 
 shuffler = random
 
@@ -272,11 +271,11 @@ class PokerPlayer:
         return self.buy_in_payed
 
     def getMissedRoundCount(self):
-      return self.missed_big_blind_count
+        return self.missed_big_blind_count
 
     def resetMissedBlinds(self):
-      self.missed_blind = None
-      self.missed_big_blind_count = 0
+        self.missed_blind = None
+        self.missed_big_blind_count = 0
 
 def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame):
     messages = []
@@ -356,15 +355,15 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
         elif type == "round":
             (type, name, board, pockets) = event
             if pockets:
-              messages.append( _("%(name)s, %(len_pockets)d players") % { 'name' : name, 'len_pockets' : len(pockets) })
+                messages.append( _("%(name)s, %(len_pockets)d players") % { 'name' : name, 'len_pockets' : len(pockets) })
             else:
-              messages.append(name)
+                messages.append(name)
             if board and not board.isEmpty():
                 messages.append( _("Board: %(board)s") % { 'board' : game.cards2string(board) } )
             if pockets and pocket_messages:
-              for (serial, pocket) in pockets.iteritems():
-                if not pocket.areAllNocard():
-                  messages.append( _("Cards player %(name)s: %(card)s") % { 'name' : serial2name(serial), 'card' : game.cards2string(pocket) })
+                for (serial, pocket) in pockets.iteritems():
+                    if not pocket.areAllNocard():
+                        messages.append( _("Cards player %(name)s: %(card)s") % { 'name' : serial2name(serial), 'card' : game.cards2string(pocket) })
 
         elif type == "showdown":
             (type, board, pockets) = event
@@ -372,9 +371,9 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
                 messages.append( _("Board: %(cards)s") % { 'cards' : game.cards2string(board) })
 
             if pockets and pocket_messages:
-              for (serial, pocket) in pockets.iteritems():
-                if not pocket.areAllNocard():
-                  messages.append( _("Cards player %(name)s: %(cards)s") % { 'name' : serial2name(serial), 'cards' : game.cards2string(pocket) })
+                for (serial, pocket) in pockets.iteritems():
+                    if not pocket.areAllNocard():
+                        messages.append( _("Cards player %(name)s: %(cards)s") % { 'name' : serial2name(serial), 'cards' : game.cards2string(pocket) })
 
         elif type == "rake":
             (type, amount, serial2rake) = event
@@ -438,27 +437,27 @@ def history2messages(game, history, serial2name = str, pocket_messages = False, 
         elif type == "end":
             (type, winners, showdown_stack) = event
             if showdown_stack:
-              game_state = showdown_stack[0]
-              if not game_state.has_key('serial2best'):
-                  serial = winners[0]
-                  messages.append( _("%(name)s receives %(amount)s (everyone else folded)") % { 'name' : serial2name(serial), 'amount' : PokerChips.tostring(game_state['serial2share'][serial]) })
-              else:
-                  serial2displayed = {}
-                  hands = showdown_stack[0]['serial2best']
-                  for frame in showdown_stack[1:]:
-                      message = None
-                      if frame['type'] == 'left_over':
-                          message = _("%(name)s receives %(amount)d odd chips") % { 'name' :  serial2name(frame['serial']), 'amount' : frame['chips_left']}
-                      elif frame['type'] == 'uncalled':
-                          message = _("returning uncalled bet %(amount)s to %(name)s") % { 'amount' : PokerChips.tostring(frame['uncalled']), 'name' : serial2name(frame['serial']) }
-                      elif frame['type'] == 'resolve':
-                          messages.extend(__historyResolve2messages(game, hands, serial2name, serial2displayed, frame))
-                      else:
-                          if verbose >= 0: print "ERROR history2messages unexpected showdown_stack frame type %s" % frame['type']
-                      if message:
-                          messages.append(message)
+                game_state = showdown_stack[0]
+                if not game_state.has_key('serial2best'):
+                      serial = winners[0]
+                      messages.append( _("%(name)s receives %(amount)s (everyone else folded)") % { 'name' : serial2name(serial), 'amount' : PokerChips.tostring(game_state['serial2share'][serial]) })
+                else:
+                      serial2displayed = {}
+                      hands = showdown_stack[0]['serial2best']
+                      for frame in showdown_stack[1:]:
+                          message = None
+                          if frame['type'] == 'left_over':
+                              message = _("%(name)s receives %(amount)d odd chips") % { 'name' :  serial2name(frame['serial']), 'amount' : frame['chips_left']}
+                          elif frame['type'] == 'uncalled':
+                              message = _("returning uncalled bet %(amount)s to %(name)s") % { 'amount' : PokerChips.tostring(frame['uncalled']), 'name' : serial2name(frame['serial']) }
+                          elif frame['type'] == 'resolve':
+                              messages.extend(__historyResolve2messages(game, hands, serial2name, serial2displayed, frame))
+                          else:
+                              if verbose >= 0: print "ERROR history2messages unexpected showdown_stack frame type %s" % frame['type']
+                          if message:
+                              messages.append(message)
             else:
-              print "ERROR history2messages ignored empty showdown_stack"
+                print "ERROR history2messages ignored empty showdown_stack"
         elif type == "sitOut":
             (type, serial) = event
             messages.append( _("%(name)s sits out") % { 'name' : serial2name(serial) })
@@ -554,7 +553,7 @@ class PokerGame:
         
         self.eval = PokerEval()
         if self.is_directing:
-          self.shuffler = shuffler
+            self.shuffler = shuffler
         self.reset()
         self.rake = None
         self.raked_amount = 0
@@ -743,9 +742,9 @@ class PokerGame:
     def sitRequested(self, serial):
         player = self.getPlayer(serial)
         if player:
-          player.sit_out_next_turn = False
-          player.sit_requested = True
-          player.wait_for = False
+            player.sit_out_next_turn = False
+            player.sit_requested = True
+            player.wait_for = False
 
     def canceled(self, serial, amount):
         if self.isBlindAnteRound():
@@ -870,7 +869,7 @@ class PokerGame:
         player = self.getPlayer(serial)
         player.auto = True
         if not self.is_directing:
-          return
+            return
         if self.isBlindAnteRound():
             # note that we can never get here on tournament tables
             # because blind / antes are payed automatically
@@ -1101,11 +1100,12 @@ class PokerGame:
                       players[index].wait_for == 'first_round' ) ):
                 player = players[index]
                 if player and player.wait_for != 'first_round':
-                  if player.missed_blind == None:
-                    player.missed_blind = what
-                  if player.missed_blind == "big" and what == "big":
-                    player.missed_big_blind_count += 1
-                    if self.verbose > 5: self.message("%d big blind count is now %d because of %s" % (player.serial, player.missed_big_blind_count, what))
+                    if player.missed_blind == None:
+                        player.missed_blind = what
+                    if player.missed_blind == "big" and what == "big":
+                        player.missed_big_blind_count += 1
+                    if self.verbose > 5: 
+                        self.message("%d big blind count is now %d because of %s" % (player.serial, player.missed_big_blind_count, what))
                 index += 1
             return index
 
@@ -1591,12 +1591,10 @@ class PokerGame:
     def isBroke(self, serial):
         player = self.getPlayer(serial)
         if player:
-          money = player.money
-          return ( money <= 0 or
-                   ( not self.isTournament() and
-                     money < self.minMoney() ) )
+            money = player.money
+            return money <= 0 or (not self.isTournament() and money < self.minMoney())
         else:
-          return False
+            return False
         
     def endTurn(self):
         if self.verbose >= 2: self.message("---end turn--")
@@ -2599,8 +2597,8 @@ class PokerGame:
 
         serial2delta = {}
         for (serial, share) in side_pots['contributions']['total'].iteritems():
-          player_dead = self.getPlayer(serial).dead
-          serial2delta[serial] = - ( share + player_dead )
+            player_dead = self.getPlayer(serial).dead
+            serial2delta[serial] = - ( share + player_dead )
           
         if self.isWinnerBecauseFold():
             serial2rake = {}
