@@ -798,7 +798,7 @@ class PokerGame:
         if (player is None): 
             self.error("getPlayer(%d) returned None" % serial)
             if self.verbose >= 1:
-                self.message("".join(traceback.format_stack()))
+                self.message("".join(traceback.format_stack(limit=4)))
         
         return player
 
