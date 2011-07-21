@@ -44,6 +44,7 @@ from pokerengine import pokerrake
 
 import locale
 import gettext
+import traceback
 
 if float(sys.version[0:3]) > 2.3:
     gettext.bind_textdomain_codeset('poker-engine','UTF-8')
@@ -793,7 +794,13 @@ class PokerGame:
             self.dealer_seat = seat
         
     def getPlayer(self, serial):
-        return self.serial2player.get(serial, None)
+        player = self.serial2player.get(serial, None)
+        if (player is None): 
+            self.error("getPlayer(%d) returned None" % serial)
+            if self.verbose >= 1:
+                self.message("".join(traceback.format_stack()))
+        
+        return player
 
     def getPlayerMoney(self, serial):
         player = self.getPlayer(serial)
