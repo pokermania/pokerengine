@@ -940,7 +940,7 @@ class PokerGame:
         self.raked_amount = 0
         self.board = PokerCards()
         self.winners = []
-        if self.muckable_serials and self.verbose >= 1:
+        if self.muckable_serials:
             self.error("beginTurn: muckable_serials not empty %s" % self.muckable_serials)
         self.muckable_serials = []
         self.win_condition = WON_NULL
@@ -2917,7 +2917,7 @@ class PokerGame:
             
             showing = self.indexNotFoldAdd(showing, 1)
         
-        return ( to_show, muckable )
+        return ( tuple(to_show), tuple(muckable) )
     
     def showdown(self):
         self.historyAdd("showdown", self.board.copy(), self.handsMap())
