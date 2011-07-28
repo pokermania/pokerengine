@@ -1185,7 +1185,7 @@ class PokerGame:
             showblinds = lambda player: "%02d:%s:%s:%s" % ( player.serial, player.blind, player.missed_blind, player.wait_for )
             self.message("updateBlinds: in game (blind:missed:wait) " + join(map(showblinds, self.playersInGame())))
             players = self.playersAll()
-            players.sort(lambda a,b: int(a.seat - b.seat))
+            players.sort(key=lambda i: i.seat)
             self.message("updateBlinds: all     (blind:missed:wait) " + join(map(showblinds, players)))
         
     def handsMap(self):
@@ -1498,7 +1498,7 @@ class PokerGame:
         self.__autoPlay()
 
     def sortPlayerList(self):
-        self.player_list.sort(lambda a,b: int(self.serial2player[a].seat - self.serial2player[b].seat))
+        self.player_list.sort(key=lambda i: self.serial2player[i].seat)
 
     def playersBeginTurn(self):
         map(PokerPlayer.beginTurn, self.playersAll())
@@ -1770,7 +1770,7 @@ class PokerGame:
 
         if rake > 0:
             keys = serial2rake.keys()
-            keys.sort(lambda a,b: cmp(serial2rake[a], serial2rake[b]) or cmp(a,b))
+            keys.sort(cmp=lambda a,b: cmp(serial2rake[a], serial2rake[b]) or cmp(a,b))
             #
             # rake distribution rounding error benefit the player with the
             # lowest rake participation (with the idea that a player with
@@ -3225,7 +3225,7 @@ class PokerGame:
         players = filter(lambda player: player.side_pot_index == current_pot_index, self.playersAllIn())
         if not players:
             return
-        players.sort(lambda a,b: int(a.bet - b.bet))
+        players.sort(key=lambda i:i.bet)
         for player in players:
             pot_contributions = round_contributions[len(pots) - 1]
             if not pot_contributions.has_key(player.serial):
@@ -3405,7 +3405,7 @@ class PokerGame:
             # position (i.e. the dealer)
             #
             player_list = self.serial2player.keys()
-            player_list.sort(lambda a,b: int(self.serial2player[a].seat - self.serial2player[b].seat))
+            player_list.sort(key=lambda i: self.serial2player[i].seat)
             #
             # The dealer is at the beginning of the list, followed by
             # all the players that would be dealers if he left, in order.
