@@ -81,7 +81,7 @@ class TestMuck(unittest.TestCase):
 
     def check_blinds(self, descriptions):
         players = self.game.playersAll()
-        players.sort(lambda a,b: int(a.seat - b.seat))
+        players.sort(key=lambda i: i.seat)
         fail = False
         for player in players:
             (blind, missed, wait) = descriptions.pop(0)
