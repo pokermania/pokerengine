@@ -616,15 +616,13 @@ class PokerGame:
         elif self.max_players == 5:
             self.seats_left = [0, 2, 4, 6, 8]
         elif self.max_players == 6:
-            self.seats_left = [0, 2, 4, 5, 7, 9]
+            self.seats_left = [0, 2, 4, 5, 7, 8]
         elif self.max_players == 7:
-            self.seats_left = [0, 2, 3, 5, 6, 8, 9]
+            self.seats_left = [0, 2, 3, 4, 5, 6, 8]
         elif self.max_players == 8:
             self.seats_left = [1, 2, 3, 4, 5, 6, 7, 8]
         elif self.max_players == 9:
             self.seats_left = [0, 1, 2, 3, 4, 5, 6, 7, 8]
-        elif self.max_players == 10:
-            self.seats_left = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         else:
             self.seats_left = []
             
