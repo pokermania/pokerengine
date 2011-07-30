@@ -98,7 +98,7 @@ class TestBlinds(unittest.TestCase):
 
     def check_blinds(self, descriptions):
         players = self.game.playersAll()
-        players.sort(lambda a,b: int(a.seat - b.seat))
+        players.sort(key=lambda i: i.seat)
         failStr = None
         ii = 0
         for player in players:

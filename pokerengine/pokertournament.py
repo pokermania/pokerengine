@@ -71,7 +71,7 @@ def equalizeGames(games, verbose = 0, log_message = None):
 
     consumer_index = 0
     for (id, serials) in provide_players:
-        want_players.sort(lambda a,b: int(a[1] - b[1]))
+        want_players.sort(key=lambda i: i[1])
         if want_players[0][1] == 0:
             #
             # All satisfied, stop looping
@@ -107,7 +107,7 @@ def breakGames(games, verbose = 0, log_message = None):
     # Games not running first, then games running.
     # Each is sorted with games that have least players first.
     #
-    games.sort(lambda a,b: b.isEndOrNull() - a.isEndOrNull() or int(a.allCount() - b.allCount()) )
+    games.sort(cmp=lambda a,b: cmp(b.isEndOrNull(),a.isEndOrNull()) or cmp(a.allCount(),b.allCount()))
 
     to_break = [ {
         "id": game.id,

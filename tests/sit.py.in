@@ -67,7 +67,7 @@ class TestSit(unittest.TestCase):
         
     def check_blinds(self, descriptions):
         players = self.game.playersAll()
-        players.sort(lambda a,b: int(a.seat - b.seat))
+        players.sort(key=lambda i: i.seat)
         for player in players:
             (blind, missed, wait) = descriptions.pop(0)
             if(blind != player.blind or missed != player.missed_blind or wait != player.wait_for):
