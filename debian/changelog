@@ -1,3 +1,10 @@
+poker-engine (1.3.6-13) pokermania; urgency=low
+
+  * pokergame auto-assignments only assign up
+    to 9 players, instead of 10
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Sat, 30 Jul 2010 16:00:00 +0200
+
 poker-engine (1.3.6-12) pokermania; urgency=low
 
   * better sorting
