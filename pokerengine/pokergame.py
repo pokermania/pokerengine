@@ -1407,13 +1407,13 @@ class PokerGame:
         info = self.roundInfo()
         if self.verbose >= 2: self.message("new round %s" % info["name"])
         if self.isFirstRound():
-          if not self.is_directing:
-            self.buildPlayerList(False)
-            self.dealerFromDealerSeat()
-          self.acceptPlayersWaitingForFirstRound()
+            if not self.is_directing:
+                self.buildPlayerList(False)
+                self.dealerFromDealerSeat()
+            self.acceptPlayersWaitingForFirstRound()
         self.round_cap_left = self.roundCap()
         if self.verbose > 2:
-          self.message("round cap reset to %d" % self.round_cap_left)
+            self.message("round cap reset to %d" % self.round_cap_left)
         self.first_betting_pass = True
         if info["position"] == "under-the-gun":
             #
@@ -3119,28 +3119,28 @@ class PokerGame:
             player.all_in = True
 
     def __updateUncalled(self):
-      highest_bet = 0
-      highest_bet_players_count = 0
-      for player in self.playersNotFold():
-        if player.bet > highest_bet:
-          highest_bet = player.bet
-          highest_bet_players_count = 1
-        elif player.bet == highest_bet:
-          highest_bet_players_count += 1
+        highest_bet = 0
+        highest_bet_players_count = 0
+        for player in self.playersNotFold():
+            if player.bet > highest_bet:
+                highest_bet = player.bet
+                highest_bet_players_count = 1
+            elif player.bet == highest_bet:
+                highest_bet_players_count += 1
 
-      if highest_bet_players_count == 0: raise UserWarning, "there should be at least one player in the game" #pragma: no cover
+        if highest_bet_players_count == 0: raise UserWarning, "there should be at least one player in the game" #pragma: no cover
       
-      if highest_bet_players_count > 1:
-        self.uncalled = 0
-        self.uncalled_serial = 0
-        return 
+        if highest_bet_players_count > 1:
+            self.uncalled = 0
+            self.uncalled_serial = 0
+            return 
 
-      self.uncalled = highest_bet
-      for player in self.playersNotFold():
-        if player.bet != highest_bet and highest_bet - player.bet < self.uncalled:
-          self.uncalled = highest_bet - player.bet
-        if player.bet == highest_bet:
-          self.uncalled_serial = player.serial
+        self.uncalled = highest_bet
+        for player in self.playersNotFold():
+            if player.bet != highest_bet and highest_bet - player.bet < self.uncalled:
+                self.uncalled = highest_bet - player.bet
+            if player.bet == highest_bet:
+                self.uncalled_serial = player.serial
       
     def updatePots(self, serial, amount):
         pot_index = len(self.side_pots['pots']) - 1
