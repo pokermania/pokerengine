@@ -140,7 +140,7 @@ class PokerPrizesTestCase(unittest.TestCase):
         
         for player in range(198, 298):
             pt.addPlayer()
-        self.failUnlessEqual(len(pt.getPrizes()), 20)
+        self.failUnlessEqual(len(pt.getPrizes()), 40)
     # -------------------------------------------------------
     def test03_virtualBaseClass(self):
         """test03_virtualBaseClass
