@@ -132,7 +132,7 @@ class PokerPrizesTestCase(unittest.TestCase):
         
         for player in range(28, 48):
             pt.addPlayer()
-        self.failUnlessEqual(pt.getPrizes(), [1840, 1104, 736, 552, 368])
+        self.failUnlessEqual(pt.getPrizes(), [1702, 1012, 690, 506, 368, 322])
         
         for player in range(48, 198):
             pt.addPlayer()

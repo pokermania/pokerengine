@@ -508,7 +508,7 @@ class TestPrizes(unittest.TestCase):
         tourney = PokerTournament(dirs = [ '../conf', '@top_srcdir@/conf' ],
                                   prizes_specs = 'table', start_time = time.time() + 20000, sit_n_go = 'n', buy_in = 5, players_quota = 1000)
         for ii in range(50): tourney.register(ii)
-        self.assertEqual(tourney.prizes(), [100, 60, 40, 30, 20])
+        self.assertEqual(tourney.prizes(), [94, 55, 37, 27, 20, 17])
 
         tourney = PokerTournament(dirs = [ '../conf', '@top_srcdir@/conf' ],
                                   prizes_specs = 'table', start_time = time.time() + 20000, sit_n_go = 'n', buy_in = 5, players_quota = 1000)
