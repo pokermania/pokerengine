@@ -86,7 +86,7 @@ buildconf:
 		echo 'wfrmtt 150000 poker.levels-blinds-colin.xml 10 minutes 500'; \
 		echo 'wsop 150000 poker.levels-blinds-colin.xml 6 minutes 500'; \
 	) | while read name buy_in blind_level_file blind_frequency blind_unit unit ; do \
-		sed -e "s;_NAME_;$$name;g" -e "s;_BUY_IN_;$$buy_in;g" -e "s/_BLIND_LEVEL_FILE_/$$blind_level_file/g" -e "s/_BLIND_FREQUENCY_/$$blind_frequency/g" -e "s/_BLIND_UNIT_/$$blind_unit/g" -e "s/_UNIT_/$$unit/g" -e < conf/no-limit-levels-blind.template > conf/poker.$${name}-pokermania-blind.xml ; \
+		sed -e "s;_NAME_;$$name;g" -e "s;_BUY_IN_;$$buy_in;g" -e "s/_BLIND_LEVEL_FILE_/$$blind_level_file/g" -e "s/_BLIND_FREQUENCY_/$$blind_frequency/g" -e "s/_BLIND_UNIT_/$$blind_unit/g" -e "s/_UNIT_/$$unit/g" < conf/no-limit-levels-blind.template > conf/poker.$${name}-pokermania-blind.xml ; \
 	done
 
 	( \
