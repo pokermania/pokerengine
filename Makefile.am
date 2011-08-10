@@ -117,8 +117,8 @@ buildconf:
 		echo '8000-16000_800000-1000000_10000000 8000-16000_800000-1000000_10000000 800000 1600000 80000000 100000000 -1 100'; \
 		echo '15000-30000_1000000-1500000_15000000 15000-30000_1000000-1500000_15000000 1500000 3000000 100000000 150000000 -1 100'; \
 		echo '15000-30000_1500000-2000000_20000000 15000-30000_1500000-2000000_20000000 1500000 3000000 150000000 200000000 -1 100'; \
-	) | while read name desc small big buy_in max_buy_in best_buy_in cap unit ; do \
-		sed -e "s;_NAME_;$$name;g" -e "s;_DESC_;$$desc;g" -e "s/_UNIT_/$$unit/g" -e "s/_BEST_BUY_IN_/$$best_buy_in/g" -e "s/_MAX_BUY_IN_/$$max_buy_in/g" -e "s/_BUY_IN_/$$buy_in/g" -e "s/_SMALL_/$$small/g" -e "s/_BIG_/$$big/g" -e "s/_CAP_/$$cap/g" < conf/pokermania.template > conf/poker.$${name}-pokermania.xml ; \
+	) | while read name desc small big buy_in max_buy_in cap unit ; do \
+		sed -e "s;_NAME_;$$name;g" -e "s;_DESC_;$$desc;g" -e "s/_UNIT_/$$unit/g" -e "s/_BEST_BUY_IN_/$$max_buy_in/g" -e "s/_MAX_BUY_IN_/$$max_buy_in/g" -e "s/_BUY_IN_/$$buy_in/g" -e "s/_SMALL_/$$small/g" -e "s/_BIG_/$$big/g" -e "s/_CAP_/$$cap/g" < conf/pokermania.template > conf/poker.$${name}-pokermania.xml ; \
 	done
 
 	( \
