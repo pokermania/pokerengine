@@ -4,7 +4,6 @@
     <description>No limit 15/30 WSOP</description>
 
     <blind change="levels" levels="poker.levels-blinds-colin.xml" frequency="6" unit="minutes"/>
-    <ante change="levels" levels="poker.levels-ante-colin.xml" frequency="6" unit="minutes"/>
 
     <all_in method="side"/> 
 
