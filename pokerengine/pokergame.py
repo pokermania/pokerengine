@@ -1763,7 +1763,11 @@ class PokerGame:
             rake = 0
         else:
             for (serial, contribution) in serial2share.iteritems():
-                contribution += self.getPlayer(serial).dead
+                # in some corner cases the player object is not 
+                # available anymore so a check has to be made here
+                if serial in self.serial2player:
+                    raked_player = self.getPlayer(serial)
+                    contribution += raked_player.dead
                 player_rake = (total_rake * contribution) / total
                 serial2rake[serial] = player_rake
                 rake -= player_rake
