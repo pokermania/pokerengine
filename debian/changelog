@@ -1,3 +1,9 @@
+poker-engine (1.3.6-18) pokermania; urgency=low
+
+  * additional checks for players in muckState
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Tue, 21 Aug 2010 01:30:00 +0200
+
 poker-engine (1.3.6-17) pokermania; urgency=low
 
   * removed ante from wsop and mfrtt
