@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<bet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="bet.xsd" name="200-400_20000-25000_250000-pokermania" table-stakes="yes" unit="100" buy-in="2000000" best-buy-in="2500000" max-buy-in="2500000" poker_engine_version="1.3.6">
+<bet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="bet.xsd" name="200-400_20000-25000_250000 pokermania" type="no-limit" table-stakes="yes" unit="100" buy-in="2000000" best-buy-in="2500000" max-buy-in="2500000">
 
-    <description>200-400_20000-25000_250000-pokermania</description>
+    <description>Pokermania 200-400_20000-25000_250000</description>
 
     <blind small="20000" big="40000"/>
 
@@ -12,5 +12,14 @@
       <round name="flop" min="40000" cap="-1"/>
       <round name="turn" min="40000" cap="-1"/>
       <round name="river" min="40000" cap="-1"/>
+    </variants>
+
+    <variants ids="7stud 7stud8">
+      <round name="first" min="40000" cap="-1"/>
+      <round name="third" min="40000" cap="-1"/>
+      <round name="fourth" min="40000" cap="-1"/>
+      <round name="fifth" min="40000" cap="-1"/>
+      <round name="sixth" min="40000" cap="-1"/>
+      <round name="seventh" min="40000" cap="-1"/>
     </variants>
 </bet>
