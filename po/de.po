@@ -225,7 +225,7 @@ msgstr "Zwei Paar %(card1)s und %(card2)s"
 #: pokerengine/pokergame.py:2963
 #, python-format
 msgid "Three of a kind %(card)s"
-msgstr "Drilling %(card)s Karten"
+msgstr "Drilling %(card)s"
 
 # Translation #55581 (de)
 #: pokerengine/pokergame.py:2965
