@@ -35,15 +35,15 @@ sys.path.insert(0, "..")
 from pokerengine.pokergame import PokerGameServer
 
 #
-# Instantiate a poker engine for a hold'em game with a 10/15 pot limit
+# Instantiate a poker engine for a hold'em game with a 10/20 pot limit
 # betting structure. The variant and betting structure descriptions
-# will be read from the conf/poker.holdem.xml and conf/poker.10-15-pot-limit.xml
+# will be read from the conf/poker.holdem.xml and conf/poker.10-20-pot-limit.xml
 # files.
 #
 game = PokerGameServer("poker.%s.xml", ['conf', '../conf', '/etc/poker-engine'])
 game.verbose = 1
 game.setVariant("holdem")
-game.setBettingStructure("10-15-pot-limit")
+game.setBettingStructure("10-20-pot-limit")
 
 #
 # The serial numbers of the four players
@@ -54,13 +54,13 @@ PLAYER3 = 3
 PLAYER4 = 4
 
 #
-# Each player sits at the table and buys in 1500.
+# Each player sits at the table and buys in 2000.
 # The blinds are posted automatically, no action is required from
 # the player.
 #
 for serial in xrange(PLAYER1, PLAYER4 + 1):
     game.addPlayer(serial)
-    game.payBuyIn(serial, 1500*100)
+    game.payBuyIn(serial, 2000*100)
     game.sit(serial)
     game.autoBlindAnte(serial)
 
