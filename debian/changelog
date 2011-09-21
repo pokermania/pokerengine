@@ -1,3 +1,10 @@
+poker-engine (1.3.7-1) pokermania; urgency=low
+
+  * betting structures cleaned
+  * postinstall update fixed
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Wed, 21 Sep 2010 13:00:00 +0200
+
 poker-engine (1.3.6-18) pokermania; urgency=low
 
   * additional checks for players in muckState
