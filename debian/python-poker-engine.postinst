@@ -25,7 +25,7 @@ DH_VERBOSE=0
 
 case "$1" in
     configure)
-        /usr/sbin/pokerconfigupgrade --verbose=1 --upgrade=/usr/share/poker-engine/upgrades --reference=/usr/share/poker-engine/conf /etc/poker-engine
+        /usr/sbin/pokerconfigupgrade --verbose=1 --upgrades=/usr/share/poker-engine/upgrades --reference=/usr/share/poker-engine/conf /etc/poker-engine
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
