@@ -82,11 +82,11 @@ uninstall-local:
 
 buildconf:
 	( \
-		echo 'lsng9 100000 poker.levels-blinds-lsng9.xml 6 minutes 500'; \
-		echo 'wfrmtt 150000 poker.levels-blinds-colin.xml 10 minutes 500'; \
-		echo 'wsop 150000 poker.levels-blinds-colin.xml 6 minutes 500'; \
+		echo '10-20-no-limit-lsng9 100000 poker.levels-blinds-lsng9.xml 6 minutes 500'; \
+		echo '15-30-no-limit-wfrmtt 150000 poker.levels-blinds-colin.xml 10 minutes 500'; \
+		echo '15-30-no-limit-wsop 150000 poker.levels-blinds-colin.xml 6 minutes 500'; \
 	) | while read name buy_in blind_level_file blind_frequency blind_unit unit ; do \
-		sed -e "s;_NAME_;$$name;g" -e "s;_BUY_IN_;$$buy_in;g" -e "s/_BLIND_LEVEL_FILE_/$$blind_level_file/g" -e "s/_BLIND_FREQUENCY_/$$blind_frequency/g" -e "s/_BLIND_UNIT_/$$blind_unit/g" -e "s/_UNIT_/$$unit/g" < conf/no-limit-levels-blind.template > conf/poker.level-$${name}-no-limit-pokermania.xml ; \
+		sed -e "s;_NAME_;$$name;g" -e "s;_BUY_IN_;$$buy_in;g" -e "s/_BLIND_LEVEL_FILE_/$$blind_level_file/g" -e "s/_BLIND_FREQUENCY_/$$blind_frequency/g" -e "s/_BLIND_UNIT_/$$blind_unit/g" -e "s/_UNIT_/$$unit/g" < conf/no-limit-levels-blind.template > conf/poker.level-$${name}.xml ; \
 	done
 
 	( \
