@@ -344,6 +344,7 @@ class PokerTournament:
 
         if self.state == TOURNAMENT_STATE_BREAK:
             if self.remainingBreakSeconds() <= 0:
+                self.breaks_count += 1
                 self.changeState(TOURNAMENT_STATE_RUNNING)
 
         if self.state not in (TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT, TOURNAMENT_STATE_BREAK):
