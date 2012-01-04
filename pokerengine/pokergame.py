@@ -498,6 +498,11 @@ WON_ALLIN       = 1 # turn ended on allin
 WON_FOLD        = 2 # turn ended on fold
 WON_REGULAR     = 3 # turn ended normally
 
+class EndlessLoop(Exception):
+    """ Raised if an endless loop is encountered in the search for a player
+        who is currently in the game.
+        """
+
 class PokerGame:
     def __init__(self, url, is_directing, dirs):
         self.id = 0
@@ -3300,8 +3305,12 @@ class PokerGame:
         while increment:
             index = (index + step) % len(self.player_list)
             increment -= step
+            players_checked = []
             while not predicate(self.serial2player[self.player_list[index]]):
                 index = (index + step) % len(self.player_list)
+                if index in players_checked
+                  raise EndlessLoop("Endless loop detected")
+                players_checked.append(index)
         return index
         
     def getSerialDealer(self):
