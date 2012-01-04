@@ -1,3 +1,9 @@
+poker-engine (1.3.9) pokermania; urgency=low
+
+  * endless loop detection, refs #2981
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Wed, 04 Jan 2012 12:00:00 +0200
+
 poker-engine (1.3.8) pokermania; urgency=low
 
   * disabled Unicode encoding, refs #4084
