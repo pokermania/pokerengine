@@ -3744,9 +3744,9 @@ class PokerGame:
             if event[0] == "position" and event[1] >= 0:
                 try:
                     self.turn_history[index] = ( event[0], game_event[player_list_index].index(position2serial[event[1]]) )
-                except:
-                    if self.verbose >= 0: self.message(pformat(self.turn_history))
-                    self.error("unable to update position")
+                except Exception, e:
+                    if self.verbose >= 1: self.message(pformat(self.turn_history))
+                    self.error("".join(traceback.format_exc(limit=4)))
 
     def error(self, string):
       if self.verbose >= 0: self.message("ERROR: " + string)
