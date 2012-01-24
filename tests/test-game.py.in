@@ -3737,6 +3737,42 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual({1: 5, 2: 5, 3: 5}, self.game.getRakeContributions())
         
     # ---------------------------------------------------------
+    def testRake(self):
+        self.game.variant = 'holdem'
+        class PokerRakeHalf:
+            def __init__(self, game):
+                pass
+            def getRake(self, game):
+                return int((game.getPotAmount() - game.getUncalled()) * .4)
+        self.game.rake = PokerRakeHalf(self.game)
+        cards = [4, 37, 2, 29, 48, 16, 22, 23, 8, 3, 7]
+        self.game.deck = self.game.eval.card2string(cards)
+        print zip(self.game.eval.card2string(cards),cards)
+        self.game.shuffler = PokerPredefinedDecks([cards])
+        
+        # Create players
+        player_serials = [1,2,3]
+        player_seats = [2,5,7]
+        player_money = [100000,1000,50000]
+        players = {}
+        
+        self.game.setMaxPlayers(3)
+        for (serial,seat,money) in zip(player_serials,player_seats,player_money):
+            players[serial] = self.AddPlayerAndSit(serial,seat)
+            players[serial].money = money
+            self.game.autoBlindAnte(serial)
+        
+        self.game.beginTurn(1)
+        self.failUnless(self.game.isFirstRound())
+        
+        self.game.callNraise(1, 100000)
+        self.game.call(2)
+        self.game.call(3)
+        
+        for (serial,player) in players.items():
+            self.assertTrue(player.money>=0,"player %d has less than 0 money: %d" % (serial,player.money))
+        
+    # ---------------------------------------------------------
     def testDisconnected(self):
         """Test Poker Game : Diconnected"""
         

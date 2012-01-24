@@ -2806,12 +2806,14 @@ class PokerGame:
         # Do not rake the chips that were uncalled
         #
         serial2rackable = serial2share.copy()
+        pot_rackable = pot_backup
         if showdown_stack[0]['type'] == 'uncalled':
           uncalled = showdown_stack[0]
           serial2rackable[uncalled['serial']] -= uncalled['uncalled']
+          pot_rackable -= uncalled['uncalled']
           if serial2rackable[uncalled['serial']] <= 0:
             del serial2rackable[uncalled['serial']]
-        serial2rake = self.distributeRake(self.getRakedAmount(), pot_backup, serial2rackable)
+        serial2rake = self.distributeRake(self.getRakedAmount(), pot_rackable, serial2rackable)
         for serial in serial2rake.keys():
           serial2share[serial] -= serial2rake[serial]
           serial2delta[serial] -= serial2rake[serial]
