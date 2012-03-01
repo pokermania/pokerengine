@@ -27,8 +27,7 @@ from types import StringType
 from pprint import pformat
 import time, sys, random
 
-def tournament_seconds():
-    return time.time()
+from twisted.python.runtime import seconds
 
 shuffler = random
 
@@ -241,7 +240,7 @@ class PokerTournament:
         print self.prefix + "[PokerTournament %s] " % self.name + message
         
     def canRun(self):
-        if self.start_time < tournament_seconds():
+        if self.start_time < seconds():
             if self.sit_n_go == 'y' and self.registered >= self.players_quota:
                 return True
             elif self.sit_n_go == 'n':
@@ -264,7 +263,7 @@ class PokerTournament:
         
     def updateRegistering(self):
         if self.state == TOURNAMENT_STATE_ANNOUNCED:
-            now = tournament_seconds()
+            now = seconds()
             if now - self.register_time > 0.0:
                 self.changeState(TOURNAMENT_STATE_REGISTERING)
                 return -1
@@ -286,7 +285,7 @@ class PokerTournament:
 
     def remainingBreakSeconds(self):
         if self.breaks_since > 0:
-            return self.breaks_duration - ( tournament_seconds() - self.breaks_since )
+            return self.breaks_duration - (seconds() - self.breaks_since)
         else:
             return None
         
@@ -295,7 +294,7 @@ class PokerTournament:
             return False
 
         if self.state == TOURNAMENT_STATE_RUNNING:
-            running_duration = tournament_seconds() - self.breaks_running_since
+            running_duration = seconds() - self.breaks_running_since
             if self.breaks_count > 0:
                 running_max = self.breaks_interval
             else:
@@ -360,22 +359,22 @@ class PokerTournament:
         elif self.state == TOURNAMENT_STATE_RUNNING and state == TOURNAMENT_STATE_BREAK_WAIT:
             pass
         elif self.state == TOURNAMENT_STATE_BREAK_WAIT and state == TOURNAMENT_STATE_BREAK:
-            self.breaks_since = tournament_seconds()
+            self.breaks_since = seconds()
         elif self.state == TOURNAMENT_STATE_BREAK and state == TOURNAMENT_STATE_RUNNING:
             self.breaks_since = -1
-            self.breaks_running_since = tournament_seconds()
+            self.breaks_running_since = seconds()
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_RUNNING:
-            self.start_time = tournament_seconds()
+            self.start_time = seconds()
             self.breaks_running_since = self.start_time
             self.createGames()
             self.can_register = False
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_CANCELED:
             self.can_register = False
             self.cancel()
-            self.finish_time = tournament_seconds()
+            self.finish_time = seconds()
         elif ( self.state in ( TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT ) and
                state == TOURNAMENT_STATE_COMPLETE ):
-            self.finish_time = tournament_seconds()
+            self.finish_time = seconds()
         else:
             if self.verbose >= 0: print "PokerTournament:changeState: cannot change from state %s to state %s" % ( self.state, state )
             return

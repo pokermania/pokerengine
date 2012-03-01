@@ -1133,7 +1133,7 @@ class Breaks(unittest.TestCase):
 
     def setUp(self):
         self.now = time.time() + 20000
-        pokertournament.tournament_seconds = self.seconds
+        pokertournament.seconds = self.seconds
         
     def seconds(self):
         return self.now
