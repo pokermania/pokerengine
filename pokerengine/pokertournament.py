@@ -25,7 +25,7 @@
 from math import ceil
 from types import StringType
 from pprint import pformat
-import time, sys, random
+import time, random
 
 from twisted.python.runtime import seconds
 
@@ -170,7 +170,7 @@ def breakGame(to_break, to_fill, verbose = 0, log_message = None):
 
 class PokerTournament:
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         self.name = kwargs.get('name', 'no name')
         self.description_short = kwargs.get('description_short', 'nodescription_short')
         self.description_long = kwargs.get('description_long', 'nodescription_long')
