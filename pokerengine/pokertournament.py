@@ -42,7 +42,7 @@ TOURNAMENT_STATE_BREAK_WAIT = "breakwait"
 TOURNAMENT_STATE_BREAK = "break"
 TOURNAMENT_STATE_COMPLETE = "complete"
 TOURNAMENT_STATE_CANCELED = "canceled"
-TOURNAMENT_STATE_CANCELED = "aborted"
+TOURNAMENT_STATE_ABORTED = "aborted"
             
 def equalizeCandidates(games):
     #
