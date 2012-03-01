@@ -199,7 +199,6 @@ class PokerTournament:
         self.add_on_delay = kwargs.get('add_on_delay', 60)
         self.prize_min = kwargs.get('prize_min', 0)
         self.prizes_specs = kwargs.get('prizes_specs', "table")
-        self.rank2prize = None
         self.finish_time = -1
         if type(self.start_time) is StringType:
             self.start_time = int(time.mktime(time.strptime(self.start_time, "%Y/%m/%d %H:%M")))
@@ -210,7 +209,6 @@ class PokerTournament:
         self.registered = 0
         self.winners = []
         self.state = self.STATES.ANNOUNCED
-        self.can_register = False
         self.games = []
         self.id2game = {}
         
@@ -415,7 +413,7 @@ class PokerTournament:
             self.isRegistered(serial)
         
     def register(self, serial):
-        if self.can_register:
+        if self.canRegister(serial):
             self.players.append(serial)
             self.registered += 1
             if self.sit_n_go != 'y':
@@ -432,7 +430,6 @@ class PokerTournament:
             self.registered -= 1
             if self.sit_n_go != 'y':
                 self.prizes_object.removePlayer()
-                self.rank2prize = None
             return True
         else:
             return False
@@ -585,6 +582,4 @@ class PokerTournament:
         return len(to_equalize) > 0
 
     def prizes(self):
-        if not self.rank2prize:
-            self.rank2prize = self.prizes_object.getPrizes()
-        return self.rank2prize
+        return self.prizes_object.getPrizes()
