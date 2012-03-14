@@ -40,6 +40,8 @@ import tempfile
 import math
 from types import *
 
+from collections import namedtuple
+
 from pokerengine import pokercards
 from pokerengine import pokergame
 
@@ -3768,6 +3770,84 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.callNraise(1, 100000)
         self.game.call(2)
         self.game.call(3)
+        
+        for (serial,player) in players.items():
+            self.assertTrue(player.money>=0,"player %d has less than 0 money: %d" % (serial,player.money))
+        
+    # ---------------------------------------------------------
+    def testRake2(self):
+        self.game.variant = 'holdem'
+        
+        class PokerRakeMock:
+            def __init__(self, game):
+                pass
+            def getRake(self, game):
+                return int((game.getPotAmount() - game.getUncalled()) * .1)
+        self.game.rake = PokerRakeMock(self.game)
+#        deck info        
+        cards_to_player = (
+            (145,('6d','As')),
+            (148,('Qc','2s')),
+            (147,('4s','Qh')),
+            (150,('3h','4c')),
+        )
+        cards_board = ('9c','8h','9h','9d','4d')
+#        build deck
+        cards = []
+        for i in range(2):
+            for (player,card_strings) in cards_to_player:
+                cards.append(self.game.eval.string2card(card_strings[i]))
+        cards.extend(self.game.eval.string2card(cards_board))
+        
+        cards.reverse()
+        
+        self.game.deck = self.game.eval.card2string(cards)
+        self.game.shuffler = PokerPredefinedDecks([cards])
+        
+        PlayerMock = namedtuple('PlayerMock', ('serial','seat','money'))
+        players_simple = [
+            PlayerMock(145, 1, 671650),
+            PlayerMock(148, 3, 10000),
+            PlayerMock(147, 6, 620000),
+            PlayerMock(150, 8, 10000),
+        ]
+        players = {}
+        
+        self.game.setMaxPlayers(4)
+        self.game.forced_dealer_seat = 6
+        
+        for p in players_simple:
+            players[p.serial] = self.AddPlayerAndSit(p.serial, p.seat)
+            players[p.serial].money = p.money
+            players[p.serial].missed_blind = None
+            self.game.noAutoBlindAnte(p.serial)
+        
+        self.game.blind_info['small'] = 1000
+        self.game.blind_info['big'] = 2000
+        
+        self.game.beginTurn(1)
+        
+        players[148].missed_blind = 'big'
+        self.game.updateBlinds()
+        
+        for (serial,player) in players.items():
+            self.game.autoBlindAnte(serial)
+        
+        self.failUnless(self.game.isFirstRound())
+        
+        self.game.callNraise(148, 800000)
+        self.game.call(147)
+        self.game.callNraise(150, 900000)
+        self.game.call(145)
+        
+        self.game.callNraise(145,200000)
+        self.game.call(147)
+        
+        self.game.callNraise(145,200000)
+        self.game.callNraise(147,400000)
+        
+        self.game.callNraise(145,261650)
+        self.game.fold(147)
         
         for (serial,player) in players.items():
             self.assertTrue(player.money>=0,"player %d has less than 0 money: %d" % (serial,player.money))
