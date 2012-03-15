@@ -3420,9 +3420,9 @@ class PokerGameTestCase(unittest.TestCase):
         
         # Change the ante properties        
         ante_properties =   {  
-                                    'value' : '900',
-                                    'bring-in' : '200'
-                                    }
+            'value' : '900',
+            'bring-in' : '200'
+        }
         
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', 'ante', ante_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
@@ -3462,8 +3462,9 @@ class PokerGameTestCase(unittest.TestCase):
         
         # The player 1 win
         self.failUnlessEqual(self.game.winners, [1])
+        
         rake = self.game.getRakedAmount()
-        self.failUnlessEqual(int(900 * 0.05), rake)
+        self.failUnlessEqual(int(1800 * 0.05), rake)
         self.failUnlessEqual(player1.money, 1600 + ( 900 - rake ))
         self.failUnlessEqual(player2.money, 1600 - ( 900 ))
         self.failUnlessEqual(self.game.pot, 0)
@@ -3744,8 +3745,9 @@ class PokerGameTestCase(unittest.TestCase):
         class PokerRakeHalf:
             def __init__(self, game):
                 pass
-            def getRake(self, game):
-                return int((game.getPotAmount() - game.getUncalled()) * .4)
+            def getRake(self, pot, uncalled, is_tournament):
+                return int((pot - uncalled) * .4)
+            
         self.game.rake = PokerRakeHalf(self.game)
         cards = [4, 37, 2, 29, 48, 16, 22, 23, 8, 3, 7]
         self.game.deck = self.game.eval.card2string(cards)
@@ -3767,7 +3769,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.beginTurn(1)
         self.failUnless(self.game.isFirstRound())
         
-        self.game.callNraise(1, 100000)
+        self.game.callNraise(1, 90000)
         self.game.call(2)
         self.game.call(3)
         
@@ -3781,8 +3783,9 @@ class PokerGameTestCase(unittest.TestCase):
         class PokerRakeMock:
             def __init__(self, game):
                 pass
-            def getRake(self, game):
-                return int((game.getPotAmount() - game.getUncalled()) * .1)
+            def getRake(self, pot, uncalled, is_tournament):
+                return int((pot - uncalled) * .1)
+            
         self.game.rake = PokerRakeMock(self.game)
 #        deck info        
         cards_to_player = (
@@ -3806,7 +3809,7 @@ class PokerGameTestCase(unittest.TestCase):
         
         PlayerMock = namedtuple('PlayerMock', ('serial','seat','money'))
         players_simple = [
-            PlayerMock(145, 1, 671650),
+            PlayerMock(145, 1, 640000),
             PlayerMock(148, 3, 10000),
             PlayerMock(147, 6, 620000),
             PlayerMock(150, 8, 10000),
@@ -3820,19 +3823,9 @@ class PokerGameTestCase(unittest.TestCase):
             players[p.serial] = self.AddPlayerAndSit(p.serial, p.seat)
             players[p.serial].money = p.money
             players[p.serial].missed_blind = None
-            self.game.noAutoBlindAnte(p.serial)
-        
-        self.game.blind_info['small'] = 1000
-        self.game.blind_info['big'] = 2000
+            self.game.autoBlindAnte(p.serial)
         
         self.game.beginTurn(1)
-        
-        players[148].missed_blind = 'big'
-        self.game.updateBlinds()
-        
-        for (serial,player) in players.items():
-            self.game.autoBlindAnte(serial)
-        
         self.failUnless(self.game.isFirstRound())
         
         self.game.callNraise(148, 800000)
@@ -3846,7 +3839,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.callNraise(145,200000)
         self.game.callNraise(147,400000)
         
-        self.game.callNraise(145,261650)
+        self.game.callNraise(145,220000)
         self.game.fold(147)
         
         for (serial,player) in players.items():
@@ -5591,40 +5584,40 @@ class PokerGameTestCase(unittest.TestCase):
 
         player = {}
 
-	money = {}
-	money[66] = 30000
-	money[76] = 10000
-	money[77] = 20000
+        money = {}
+        money[66] = 30000
+        money[76] = 10000
+        money[77] = 20000
 
         for serial in (66, 76, 77):
-	    self.assert_(game.addPlayer(serial))
+            self.assert_(game.addPlayer(serial))
             player[serial] = game.serial2player[serial]
-	    player[serial].money = 2000000
+            player[serial].money = 2000000
             player[serial].buy_in_payed = True
             self.assert_(game.sit(serial))
             #player[serial].auto_blind_ante = True
-	    player[serial].money = money[serial]
+            player[serial].money = money[serial]
             game.autoMuck(serial, pokergame.AUTO_MUCK_ALWAYS)
 
         game.dealer_seat = 0
 
         game.beginTurn(1)
 
-	player[66].blind = 'big_and_dead'
-	player[76].blind = 'small'
-	player[77].blind = 'big'
+        player[66].blind = 'big_and_dead'
+        player[76].blind = 'small'
+        player[77].blind = 'big'
 
         #
         # 77 : 4c 8c
         # 76 : 9s 4h
         # 66 : 3h Jh
         #
-	game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', '8c', '4h', 'Jh', '4c', '9s', '3h' ]
+        game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', '8c', '4h', 'Jh', '4c', '9s', '3h' ]
 
-	game.setPosition(0)
-	game.blind(66, 20000, 10000)
-	game.blind(76, 10000, 0)
-	game.blind(77, 20000, 0)
+        game.setPosition(0)
+        game.blind(66, 20000, 10000)
+        game.blind(76, 10000, 0)
+        game.blind(77, 20000, 0)
 
         self.assertEqual("end", game.state)
         rake = game.getRakedAmount()
@@ -5641,46 +5634,46 @@ class PokerGameTestCase(unittest.TestCase):
 
         player = {}
 
-	money = {}
-	money[66] = 2000000
-	money[76] = 1000000 
-	money[77] = 1000000 
+        money = {}
+        money[66] = 2000000
+        money[76] = 1000000 
+        money[77] = 1000000 
 
         for serial in (66, 76, 77):
-	    self.assert_(game.addPlayer(serial))
+            self.assert_(game.addPlayer(serial))
             player[serial] = game.serial2player[serial]
-	    player[serial].money = 200000
+            player[serial].money = 200000
             player[serial].buy_in_payed = True
             self.assert_(game.sit(serial))
             #player[serial].auto_blind_ante = True
             game.autoMuck(serial, pokergame.AUTO_MUCK_ALWAYS)
-	    player[serial].money = money[serial]
+            player[serial].money = money[serial]
 
         game.dealer_seat = 0
 
         game.beginTurn(1)
 
-	player[66].blind = 'big_and_dead'
-	player[76].blind = 'small'
-	player[77].blind = 'big'
+        player[66].blind = 'big_and_dead'
+        player[76].blind = 'small'
+        player[77].blind = 'big'
 
         #
         # 77 : 4c 8c
         # 76 : 9s 4h
         # 66 : 3h Jh
         #
-	game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', '4h', 'Jh', '8c', '9s', '3h', '4c' ]
+        game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', '4h', 'Jh', '8c', '9s', '3h', '4c' ]
 
-	game.setPosition(0)
-	game.blind(66, 20000, 10000)
-	game.blind(76, 10000, 0)
-	game.blind(77, 20000, 0)
+        game.setPosition(0)
+        game.blind(66, 20000, 10000)
+        game.blind(76, 10000, 0)
+        game.blind(77, 20000, 0)
 
         self.assertEqual(game.state, "pre-flop")
 
-	game.callNraise(66, 2000000)
-	game.call(76)
-	game.fold(77)
+        game.callNraise(66, 2000000)
+        game.call(76)
+        game.fold(77)
 
     def testLastInGameDoesNotAct(self):
         """ Test Poker Game : player folds (although he could check) while a player is allin and
@@ -5693,21 +5686,21 @@ class PokerGameTestCase(unittest.TestCase):
 
         player = {}
 
-	money = {}
-	money[66] = 200000
-	money[76] = 3000000 
-	money[77] = 100000 
+        money = {}
+        money[66] = 200000
+        money[76] = 3000000 
+        money[77] = 100000 
 
         for serial in (66, 76, 77):
-	    self.assert_(game.addPlayer(serial))
+            self.assert_(game.addPlayer(serial))
             player[serial] = game.serial2player[serial]
-	    player[serial].money = 200000
+            player[serial].money = 200000
             player[serial].buy_in_payed = True
             self.assert_(game.sit(serial))
             #player[serial].auto_blind_ante = True
             game.autoMuck(serial, pokergame.AUTO_MUCK_ALWAYS)
             game.autoBlindAnte(serial)
-	    player[serial].money = money[serial]
+            player[serial].money = money[serial]
 
         game.dealer_seat = 0
 
@@ -5716,7 +5709,7 @@ class PokerGameTestCase(unittest.TestCase):
         # 76 : 9s 4h
         # 66 : 3h Jh
         #
-	game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', '4h', 'Jh', '8c', '9s', '3h', '4c' ]
+        game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', '4h', 'Jh', '8c', '9s', '3h', '4c' ]
         game.board = pokercards.PokerCards(['9c', '3d', '2d', 'Qd', 'Ah'])
 
         # player list: [66, 76, 77]
@@ -5727,8 +5720,8 @@ class PokerGameTestCase(unittest.TestCase):
         game.check(77)
         self.assertEqual(game.state, "flop")
 
-	game.callNraise(76, 150000)
-	game.call(77)
+        game.callNraise(76, 150000)
+        game.call(77)
         game.call(66)
         self.assertEqual(game.state, "turn")
 
@@ -5748,21 +5741,21 @@ class PokerGameTestCase(unittest.TestCase):
 
         player = {}
 
-	money = {}
-	money[66] = 200000
-	money[76] = 3000000 
-	money[77] = 100000 
+        money = {}
+        money[66] = 200000
+        money[76] = 3000000 
+        money[77] = 100000 
 
         for serial in (66, 76, 77):
-	    self.assert_(game.addPlayer(serial))
+            self.assert_(game.addPlayer(serial))
             player[serial] = game.serial2player[serial]
-	    player[serial].money = 200000
+            player[serial].money = 200000
             player[serial].buy_in_payed = True
             self.assert_(game.sit(serial))
             #player[serial].auto_blind_ante = True
             game.autoMuck(serial, pokergame.AUTO_MUCK_ALWAYS)
             game.autoBlindAnte(serial)
-	    player[serial].money = money[serial]
+            player[serial].money = money[serial]
 
         game.dealer_seat = 0
 
@@ -5771,7 +5764,7 @@ class PokerGameTestCase(unittest.TestCase):
         # 76 : 9s Jd
         # 66 : 3h Jh
         #
-	game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', 'Jd', 'Jh', '8c', '9s', '3h', '4c' ]
+        game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', 'Jd', 'Jh', '8c', '9s', '3h', '4c' ]
         game.board = pokercards.PokerCards(['9c', '3d', '2d', 'Qd', 'Ah'])
 
         # player list: [66, 76, 77]
@@ -5782,8 +5775,8 @@ class PokerGameTestCase(unittest.TestCase):
         game.check(77)
         self.assertEqual(game.state, "flop")
 
-	game.callNraise(76, 150000)
-	game.call(77)
+        game.callNraise(76, 150000)
+        game.call(77)
         game.call(66)
         self.assertEqual(game.state, "turn")
 

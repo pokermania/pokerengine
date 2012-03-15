@@ -1703,7 +1703,6 @@ class PokerGame:
         self.changeState(GAME_STATE_MUCK)
         
         if self.is_directing:
-            self.setRakedAmount(self.rake.getRake(self))
             self.distributeMoney()
             to_show, muckable_candidates_serials = self.dispatchMuck()
            
@@ -1871,11 +1870,11 @@ class PokerGame:
         # lower than the highest bet on the table or if he did not yet talk in this
         # betting round (for instance if he payed the big blind or a late blind).
         #
-        return ( self.round_cap_left != 0 and
-                 money > highest_bet - bet and
-                 ( player.talked_once == False or
-                   bet < highest_bet )
-                 )
+        return (
+                self.round_cap_left != 0
+            and money > highest_bet - bet
+            and (player.talked_once == False or bet < highest_bet)
+        )
 
     def canCheck(self, serial):
         """
@@ -2624,21 +2623,30 @@ class PokerGame:
             # everyone folded. Don't bother to evaluate.
             #
             (serial,) = self.serialsNotFold()
+
+            self.setRakedAmount(self.rake.getRake(self.getPotAmount(),self.getUncalled(),self.isTournament()))
             self.pot -= self.getRakedAmount()
+            
             serial2rake[serial] = self.getRakedAmount()
             serial2delta[serial] += self.pot
-            self.showdown_stack = [ { 'type': 'game_state',
-                                      'player_list': self.player_list,
-                                      'side_pots': side_pots,
-                                      'pot': pot_backup,
-                                      'foldwin': True,
-                                      'serial2share': { serial: self.pot },
-                                      'serial2delta': serial2delta,
-                                      'serial2rake': serial2rake },
-                                    { 'type': 'resolve',
-                                      'serial2share': { serial: pot_backup },
-                                      'serials': [serial],
-                                      'pot': pot_backup } ]
+            self.showdown_stack = [ 
+                { 
+                    'type': 'game_state',
+                    'player_list': self.player_list,
+                    'side_pots': side_pots,
+                    'pot': pot_backup,
+                    'foldwin': True,
+                    'serial2share': { serial: self.pot },
+                    'serial2delta': serial2delta,
+                    'serial2rake': serial2rake 
+                },
+                { 
+                    'type': 'resolve',
+                    'serial2share': { serial: pot_backup },
+                    'serials': [serial],
+                    'pot': pot_backup 
+                } 
+            ]
             if self.verbose > 2: self.message(pformat(self.showdown_stack))
             self.pot2money(serial)
             self.setWinners([serial])
@@ -2743,9 +2751,11 @@ class PokerGame:
             #
             # Ask poker-eval to figure out who the winners actually are
             #
-            poker_eval = self.eval.winners(game = self.variant,
-                                     pockets = [ player.hand.tolist(True) for player in potential_winners ],
-                                     board = self.board.tolist(True))
+            poker_eval = self.eval.winners(
+                game = self.variant,
+                pockets = [ player.hand.tolist(True) for player in potential_winners ],
+                board = self.board.tolist(True)
+            )
             #
             # Feed local variables with eval results sorted in various
             # forms to ease computing the results.
@@ -2809,13 +2819,20 @@ class PokerGame:
         #
         serial2rackable = serial2share.copy()
         pot_rackable = pot_backup
+#        
         if showdown_stack[0]['type'] == 'uncalled':
             uncalled = showdown_stack[0]
             serial2rackable[uncalled['serial']] -= uncalled['uncalled']
             pot_rackable -= uncalled['uncalled']
             if serial2rackable[uncalled['serial']] <= 0:
                 del serial2rackable[uncalled['serial']]
+        
+        #
+        # reset raked amount 
+        # 
+        self.setRakedAmount(self.rake.getRake(pot_rackable,0,self.isTournament()))
         serial2rake = self.distributeRake(self.getRakedAmount(), pot_rackable, serial2rackable)
+        
         for serial in serial2rake.keys():
             serial2share[serial] -= serial2rake[serial]
             serial2delta[serial] -= serial2rake[serial]
@@ -2834,9 +2851,11 @@ class PokerGame:
             serial2share.setdefault(player.serial, 0)
             serial2share[player.serial] += chips_left
             serial2delta[player.serial] += chips_left
-            showdown_stack.insert(0, { 'type': 'left_over',
-                                       'chips_left': chips_left,
-                                       'serial': player.serial })
+            showdown_stack.insert(0, { 
+                'type': 'left_over',
+                 'chips_left': chips_left,
+                 'serial': player.serial 
+            })
 
         self.pot = 0
         #
@@ -2848,15 +2867,16 @@ class PokerGame:
             self.side2winners[side] = uniq(self.side2winners[side])
             winners_serials += self.side2winners[side]
         self.setWinners(uniq(winners_serials))
-        showdown_stack.insert(0, { 'type': 'game_state',
-                                   'serial2best': self.serial2best,
-                                   'player_list': self.player_list,
-                                   'side_pots': side_pots,
-                                   'pot': pot_backup,
-                                   'serial2share': serial2share,
-                                   'serial2rake': serial2rake,
-                                   'serial2delta': serial2delta
-                                   })
+        showdown_stack.insert(0, {
+            'type': 'game_state',
+            'serial2best': self.serial2best,
+            'player_list': self.player_list,
+            'side_pots': side_pots,
+            'pot': pot_backup,
+            'serial2share': serial2share,
+            'serial2rake': serial2rake,
+            'serial2delta': serial2delta
+        })
         self.showdown_stack = showdown_stack
         if not self.is_directing: self.updateHistoryEnd(self.winners, showdown_stack)
         if self.verbose > 2: self.message(pformat(self.showdown_stack))

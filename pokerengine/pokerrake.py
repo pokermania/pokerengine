@@ -31,14 +31,13 @@ class PokerRake:
     def __init__(self, game):
         pass
 
-    def getRake(self, game):
+    def getRake(self, pot, uncalled, is_tournament = False):
         """ implementation constraint of compute is as follows :
         for any game1.pot greater than game2.pot
         compute(game1.pot) MUST be greater or equal to compute(game2.pot) """
-        if game.isTournament():
-            return 0
-        else:
-            return int((game.getPotAmount() - game.getUncalled()) * .05)
+        return 0 \
+            if is_tournament \
+            else int((pot - uncalled) * .05)
 
 _get_rake_instance = None
 
