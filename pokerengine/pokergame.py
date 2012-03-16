@@ -109,10 +109,8 @@ class PokerRandom(random.Random):
 
     def seed(self, ignore):
         if self._file:
-            try:
-                self._file.close()
-            except:
-                pass
+            try: self._file.close()
+            except Exception: pass
         if self._paranoid:
 #           we don't support /dev/random because it can
 #           cause problems on several virtualization architectures
@@ -499,11 +497,6 @@ WON_ALLIN_BLIND = 0 # turn ended on allin in blind phase
 WON_ALLIN       = 1 # turn ended on allin
 WON_FOLD        = 2 # turn ended on fold
 WON_REGULAR     = 3 # turn ended normally
-
-class EndlessLoop(Exception):
-    """ Raised if an endless loop is encountered in the search for a player
-        who is currently in the game.
-        """
 
 class PokerGame:
     def __init__(self, url, is_directing, dirs):
@@ -1117,7 +1110,7 @@ class PokerGame:
                         player.missed_blind = what
                     if player.missed_blind == "big" and what == "big":
                         player.missed_big_blind_count += 1
-                    if self.verbose > 5: 
+                    if self.verbose > 2:
                         self.message("%d big blind count is now %d because of %s" % (player.serial, player.missed_big_blind_count, what))
                 index += 1
             return index
@@ -3321,21 +3314,25 @@ class PokerGame:
     # total of "increment", skipping the players for which "predicate"
     # is false.
     #
-    def playerListIndexAdd(self, index, increment, predicate):
-        if increment > 0:
-            step = 1
-        else:
-            step = -1
-        while increment:
-            index = (index + step) % len(self.player_list)
-            increment -= step
-            players_checked = []
-            while not predicate(self.serial2player[self.player_list[index]]):
-                index = (index + step) % len(self.player_list)
-                if index in players_checked:
-                    raise EndlessLoop("Endless loop detected")
-                players_checked.append(index)
-        return index
+    def playerListIndexAdd(self,index,increment,predicate):
+        round_trip = range(0,len(self.player_list)) \
+            if increment >= 0 \
+            else range(len(self.player_list),0,-1)
+        
+        player_list_ordered = [(x+index) % len(self.player_list) for x in round_trip]
+        player_list_filtered = [p for p in player_list_ordered if predicate(self.serial2player[self.player_list[p]])]
+        
+        # If the player itself did not succeed in the predicate test, he is not
+        # in the player_list_filtered --> his index is now occupied by another
+        # player. instead of recalculating, we can simply subtract the (now missing)
+        # position from the increment.
+        # The absolute value is used for the increment, since we reversed the order already
+        # if the value is negative 
+        increment = abs(increment) \
+            if predicate(self.serial2player[self.player_list[index]]) \
+            else abs(increment) - 1 
+        
+        return player_list_filtered[increment % len(player_list_filtered)]
         
     def getSerialDealer(self):
         return self.player_list[self.dealer]

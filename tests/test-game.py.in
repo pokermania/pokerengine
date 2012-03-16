@@ -153,6 +153,10 @@ class PokerGameTestCase(unittest.TestCase):
         
         self.failUnlessEqual(len(numbers1), 20)
         self.failUnlessEqual(len(numbers2), 20)
+
+        # Set file to None and re-seed
+        random1._file = None
+        random1.seed(None)
         
     # ---------------------------------------------------------    
     def testGetSerialByNameNoCase(self):
@@ -5797,6 +5801,52 @@ class PokerGameTestCase(unittest.TestCase):
         turn_history = [("end", [], []),]
         pokergame.history2messages(None, turn_history)
 
+    def testPlayerListIndexAdd(self):
+        game = self.game
+        players = [
+            (100, True),
+            (101, True),
+            (102, False),
+            (103, False),
+            (104, True),
+            (105, False),
+        ]
+        pred = lambda x: x[1]
+        game.player_list = [p[0] for p in players]
+        game.serial2player = dict((p[0],p) for p in players)
+        players_truey_count = len([p for p in players if pred(p)])
+        
+        # positive without skip
+        self.assertEqual(1,game.playerListIndexAdd(0, 1, pred))
+        
+        # positive with skip
+        self.assertEqual(4,game.playerListIndexAdd(1, 1, pred))
+        
+        # positive with skip, position is falsy
+        self.assertEqual(4,game.playerListIndexAdd(2, 1, pred))
+        self.assertEqual(4,game.playerListIndexAdd(3, 1, pred))
+        
+        # test loop over
+        self.assertEqual(0,game.playerListIndexAdd(3, 2, pred))
+        self.assertEqual(0,game.playerListIndexAdd(4, 1, pred))
+        
+        # test simple negative
+        self.assertEqual(4,game.playerListIndexAdd(0, -1, pred))
+        self.assertEqual(4,game.playerListIndexAdd(5, -1, pred))
+        self.assertEqual(1,game.playerListIndexAdd(4, -1, pred))
+        
+        # test too big for list, position is truey
+        self.assertEqual(0,game.playerListIndexAdd(4, 1+2*players_truey_count, pred))
+        self.assertEqual(0,game.playerListIndexAdd(4, 1-2*players_truey_count, pred))
+
+        # test too big for list, position is falsy
+        self.assertEqual(4,game.playerListIndexAdd(3, 1+2*players_truey_count, pred))
+        self.assertEqual(0,game.playerListIndexAdd(3, 1-2*players_truey_count, pred))
+        
+        # test too big for list, position is falsy, gets itself
+        self.assertEqual(4,game.playerListIndexAdd(3, 4+2*players_truey_count, pred))
+        self.assertEqual(0,game.playerListIndexAdd(3, 4-2*players_truey_count, pred))
+        
     # ---------------------------------------------------------
     def AddPlayerAndSit(self, serial, seat = -1):
         self.failUnless(self.game.addPlayer(serial, seat))
