@@ -25,24 +25,15 @@
 from math import ceil
 from types import StringType
 from pprint import pformat
-import time, sys, random
+import time, random
 
-def tournament_seconds():
-    return time.time()
+from twisted.python.runtime import seconds
 
 shuffler = random
 
 from pokerengine.pokergame import PokerGameServer
 from pokerengine import pokerprizes
 
-TOURNAMENT_STATE_ANNOUNCED = "announced"
-TOURNAMENT_STATE_REGISTERING = "registering"
-TOURNAMENT_STATE_RUNNING = "running"
-TOURNAMENT_STATE_BREAK_WAIT = "breakwait"
-TOURNAMENT_STATE_BREAK = "break"
-TOURNAMENT_STATE_COMPLETE = "complete"
-TOURNAMENT_STATE_CANCELED = "canceled"
-            
 def equalizeCandidates(games):
     #
     # Games less than 70% full are willing to steal players from other
@@ -170,7 +161,17 @@ def breakGame(to_break, to_fill, verbose = 0, log_message = None):
 
 class PokerTournament:
 
-    def __init__(self, *args, **kwargs):
+    class STATES:
+        ANNOUNCED = "announced"
+        REGISTERING = "registering"
+        RUNNING = "running"
+        BREAK_WAIT = "breakwait"
+        BREAK = "break"
+        COMPLETE = "complete"
+        CANCELED = "canceled"
+        ABORTED = "aborted"
+
+    def __init__(self, **kwargs):
         self.name = kwargs.get('name', 'no name')
         self.description_short = kwargs.get('description_short', 'nodescription_short')
         self.description_long = kwargs.get('description_long', 'nodescription_long')
@@ -198,7 +199,6 @@ class PokerTournament:
         self.add_on_delay = kwargs.get('add_on_delay', 60)
         self.prize_min = kwargs.get('prize_min', 0)
         self.prizes_specs = kwargs.get('prizes_specs', "table")
-        self.rank2prize = None
         self.finish_time = -1
         if type(self.start_time) is StringType:
             self.start_time = int(time.mktime(time.strptime(self.start_time, "%Y/%m/%d %H:%M")))
@@ -208,8 +208,7 @@ class PokerTournament:
         self.need_balance = False
         self.registered = 0
         self.winners = []
-        self.state = TOURNAMENT_STATE_ANNOUNCED
-        self.can_register = False
+        self.state = self.STATES.ANNOUNCED
         self.games = []
         self.id2game = {}
         
@@ -240,7 +239,7 @@ class PokerTournament:
         print self.prefix + "[PokerTournament %s] " % self.name + message
         
     def canRun(self):
-        if self.start_time < tournament_seconds():
+        if self.start_time < seconds():
             if self.sit_n_go == 'y' and self.registered >= self.players_quota:
                 return True
             elif self.sit_n_go == 'n':
@@ -262,10 +261,10 @@ class PokerTournament:
             return -1
         
     def updateRegistering(self):
-        if self.state == TOURNAMENT_STATE_ANNOUNCED:
-            now = tournament_seconds()
+        if self.state == self.STATES.ANNOUNCED:
+            now = seconds()
             if now - self.register_time > 0.0:
-                self.changeState(TOURNAMENT_STATE_REGISTERING)
+                self.changeState(self.STATES.REGISTERING)
                 return -1
             else:
                 return self.register_time - now
@@ -274,18 +273,18 @@ class PokerTournament:
             return -1
 
     def updateRunning(self):
-        if self.state == TOURNAMENT_STATE_REGISTERING:
+        if self.state == self.STATES.REGISTERING:
             ready = self.canRun()
             if ready == True:
-                self.changeState(TOURNAMENT_STATE_RUNNING)
+                self.changeState(self.STATES.RUNNING)
             elif ready == None:
-                self.changeState(TOURNAMENT_STATE_CANCELED)
+                self.changeState(self.STATES.CANCELED)
             elif ready == False:
                 pass
 
     def remainingBreakSeconds(self):
         if self.breaks_since > 0:
-            return self.breaks_duration - ( tournament_seconds() - self.breaks_since )
+            return self.breaks_duration - (seconds() - self.breaks_since)
         else:
             return None
         
@@ -293,17 +292,17 @@ class PokerTournament:
         if self.breaks_duration <= 0:
             return False
 
-        if self.state == TOURNAMENT_STATE_RUNNING:
-            running_duration = tournament_seconds() - self.breaks_running_since
+        if self.state == self.STATES.RUNNING:
+            running_duration = seconds() - self.breaks_running_since
             if self.breaks_count > 0:
                 running_max = self.breaks_interval
             else:
                 running_max = self.breaks_first
             if running_duration >= running_max:
                 self.breaks_games_id = []
-                self.changeState(TOURNAMENT_STATE_BREAK_WAIT)
+                self.changeState(self.STATES.BREAK_WAIT)
                 
-        if self.state == TOURNAMENT_STATE_BREAK_WAIT:
+        if self.state == self.STATES.BREAK_WAIT:
             #
             # game_id is 0 when updateBreak is called after a table was destroyed
             # as a side effect of balanceGames
@@ -340,89 +339,103 @@ class PokerTournament:
                     break
             if on_break:
                 del self.breaks_games_id
-                self.changeState(TOURNAMENT_STATE_BREAK)
+                self.changeState(self.STATES.BREAK)
 
-        if self.state == TOURNAMENT_STATE_BREAK:
+        if self.state == self.STATES.BREAK:
             if self.remainingBreakSeconds() <= 0:
                 self.breaks_count += 1
-                self.changeState(TOURNAMENT_STATE_RUNNING)
+                self.changeState(self.STATES.RUNNING)
 
-        if self.state not in (TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT, TOURNAMENT_STATE_BREAK):
+        if self.state not in (self.STATES.RUNNING, self.STATES.BREAK_WAIT, self.STATES.BREAK):
             if self.verbose >= 0: print "PokerTournament:updateBreak: is not supposed to be called while in state %s" % self.state
             return None
         
         return True
-        
-    def changeState(self, state):
-        if self.state == TOURNAMENT_STATE_ANNOUNCED and state == TOURNAMENT_STATE_REGISTERING:
-            self.can_register = True
-        elif self.state == TOURNAMENT_STATE_RUNNING and state == TOURNAMENT_STATE_BREAK_WAIT:
+
+    def changeState(self, new_state):
+        # announced -> registering
+        if self.state == self.STATES.ANNOUNCED and new_state == self.STATES.REGISTERING:
             pass
-        elif self.state == TOURNAMENT_STATE_BREAK_WAIT and state == TOURNAMENT_STATE_BREAK:
-            self.breaks_since = tournament_seconds()
-        elif self.state == TOURNAMENT_STATE_BREAK and state == TOURNAMENT_STATE_RUNNING:
-            self.breaks_since = -1
-            self.breaks_running_since = tournament_seconds()
-        elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_RUNNING:
-            self.start_time = tournament_seconds()
+        
+        # registering -> running
+        elif self.state == self.STATES.REGISTERING and new_state == self.STATES.RUNNING:
+            self.start_time = seconds()
             self.breaks_running_since = self.start_time
             self.createGames()
-            self.can_register = False
-        elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_CANCELED:
-            self.can_register = False
+        
+        # registering -> canceled
+        elif self.state == self.STATES.REGISTERING and new_state == self.STATES.CANCELED:
             self.cancel()
-            self.finish_time = tournament_seconds()
-        elif ( self.state in ( TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT ) and
-               state == TOURNAMENT_STATE_COMPLETE ):
-            self.finish_time = tournament_seconds()
+            self.finish_time = seconds()
+        
+        # running -> break_wait
+        elif self.state == self.STATES.RUNNING and new_state == self.STATES.BREAK_WAIT:
+            pass
+        
+        # running -> complete
+        elif self.state == self.STATES.RUNNING and new_state == self.STATES.COMPLETE:
+            self.finish_time = seconds()
+        
+        # running -> aborted
+        elif self.state == self.STATES.RUNNING and new_state == self.STATES.ABORTED:
+            pass
+        
+        # break_wait -> break
+        elif self.state == self.STATES.BREAK_WAIT and new_state == self.STATES.BREAK:
+            self.breaks_since = seconds()
+        
+        # break -> running
+        elif self.state == self.STATES.BREAK and new_state == self.STATES.RUNNING:
+            self.breaks_since = -1
+            self.breaks_running_since = seconds()
+        
+        # except if trying to change to/from invalid state
         else:
-            if self.verbose >= 0: print "PokerTournament:changeState: cannot change from state %s to state %s" % ( self.state, state )
-            return
-        if self.verbose > 2: self.message("state change %s => %s" % ( self.state, state ))
+            raise Exception("Can not change from state %s to state %s" % (self.state, new_state))
+        
+        if self.verbose > 2:
+            self.message("state change %s => %s" % (self.state, new_state))
         old_state = self.state
-        self.state = state
-        self.callback_new_state(self, old_state, self.state)
+        self.state = new_state
+        
+        self.callback_new_state(self, old_state, new_state)
 
     def isRegistered(self, serial):
         return serial in self.players
         
     def canRegister(self, serial):
-        if self.can_register and self.registered < self.players_quota:
-            return not self.isRegistered(serial)
-        else:
-            return False
+        return self.state == self.STATES.REGISTERING and \
+            self.registered < self.players_quota and \
+            not self.isRegistered(serial)
 
     def canUnregister(self, serial):
-        return self.isRegistered(serial) and self.state == TOURNAMENT_STATE_REGISTERING
+        return self.state == self.STATES.REGISTERING and \
+            self.isRegistered(serial)
         
     def register(self, serial):
-        if self.can_register:
+        if self.canRegister(serial):
             self.players.append(serial)
             self.registered += 1
             if self.sit_n_go != 'y':
                 self.prizes_object.addPlayer()
-                self.rank2prize = None
-            if self.state == TOURNAMENT_STATE_REGISTERING:
-                self.updateRunning()
-            elif self.state == TOURNAMENT_STATE_RUNNING:
-                self.sitPlayer(serial)
+            if self.canRun():
+                self.changeState(self.STATES.RUNNING)
             return True
         else:
             return False
 
     def unregister(self, serial):
-        if self.state == TOURNAMENT_STATE_REGISTERING:
+        if self.canUnregister(serial):
             self.players.remove(serial)
             self.registered -= 1
             if self.sit_n_go != 'y':
                 self.prizes_object.removePlayer()
-                self.rank2prize = None
             return True
         else:
             return False
 
     def cancel(self):
-        if self.state == TOURNAMENT_STATE_REGISTERING:
+        if self.state == self.STATES.REGISTERING:
             self.callback_cancel(self)
             self.players = []
             self.registered = 0
@@ -516,7 +529,7 @@ class PokerTournament:
             self.callback_destroy_game(self, game)
             self.games = []
             self.id2game = {}
-            self.changeState(TOURNAMENT_STATE_COMPLETE)
+            self.changeState(self.STATES.COMPLETE)
             return False
         else:
             if loosers_count > 0 or self.need_balance:
@@ -539,7 +552,7 @@ class PokerTournament:
         for (from_id, to_id, serials) in to_break:
             for serial in serials:
                 if self.verbose > 2: self.message("balanceGames: player %d moved from %d to %d" % ( serial, from_id, to_id ))
-                if self.state == TOURNAMENT_STATE_REGISTERING:
+                if self.state == self.STATES.REGISTERING:
                     self.movePlayer(from_id, to_id, serial)
                 else:
                     self.callback_move_player(self, from_id, to_id, serial)
@@ -557,7 +570,7 @@ class PokerTournament:
         to_equalize = equalizeGames(self.games, self.verbose, self.message)
         for (from_id, to_id, serial) in to_equalize:
             if self.verbose > 2: self.message("balanceGames: player %d moved from %d to %d" % ( serial, from_id, to_id ))
-            if self.state == TOURNAMENT_STATE_REGISTERING:
+            if self.state == self.STATES.REGISTERING:
                 self.movePlayer(from_id, to_id, serial)
             else:
                 self.callback_move_player(self, from_id, to_id, serial)
@@ -569,6 +582,4 @@ class PokerTournament:
         return len(to_equalize) > 0
 
     def prizes(self):
-        if not self.rank2prize:
-            self.rank2prize = self.prizes_object.getPrizes()
-        return self.rank2prize
+        return self.prizes_object.getPrizes()
