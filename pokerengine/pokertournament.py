@@ -399,6 +399,7 @@ class PokerTournament:
         if self.can_register:
             self.players.append(serial)
             self.registered += 1
+            self.rank2prize = None
             if self.sit_n_go != 'y':
                 self.prizes_object.addPlayer()
             if self.state == TOURNAMENT_STATE_REGISTERING:
