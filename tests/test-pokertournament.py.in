@@ -87,9 +87,8 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(tournament.winners, [])
         self.failIf(tournament.need_balance)
         
-        self.failUnlessEqual(tournament.state, pokertournament.PokerTournament.STATES.REGISTERING)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
         self.failUnlessEqual(tournament.registered, 0)
-        self.failUnless(tournament.can_register)
         
             
     # -------------------------------------------------------
@@ -130,7 +129,6 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_ANNOUNCED)
         self.failUnlessEqual(tournament.registered, 0)
-        self.failIf(tournament.can_register)
         
         # TODO Payout
         
@@ -154,7 +152,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         time.sleep(4)
         self.failIf((tournament.register_time - time.time()) > 0.0)
         self.failUnlessEqual(tournament.updateRegistering(), -1)
-        self.failUnlessEqual(tournament.state, pokertournament.PokerTournament.STATES.REGISTERING)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
         
         self.failUnlessEqual(tournament.updateRegistering(), -1)
         
@@ -174,7 +172,6 @@ class PokerTournamentTestCase(unittest.TestCase):
         tournament = pokertournament.PokerTournament(**arguments)
         
         # The tournament has been created and players can be regsitered
-        self.failUnless(tournament.can_register)
         self.failUnlessEqual(tournament.players, [])
         self.failUnlessEqual(tournament.registered, 0)
         
@@ -188,7 +185,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(tournament.registered, 1)
         self.failUnless(tournament.isRegistered(1))
         
-        self.failUnlessEqual(tournament.state, pokertournament.PokerTournament.STATES.REGISTERING)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
         
         # The player 1 can be registered
         self.failIf(tournament.isRegistered(2))
@@ -201,18 +198,12 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnless(tournament.isRegistered(2))
         
         # Change the tournament state
-        tournament.changeState(pokertournament.PokerTournament.STATES.RUNNING)
-        self.failUnlessEqual(tournament.state, pokertournament.PokerTournament.STATES.RUNNING)
+        tournament.changeState(pokertournament.TOURNAMENT_STATE_RUNNING)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_RUNNING)
         # Players can not be regsitered
         self.failIf(tournament.canRegister(3))
         self.failIf(tournament.register(3))
 
-        tournament.can_register = True
-        # Register the player
-        self.failUnless(tournament.can_register)
-        self.failUnless(tournament.canRegister(3))
-        self.failUnless(tournament.register(3))
-        
     # -------------------------------------------------------
     def testChangeState(self):
         """Test Poker Tournament : Change state"""
@@ -226,25 +217,25 @@ class PokerTournamentTestCase(unittest.TestCase):
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
-        # Iniitalize state to ANNOUNCED
+        # Iniitalize state to TOURNAMENT_STATE_ANNOUNCED
         tournament.state = pokertournament.TOURNAMENT_STATE_ANNOUNCED
         self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_ANNOUNCED)
         
-        # Go to state REGISTERING
-        tournament.changeState(pokertournament.PokerTournament.STATES.REGISTERING)
-        self.failUnlessEqual(tournament.state, pokertournament.PokerTournament.STATES.REGISTERING)
+        # Go to state TOURNAMENT_STATE_REGISTERING
+        tournament.changeState(pokertournament.TOURNAMENT_STATE_REGISTERING)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
         
-        # Try to go return to ANNOUNCED
-        tournament.changeState(pokertournament.PokerTournament.STATES.ANNOUNCED)
-        self.failUnlessEqual(tournament.state, pokertournament.PokerTournament.STATES.REGISTERING)
+        # Try to go return to TOURNAMENT_STATE_ANNOUNCED
+        tournament.changeState(pokertournament.TOURNAMENT_STATE_ANNOUNCED)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
         
-        # Go to state RUNNING
-        tournament.changeState(pokertournament.PokerTournament.STATES.RUNNING)
-        self.failUnlessEqual(tournament.state, pokertournament.PokerTournament.STATES.RUNNING)
+        # Go to state TOURNAMENT_STATE_RUNNING
+        tournament.changeState(pokertournament.TOURNAMENT_STATE_RUNNING)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_RUNNING)
         
-        # Go to state COMPLETE
-        tournament.changeState(pokertournament.PokerTournament.STATES.COMPLETE)
-        self.failUnlessEqual(tournament.state, pokertournament.PokerTournament.STATES.COMPLETE)
+        # Go to state TOURNAMENT_STATE_COMPLETE
+        tournament.changeState(pokertournament.TOURNAMENT_STATE_COMPLETE)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_COMPLETE)
         
         
     # -------------------------------------------------------
@@ -260,7 +251,7 @@ class PokerTournamentTestCase(unittest.TestCase):
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
-        self.failUnlessEqual(tournament.state, pokertournament.PokerTournament.STATES.REGISTERING)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
         self.failIf(tournament.canUnregister(1))
         
         self.failUnless(tournament.register(1))
@@ -268,7 +259,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         self.failUnless(tournament.register(2))
         
-        self.failIfEqual(tournament.state, pokertournament.PokerTournament.STATES.REGISTERING)
+        self.failIfEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
         self.failIf(tournament.canUnregister(1))
         
     # -------------------------------------------------------
@@ -288,7 +279,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(tournament.players, [1])
         self.failUnlessEqual(tournament.registered, 1)
         
-        self.failUnlessEqual(tournament.state, pokertournament.PokerTournament.STATES.REGISTERING)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
         
         self.failUnless(tournament.unregister(1))
         self.failUnlessEqual(tournament.players, [])
@@ -296,7 +287,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         self.failUnless(tournament.register(1))
         self.failUnless(tournament.register(2))
-        self.failIfEqual(tournament.state, pokertournament.PokerTournament.STATES.REGISTERING)
+        self.failIfEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
         
         self.failIf(tournament.unregister(1))
         
@@ -323,7 +314,7 @@ class PokerTournamentTestCase(unittest.TestCase):
             self.failUnless(tournament.register(player))
             
         self.failUnlessEqual(tournament.registered, nplayers)
-        self.failUnlessEqual(tournament.state, pokertournament.PokerTournament.STATES.REGISTERING)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
         
         self.failUnlessEqual(tournament.id2game, {})
         
@@ -705,7 +696,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         # pokertournament.equalizeGames()
 
         tournament.createGames()
-        tournament.state = pokertournament.PokerTournament.STATES.RUNNING
+        tournament.state = pokertournament.TOURNAMENT_STATE_RUNNING
         self.failUnlessEqual(len(tournament.games[0].serialsAll()), 3)
         self.failUnlessEqual(len(tournament.games[1].serialsAll()), 4)
         self.failUnlessEqual(len(tournament.games[2].serialsAll()), 5)
@@ -906,7 +897,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failIf(tournament.endTurn(1))
         
         # End of the tounament
-        self.failUnlessEqual(tournament.state, pokertournament.PokerTournament.STATES.BREAK)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_COMPLETE)
         self.failUnlessEqual(len(tournament.games), 0)
         self.failUnlessEqual(len(tournament.id2game), 0)
         
@@ -957,7 +948,7 @@ class PokerTournamentTestCase(unittest.TestCase):
 
         # End turn of game 1
         self.failUnless(tournament.endTurn(1))
-        self.failUnlessEqual(pokertournament.PokerTournament.STATES.BREAK_WAIT, tournament.state)
+        self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_BREAK_WAIT, tournament.state)
         self.failUnlessEqual([1], tournament.breaks_games_id)
         
         # Game 2, players 1, 2, 3, 4 broke as if 5 got all their chips
@@ -974,9 +965,9 @@ class PokerTournamentTestCase(unittest.TestCase):
         # Game balanced, game2 discarded, game1 left
         self.failUnlessEqual(len(game1.playersAll()), 5)
         self.failUnlessEqual([game1], tournament.games)
-        self.failUnlessEqual(pokertournament.PokerTournament.STATES.BREAK, tournament.state)
+        self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_BREAK, tournament.state)
 
-        tournament.state = pokertournament.PokerTournament.STATES.RUNNING
+        tournament.state = pokertournament.TOURNAMENT_STATE_RUNNING
         
         # Game 1 players broke
         players = game1.playersAll()
@@ -988,7 +979,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failIf(tournament.endTurn(1))
         
         # End of the tounament
-        self.failUnlessEqual(tournament.state, pokertournament.PokerTournament.STATES.BREAK)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_COMPLETE)
         self.failUnlessEqual(len(tournament.games), 0)
         self.failUnlessEqual(len(tournament.id2game), 0)
         
@@ -1041,7 +1032,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         # End turn of game 2
         self.failUnless(tournament.endTurn(2))
         self.failUnlessEqual(len(game2.playersAll()), 1)
-        self.failUnlessEqual(pokertournament.PokerTournament.STATES.RUNNING, tournament.state)
+        self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_RUNNING, tournament.state)
 
         # break time is now
         tournament.breaks_first = 0
@@ -1049,7 +1040,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         # End turn of game 1
         self.failUnless(tournament.endTurn(1))
         self.failUnlessEqual([game1,game2], tournament.games)
-        self.failUnlessEqual(pokertournament.PokerTournament.STATES.BREAK, tournament.state)
+        self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_BREAK, tournament.state)
         self.failUnlessEqual(len(game1.playersAll()), 2)
         self.failUnlessEqual(len(game2.playersAll()), 1)
 
@@ -1105,7 +1096,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.assertEqual(None, tournament.canRun())
         tournament.updateRunning()
         self.failUnlessEqual([], tournament.players)
-        self.failUnlessEqual(pokertournament.PokerTournament.STATES.BREAK, tournament.state)
+        self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_CANCELED, tournament.state)
         self.failIf(tournament.cancel())
 
     # -------------------------------------------------------
@@ -1127,13 +1118,13 @@ class PokerTournamentTestCase(unittest.TestCase):
         tournament.start_time = 0
         self.failUnless(tournament.register(2))
         
-        self.failUnlessEqual(pokertournament.PokerTournament.STATES.RUNNING, tournament.state)
+        self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_RUNNING, tournament.state)
 
 class Breaks(unittest.TestCase):
 
     def setUp(self):
         self.now = time.time() + 20000
-        pokertournament.seconds = self.seconds
+        pokertournament.tournament_seconds = self.seconds
         
     def seconds(self):
         return self.now
@@ -1166,7 +1157,7 @@ class Breaks(unittest.TestCase):
             }
                             
         tournament = pokertournament.PokerTournament(**arguments)
-        tournament.state = pokertournament.PokerTournament.STATES.RUNNING
+        tournament.state = pokertournament.TOURNAMENT_STATE_RUNNING
         #
         # No break, updateBreak does nothing
         #
@@ -1198,13 +1189,13 @@ class Breaks(unittest.TestCase):
         self.failUnless(tournament.updateBreak(1))
         self.failUnless(hasattr(tournament, 'breaks_games_id'))
         self.assertEqual([1],tournament.breaks_games_id)
-        self.assertEqual(pokertournament.PokerTournament.STATES.BREAK_WAIT, tournament.state)
+        self.assertEqual(pokertournament.TOURNAMENT_STATE_BREAK_WAIT, tournament.state)
         #
         # BREAK_WAIT -> BREAK
         #
         self.failUnless(tournament.updateBreak(2))
         self.failIf(hasattr(tournament, 'breaks_games_id'))
-        self.assertEqual(pokertournament.PokerTournament.STATES.BREAK, tournament.state)
+        self.assertEqual(pokertournament.TOURNAMENT_STATE_BREAK, tournament.state)
         self.assertEqual(self.now, tournament.breaks_since)
         #
         # BREAK -> RUNNING
@@ -1215,7 +1206,7 @@ class Breaks(unittest.TestCase):
         #
         # Call with invalid state
         #
-        tournament.state = pokertournament.PokerTournament.STATES.BREAK
+        tournament.state = pokertournament.TOURNAMENT_STATE_CANCELED
         self.assertEqual(None, tournament.updateBreak())
 
 # ---------------------------------------------------------
