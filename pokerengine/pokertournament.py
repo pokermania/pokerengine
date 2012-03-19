@@ -397,8 +397,10 @@ class PokerTournament:
             self.registered += 1
             if self.sit_n_go != 'y':
                 self.prizes_object.addPlayer()
-            if self.canRun():
-                self.changeState(TOURNAMENT_STATE_RUNNING)
+            if self.state == TOURNAMENT_STATE_REGISTERING:
+                self.updateRunning()
+            if self.state == TOURNAMENT_STATE_RUNNING:
+                self.sitPlayer(serial)
             return True
         else:
             return False
