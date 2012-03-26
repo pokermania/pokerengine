@@ -3850,6 +3850,37 @@ class PokerGameTestCase(unittest.TestCase):
             self.assertTrue(player.money>=0,"player %d has less than 0 money: %d" % (serial,player.money))
         
     # ---------------------------------------------------------
+
+    def testFlushes(self):
+        g = pokergame.PokerGame('poker.%s.xml', True, ['conf'])
+        g.setVariant('holdem')
+        g.setBettingStructure('5-10-no-limit')
+
+        players = [1,2]
+
+        for s in players:
+            g.addPlayer(s, s)
+            g.payBuyIn(s, g.buy_in)
+            g.sit(s)
+
+        print g.eval.card2string(range(0, 13))
+        print g.eval.card2string(range(13, 26))
+        print g.eval.card2string(range(26, 39))
+        print g.eval.card2string(range(39, 52))
+
+        # define a deck in which 2 players have flushes
+
+        cards = [17, 16, 9, 8, 5, 4, 2, 1, 0]
+        g.deck = g.eval.card2string(cards)
+        print g.eval.card2string(cards)
+        g.shuffler = PokerPredefinedDecks([cards])
+
+        g.beginTurn(1)
+        g.bet(1, g.buy_in)
+        g.bet(2, g.buy_in)
+
+        self.failUnlessEqual(g.winners, [2])
+
     def testDisconnected(self):
         """Test Poker Game : Diconnected"""
         
