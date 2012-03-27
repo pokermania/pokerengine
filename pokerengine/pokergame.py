@@ -962,11 +962,12 @@ class PokerGame:
             self.dealer_seat = self.forced_dealer_seat
         self.dealerFromDealerSeat()
 
-        self.historyAdd("game", self.getLevel(), self.hand_serial,
-                        self.hands_count, (self.time - self.time_of_first_hand),
-                        self.variant, self.betting_structure,
-                        self.player_list[:], self.dealer_seat,
-                        self.moneyMap())
+        self.historyAdd("game", 
+            self.getLevel(), self.hand_serial,
+            self.hands_count, (self.time - self.time_of_first_hand),
+            self.variant, self.betting_structure,
+            self.player_list[:], self.dealer_seat,
+            self.moneyMap())
         self.resetRound()
         self.side_pots = {
           'contributions': { 'total': {} },
