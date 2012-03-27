@@ -3664,6 +3664,10 @@ class PokerGameTestCase(unittest.TestCase):
         
         self.game.setVariant('holdem')
 
+        # Blinds are skipped below, so i hard disable them here. Fix this and nextRound below if this is wrong.
+        self.game.blind_info["small"] = 0
+        self.game.blind_info["big"] = 0
+
         # Create players
         player1 = self.AddPlayerAndSit(1, 2)
         player2 = self.AddPlayerAndSit(2, 7)
@@ -3849,6 +3853,31 @@ class PokerGameTestCase(unittest.TestCase):
         for (serial,player) in players.items():
             self.assertTrue(player.money>=0,"player %d has less than 0 money: %d" % (serial,player.money))
         
+    # ---------------------------------------------------------
+
+    def testShortStackAtBigBlind(self):
+        PlayerMock = namedtuple('PlayerMock', ('serial','seat','money'))
+        players_simple = [
+            PlayerMock(1, 1, 2000),
+            PlayerMock(2, 3, 2000),
+            PlayerMock(3, 6, 947),
+            PlayerMock(4, 8, 2000),
+        ]
+        players = {}
+        self.game.setMaxPlayers(4)
+        for p in players_simple:
+            self.game.addPlayer(p.serial, p.seat)
+            self.game.payBuyIn(p.serial,2000)
+            self.game.sit(p.serial)
+            players[p.serial] = self.GetPlayer(p.serial)
+            players[p.serial].money = p.money
+            players[p.serial].missed_blind = None
+            self.game.autoBlindAnte(p.serial)
+
+        self.game.beginTurn(1)
+        self.game.call(4)
+        self.failUnlessEqual(players[4].bet, self.game.bigBlind())
+
     # ---------------------------------------------------------
 
     def testFlushes(self):
@@ -4207,11 +4236,14 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.getPlayerMoney(1), 3040)
         self.failUnlessEqual(self.game.getPlayerMoney(2), 0)
         
-    # ---------------------------------------------------------
     def testMuckStateWonRegular(self):
         """Test Poker Game : Muck state won regular"""
         
         self.game.setVariant('holdem')
+        
+        # Blinds are skipped below, so i hard disable them here. Fix this and nextRound below if this is wrong.
+        self.game.blind_info["small"] = 0
+        self.game.blind_info["big"] = 0
         
         # Create players
         player1 = self.AddPlayerAndSit(1, 2)

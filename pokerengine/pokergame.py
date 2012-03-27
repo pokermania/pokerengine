@@ -1923,6 +1923,9 @@ class PokerGame:
                 actions.append("fold")
         return actions
         
+    def inSmallBlindPosition(self):
+        return self.indexInGameAdd(self.dealer, 1) == self.position
+
     def call(self, serial):
         if self.isBlindAnteRound() or not self.canAct(serial):
             self.error("player %d cannot call. state = %s" %
@@ -1930,7 +1933,13 @@ class PokerGame:
             return False
 
         player = self.serial2player[serial]
-        amount = min(self.highestBetNotFold() - player.bet, player.money)
+        amount = min(
+            max(
+                self.highestBetNotFold(),
+                self.bigBlind() if self.state == GAME_STATE_PRE_FLOP and not self.inSmallBlindPosition() else 0
+            ) - player.bet,
+            player.money
+        )
         if self.verbose >= 2: self.message("player %d calls %d" % (serial, amount))
         self.historyAdd("call", serial, amount)
         self.bet(serial, amount)
