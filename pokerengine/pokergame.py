@@ -1514,11 +1514,27 @@ class PokerGame:
         #
         # The player list is the list of players seated, sorted by seat
         #
+        old_player_list = self.player_list
         if with_wait_for:
             self.player_list = [ serial for serial in self.serialsSit() if self.serial2player[serial].wait_for != "first_round" ]
         else:
             self.player_list = [ serial for serial in self.serialsSit() if not self.serial2player[serial].isWaitForBlind() ]
         self.sortPlayerList()
+
+        # extended logging
+        if self.verbose > 0 and \
+            self.is_directing and \
+            self.state not in (GAME_STATE_NULL, GAME_STATE_END) and \
+            len(self.player_list) > len(old_player_list):
+                self.message(
+                    "player_list grew unexpectedly (state=%s): %s -> %s\n%s" % (
+                        self.state,
+                        old_player_list,
+                        self.player_list,
+                        "".join(traceback.format_stack(limit=5)[:-1])
+                    )
+                )
+
         if self.verbose >= 2: self.message("player list: %s" % self.player_list)
         return True
 
@@ -2115,8 +2131,12 @@ class PokerGame:
         self.getPlayer(serial).ante = True
 
     def blindAnteMoveToFirstRound(self):
-        self.side_pots['contributions'][self.current_round] = self.side_pots['contributions'][self.current_round - 1]
-        del self.side_pots['contributions'][self.current_round - 1]
+        if (self.current_round - 1) not in self.side_pots['contributions']:
+            self.error("round %d not found in contributions (state: %s)" % (self.current_round-1,self.state) )
+            raise KeyError(self.current_round-1)
+        else:
+            self.side_pots['contributions'][self.current_round] = self.side_pots['contributions'][self.current_round - 1]
+            del self.side_pots['contributions'][self.current_round - 1]
         # self.uncalled is kept to what it was set during the blind/ante round with live bets
       
     def blindAnteRoundEnd(self):
@@ -3685,6 +3705,19 @@ class PokerGame:
             self.message("ignore duplicate history event " + str(args))
 
     def historyAdd(self, *args):
+        try:
+            if self.verbose > 0 and args[0] == 'position':
+                self.message(
+                    "changed position%s to %s: %s\n%s" % (
+                        " unexpectedly" if args[1] > len(self.player_list) else "",
+                        args[1],
+                        self.player_list,
+                        "".join(traceback.format_stack(
+                            limit = (5 if args[1] > len(self.player_list) else 2)
+                        )[:-1]).strip()
+                    )
+                )
+        except: pass
         self.runCallbacks(*args)
         self.turn_history.append(args)
 
@@ -3775,7 +3808,9 @@ class PokerGame:
                 try:
                     self.turn_history[index] = ( event[0], game_event[player_list_index].index(position2serial[event[1]]) )
                 except Exception, e:
-                    if self.verbose >= 1: self.message(pformat(self.turn_history))
+                    if self.verbose >= 1:
+                        self.message(pformat(self.turn_history))
+                        self.message("actual player_list: %s" % (self.player_list))
                     self.error("".join(traceback.format_exc(limit=4)))
 
     def error(self, string):
