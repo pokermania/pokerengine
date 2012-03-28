@@ -1460,7 +1460,7 @@ class PokerGame:
         # the minimum bet when this minimum is a consequence of a bet that
         # is larger than the minimum bet, setting it to zero is equivalent
         # to setting it to the actual difference between the big_blind and
-        # the small_blind for all intented purposes.
+        # the small_blind for all intended purposes.
         #
         self.last_bet = 0
         if self.isFirstRound():
@@ -1515,9 +1515,9 @@ class PokerGame:
         # The player list is the list of players seated, sorted by seat
         #
         if with_wait_for:
-            self.player_list = filter(lambda x: self.serial2player[x].wait_for != "first_round", self.serialsSit())
+            self.player_list = [ serial for serial in self.serialsSit() if self.serial2player[serial].wait_for != "first_round" ]
         else:
-            self.player_list = filter(lambda x: self.serial2player[x].isSit() and not self.serial2player[x].isWaitForBlind(), self.serial2player.keys())
+            self.player_list = [ serial for serial in self.serialsSit() if not self.serial2player[serial].isWaitForBlind() ]
         self.sortPlayerList()
         if self.verbose >= 2: self.message("player list: %s" % self.player_list)
         return True
@@ -3405,7 +3405,7 @@ class PokerGame:
         return len(self.serialsSit())
 
     def serialsSit(self):
-        return filter(lambda x: self.serial2player[x].isSit(), self.serial2player.keys())
+        return [ serial for serial in self.serial2player.keys() if self.serial2player[serial].isSit() ]
 
     def playersSit(self):
         return [ self.serial2player[serial] for serial in self.serialsSit() ]
