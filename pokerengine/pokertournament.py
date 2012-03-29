@@ -168,6 +168,54 @@ def breakGame(to_break, to_fill, verbose = 0, log_message = None):
 
     return result
 
+class PokerTournamentStats:
+    def __init__(self,tourney):
+        self._tourney = tourney
+        self.chips_avg = 0
+        self.chips_max = 0
+        self.player_chips_max = {"serial": 0, "name": "noname"}
+        self.players_active = 0
+        self.players_money_rank = {}
+        
+    def update(self, game_id):
+        active_player_ranks = []
+        inactive_players = set(self._tourney.winners)
+        for game in self._tourney.games:
+            active_player_ranks.extend(
+                player for (serial,player) in game.serial2player.iteritems() 
+                if serial not in inactive_players
+            )
+        if not active_player_ranks:
+            self._tourney.error("updateStats: need players in games for tourney %d" % self._tourney.serial)
+            return False
+        
+        active_player_ranks.sort(key=lambda player: player.money, reverse=True)
+        
+        players_money_rank = dict(
+            (player_serial, rank+1) for (rank,player_serial)
+            in enumerate([player.serial for player in active_player_ranks] + self._tourney.winners)
+        )
+        
+        self.chips_avg = sum(player.money for player in active_player_ranks) / len(active_player_ranks)
+        self.chips_max = active_player_ranks[0].money
+        self.player_chips_max = {
+            "serial": active_player_ranks[0].serial, 
+            "name": active_player_ranks[0].name
+        }
+        self.players_active = len(active_player_ranks)
+        self.players_money_rank = players_money_rank
+        
+    def __call__(self,user_serial):
+        ret = {
+            "rank": self.players_money_rank.get(user_serial,0),   
+            "chips_avg": self.chips_avg,
+            "chips_max": self.chips_max,
+            "players_active":  self.players_active,
+            "player_chips_max_serial": self.player_chips_max["serial"],
+            "player_chips_max_name": self.player_chips_max["name"],
+        }
+        return ret
+        
 class PokerTournament:
 
     def __init__(self, *args, **kwargs):
@@ -212,6 +260,7 @@ class PokerTournament:
         self.can_register = False
         self.games = []
         self.id2game = {}
+        self.stats = PokerTournamentStats(self)
         
         self.callback_new_state = lambda tournament, old_state, new_state: True
         self.callback_create_game = lambda tournament: PokerGameServer("poker.%s.xml", tournament.dirs)
