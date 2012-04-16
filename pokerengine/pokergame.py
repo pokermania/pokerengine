@@ -704,6 +704,9 @@ class PokerGame:
         self.turn_history = []
         self.level = 0
 
+        # history of turn_history
+        self.turn_history_unreduced = []
+
     def open(self):
         self.is_open = True
 
@@ -3960,6 +3963,8 @@ class PokerGame:
         return self.turn_history
 
     def historyReduce(self):
+        from copy import deepcopy
+        self.turn_history_unreduced.append(deepcopy(self.turn_history))
         index = 0
         game_event = None
         player_list_index = 7
@@ -4024,15 +4029,16 @@ class PokerGame:
             if event[0] == "position" and event[1] >= 0:
                 try:
                     self.turn_history[index] = (event[0], game_event[player_list_index].index(position2serial[event[1]]))
-                except Exception:
+                except:
                     if self.verbose >= 1:
+                        self.message(pformat(self.turn_history_unreduced))
                         self.message(pformat(self.turn_history))
                         self.message("actual player_list: %s" % (self.player_list))
-                    self.error("".join(traceback.format_exc(limit=4)))
+                    raise
 
     def error(self, string):
         if self.verbose >= 0: self.message("ERROR: " + string)
-    
+
     def message(self, string):
         print self.prefix + "[PokerGame " + str(self.id) + "] " + string
 
