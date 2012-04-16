@@ -791,9 +791,7 @@ class PokerGame:
 
     def sitOutNextTurn(self, serial):
         player = self.serial2player[serial]
-        if (self.isInTurn(serial) and
-             not (self.isBlindAnteRound() and
-                   self.getSerialInPosition() == serial)):
+        if self.isInTurn(serial) and not (self.isBlindAnteRound() and self.getSerialInPosition() == serial):
             player.sit_out_next_turn = True
             player.sit_requested = False
             return False
@@ -1143,14 +1141,12 @@ class PokerGame:
     def moveDealerLeft(self):
         if not self.blind_info:
             return
-
         seat2player = [None] * ABSOLUTE_MAX_PLAYERS
         for player in self.playersAll():
             seat2player[player.seat] = player
-
         for seat in range(self.dealer_seat + 1, ABSOLUTE_MAX_PLAYERS) + range(0, self.dealer_seat + 1):
             player = seat2player[seat]
-            if (player and player.isSit() and not player.isWaitForBlind()):
+            if player and player.isSit() and not player.isWaitForBlind():
                 if self.seatsCount() <= 2:
                     self.dealer_seat = seat
                     break
@@ -3976,66 +3972,53 @@ class PokerGame:
                 break
             elif event_type == "game":
                 game_event = self.turn_history[index]
-                position = 0
-                for serial in game_event[player_list_index]:
-                    position2serial[position] = serial
-                    position += 1
+                position2serial.update(enumerate(game_event[player_list_index]))
                 index += 1
-            elif event_type == "sitOut" or event_type == "wait_blind":
-                serial = event[1]
+            elif event_type in ("sitOut","wait_blind"):
+                (event_type, serial) = event
                 #
                 # del position + sitOut/wait_blind
-                #
-                if index < 1 or self.turn_history[index - 1][0] != "position":
-                    if self.verbose >= 0:
-                        self.message(pformat(self.turn_history))
+                if index > 0 and self.turn_history[index-1][0] == "position":
+                    del self.turn_history[index]
+                    del self.turn_history[index-1]
+                    index -= 1
+                else:
+                    if self.verbose >= 0: self.message(pformat(self.turn_history))
                     self.error("unable to update sitOut or wait_blind")
                     #
                     # help unit test : it is not meaningful to do anything on a corrupted
                     # history. Therefore the following line is not doing anything (or
                     # repair anything). It only helps run unit tests.
-                    #
                     del self.turn_history[index]
-                else:
-                    del self.turn_history[index]
-                    del self.turn_history[index - 1]
-                    index -= 1
-
                 #
                 # remove references to the player who finally
                 # decided to not be part of the turn, either because
                 # he sits out or because he waits for the big blind
-                #
                 game_event[player_list_index].remove(serial)
                 del game_event[serial2chips_index][serial]
-            elif (event_type == "blind_request" or
-                   event_type == "ante_request" or
-                   event_type == "player_list"):
+            elif event_type in ("blind_request","ante_request","player_list"):
                 #
                 # del, if not the last event
-                #
                 if index < len(self.turn_history) - 1:
                     if event_type == "player_list":
                         game_event[player_list_index][:] = event[1]
                     del self.turn_history[index]
                 else:
                     index += 1
-            elif (event_type == "wait_for"):
-                serial = event[1]
+            elif event_type == "wait_for":
+                (event_type, serial, wait_for) = event
                 del self.turn_history[index]
                 #
                 # remove references to the player who is
                 # not in the turn because he must wait for
                 # the late blind
-                #
                 if serial in game_event[player_list_index]:
                     game_event[player_list_index].remove(serial)
                     del game_event[serial2chips_index][serial]
             else:
                 index += 1
         #
-        # Reset the positions of the players to take in account the removed players
-        #
+        # reset the positions of the players to take in account the removed players
         for index in xrange(0, min(index, len(self.turn_history))):
             event = self.turn_history[index]
             if event[0] == "position" and event[1] >= 0:
@@ -4048,9 +4031,8 @@ class PokerGame:
                     self.error("".join(traceback.format_exc(limit=4)))
 
     def error(self, string):
-        if self.verbose >= 0:
-            self.message("ERROR: " + string)
-
+        if self.verbose >= 0: self.message("ERROR: " + string)
+    
     def message(self, string):
         print self.prefix + "[PokerGame " + str(self.id) + "] " + string
 
