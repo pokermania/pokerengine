@@ -704,6 +704,8 @@ class PokerGame:
         self.first_betting_pass = True
         self.turn_history = []
         self.turn_histories_unreduced = [] # contains list of all turn_histories prior reduction
+        self.player_list_unreduced = None  # reduceHistory stores the playerlist into this on first execution
+        self.reduced_until = 0 # stores the index of the last reduce so we can differ between already reduced position event's and unreduced
         self.level = 0
 
     def open(self):
@@ -3968,7 +3970,6 @@ class PokerGame:
         game_event = None
         player_list_index = 7
         serial2chips_index = 9
-        position2serial = {}
         while index < len(self.turn_history):
             event = self.turn_history[index]
             event_type = event[0]
@@ -3976,7 +3977,8 @@ class PokerGame:
                 break
             elif event_type == "game":
                 game_event = self.turn_history[index]
-                position2serial.update(enumerate(game_event[player_list_index]))
+                if self.player_list_unreduced is None:
+                    self.player_list_unreduced = game_event[player_list_index][:]
                 index += 1
             elif event_type in ("sitOut","wait_blind"):
                 (event_type, serial) = event
@@ -4023,11 +4025,17 @@ class PokerGame:
                 index += 1
         #
         # reset the positions of the players to take in account the removed players
-        for index in xrange(0, min(index, len(self.turn_history))):
+        for index in xrange(self.reduced_until, min(index, len(self.turn_history))):
+            self.reduced_until = index
             event = self.turn_history[index]
-            if event[0] == "position" and event[1] >= 0:
+            if event[0] == "position" and event[1] > -1:
                 try:
-                    self.turn_history[index] = (event[0], game_event[player_list_index].index(position2serial[event[1]]))
+                    self.turn_history[index] = (
+                        event[0],
+                        game_event[player_list_index].index(
+                            self.player_list_unreduced[event[1]]
+                        )
+                    )
                 except Exception:
                     if self.verbose >= 1:
                         self.message("historyReduce failure")
