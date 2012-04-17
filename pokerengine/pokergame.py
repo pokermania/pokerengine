@@ -46,6 +46,7 @@ import gettext
 
 import traceback
 from pprint import pformat
+from copy import deepcopy
 
 gettext.bind_textdomain_codeset('poker-engine', 'UTF-8')
 
@@ -702,10 +703,8 @@ class PokerGame:
         self.side_pots = {}
         self.first_betting_pass = True
         self.turn_history = []
+        self.turn_histories_unreduced = [] # contains list of all turn_histories prior reduction
         self.level = 0
-
-        # history of turn_history
-        self.turn_history_unreduced = []
 
     def open(self):
         self.is_open = True
@@ -1074,7 +1073,8 @@ class PokerGame:
         self.serial2best = {}
         self.showdown_stack = []
         self.turn_history = []
-
+        self.turn_histories_unreduced = []
+        
         if self.levelUp():
             self.setLevel(self.getLevel() + 1)
 
@@ -3963,8 +3963,7 @@ class PokerGame:
         return self.turn_history
 
     def historyReduce(self):
-        from copy import deepcopy
-        self.turn_history_unreduced.append(deepcopy(self.turn_history))
+        self.turn_histories_unreduced.append(deepcopy(self.turn_history))
         index = 0
         game_event = None
         player_list_index = 7
@@ -4029,11 +4028,12 @@ class PokerGame:
             if event[0] == "position" and event[1] >= 0:
                 try:
                     self.turn_history[index] = (event[0], game_event[player_list_index].index(position2serial[event[1]]))
-                except:
+                except Exception:
                     if self.verbose >= 1:
-                        self.message(pformat(self.turn_history_unreduced))
-                        self.message(pformat(self.turn_history))
-                        self.message("actual player_list: %s" % (self.player_list))
+                        self.message("historyReduce failure")
+                        self.message("current player_list: %s" % (self.player_list))
+                        self.message("histories unreduced:\n%s" % pformat(self.turn_histories_unreduced))
+                        self.message("history reduced:\n%s" % pformat(self.turn_history))
                     raise
 
     def error(self, string):
