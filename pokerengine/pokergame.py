@@ -532,7 +532,7 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
         elif event_type == "canceled":
             serial, amount = event[1:]
             if serial > 0 and amount > 0:
-                messages.append(_(" (%(amount)s returned to %(name)s)") % {
+                messages.append(_("turn canceled") + _(" (%(amount)s returned to %(name)s)") % {
                     'amount': PokerChips.tostring(amount),
                     'name': serial2name(serial)
                 })
@@ -1076,7 +1076,7 @@ class PokerGame:
         self.showdown_stack = []
         self.turn_history = []
         self.turn_histories_unreduced = []
-        
+
         if self.levelUp():
             self.setLevel(self.getLevel() + 1)
 
