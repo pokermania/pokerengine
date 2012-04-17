@@ -3939,17 +3939,11 @@ class PokerGame:
 
     def historyAdd(self, *args):
         try:
-            if self.verbose > 0 and args[0] == 'position':
-                self.message(
-                    "changed position%s to %s: %s\n%s" % (
-                        " unexpectedly" if args[1] > len(self.player_list) else "",
-                        args[1],
-                        self.player_list,
-                        "".join(traceback.format_stack(
-                            limit=(5 if args[1] > len(self.player_list) else 2)
-                        )[:-1]).strip()
-                    )
-                )
+            if self.verbose > 0 and args[0] == 'position' and args[1] > len(self.player_list):
+                self.message("unexpected position change: %s to %s:\n%s" % (
+                    args[1], self.player_list,
+                    "".join(traceback.format_stack(limit=3)[:-1]).strip()
+                ))
         except:
             pass
         self.runCallbacks(*args)
@@ -4039,9 +4033,9 @@ class PokerGame:
                 except Exception:
                     if self.verbose >= 1:
                         self.message("historyReduce failure")
-                        self.message("current player_list: %s" % (self.player_list))
-                        self.message("histories unreduced:\n%s" % pformat(self.turn_histories_unreduced))
-                        self.message("history reduced:\n%s" % pformat(self.turn_history))
+                        self.message("current player_list: %s" % (self.player_list,))
+                        self.message("histories unreduced:\n%s" % "\n".join(map(str,self.turn_histories_unreduced)))
+                        self.message("history reduced:\n%s" % (self.turn_history,))
                     raise
 
     def error(self, string):
