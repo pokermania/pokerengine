@@ -360,13 +360,10 @@ def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame)
                 # a message.
                 #
                 continue
-
             if show:
                 serial2displayed[serial] = True
                 value = game.readableHandValueLong(side, hand[1][0], hand[1][1:])
-                messages.append((
-                    _("%(name)s shows %(value)s for %(side)s ")
-                ) % {
+                messages.append(_("%(name)s shows %(value)s for %(side)s ") % {
                     'name': serial2name(serial),
                     'value': value,
                     'side': _(side)
@@ -386,10 +383,10 @@ def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame)
 
     if len(frame['serial2share']) > 1:
         if 'chips_left' in frame:
-            messages.append(_("winners share a pot of %(pot)s") + _(" (minus %(chips_left)d odd chips)") % {
-                'pot': PokerChips.tostring(frame['pot']),
-                'chips_left': frame['chips_left']
-            })
+            messages.append(
+                _("winners share a pot of %(pot)s") % {'pot': PokerChips.tostring(frame['pot'])} +
+                _(" (minus %(chips_left)d odd chips)") % {'chips_left': frame['chips_left']}
+            )
         else:
             messages.append(_("winners share a pot of %(pot)s") % {'pot': PokerChips.tostring(frame['pot'])})
 
@@ -417,10 +414,10 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
 
         elif event_type == "wait_for":
             serial, reason = event[1:]
-            messages.append(_("%(serial)s waiting for ") + "%s" % (
-                serial2name(serial),
-                "late blind" if reason == "late" else "big blind"
-            ))
+            messages.append(
+                _("%(serial)s waiting for ") % {'serial': serial2name(serial)} +
+                "%s" % ("late blind" if reason == "late" else "big blind")
+            )
 
         elif event_type == "player_list":
             pass
@@ -447,7 +444,7 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
                         })
 
         elif event_type == "showdown":
-            board = event[1]
+            board, pockets = event[1:]
             if board and not board.isEmpty():
                 messages.append(_("Board: %(cards)s") % {
                     'cards': game.cards2string(board)
