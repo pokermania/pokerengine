@@ -5914,17 +5914,10 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.verbose = 2
         histories = []
         def historyReduce():
-            import copy
-            before = copy.deepcopy(self.game.historyGet())
             self.game.historyReduce()
-            after = copy.deepcopy(self.game.historyGet())
-            histories.append([before,after])
-        def historyPrint(histories):
-            for h in histories:
-                print 'b: %s\na: %s\n' % (h[0],h[1])
         self.game.variant = 'holdem'
         self.game.setMaxPlayers(4)
-        player_serials = [1,2,3,4]
+        player_serials = [100,200,300,400]
         player_seats = [1,3,6,8]
         players = {}
 
@@ -5936,33 +5929,33 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnless(self.game.isBlindAnteRound())
 
 
-        self.game.blind(2); # historyReduce()
+        self.game.blind(200); # historyReduce()
 
         # . Table.playerTimeoutTimer
-        self.game.sitOutNextTurn(3)
-        self.game.autoPlayer(3)
+        self.game.sitOutNextTurn(300)
+        self.game.autoPlayer(300)
 
         # . PACKET_POKER_TABLE_JOIN
         # .. Avatar.performPacketPokerTableJoin
         # ... PokerTable.joinPlayer
-        self.game.comeBack(3)
+        self.game.comeBack(300)
 
         # . PACKET_POKER_SIT_OUT
         # .. Table.sitOutPlayer
-        self.game.sitOutNextTurn(3)
+        self.game.sitOutNextTurn(300)
 
         # . PACKET_POKER_SIT
         # .. Avatar.performPacketPokerSit
         # ... Table.sitPlayer
         # .... Avatar.sitPlayer
-        self.game.sit(3)
+        self.game.sit(300)
 
         # . PACKET_POKER_SIT_OUT
         # .. Table.sitOutPlayer
-        self.game.sitOut(4)
+        self.game.sitOut(400)
 
         # 3 has to pay the blind now
-        self.game.blind(3); historyReduce()
+        self.game.blind(300); historyReduce()
 
         print [(s,p.isSit(),p.wait_for) for s,p in self.game.serial2player.iteritems() ]
 #        self.game.blind(4); historyReduce()
@@ -5979,23 +5972,24 @@ class PokerGameTestCase(unittest.TestCase):
 #        self.game.call(4); historyReduce()
 #
 #        self.game.sitOut(1); historyReduce()
-        historyPrint(histories)
+        print self.game.historyGet()
+        print self.game.historyGetReduced()
 
     def testHistoryReduce2(self):
         self.game.player_list = [84392L, 70187L, 82546L, 75270L, 51563L, 21256L, 84105L]
         self.game.turn_history = [('game', 0, 6916643, 32, 16301.585016012192, 'holdem', '1-2-no-limit', [84392L, 70187L, 82546L, 75270L, 51563L, 21256L, 84105L], 2, {51563L: 54107, 75270L: 19600, 84392L: 20000, 84105L: 20000, 70187L: 1224, 21256L: 55588L, 82546L: 3900}), ('position', 3), ('blind_request', 75270L, 200, 0, 'small')]
         self.game.historyReduce()
 
-        self.game.turn_history = [('game', 0, 6916643, 32, 16301.585016012192, 'holdem', '1-2-no-limit', [84392L, 70187L, 82546L, 75270L, 51563L, 21256L, 84105L], 2, {51563L: 54107, 75270L: 19600, 84392L: 20000, 84105L: 20000, 70187L: 1224, 21256L: 55588L, 82546L: 3900}), ('position', 3), ('blind_request', 75270L, 200, 0, 'small'), ('blind', 75270, 200, 0), ('position', 4), ('blind_request', 51563L, 400, 0, 'big')]
+        self.game.turn_history += [('blind', 75270, 200, 0), ('position', 4), ('blind_request', 51563L, 400, 0, 'big')]
         self.game.historyReduce()
 
-        self.game.turn_history = [('game', 0, 6916643, 32, 16301.585016012192, 'holdem', '1-2-no-limit', [84392L, 70187L, 82546L, 75270L, 51563L, 21256L, 84105L], 2, {51563L: 54107, 75270L: 19600, 84392L: 20000, 84105L: 20000, 70187L: 1224, 21256L: 55588L, 82546L: 3900}), ('position', 3), ('blind', 75270, 200, 0), ('position', 4), ('blind_request', 51563L, 400, 0, 'big'), ('sitOut', 51563L), ('position', 5), ('blind_request', 21256L, 400, 0, 'big')]
+        self.game.turn_history += [('sitOut', 51563L), ('position', 5), ('blind_request', 21256L, 400, 0, 'big')]
         self.game.historyReduce()
 
-        self.game.turn_history = [('game', 0, 6916643, 32, 16301.585016012192, 'holdem', '1-2-no-limit', [84392L, 70187L, 82546L, 75270L, 21256L, 84105L], 2, {75270L: 19600, 84392L: 20000, 84105L: 20000, 70187L: 1224, 21256L: 55588L, 82546L: 3900}), ('position', 3), ('blind', 75270, 200, 0), ('position', 4), ('blind_request', 21256L, 400, 0, 'big'), ('blind', 21256, 400, 0), ('position', 6), ('blind_request', 84105L, 400, 0, 'late')]
+        self.game.turn_history += [('blind', 21256, 400, 0), ('position', 6), ('blind_request', 84105L, 400, 0, 'late')]
         self.game.historyReduce()
 
-        self.game.turn_history = [('game', 0, 6916643, 32, 16301.585016012192, 'holdem', '1-2-no-limit', [84392L, 70187L, 82546L, 75270L, 21256L, 84105L], 2, {75270L: 19600, 84392L: 20000, 84105L: 20000, 70187L: 1224, 21256L: 55588L, 82546L: 3900}), ('position', 3), ('blind', 75270, 200, 0), ('position', 4), ('blind', 21256, 400, 0), ('position', 6), ('blind_request', 84105L, 400, 0, 'late')]
+        self.game.turn_history += [('position', 3), ('blind', 75270, 200, 0), ('position', 4), ('blind', 21256, 400, 0), ('position', 6), ('blind_request', 84105L, 400, 0, 'late')]
         self.game.historyReduce()
 
     def testHistoryReduce3(self):

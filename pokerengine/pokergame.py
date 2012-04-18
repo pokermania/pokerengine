@@ -102,6 +102,10 @@ def uniq(elements):
         temp[element] = None
     return temp.keys()
 
+def find(fn,seq):
+    """Return first item in sequence where f(item) == True."""
+    for item in seq: 
+        if fn(item): return item
 
 class PokerRandom(random.Random):
     def __init__(self, paranoid=False):
@@ -411,17 +415,14 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
                 'variant': _(variant),
                 'betting_structure': betting_structure
             }
-
         elif event_type == "wait_for":
             serial, reason = event[1:]
             messages.append(
                 _("%(serial)s waiting for ") % {'serial': serial2name(serial)} +
                 "%s" % ("late blind" if reason == "late" else "big blind")
             )
-
         elif event_type == "player_list":
             pass
-
         elif event_type == "round":
             name, board, pockets = event[1:]
             if pockets:
@@ -442,14 +443,12 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
                             'name': serial2name(serial),
                             'card': game.cards2string(pocket)
                         })
-
         elif event_type == "showdown":
             board, pockets = event[1:]
             if board and not board.isEmpty():
                 messages.append(_("Board: %(cards)s") % {
                     'cards': game.cards2string(board)
                 })
-
             if pockets and pocket_messages:
                 for (serial, pocket) in pockets.iteritems():
                     if not pocket.areAllNocard():
@@ -457,25 +456,19 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
                             'name': serial2name(serial),
                             'cards': game.cards2string(pocket)
                         })
-
         elif event_type == "rake":
             amount = event[1]
             messages.append(_("Rake %(amount)s") % {
                 'amount': PokerChips.tostring(amount)
             })
-
         elif event_type == "position":
             pass
-
         elif event_type == "blind_request":
             pass
-
         elif event_type == "wait_blind":
             pass
-
         elif event_type == "rebuy":
             pass
-
         elif event_type == "blind":
             serial, amount, dead = event[1:]
             if dead:
@@ -489,43 +482,35 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
                     serial2name(serial),
                     PokerChips.tostring(amount),
                 ))
-
         elif event_type == "ante_request":
             pass
-
         elif event_type == "ante":
             serial, amount = event[1:]
             messages.append(_("%(name)s pays %(amount)s ante") % {
                 'name': serial2name(serial),
                 'amount': PokerChips.tostring(amount)
             })
-
         elif event_type == "all-in":
             serial = event[1]
             messages.append(_("%(name)s is all in") % {'name': serial2name(serial)})
-
         elif event_type == "call":
             serial, amount = event[1:]
             messages.append(_("%(name)s calls %(amount)s") % {
                 'name': serial2name(serial),
                 'amount': PokerChips.tostring(amount)
             })
-
         elif event_type == "check":
             serial = event[1]
             messages.append(_("%(name)s checks") % {'name': serial2name(serial)})
-
         elif event_type == "fold":
             serial = event[1]
             messages.append(_("%(name)s folds") % {'name': serial2name(serial)})
-
         elif event_type == "raise":
             serial, amount = event[1:]
             messages.append(_("%(name)s raises %(amount)s") % {
                 'name': serial2name(serial),
                 'amount': PokerChips.tostring(amount)
             })
-
         elif event_type == "canceled":
             serial, amount = event[1:]
             if serial > 0 and amount > 0:
@@ -535,7 +520,6 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
                 })
             else:
                 messages.append(_("turn canceled"))
-
         elif event_type == "end":
             winners, showdown_stack = event[1:]
             if showdown_stack:
@@ -565,7 +549,7 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
                             messages.extend(__historyResolve2messages(game, hands, serial2name, serial2displayed, frame))
                         else:
                             if verbose >= 0:
-                                print "ERROR history2messages unexpected showdown_stack frame type %s" % frame['type']
+                                print "ERROR history2messages unexpected showdown_stack frame type %s (%s)" % (frame['type'],str(frame))
                         if message:
                             messages.append(message)
             else:
@@ -573,16 +557,12 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
         elif event_type == "sitOut":
             serial = event[1]
             messages.append(_("%(name)s sits out") % {'name': serial2name(serial)})
-
         elif event_type == "leave":
             pass
-
         elif event_type == "finish":
             pass
-
         elif event_type == "muck":
             pass
-
         else:
             if verbose >= 0:
                 print "ERROR history2messages: unknown history type %s " % event_type
@@ -700,7 +680,8 @@ class PokerGame:
         self.side_pots = {}
         self.first_betting_pass = True
         self.turn_history = []
-        self.turn_histories_unreduced = [] # contains list of all turn_histories prior reduction
+        self.turn_history_reduced = []
+        self.turn_history_unreduced_position = 0
         self.level = 0
 
     def open(self):
@@ -858,6 +839,8 @@ class PokerGame:
         if self.sitCount() < 2:
             self.first_turn = True
             self.dealer_seat = player.seat
+        if self.isRunning() and self.isBlindAnteRound():
+            self.historyAdd("sit", serial, player.wait_for)
         return True
 
     def sitRequested(self, serial):
@@ -1070,7 +1053,8 @@ class PokerGame:
         self.serial2best = {}
         self.showdown_stack = []
         self.turn_history = []
-        self.turn_histories_unreduced = []
+        self.turn_history_reduced = []
+        self.turn_history_unreduced_position = 0
 
         if self.levelUp():
             self.setLevel(self.getLevel() + 1)
@@ -1323,9 +1307,7 @@ class PokerGame:
         return pockets
 
     def moneyMap(self):
-        money = {}
-        for player in self.playersNotFold():
-            money[player.serial] = player.money
+        money = dict((player.serial,player.money) for player in self.playersNotFold())
         return money
 
     def isTournament(self):
@@ -1499,7 +1481,7 @@ class PokerGame:
             if self.blind_info:
                 (amount, dead, state) = self.blindAmount(serial)
                 if amount > 0:
-                    self.historyAddNoDuplicate("position", self.position)
+                    self.historyAddNoDuplicate("position", self.position, self.player_list[self.position])
                     if player.isAutoBlindAnte():
                         self.payBlind(serial, amount, dead)
                         auto_payed = True
@@ -1508,7 +1490,7 @@ class PokerGame:
                         auto_payed = False
                         break
             if self.ante_info and player.ante == False:
-                self.historyAddNoDuplicate("position", self.position)
+                self.historyAddNoDuplicate("position", self.position, self.player_list[self.position])
                 if player.isAutoBlindAnte():
                     self.payAnte(serial, self.ante_info["value"])
                     auto_payed = True
@@ -1627,7 +1609,7 @@ class PokerGame:
         if self.verbose >= 2:
             self.message("dealer %d, in position %d, last to talk %d" % (self.dealer, self.position, self.last_to_talk))
         self.historyAdd("round", self.state, self.board.copy(), self.handsMap())
-        self.historyAdd("position", self.position)
+        self.historyAdd("position", self.position, self.player_list[self.position])
         self.__autoPlay()
 
     def sortPlayerList(self):
@@ -1837,14 +1819,14 @@ class PokerGame:
     def nextRound(self):
         self.current_round += 1
         if self.position != -1:
-            self.historyAdd("position", -1)
+            self.historyAdd("position", -1, None)
         self.position = -1
         self.changeState(self.roundInfo()["name"])
 
     def muckState(self, win_condition):
         self.current_round = -2
         if self.position != -1:
-            self.historyAdd("position", -1)
+            self.historyAdd("position", -1, None)
         self.position = -1
 
         self.win_condition = win_condition
@@ -1961,7 +1943,7 @@ class PokerGame:
     def cancelState(self):
         self.current_round = -2
         if self.position != -1:
-            self.historyAdd("position", -1)
+            self.historyAdd("position", -1, None)
         self.position = -1
         self.changeState(GAME_STATE_END)
         self.runCallbacks("end_round_last")
@@ -2374,7 +2356,7 @@ class PokerGame:
         else:
             self.updateBlinds()
             self.position = self.indexInGameAdd(self.position, 1)
-            self.historyAdd("position", self.position)
+            self.historyAdd("position", self.position, self.player_list[self.position])
             self.autoPayBlindAnte()
 
     def __talked(self, serial):
@@ -2388,7 +2370,7 @@ class PokerGame:
 
             if self.notFoldCount() < 2:
                 self.position = self.indexNotFoldAdd(self.position, 1)
-                self.historyAdd("position", self.position)
+                self.historyAdd("position", self.position, self.player_list[self.position])
                 if self.verbose >= 2:
                     self.message("last player in game %d" % self.getSerialInPosition())
                 if self.isFirstRound():
@@ -2428,7 +2410,7 @@ class PokerGame:
 
         else:
             self.position = self.indexInGameAdd(self.position, 1)
-            self.historyAdd("position", self.position)
+            self.historyAdd("position", self.position, self.player_list[self.position])
             if self.verbose >= 2:
                 self.message("new position (%d)" % self.position)
             self.__autoPlay()
@@ -3935,10 +3917,10 @@ class PokerGame:
     def historyAdd(self, *args):
         try:
             if self.verbose > 0 and args[0] == 'position' and args[1] > len(self.player_list):
-                self.message("unexpected position change: %s to %s:\n%s" % (
-                    args[1], self.player_list,
-                    "".join(traceback.format_stack(limit=3)[:-1]).strip()
-                ))
+                self.message(
+                    "unexpected position change: pos %s for player_list %s" % (args[1], self.player_list) +
+                    "\n" + "".join(traceback.format_stack(limit=3)[:-1]).strip()
+                )
         except:
             pass
         self.runCallbacks(*args)
@@ -3952,57 +3934,88 @@ class PokerGame:
 
     def historyGet(self):
         return self.turn_history
-
+    
+    def historyGetReduced(self):
+        return self.turn_history_reduced
+    
+    def __historyFinalEvent(self,event):
+        return event[0] in ("showdown","muck") or (event[0]=="round" and event[1] != GAME_STATE_BLIND_ANTE)
+    
+    def __historyDelEvent(self,event_list,index,threshold):
+        del event_list[index]
+        return 0 if index >= threshold else 1
+    
     def historyReduce(self):
-        self.turn_histories_unreduced.append(deepcopy(self.turn_history))
-        index = 0
-        game_event = None
         player_list_index = 7
         serial2chips_index = 9
-        position2serial = {}
-        while index < len(self.turn_history):
-            event = self.turn_history[index]
+        tail_position = len(self.turn_history_reduced)
+        #
+        # if the history_reduced_position equals the length of the turn_history, there is nothing to reduce.
+        if len(self.turn_history) == self.turn_history_unreduced_position: 
+            return tail_position
+        #
+        # if game already started and reduced, don't reduce anymore but append directly
+        if find(self.__historyFinalEvent,self.turn_history_reduced):
+            self.turn_history_reduced += deepcopy(self.turn_history[self.turn_history_unreduced_position:])
+            self.turn_history_unreduced_position = len(self.turn_history)
+            return tail_position
+        #
+        # else start to reduce:
+        turn_history_reduced = deepcopy(self.turn_history_reduced + self.turn_history[self.turn_history_unreduced_position:])
+        index = 0
+        while index < len(turn_history_reduced):
+            event = turn_history_reduced[index]
             event_type = event[0]
-            if event_type == "showdown" or event_type == "muck" or (event_type == "round" and event[1] != GAME_STATE_BLIND_ANTE):
+            if self.__historyFinalEvent(event):
                 break
             elif event_type == "game":
-                game_event = self.turn_history[index]
-                position2serial.update(enumerate(game_event[player_list_index]))
+                game_event = turn_history_reduced[index]
                 index += 1
+            elif event_type == "sit":
+                (event_type, serial, wait_for) = event
+                tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
+                if wait_for == False and serial not in game_event[player_list_index]:
+                    game_event[player_list_index].append(serial)
+                    game_event[player_list_index].sort(key=lambda i: self.serial2player[i].seat)
+                    game_event[serial2chips_index][serial] = self.serial2player[serial].money 
             elif event_type in ("sitOut","wait_blind"):
                 (event_type, serial) = event
                 #
-                # del position + sitOut/wait_blind
-                if index > 0 and self.turn_history[index-1][0] == "position":
-                    del self.turn_history[index]
-                    del self.turn_history[index-1]
-                    index -= 1
-                else:
-                    if self.verbose >= 0: self.message(pformat(self.turn_history))
-                    self.error("unable to update sitOut or wait_blind")
-                    #
-                    # help unit test : it is not meaningful to do anything on a corrupted
-                    # history. Therefore the following line is not doing anything (or
-                    # repair anything). It only helps run unit tests.
-                    del self.turn_history[index]
-                #
-                # remove references to the player who finally
-                # decided to not be part of the turn, either because
-                # he sits out or because he waits for the big blind
-                game_event[player_list_index].remove(serial)
+                # a sitOut or wait_blind effectively removes the player from the history
+                # - delete current index (sitOut)
+                # - remove references to the player
+                # - if the position before is a blind or ante_request, delete it 
+                # - if the position before is a position, delete it
+                tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
                 del game_event[serial2chips_index][serial]
-            elif event_type in ("blind_request","ante_request","player_list"):
+                game_event[player_list_index].remove(serial)
+                if index > 0 and turn_history_reduced[index-1][0] in ("blind_request","ante_request"):
+                    index -= 1
+                    tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
+                if index > 0 and turn_history_reduced[index-1][0] == "position":
+                    index -= 1
+                    tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
+            elif event_type in ("blind_request","ante_request"):
                 #
-                # del, if not the last event
-                if index < len(self.turn_history) - 1:
-                    if event_type == "player_list":
+                # delete if not the last event
+                if index < len(turn_history_reduced) - 1:
+                    tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
+                else:
+                    index += 1
+            elif event_type == "player_list":
+                #
+                # delete and remove obsolete entries in serial2chips if not the last event
+                if index < len(turn_history_reduced) - 1:
+                    tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
+                    if game_event[player_list_index] != event[1]:
                         game_event[player_list_index][:] = event[1]
-                    del self.turn_history[index]
+                        for serial in set(game_event[player_list_index]) - set(event[1]):
+                            del game_event[serial2chips_index][serial]
                 else:
                     index += 1
             elif event_type == "wait_for":
                 (event_type, serial, wait_for) = event
-                del self.turn_history[index]
+                tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
                 #
                 # remove references to the player who is
                 # not in the turn because he must wait for
@@ -4014,19 +4027,30 @@ class PokerGame:
                 index += 1
         #
         # reset the positions of the players to take in account the removed players
-        for index in xrange(0, min(index, len(self.turn_history))):
-            event = self.turn_history[index]
-            if event[0] == "position" and event[1] >= 0:
-                try:
-                    self.turn_history[index] = (event[0], game_event[player_list_index].index(position2serial[event[1]]))
-                except Exception:
-                    if self.verbose >= 1:
-                        self.message("historyReduce failure")
-                        self.message("current player_list: %s" % (self.player_list,))
-                        self.message("histories unreduced:\n%s" % "\n".join(map(str,self.turn_histories_unreduced)))
-                        self.message("history reduced:\n%s" % (self.turn_history,))
-                    raise
-
+        # get player_list in unreduced
+        invalid_positions = []
+        for index in xrange(0, min(index, len(turn_history_reduced))):
+            if turn_history_reduced[index][0] == "position":
+                event_type, position, serial = turn_history_reduced[index]
+                position_reduced = game_event[player_list_index].index(serial) \
+                    if serial is not None and serial in game_event[player_list_index] \
+                    else None
+                if position == position_reduced:
+                    pass
+                elif position_reduced is not None and position: 
+                    turn_history_reduced[index] = (event_type, position_reduced, serial)
+                else:
+                    invalid_positions.append(index)
+        #
+        # delete all invalid positions
+        for invalid_position in reversed(invalid_positions):
+            tail_position -= self.__historyDelEvent(turn_history_reduced,invalid_position,tail_position)
+        #
+        # if everything goes well, save it to instance attributes
+        self.turn_history_reduced = turn_history_reduced
+        self.turn_history_unreduced_position = len(self.turn_history)
+        return tail_position
+        
     def error(self, string):
         if self.verbose >= 0: self.message("ERROR: " + string)
 
