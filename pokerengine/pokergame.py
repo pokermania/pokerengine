@@ -1250,7 +1250,7 @@ class PokerGame:
                    sit_count == 2):
                 player.blind = "small"
                 done = True
-            elif player.missed_blind != False:
+            elif player.missed_blind != None:
                 player.wait_for = "late"
             index += 1
 
