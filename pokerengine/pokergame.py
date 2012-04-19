@@ -1293,11 +1293,9 @@ class PokerGame:
             player = players[index]
             if player:
                 if not player.sit_out:
-                    if (player.wait_for == "big" or
-                         player.missed_blind == None):
+                    if player.wait_for == "big" or player.missed_blind == None:
                         player.blind = None
-                    elif (player.missed_blind == "big" or
-                           player.missed_blind == "small"):
+                    elif player.missed_blind == "big" or player.missed_blind == "small":
                         if sit_count > 5:
                             player.blind = "big_and_dead"
                         else:
@@ -1334,8 +1332,10 @@ class PokerGame:
         return self.hasLevel()
 
     def hasLevel(self):
-        return ((self.blind_info and self.blind_info["change"]) or
-                 (self.ante_info and self.ante_info["change"]))
+        return (
+            (self.blind_info and self.blind_info["change"]) or
+            (self.ante_info and self.ante_info["change"])
+        )
 
     def delayToLevelUp(self):
         for what in (self.blind_info, self.ante_info):
@@ -2020,9 +2020,9 @@ class PokerGame:
         # betting round (for instance if he payed the big blind or a late blind).
         #
         return (
-                self.round_cap_left != 0
-            and money > highest_bet - bet
-            and (player.talked_once == False or bet < highest_bet)
+            self.round_cap_left != 0 and 
+            money > highest_bet - bet and 
+            (player.talked_once == False or bet < highest_bet)
         )
 
     def canCheck(self, serial):
@@ -2616,7 +2616,7 @@ class PokerGame:
             blinds = blind_info[0]
             self.blind_info = {
                 "change": 'change' in blinds and blinds["change"]
-                }
+            }
 
             if self.blind_info["change"] != False:
                 self.blind_info["frequency"] = int(blinds["frequency"])
