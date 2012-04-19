@@ -95,7 +95,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
             ('player_list', [1, 2]),
             ('round', 'round1', board, { 1 : hand1, 2 : hand2}),
             ('showdown', board, {1 : hand1, 2 : hand2}),
-            ('position', 1),
+            ('position', 1, 1),
             ('blind_request', 1, 1000, 100, 'big_and_dead'),
             ('wait_blind', 1),
             ('blind', 1, 1000, 0),
@@ -121,7 +121,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
                         
         # Generate all the type of messages managed
         for message in history:
-            apply(self.game.historyAdd,message)
+            self.game.historyAdd(*message)
 
         # All the messages are stored 
         self.failUnlessEqual(self.game.historyGet(), history)
@@ -449,7 +449,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         
         history = [
             ('player_list', [1, 2]),
-            ('position', 1),
+            ('position', 1, 1),
             ('blind_request', 1, 1000, 100, 'big_and_dead'),
             ('wait_blind', 1),
             ('rebuy', 1, 500),
@@ -460,7 +460,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
             ('Unknown',)
         ]
         
-        subject, message = self.GetMessagesFromHistory(history)
+        subject, message = self.GetMessagesFromHistory(history,verbose=-1)
         self.failUnlessEqual(subject, '')
         self.failUnlessEqual(message, [])
         
@@ -477,19 +477,20 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         # sitOut & wait_blind
         history = [
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
-            ('position', 0),
+            ('position', 0, 1),
             ('sitOut', 1),
-            ('position', 1),
+            ('position', 1, 2),
             ('wait_blind', 2),
             ('sitOut', 3),
-            ('position', 3)
+            ('position', 3, 4)
         ]
         self.game.turn_history = history
         self.game.turn_history_reduced = []
-        self.game.turn_history_reduced_position = 0
+        self.game.turn_history_unreduced_position = 0
+        self.game.historyReduce()
         self.failUnlessEqual(self.game.historyGetReduced(), [
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [4], 7, { 4 : 800 }),
-            ('position', 0)
+            ('position', 0, 4)
         ])
         
         # Player list
@@ -500,7 +501,8 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         ]
         self.game.turn_history = history
         self.game.turn_history_reduced = []             
-        self.game.turn_history_reduced_position = 0           
+        self.game.turn_history_unreduced_position = 0
+        self.game.historyReduce()           
         self.failUnlessEqual(self.game.historyGetReduced(), [
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
             ('player_list', [1, 2])
@@ -514,7 +516,8 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         ]
         self.game.turn_history = history
         self.game.turn_history_reduced = []
-        self.game.turn_history_reduced_position = 0
+        self.game.turn_history_unreduced_position = 0
+        self.game.historyReduce()
         self.failUnlessEqual(self.game.historyGetReduced(), [
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
             ('blind_request', 2, 1000, 100, 'big_and_dead')
@@ -528,7 +531,8 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         ]
         self.game.turn_history = history
         self.game.turn_history_reduced = []                
-        self.game.turn_history_reduced_position = 0
+        self.game.turn_history_unreduced_position = 0
+        self.game.historyReduce()
         self.failUnlessEqual(self.game.historyGetReduced(), [
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
             ('ante_request', 2, 100)
@@ -537,11 +541,12 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         # Unable to update position (position 7 does not exist)
         history = [
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
-            ('position', 7),
+            ('position', 7, 99),
         ]
         self.game.turn_history = history
         self.game.turn_history_reduced = []
-        self.game.turn_history_reduced_position = 0                        
+        self.game.turn_history_unreduced_position = 0
+        self.game.historyReduce()                        
         self.failUnlessEqual(self.game.historyGetReduced(), [
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),                                                             
         ])
@@ -549,43 +554,44 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         # the blind request is removed
         history = [
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
-            ('position', 1),
-            ('blind', 1, 0),
-            ('position', 2),
-            ('blind_request', 2, 0),
+            ('position', 1, 2),
             ('blind', 2, 0),
+            ('position', 2, 3),
+            ('blind_request', 3, 0),
+            ('blind', 3, 0),
             ('player_list', [1, 2]),
         ]
         self.game.turn_history = history
         self.game.turn_history_reduced = []
-        self.game.turn_history_reduced_position = 0
+        self.game.turn_history_unreduced_position = 0
         self.game.historyReduce()
-        self.failUnlessEqual(('position', 2), self.game.turn_history_reduced[3])
-        self.failUnlessEqual(('blind', 2, 0), self.game.turn_history_reduced[4])
+        self.failUnlessEqual(('position', 2, 3), self.game.turn_history_reduced[3])
+        self.failUnlessEqual(('blind', 3, 0), self.game.turn_history_reduced[4])
 
         # the blind request is not removed because it is last
         history = [
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
-            ('position', 1),
-            ('blind', 1, 0),
-            ('position', 2),
-            ('blind_request', 2, 0),
+            ('position', 1, 2),
+            ('blind', 2, 0),
+            ('position', 2, 3),
+            ('blind_request', 3, 0),
         ]
         self.game.turn_history = history
         self.game.turn_history_reduced = []
-        self.game.turn_history_reduced_position = 0                        
+        self.game.turn_history_unreduced_position = 0                        
         self.game.historyReduce()
-        self.failUnlessEqual(('position', 2), self.game.turn_history_reduced[3])
-        self.failUnlessEqual(('blind_request', 2, 0), self.game.turn_history_reduced[4])
+        self.failUnlessEqual(('position', 2, 3), self.game.turn_history_reduced[3])
+        self.failUnlessEqual(('blind_request', 3, 0), self.game.turn_history_reduced[4])
 
     # ------------------------------------------------------------ 
-    def GetMessagesFromHistory(self, history, serial2name = str, pocket_messages = False):
-        
+    def GetMessagesFromHistory(self, history, serial2name = str, pocket_messages = False, verbose = None):
+        if verbose is None: int(os.environ.get('VERBOSE_T', 0))
         self.game.turn_history = []
+        self.game.turn_history_reduced = []
+        self.game.turn_history_unreduced_position = 0
         for message in history:
-                apply(self.game.historyAdd,message)
-                
-        return pokergame.history2messages(self.game, self.game.historyGet(), serial2name, pocket_messages, int(os.environ.get('VERBOSE_T', 0)))
+            self.game.historyAdd(*message)
+        return pokergame.history2messages(self.game, self.game.historyGet(), serial2name, pocket_messages, verbose=verbose)
     
 # ------------------------------------------------------------
 def GetTestSuite():
