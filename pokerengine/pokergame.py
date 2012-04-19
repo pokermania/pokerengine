@@ -163,7 +163,7 @@ class PokerPlayer:
         self.wait_for = False  # True, False, "late", "big", "first_round" ##
         self.missed_blind = "n/a"  # None, "n/a", "big", "small"
         self.missed_big_blind_count = 0
-        self.blind = "late"  # True, None, "late", "big", "small", "big_and_dead" ##
+        self.blind = "late"  # True, False, "late", "big", "small", "big_and_dead" ##
         self.buy_in_payed = False
         self.ante = False
         self.side_pot_index = 0
@@ -275,7 +275,7 @@ class PokerPlayer:
         self.hand = PokerCards()
         self.side_pot_index = 0
         self.all_in = False
-        self.blind = None
+        self.blind = False
         self.ante = False
 
     def isInGame(self):
@@ -797,7 +797,7 @@ class PokerGame:
         player.sit_requested = False
         player.wait_for = False
         if self.is_directing and self.isBlindAnteRound():
-            player.blind = None
+            player.blind = False
             self.updateBlinds()
             if self.getSerialInPosition() == serial:
                 self.__talkedBlindAnte()
@@ -1171,7 +1171,7 @@ class PokerGame:
             #
             for player in self.playersAll():
                 player.resetMissedBlinds()
-                player.blind = None
+                player.blind = False
                 if player.wait_for != 'first_round':
                     player.wait_for = False
             return
@@ -1247,7 +1247,7 @@ class PokerGame:
                    sit_count == 2):
                 player.blind = "small"
                 done = True
-            elif player.missed_blind != None:
+            elif player.missed_blind != False:
                 player.wait_for = "late"
             index += 1
 
@@ -1278,7 +1278,7 @@ class PokerGame:
             if player:
                 if not player.sit_out:
                     if player.wait_for == "big" or player.missed_blind == None:
-                        player.blind = None
+                        player.blind = False
                     elif player.missed_blind == "big" or player.missed_blind == "small":
                         if sit_count > 5:
                             player.blind = "big_and_dead"
@@ -1291,7 +1291,7 @@ class PokerGame:
                     else:  # pragma: no cover
                         self.error("updateBlinds statement unexpectedly reached while evaluating late blind")  # pragma: no cover
                 else:
-                    player.blind = None
+                    player.blind = False
             index += 1
         if self.verbose > 2:
             showblinds = lambda player: "%02d:%s:%s:%s" % (player.serial, player.blind, player.missed_blind, player.wait_for)
@@ -1417,7 +1417,7 @@ class PokerGame:
             for player in self.playersPlaying():
                 if player.isSitOut():
                     continue
-                if (player.blind != True and player.blind != None):
+                if type(player.blind) != bool: # i.e. not True or False
                     return False
         if self.ante_info:
             for player in self.playersPlaying():
@@ -1440,7 +1440,7 @@ class PokerGame:
                 return (small, 0, player.blind)
             elif player.blind == "big_and_dead":
                 return (big, small, player.blind)
-            elif (player.blind == None or player.blind == True):
+            elif type(player.blind) == bool: # i.e. True or False
                 return (0, 0, player.blind)
             else:
                 self.error("blindAmount unexpected condition for player %d" % player.serial)
@@ -1448,16 +1448,14 @@ class PokerGame:
             return (0, 0, False)
 
     def smallBlind(self):
-        if self.blind_info:
-            return self.blind_info["small"]
-        else:
-            return None
+        return self.blind_info["small"] \
+            if self.blind_info \
+            else None
 
     def bigBlind(self):
-        if self.blind_info:
-            return self.blind_info["big"]
-        else:
-            return None
+        return self.blind_info["big"] \
+            if self.blind_info \
+            else None
 
     def autoPayBlindAnte(self):
         if not self.is_directing:
