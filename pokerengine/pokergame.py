@@ -4024,10 +4024,10 @@ class PokerGame:
                 index += 1
         #
         # reset the positions of the players to take in account the removed players
-        # get player_list in unreduced
+        # positions < 0 are used for round/turn information and are not reduced
         invalid_positions = []
         for index in xrange(0, min(index, len(turn_history_reduced))):
-            if turn_history_reduced[index][0] == "position":
+            if turn_history_reduced[index][0] == "position" and turn_history_reduced[index][1] >= 0:
                 event_type, position, serial = turn_history_reduced[index]
                 position_reduced = game_event[player_list_index].index(serial) \
                     if serial is not None and serial in game_event[player_list_index] \
