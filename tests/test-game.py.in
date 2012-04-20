@@ -1327,22 +1327,23 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.beginTurn(1)
         self.failUnless(self.game.isBlindAnteRound())
         
-        Attributes = {
-                            'current_round' : -2,
-                            'position' : -1,
-                            'state' : 'end'
-                        }
+        attribs = {
+            'current_round' : -2,
+            'position' : -1,
+            'state' : 'end'
+        }
                         
         self.game.position = -1
         self.game.cancelState()
-        for key, value in Attributes.items():
+        
+        for key, value in attribs.items():
             self.failUnlessEqual(getattr(self.game,key), value)
             
         self.game.position = 0
         self.game.turn_history = []
         self.game.cancelState()
         
-        self.failUnlessEqual(self.game.turn_history, [('position', -1)] )
+        self.failUnlessEqual(self.game.turn_history, [('position', -1, None)] )
         
     # ---------------------------------------------------------
     def testHighestBet(self):
@@ -2693,8 +2694,8 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.blindAmount(1), (self.game.smallBlind(), 0, 'small'))
         self.game.setPlayerBlind(1, 'big_and_dead')
         self.failUnlessEqual(self.game.blindAmount(1), (self.game.bigBlind(), self.game.smallBlind(), 'big_and_dead'))
-        self.game.setPlayerBlind(1, None)
-        self.failUnlessEqual(self.game.blindAmount(1), (0, 0, None))
+        self.game.setPlayerBlind(1, False)
+        self.failUnlessEqual(self.game.blindAmount(1), (0, 0, False))
         self.game.setPlayerBlind(1, True)
         self.failUnlessEqual(self.game.blindAmount(1), (0, 0, True))
         self.game.setPlayerBlind(1, 'invalid')
@@ -5428,11 +5429,11 @@ class PokerGameTestCase(unittest.TestCase):
         
         # Update blinds
         blinds = {
-                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
-                    2 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
-                    3 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
-                    4 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False}
-                    }
+            1 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False},
+            2 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
+            3 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
+            4 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False}
+        }
         
         self.game.updateBlinds()
         
@@ -5446,11 +5447,11 @@ class PokerGameTestCase(unittest.TestCase):
         
         # Update blinds
         blinds = {
-                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
-                    2 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
-                    3 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
-                    4 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False}
-                    }
+            1 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False},
+            2 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False},
+            3 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
+            4 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False}
+        }
         
         self.game.updateBlinds()
         
@@ -5464,11 +5465,11 @@ class PokerGameTestCase(unittest.TestCase):
         
         # Update blinds
         blinds = {
-                    1 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
-                    2 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
-                    3 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
-                    4 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False}
-                    }
+            1 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
+            2 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False},
+            3 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False},
+            4 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False}
+        }
         
         self.game.updateBlinds()
         
@@ -5487,11 +5488,11 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.updateBlinds()
         
         blinds = {
-                    1 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
-                    2 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
-                    3 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
-                    4 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False}
-                    }
+            1 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
+            2 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False},
+            3 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False},
+            4 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False}
+        }
         
         # Check blinds
         for player in blinds.keys():
@@ -5512,11 +5513,11 @@ class PokerGameTestCase(unittest.TestCase):
         
         # Update blinds
         blinds = {
-                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
-                    2 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
-                    3 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
-                    4 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False}
-                    }
+            1 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False},
+            2 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
+            3 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
+            4 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False}
+        }
         
         self.game.updateBlinds()
         
@@ -5534,11 +5535,11 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.updateBlinds()
         
         blinds = {
-                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
-                    2 : { 'blind' :  True, 'missed_blind' : None, 'wait_for' : False},
-                    3 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
-                    4 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False}
-                    }
+            1 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False},
+            2 : { 'blind' :  True, 'missed_blind' : None, 'wait_for' : False},
+            3 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
+            4 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False}
+        }
                     
         # Check blinds
         for player in blinds.keys():
@@ -5553,11 +5554,11 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.updateBlinds()
         
         blinds = {
-                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
-                    2 : { 'blind' :  None, 'missed_blind' : 'small', 'wait_for' : 'late'},
-                    3 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
-                    4 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False}
-                    }
+            1 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False},
+            2 : { 'blind' :  False, 'missed_blind' : 'small', 'wait_for' : 'late'},
+            3 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
+            4 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False}
+        }
                     
         # Check blinds
         for player in blinds.keys():
@@ -5578,11 +5579,11 @@ class PokerGameTestCase(unittest.TestCase):
         
         # Update blinds
         blinds = {
-                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
-                    2 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
-                    3 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
-                    4 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False}
-                    }
+            1 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False},
+            2 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
+            3 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False},
+            4 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False}
+        }
         
         self.game.updateBlinds()
         
@@ -5601,12 +5602,12 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.updateBlinds()
         
         blinds = {
-                    1 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False},
-                    2 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
-                    3 : { 'blind' :  True, 'missed_blind' : None, 'wait_for' : False},
-                    4 : { 'blind' :  None, 'missed_blind' : None, 'wait_for' : False}
-                    }
-                    
+            1 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False},
+            2 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
+            3 : { 'blind' :  True, 'missed_blind' : None, 'wait_for' : False},
+            4 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False}
+        }
+        
         # Check blinds
         for player in blinds.keys():
             for attribute, value in blinds[player].items():
@@ -5853,10 +5854,7 @@ class PokerGameTestCase(unittest.TestCase):
 
     def testUpdateHistoryEnd(self):
         game = self.game
-        game.turn_history = [("one",),
-                             ("two",),
-                             ("end",),
-                             ("three",)]
+        game.turn_history = [("one",), ("two",), ("end",), ("three",)]
         game.updateHistoryEnd(winners = "winners", showdown_stack = "showdown_stack")
         self.assertEqual(("end", "winners", "showdown_stack"), game.turn_history[2])
 
@@ -5910,7 +5908,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.assertEqual(4,game.playerListIndexAdd(3, 4+2*players_truey_count, pred))
         self.assertEqual(0,game.playerListIndexAdd(3, 4-2*players_truey_count, pred))
 
-    def testHistoryReduce1(self):
+    def testHistoryReduceAutoPlaySitInAndOut(self):
         self.game.verbose = 2
         histories = []
         self.game.variant = 'holdem'
@@ -5962,49 +5960,25 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.historyReduce()
 
         self.failUnless(self.game.isFirstRound())
-#
-        print "\n".join(map(str,self.game.historyGet()))
-        print "\n"+ "\n".join(map(str,self.game.historyGetReduced()))
-        # FIXME write actual tests
-
-    def testHistoryReduce2(self):
-        def reduceAndPrint():
-            tail_position = self.game.historyReduce()
-            turn_history_reduced = self.game.turn_history_reduced
-            print 'TAIL_POS %d: %s | %s' % (
-                tail_position,
-                [e[:1] if e[0]=='game' else e for e in turn_history_reduced[:tail_position]] if tail_position>0 else 'Nil', 
-                [e[:1] if e[0]=='game' else e for e in turn_history_reduced[tail_position:]] if tail_position<len(turn_history_reduced) else 'Nil'
-            )
-            return tail_position
-            
-        self.game.player_list = [100, 200, 300, 400, 500, 600, 700]
-        self.game.turn_history = [('game', 0, 1, 0, 0, 'holdem', '1-2-no-limit', [100, 200, 300, 400, 500, 600, 700], 2, {100: 1000, 200: 1000, 300: 1000, 400: 1000, 500: 1000, 600: 1000, 700: 1000})]
         
-        self.game.turn_history += [('position', 3, 400), ('blind_request', 400, 20, 0, 'small')]
-        tail_position = reduceAndPrint()
+        history_reduced = [
+            ('game', 0, 1, 0, 0, 'holdem', 'config', [100, 200, 300], 1, {200: 1600, 300: 1600, 100: 1600}),
+            ('position', 1, 200), ('blind', 200, 500, 0),
+            ('position', 0, 100),
+            ('position', 2, 300), ('blind', 300, 1000, 0), 
+            ('position', -1, None), 
+            ('round', 'pre-flop', pokercards.PokerCards([]), {200: pokercards.PokerCards([193, 204]), 100: pokercards.PokerCards([237, 209]), 300: pokercards.PokerCards([243, 196])}),
+            ('position', 0, 100)
+        ]
+        self.assertEquals(
+            history_reduced, self.game.historyGetReduced(),
+            "error in history reduction.\nreduced:\n %s\nunreduced:\n %s" % (
+                ",\n ".join(map(str,self.game.historyGet())),
+                ",\n ".join(map(str,self.game.historyGetReduced()))
+            )
+        )
 
-        self.game.turn_history += [('blind', 400, 20, 0), ('position', 4, 500), ('blind_request', 500, 40, 0, 'big')]
-        tail_position = reduceAndPrint()
-
-        self.game.turn_history += [('sitOut', 500), ('position', 5, 600), ('blind_request', 600, 40, 0, 'big')]
-        tail_position = reduceAndPrint()
-
-        self.game.turn_history += [('blind', 600, 40, 0), ('position', 6, 700), ('blind_request', 700, 40, 0, 'late')]
-        tail_position = reduceAndPrint()
-
-
-        tail_position = reduceAndPrint()
-        self.maxDiff = None
-        self.assertEquals(self.game.turn_history_reduced,[
-            ('game', 0, 1, 0, 0, 'holdem', '1-2-no-limit', [100, 200, 300, 400, 600, 700], 2, {100: 1000, 200: 1000, 300: 1000, 400: 1000, 600: 1000, 700: 1000}),
-            ('position', 3, 400), ('blind', 400, 20, 0), 
-            ('position', 4, 600), ('blind', 600, 40, 0), 
-            ('position', 5, 700), ('blind_request', 700, 40, 0, 'late')
-        ])
-        print '\n',[e[:1] if e[0]=='game' else e for e in self.game.turn_history]
-
-    def testHistoryReduce3(self):
+    def testHistoryReduceError(self):
         self.game.verbose = 3
         histories = []
         self.game.variant = 'holdem'

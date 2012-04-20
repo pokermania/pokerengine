@@ -61,7 +61,7 @@ def Callback(id, *args):
     CallbackIds.append(id)
     CallbackArgs.append(args)
 
-# ------------------------------------------------------------    
+# ------------------------------------------------------------ 
 class PokerGameHistoryTestCase(unittest.TestCase):
     
     TestConfDirectory = '@srcdir@/test-data/conf'
@@ -583,6 +583,46 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.failUnlessEqual(('position', 2, 3), self.game.turn_history_reduced[3])
         self.failUnlessEqual(('blind_request', 3, 0), self.game.turn_history_reduced[4])
 
+    def testHistoryReduceTailPosition(self):
+        def reduceAndCheck(last_old_elem,first_new_elem):
+            tail_position = self.game.historyReduce()
+            turn_history_reduced = self.game.turn_history_reduced
+            history_with_split = '%d: %s | %s' % (
+                tail_position,
+                [e[:1] if e[0]=='game' else e for e in turn_history_reduced[:tail_position]] if tail_position>0 else 'Nil', 
+                [e[:1] if e[0]=='game' else e for e in turn_history_reduced[tail_position:]] if tail_position<len(turn_history_reduced) else 'Nil'
+            )
+            
+            self.assertEquals(
+                [el for el in (last_old_elem,first_new_elem) if el is not None], 
+                turn_history_reduced[max(0,tail_position-1):tail_position+1],
+                'wrong tail position: %s' % history_with_split
+            )
+        # buildup
+        game_event = ('game', 0, 1, 0, 0, 'holdem', '1-2-no-limit', [100, 200, 300, 400, 500, 600, 700], 2, {100: 1000, 200: 1000, 300: 1000, 400: 1000, 500: 1000, 600: 1000, 700: 1000})
+        self.game.player_list = [100, 200, 300, 400, 500, 600, 700]
+        self.game.turn_history = [game_event]
+        
+        # start of the game
+        self.game.turn_history += [('position', 3, 400), ('blind_request', 400, 20, 0, 'small')]
+        reduceAndCheck(None, game_event)
+
+        self.game.turn_history += [('blind', 400, 20, 0), ('position', 4, 500), ('blind_request', 500, 40, 0, 'big')]
+        reduceAndCheck(('position', 3, 400),('blind', 400, 20, 0))
+
+        self.game.turn_history += [('sitOut', 500), ('position', 5, 600), ('blind_request', 600, 40, 0, 'big')]
+        reduceAndCheck(('blind', 400, 20, 0),('position', 4, 600))
+
+        self.game.turn_history += [('blind', 600, 40, 0), ('position', 6, 700), ('blind_request', 700, 40, 0, 'late')]
+        reduceAndCheck(('position', 4, 600),('blind', 600, 40, 0))
+
+        reduceAndCheck(('blind_request', 700, 40, 0, 'late'), None)
+        self.assertEquals(self.game.turn_history_reduced,[
+            ('game', 0, 1, 0, 0, 'holdem', '1-2-no-limit', [100, 200, 300, 400, 600, 700], 2, {100: 1000, 200: 1000, 300: 1000, 400: 1000, 600: 1000, 700: 1000}),
+            ('position', 3, 400), ('blind', 400, 20, 0), 
+            ('position', 4, 600), ('blind', 600, 40, 0), 
+            ('position', 5, 700), ('blind_request', 700, 40, 0, 'late')
+        ])
     # ------------------------------------------------------------ 
     def GetMessagesFromHistory(self, history, serial2name = str, pocket_messages = False, verbose = None):
         if verbose is None: int(os.environ.get('VERBOSE_T', 0))
@@ -619,5 +659,5 @@ if __name__ == '__main__':
 
 # Interpreted by emacs
 # Local Variables:
-# compile-command: "( cd .. ; ./config.status tests/test-gamehistory.py ) ; ( cd ../tests ; make COVERAGE_FILES='../pokerengine/pokergame.py'  TESTS='coverage-reset test-gamehistory.py coverage-report' check )"
+# compile-command: "( cd .. ; ./config.status tests/test-gamehistory.py ) ; ( cd ../tests ; make COVERAGE_FILES='../pokerengine/pokergame.py' TESTS='coverage-reset test-gamehistory.py coverage-report' check )"
 # End:
