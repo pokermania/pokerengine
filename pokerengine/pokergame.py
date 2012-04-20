@@ -420,7 +420,7 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
             serial, reason = event[1:]
             messages.append(
                 _("%(serial)s waiting for ") % {'serial': serial2name(serial)} +
-                "late blind" if reason == "late" else "big blind"
+                ("late blind" if reason == "late" else "big blind")
             )
 
         elif event_type == "player_list":

@@ -69,7 +69,7 @@ msgstr "Hand #%(hand_serial)d, %(variant)s, %(betting_structure)s"
 #: pokerengine/pokergame.py:350
 #, python-format
 msgid "%(serial)s waiting for "
-msgstr "%(serial)s wartet auf"
+msgstr "%(serial)s wartet auf "
 
 # Translation #55542 (de)
 #: pokerengine/pokergame.py:359
