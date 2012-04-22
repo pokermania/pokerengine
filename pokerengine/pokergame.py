@@ -1218,10 +1218,11 @@ class PokerGame:
                         player.wait_for = False
 
         def updateMissed(players, index, what):
-            while ((index < ABSOLUTE_MAX_PLAYERS) and
-                    (not players[index] or
-                      not players[index].isSit() or
-                      players[index].wait_for == 'first_round')):
+            while index < ABSOLUTE_MAX_PLAYERS and (
+                not players[index] or 
+                not players[index].isSit() or
+                players[index].wait_for == 'first_round'
+            ):
                 player = players[index]
                 if player and player.wait_for != 'first_round':
                     if player.missed_blind == None:
@@ -1282,7 +1283,7 @@ class PokerGame:
                 if not player.sit_out:
                     if player.wait_for == "big" or player.missed_blind == None:
                         player.blind = False
-                    elif player.missed_blind in ('big', 'small',):
+                    elif player.missed_blind in ('big', 'small'):
                         if sit_count > 5:
                             player.blind = "big_and_dead"
                         else:
@@ -1613,7 +1614,8 @@ class PokerGame:
         self.player_list.sort(key=lambda i: self.serial2player[i].seat)
 
     def playersBeginTurn(self):
-        map(PokerPlayer.beginTurn, self.playersAll())
+        for player in self.playersAll():
+            player.beginTurn()
         if not self.is_directing:
             for player in self.playersAll():
                 if player.wait_for != "first_round":
@@ -1625,14 +1627,13 @@ class PokerGame:
             return False
         #
         # The player list is the list of players seated, sorted by seat
-        #
         old_player_list = self.player_list
         if with_wait_for:
             self.player_list = [serial for serial in self.serialsSit() if self.serial2player[serial].wait_for != "first_round"]
         else:
             self.player_list = [serial for serial in self.serialsSit() if not self.serial2player[serial].isWaitForBlind()]
         self.sortPlayerList()
-
+        
         # extended logging
         if self.verbose > 0 and \
             self.is_directing and \
@@ -2541,11 +2542,11 @@ class PokerGame:
         board_size = 0
         hand_size = 0
         for name in self.getParamList("/poker/variant/round/@name"):
-            board = self.getParamList("/poker/variant/round[@name='" + name + "']/deal[@card='board']")
+            board = self.getParamList("/poker/variant/round[@name='%s']/deal[@card='board']" % (name,))
             board_size += len(board)
-            cards = self.getParamList("/poker/variant/round[@name='" + name + "']/deal[@card='up' or @card='down']/@card")
+            cards = self.getParamList("/poker/variant/round[@name='%s']/deal[@card='up' or @card='down']/@card" % (name,))
             hand_size += len(cards)
-            position = self.getParam("/poker/variant/round[@name='" + name + "']/position/@type")
+            position = self.getParam("/poker/variant/round[@name='%s']/position/@type" % (name,))
             info = {
                 "name": name,
                 "position": position,
@@ -3969,6 +3970,9 @@ class PokerGame:
                 game_event = turn_history_reduced[index]
                 index += 1
             elif event_type == "sit":
+                #
+                # if the player enters the game after having it left in the current round,
+                # add him back again to the history
                 (event_type, serial, wait_for) = event
                 tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
                 if wait_for == False and serial not in game_event[player_list_index]:
@@ -3994,15 +3998,15 @@ class PokerGame:
                     tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
             elif event_type in ("blind_request","ante_request"):
                 #
-                # delete if not the last event
-                if index < len(turn_history_reduced) - 1:
+                # delete if not in the tail
+                if index < tail_position:
                     tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
                 else:
                     index += 1
             elif event_type == "player_list":
                 #
-                # delete and remove obsolete entries in serial2chips if not the last event
-                if index < len(turn_history_reduced) - 1:
+                # delete and remove obsolete entries in serial2chips if not in the tail
+                if index < tail_position:
                     tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
                     if game_event[player_list_index] != event[1]:
                         game_event[player_list_index][:] = event[1]
@@ -4012,14 +4016,17 @@ class PokerGame:
                     index += 1
             elif event_type == "wait_for":
                 (event_type, serial, wait_for) = event
-                tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
-                #
-                # remove references to the player who is
-                # not in the turn because he must wait for
-                # the late blind
-                if serial in game_event[player_list_index]:
-                    game_event[player_list_index].remove(serial)
-                    del game_event[serial2chips_index][serial]
+                if index < tail_position:
+                    tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
+                    #
+                    # remove references to the player who is
+                    # not in the turn because he must wait for
+                    # the late blind
+                    if serial in game_event[player_list_index]:
+                        game_event[player_list_index].remove(serial)
+                        del game_event[serial2chips_index][serial]
+                else:
+                    index += 1
             else:
                 index += 1
         #
