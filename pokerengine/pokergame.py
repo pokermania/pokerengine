@@ -3947,18 +3947,7 @@ class PokerGame:
         player_list_index = 7
         serial2chips_index = 9
         tail_position = len(self.turn_history_reduced)
-        #
-        # if the history_reduced_position equals the length of the turn_history, there is nothing to reduce.
-        if len(self.turn_history) == self.turn_history_unreduced_position: 
-            return tail_position
-        #
-        # if game already started and reduced, don't reduce anymore but append directly
-        if find(self.__historyFinalEvent,self.turn_history_reduced):
-            self.turn_history_reduced += deepcopy(self.turn_history[self.turn_history_unreduced_position:])
-            self.turn_history_unreduced_position = len(self.turn_history)
-            return tail_position
-        #
-        # else start to reduce:
+        
         turn_history_reduced = deepcopy(self.turn_history_reduced + self.turn_history[self.turn_history_unreduced_position:])
         index = 0
         while index < len(turn_history_reduced):

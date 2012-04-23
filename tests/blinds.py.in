@@ -278,6 +278,7 @@ class TestBlinds(unittest.TestCase):
         self.assertEqual(history[game_index][player_list_index], [1, 2, 10, 11, 3, 4])
         self.assertEqual(history[game_index][serial2chips_index].keys(), [1, 2, 3, 4, 10, 11])
         self.game.historyReduce()
+        self.game.historyReduce()
         self.assertEqual(history[game_index][player_list_index], [1, 2, 3, 4])
         self.assertEqual(history[game_index][serial2chips_index].keys(), [1, 2, 3, 4])
 

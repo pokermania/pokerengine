@@ -5960,6 +5960,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.historyReduce()
 
         self.failUnless(self.game.isFirstRound())
+        self.game.historyReduce()
         
         history_reduced = [
             ('game', 0, 1, 0, 0, 'holdem', 'config', [100, 200, 300], 1, {200: 1600, 300: 1600, 100: 1600}),
