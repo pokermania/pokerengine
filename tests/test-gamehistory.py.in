@@ -502,10 +502,13 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.game.turn_history = history
         self.game.turn_history_reduced = []             
         self.game.turn_history_unreduced_position = 0
-        self.game.historyReduce()           
+        
+        self.game.historyReduce()
+        self.failUnlessEqual(self.game.historyGetReduced(),history)
+               
+        self.game.historyReduce()
         self.failUnlessEqual(self.game.historyGetReduced(), [
-            ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
-            ('player_list', [1, 2])
+            ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
         ])
                                                          
         # Blind Request
@@ -517,10 +520,13 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.game.turn_history = history
         self.game.turn_history_reduced = []
         self.game.turn_history_unreduced_position = 0
+        
+        self.game.historyReduce()
+        self.failUnlessEqual(self.game.historyGetReduced(),history)
+        
         self.game.historyReduce()
         self.failUnlessEqual(self.game.historyGetReduced(), [
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
-            ('blind_request', 2, 1000, 100, 'big_and_dead')
         ])
                                                                     
         # Ante Request
@@ -532,10 +538,13 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.game.turn_history = history
         self.game.turn_history_reduced = []                
         self.game.turn_history_unreduced_position = 0
+        
+        self.game.historyReduce()
+        self.failUnlessEqual(self.game.historyGetReduced(),history)
+        
         self.game.historyReduce()
         self.failUnlessEqual(self.game.historyGetReduced(), [
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
-            ('ante_request', 2, 100)
         ])
                                                                     
         # Unable to update position (position 7 does not exist)
@@ -551,7 +560,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),                                                             
         ])
     
-        # the blind request is removed
+        # the blind request is removed, if requested more than once
         history = [
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
             ('position', 1, 2),
@@ -559,16 +568,16 @@ class PokerGameHistoryTestCase(unittest.TestCase):
             ('position', 2, 3),
             ('blind_request', 3, 0),
             ('blind', 3, 0),
-            ('player_list', [1, 2]),
         ]
         self.game.turn_history = history
         self.game.turn_history_reduced = []
         self.game.turn_history_unreduced_position = 0
         self.game.historyReduce()
+        self.game.historyReduce()
         self.failUnlessEqual(('position', 2, 3), self.game.turn_history_reduced[3])
         self.failUnlessEqual(('blind', 3, 0), self.game.turn_history_reduced[4])
 
-        # the blind request is not removed because it is last
+        # the blind request is not removed because only one reduction took place
         history = [
             ('game', 1, 2, 3, game_time, 'variant','betting_structure', [1, 2, 3, 4], 7, { 1 : 500, 2 : 600, 3 : 700, 4 : 800 }),
             ('position', 1, 2),
@@ -615,13 +624,15 @@ class PokerGameHistoryTestCase(unittest.TestCase):
 
         self.game.turn_history += [('blind', 600, 40, 0), ('position', 6, 700), ('blind_request', 700, 40, 0, 'late')]
         reduceAndCheck(('position', 4, 600),('blind', 600, 40, 0))
-
-        reduceAndCheck(('blind_request', 700, 40, 0, 'late'), None)
+        
+        # blind request is not in reduced history anymore because we are calling reduce a second time
+        reduceAndCheck(('position', 5, 700), None)
+        
         self.assertEquals(self.game.turn_history_reduced,[
             ('game', 0, 1, 0, 0, 'holdem', '1-2-no-limit', [100, 200, 300, 400, 600, 700], 2, {100: 1000, 200: 1000, 300: 1000, 400: 1000, 600: 1000, 700: 1000}),
             ('position', 3, 400), ('blind', 400, 20, 0), 
             ('position', 4, 600), ('blind', 600, 40, 0), 
-            ('position', 5, 700), ('blind_request', 700, 40, 0, 'late')
+            ('position', 5, 700)
         ])
     # ------------------------------------------------------------ 
     def GetMessagesFromHistory(self, history, serial2name = str, pocket_messages = False, verbose = None):
