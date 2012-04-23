@@ -166,7 +166,7 @@ class PokerPlayerTestCase(unittest.TestCase):
                                 'hand' : pokercards.PokerCards(),
                                 'side_pot_index' : 0,
                                 'all_in' : False,
-                                'blind' : None,
+                                'blind' : False,
                                 'ante' : False
                             }
                                         
