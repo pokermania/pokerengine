@@ -46,7 +46,9 @@ import gettext
 
 import traceback
 from pprint import pformat
+
 from copy import deepcopy
+from collections import defaultdict
 
 gettext.bind_textdomain_codeset('poker-engine', 'UTF-8')
 
@@ -683,8 +685,7 @@ class PokerGame:
         self.side_pots = {}
         self.first_betting_pass = True
         self.turn_history = []
-        self.turn_history_reduced = []
-        self.turn_history_unreduced_position = 0
+        self.turn_history_is_reduced = False
         self.level = 0
 
     def open(self):
@@ -1056,9 +1057,8 @@ class PokerGame:
         self.serial2best = {}
         self.showdown_stack = []
         self.turn_history = []
-        self.turn_history_reduced = []
-        self.turn_history_unreduced_position = 0
-
+        self.turn_history_is_reduced = False
+        
         if self.levelUp():
             self.setLevel(self.getLevel() + 1)
 
@@ -3913,14 +3913,6 @@ class PokerGame:
             self.message("ignore duplicate history event " + str(args))
 
     def historyAdd(self, *args):
-        try:
-            if self.verbose > 0 and args[0] == 'position' and args[1] > len(self.player_list):
-                self.message(
-                    "unexpected position change: pos %s for player_list %s" % (args[1], self.player_list) +
-                    "\n" + "".join(traceback.format_stack(limit=3)[:-1]).strip()
-                )
-        except:
-            pass
         self.runCallbacks(*args)
         self.turn_history.append(args)
 
@@ -3933,116 +3925,96 @@ class PokerGame:
     def historyGet(self):
         return self.turn_history
     
-    def historyGetReduced(self):
-        return self.turn_history_reduced
-    
     def __historyFinalEvent(self,event):
         return event[0] in ("showdown","muck") or (event[0]=="round" and event[1] != GAME_STATE_BLIND_ANTE)
     
-    def __historyDelEvent(self,event_list,index,threshold):
-        del event_list[index]
-        return 0 if index >= threshold else 1
-    
+    def historyCanBeReduced(self):
+        return bool(not self.turn_history_is_reduced and find(self.__historyFinalEvent,self.turn_history))
+     
     def historyReduce(self):
+        if not self.historyCanBeReduced():
+            raise Exception('history cannot be reduced')
+        self.turn_history = self._historyReduce(self.turn_history)
+        self.turn_history_is_reduced = True
+    
+    def _historyReduce(self,turn_history,in_place=False):
         player_list_index = 7
         serial2chips_index = 9
-        tail_position = len(self.turn_history_reduced)
         
-        turn_history_reduced = deepcopy(self.turn_history_reduced + self.turn_history[self.turn_history_unreduced_position:])
+        if not in_place: turn_history = deepcopy(turn_history)
+            
+        game_event = None
+        player_list_new = None
+        #
+        # parse events
+        remove_indexes = []
+        sitouts_for_player = defaultdict(list)
+        sits_for_player = defaultdict(list)
         index = 0
-        while index < len(turn_history_reduced):
-            event = turn_history_reduced[index]
+        for index,event in enumerate(turn_history):
             event_type = event[0]
             if self.__historyFinalEvent(event):
                 break
-            elif event_type == "game":
-                game_event = turn_history_reduced[index]
-                index += 1
-            elif event_type == "sit":
-                #
-                # if the player enters the game after having it left in the current round,
-                # add him back again to the history
-                (event_type, serial, wait_for) = event
-                tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
-                if wait_for == False and serial not in game_event[player_list_index]:
-                    game_event[player_list_index].append(serial)
-                    game_event[player_list_index].sort(key=lambda i: self.serial2player[i].seat)
-                    game_event[serial2chips_index][serial] = self.serial2player[serial].money 
-            elif event_type in ("sitOut","wait_blind"):
-                (event_type, serial) = event
-                #
-                # a sitOut or wait_blind effectively removes the player from the history
-                # - delete current index (sitOut)
-                # - remove references to the player
-                # - if the position before is a blind or ante_request, delete it 
-                # - if the position before is a position, delete it
-                tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
+            elif event_type == 'game':
+                game_event = turn_history[index]
+            elif event_type == 'sit':
+                remove_indexes.append(index)
+                sits_for_player[event[1]].append(index)
+            elif event_type in ('blind_request','ante_request'):
+                remove_indexes.append(index)
+            elif event_type in ('sitOut','wait_blind'):
+                remove_indexes.append(index)
+                sitouts_for_player[event[1]].append(index)
+            elif event_type == 'wait_for':
+                remove_indexes.append(index)
+                sitouts_for_player[event[1]].append(index)
+            elif event_type == 'player_list':
+                remove_indexes.append(index)
+                player_list_new = event[1]
+        #
+        # recreate playerlist.
+        # either use the player list, if their is some
+        if player_list_new is not None:
+            for serial in set(game_event[player_list_index]) - set(player_list_new):
                 del game_event[serial2chips_index][serial]
+            game_event[player_list_index][:] = player_list_new
+        #
+        # else check for sit_outs without subsequent sitins
+        else:
+            serials_to_sitout = (
+                serial for serial in set(sits_for_player.keys() + sitouts_for_player.keys())
+                if max([0] + sits_for_player[serial]) - max([0] + sitouts_for_player[serial]) < 0
+            )
+            for serial in serials_to_sitout:
                 game_event[player_list_index].remove(serial)
-                if index > 0 and turn_history_reduced[index-1][0] in ("blind_request","ante_request"):
-                    index -= 1
-                    tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
-                if index > 0 and turn_history_reduced[index-1][0] == "position":
-                    index -= 1
-                    tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
-            elif event_type in ("blind_request","ante_request"):
-                #
-                # delete if not in the tail
-                if index < tail_position:
-                    tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
-                else:
-                    index += 1
-            elif event_type == "player_list":
-                #
-                # delete and remove obsolete entries in serial2chips if not in the tail
-                if index < tail_position:
-                    tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
-                    if game_event[player_list_index] != event[1]:
-                        game_event[player_list_index][:] = event[1]
-                        for serial in set(game_event[player_list_index]) - set(event[1]):
-                            del game_event[serial2chips_index][serial]
-                else:
-                    index += 1
-            elif event_type == "wait_for":
-                (event_type, serial, wait_for) = event
-                if index < tail_position:
-                    tail_position -= self.__historyDelEvent(turn_history_reduced,index,tail_position)
-                    #
-                    # remove references to the player who is
-                    # not in the turn because he must wait for
-                    # the late blind
-                    if serial in game_event[player_list_index]:
-                        game_event[player_list_index].remove(serial)
-                        del game_event[serial2chips_index][serial]
-                else:
-                    index += 1
+                del game_event[serial2chips_index][serial]
+        #
+        # recreate and mark positions if needed
+        for p_index in range(0,index):
+            if (
+                not turn_history[p_index][0] == "position" or 
+                not turn_history[p_index][1] >= 0 
+                or p_index in remove_indexes
+            ):
+                continue
+            event_type, position, serial = turn_history[p_index]
+            position_reduced = game_event[player_list_index].index(serial) \
+                if serial is not None and serial in game_event[player_list_index] \
+                else None
+            if position == position_reduced:
+                pass # no need to replace if it's already equal
+            elif position_reduced is not None and position: 
+                turn_history[p_index] = (event_type, position_reduced, serial)
             else:
-                index += 1
+                remove_indexes.append(p_index)
         #
-        # reset the positions of the players to take in account the removed players
-        # positions < 0 are used for round/turn information and are not reduced
-        invalid_positions = []
-        for index in xrange(0, min(index, len(turn_history_reduced))):
-            if turn_history_reduced[index][0] == "position" and turn_history_reduced[index][1] >= 0:
-                event_type, position, serial = turn_history_reduced[index]
-                position_reduced = game_event[player_list_index].index(serial) \
-                    if serial is not None and serial in game_event[player_list_index] \
-                    else None
-                if position == position_reduced:
-                    pass
-                elif position_reduced is not None and position: 
-                    turn_history_reduced[index] = (event_type, position_reduced, serial)
-                else:
-                    invalid_positions.append(index)
-        #
-        # delete all invalid positions
-        for invalid_position in reversed(invalid_positions):
-            tail_position -= self.__historyDelEvent(turn_history_reduced,invalid_position,tail_position)
-        #
-        # if everything goes well, save it to instance attributes
-        self.turn_history_reduced = turn_history_reduced
-        self.turn_history_unreduced_position = len(self.turn_history)
-        return tail_position
+        # actually delete all obsolete elements
+        for index in sorted(remove_indexes,reverse=True):
+            del turn_history[index]
+        
+        if not in_place:
+            return turn_history
+                
         
     def error(self, string):
         if self.verbose >= 0: self.message("ERROR: " + string)

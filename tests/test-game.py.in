@@ -5925,57 +5925,59 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnless(self.game.isBlindAnteRound())
 
         self.game.blind(200)
-        self.game.historyReduce()
+        if self.game.historyCanBeReduced(): self.game.historyReduce()
 
         # . Table.playerTimeoutTimer
         self.game.sitOutNextTurn(300)
         self.game.autoPlayer(300)
-        self.game.historyReduce()
+        if self.game.historyCanBeReduced(): self.game.historyReduce()
 
         # . PACKET_POKER_TABLE_JOIN
         # .. Avatar.performPacketPokerTableJoin
         # ... PokerTable.joinPlayer
         self.game.comeBack(300)
-        self.game.historyReduce()
+        if self.game.historyCanBeReduced(): self.game.historyReduce()
 
         # . PACKET_POKER_SIT_OUT
         # .. Table.sitOutPlayer
         self.game.sitOutNextTurn(300)
-        self.game.historyReduce()
+        if self.game.historyCanBeReduced(): self.game.historyReduce()
 
         # . PACKET_POKER_SIT
         # .. Avatar.performPacketPokerSit
         # ... Table.sitPlayer
         # .... Avatar.sitPlayer
         self.game.sit(300)
-        self.game.historyReduce()
+        if self.game.historyCanBeReduced(): self.game.historyReduce()
 
         # . PACKET_POKER_SIT_OUT
         # .. Table.sitOutPlayer
         self.game.sitOut(400)
-        self.game.historyReduce()
+        if self.game.historyCanBeReduced(): self.game.historyReduce()
 
         # 3 has to pay the blind now
         self.game.blind(300)
-        self.game.historyReduce()
+        if self.game.historyCanBeReduced(): self.game.historyReduce()
 
         self.failUnless(self.game.isFirstRound())
-        self.game.historyReduce()
         
-        history_reduced = [
+        
+        history_reduced_should = [
             ('game', 0, 1, 0, 0, 'holdem', 'config', [100, 200, 300], 1, {200: 1600, 300: 1600, 100: 1600}),
             ('position', 1, 200), ('blind', 200, 500, 0),
+            ('position', 2, 300),
             ('position', 0, 100),
             ('position', 2, 300), ('blind', 300, 1000, 0), 
             ('position', -1, None), 
             ('round', 'pre-flop', pokercards.PokerCards([]), {200: pokercards.PokerCards([193, 204]), 100: pokercards.PokerCards([237, 209]), 300: pokercards.PokerCards([243, 196])}),
             ('position', 0, 100)
         ]
+        history_reduced_is = self.game.historyGet()
         self.assertEquals(
-            history_reduced, self.game.historyGetReduced(),
-            "error in history reduction.\nreduced:\n %s\nunreduced:\n %s" % (
-                ",\n ".join(map(str,self.game.historyGet())),
-                ",\n ".join(map(str,self.game.historyGetReduced()))
+            history_reduced_should, history_reduced_is,
+            "error in history reduction.\nreduced:\n %s\nshould_be:\n %s" % (
+                ",\n ".join(map(str,history_reduced_is)),
+                ",\n ".join(map(str,history_reduced_should))
             )
         )
 
@@ -5984,7 +5986,7 @@ class PokerGameTestCase(unittest.TestCase):
         histories = []
         self.game.variant = 'holdem'
         self.game.setMaxPlayers(9)
-        player_serials = [84392, 82546, 70187, 75270, 51563, 21256, 84105]
+        player_serials = [100, 200, 300, 400, 500, 600, 700]
         player_seats = [0, 1, 2, 3, 4, 5, 8]
         players = {}
 
@@ -5995,18 +5997,18 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.forced_dealer_seat = 2
         self.game.beginTurn(1)
 
-        players[84105].blind = 'late'
-        players[84105].missed_blind = 'big'
+        players[700].blind = 'late'
+        players[700].missed_blind = 'big'
 
-        self.game.blind(75270) 
-        self.game.historyReduce()
+        self.game.blind(400) 
+        if self.game.historyCanBeReduced(): self.game.historyReduce()
         
-        self.game.sitOutNextTurn(51563)
-        self.game.historyReduce()
-        self.game.blind(21256)
-        self.game.historyReduce()
-        self.game.blind(84105)
-        self.game.historyReduce()
+        self.game.sitOutNextTurn(500)
+        if self.game.historyCanBeReduced(): self.game.historyReduce()
+        self.game.blind(600)
+        if self.game.historyCanBeReduced(): self.game.historyReduce()
+        self.game.blind(700)
+        if self.game.historyCanBeReduced(): self.game.historyReduce()
 
     # ---------------------------------------------------------
     def AddPlayerAndSit(self, serial, seat = -1):
