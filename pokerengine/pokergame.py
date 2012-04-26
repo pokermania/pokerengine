@@ -3925,21 +3925,23 @@ class PokerGame:
     def historyGet(self):
         return self.turn_history
     
-    def __historyFinalEvent(self,event):
-        return event[0] in ("showdown","muck") or (event[0]=="round" and event[1] != GAME_STATE_BLIND_ANTE)
     
     def historyCanBeReduced(self):
-        return bool(not self.turn_history_is_reduced and find(self.__historyFinalEvent,self.turn_history))
+        return bool(not self.turn_history_is_reduced and find(PokerGame._historyFinalEvent,self.turn_history))
      
     def historyReduce(self):
-        if not self.historyCanBeReduced():
-            if self.verbose > 0:
-                self.error("History cannot be reduced.")
-            return
-        self.turn_history = self._historyReduce(self.turn_history)
-        self.turn_history_is_reduced = True
+        if self.historyCanBeReduced():
+            self.turn_history = PokerGame._historyReduce(self.turn_history)
+            self.turn_history_is_reduced = True
+        elif self.verbose > 0:
+            self.error("History cannot be reduced.")
+        
+    @staticmethod
+    def _historyFinalEvent(event):
+        return event[0] in ("showdown","muck") or (event[0]=="round" and event[1] != GAME_STATE_BLIND_ANTE)
     
-    def _historyReduce(self,turn_history,in_place=False):
+    @staticmethod
+    def _historyReduce(turn_history,in_place=False):
         player_list_index = 7
         serial2chips_index = 9
         
@@ -3955,7 +3957,7 @@ class PokerGame:
         index = 0
         for index,event in enumerate(turn_history):
             event_type = event[0]
-            if self.__historyFinalEvent(event):
+            if PokerGame._historyFinalEvent(event):
                 break
             elif event_type == 'game':
                 game_event = turn_history[index]
