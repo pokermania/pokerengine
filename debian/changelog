@@ -1,8 +1,14 @@
+poker-engine (1.4.2-1) pokermania; urgency=low
+
+  * smaller polishing
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Thu, 26 Apr 2012 19:00:00 +0200
+
 poker-engine (1.4.2) pokermania; urgency=low
 
   * ce347fe disabled two failing test of historyReduce. will fix them for the next build
 
- -- Andor Goetzendorff <andor@pokermania.de>  Mon, 26 Apr 2012 15:00:00 +0200
+ -- Andor Goetzendorff <andor@pokermania.de>  Thu, 26 Apr 2012 15:00:00 +0200
 
 poker-engine (1.4.1) pokermania; urgency=low
 
@@ -12,7 +18,7 @@ poker-engine (1.4.1) pokermania; urgency=low
   * b3dec5f tests adopted to historyReduce + improvements
   * a5069f5 fixed tests regarding player.blind (None is now False)
 
- -- Andor Goetzendorff <andor@pokermania.de>  Mon, 26 Apr 2012 15:00:00 +0200
+ -- Andor Goetzendorff <andor@pokermania.de>  Thu, 26 Apr 2012 15:00:00 +0200
 
 poker-engine (1.4.0) pokermania; urgency=low
 
