@@ -3933,7 +3933,9 @@ class PokerGame:
      
     def historyReduce(self):
         if not self.historyCanBeReduced():
-            raise Exception('history cannot be reduced')
+            if self.verbose > 0:
+                self.error("History cannot be reduced.")
+            return
         self.turn_history = self._historyReduce(self.turn_history)
         self.turn_history_is_reduced = True
     
