@@ -568,6 +568,8 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
             pass
         elif event_type == "muck":
             pass
+        elif event_type == "sit":
+            pass
         else:
             if verbose >= 0:
                 print "ERROR history2messages: unknown history type %s " % event_type
