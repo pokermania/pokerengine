@@ -3714,10 +3714,10 @@ class PokerGame:
         return len(self.serialsInGame())
 
     def serialsInGame(self):
-        return [s for s, p in self.serial2player.iteritems() if p.isInGame()]
+        return [s for s, p in self.serial2player.iteritems() if s in self.player_list and p.isInGame()]
 
     def playersInGame(self):
-        return [p for p in self.serial2player.itervalues() if p.isInGame()]
+        return [p for s, p in self.serial2player.iteritems() if s in self.player_list and p.isInGame()]
 
     def allInCount(self):
         return len(self.serialsAllIn())
