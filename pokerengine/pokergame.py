@@ -1639,7 +1639,7 @@ class PokerGame:
         # extended logging
         if self.verbose > 0 and \
             self.is_directing and \
-            self.state not in (GAME_STATE_NULL, GAME_STATE_END) and \
+            self.state not in (GAME_STATE_NULL, GAME_STATE_END, GAME_STATE_BLIND_ANTE) and \
             len(self.player_list) > len(old_player_list):
                 self.message(
                     "player_list grew unexpectedly (state=%s): %s -> %s\n%s" % (
