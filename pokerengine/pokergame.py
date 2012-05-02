@@ -1631,9 +1631,9 @@ class PokerGame:
         # The player list is the list of players seated, sorted by seat
         old_player_list = self.player_list
         if with_wait_for:
-            self.player_list = [serial for serial in self.serialsSit() if self.serial2player[serial].wait_for != "first_round"]
+            self.player_list = [s for s, p in self.serial2player.iteritems() if p.isSit() and p.wait_for != "first_round"]
         else:
-            self.player_list = [serial for serial in self.serialsSit() if not self.serial2player[serial].isWaitForBlind()]
+            self.player_list = [s for s, p in self.serial2player.iteritems() if p.isSit() and not p.isWaitForBlind()]
         self.sortPlayerList()
         
         # extended logging
@@ -3596,70 +3596,76 @@ class PokerGame:
         return len(self.serialsDisconnected())
 
     def serialsDisconnected(self):
-        return filter(lambda x: self.serial2player[x].isDisconnected(), self.serial2player.keys())
+        return [s for s, p in self.serial2player.iteritems() if p.isDisconnected()]
 
     def playersDisconnected(self):
-        return [self.serial2player[serial] for serial in self.serialsDisconnected()]
+        return [p for p in self.serial2player.itervalues() if p.isDisconnected()]
 
     def connectedCount(self):
         return len(self.serialsConnected())
 
     def serialsConnected(self):
-        return filter(lambda x: self.serial2player[x].isConnected(), self.serial2player.keys())
+        return [s for s, p in self.serial2player.iteritems() if p.isConnected()]
 
     def playersConnected(self):
-        return [self.serial2player[serial] for serial in self.serialsConnected()]
+        return [p for p in self.serial2player.itervalues() if p.isConnected()]
 
     def sitOutCount(self):
         return len(self.serialsSitOut())
 
     def serialsSitOut(self):
-        return filter(lambda x: self.serial2player[x].isSitOut(), self.serial2player.keys())
+        return [s for s, p in self.serial2player.iteritems() if p.isSitOut()]
 
     def playersSitOut(self):
-        return [self.serial2player[serial] for serial in self.serialsSitOut()]
+        return [p for p in self.serial2player.itervalues() if p.isSitOut()]
 
     def brokeCount(self):
         return len(self.serialsBroke())
 
     def serialsBroke(self):
-        return filter(lambda serial: self.isBroke(serial), self.serial2player.keys())
+        return [s for s in self.serial2player.iterkeys() if self.isBroke(s)]
 
     def playersBroke(self):
-        return [self.serial2player[serial] for serial in self.serialsBroke()]
+        return [p for s, p in self.serial2player.iteritems() if self.isBroke(s)]
 
     def sitCount(self):
         return len(self.serialsSit())
 
     def serialsSit(self):
-        return [serial for serial in self.serial2player.keys() if self.serial2player[serial].isSit()]
+        return [s for s, p in self.serial2player.iteritems() if p.isSit()]
 
     def playersSit(self):
-        return [self.serial2player[serial] for serial in self.serialsSit()]
+        return [p for p in self.serial2player.itervalues() if p.isSit()]
 
     def notPlayingCount(self):
+        if not self.isRunning():
+            return len(self.serial2player)
         return len(self.serialsNotPlaying())
 
     def serialsNotPlaying(self):
-        if self.isRunning():
-            return filter(lambda x: not x in self.player_list, self.serial2player.keys())
-        else:
+        if not self.isRunning():
             return self.serial2player.keys()
+        return [s for s in self.serial2player.iterkeys() if s not in self.player_list]
 
     def playersNotPlaying(self):
-        return [self.serial2player[serial] for serial in self.serialsNotPlaying()]
+        if not self.isRunning():
+            return self.serial2player.values()
+        return [p for s, p in self.serial2player.iteritems() if s not in self.player_list]
 
     def playingCount(self):
-        return len(self.serialsPlaying())
+        if not self.isRunning():
+            return 0
+        return len(self.player_list)
 
     def serialsPlaying(self):
-        if self.isRunning():
-            return self.player_list
-        else:
+        if not self.isRunning():
             return []
+        return [s for s in self.serial2player.iterkeys() if s in self.player_list]
 
     def playersPlaying(self):
-        return [self.serial2player[serial] for serial in self.serialsPlaying()]
+        if not self.isRunning():
+            return []
+        return [p for s, p in self.serial2player.iteritems() if s in self.player_list]
 
     def allCount(self):
         return len(self.serial2player)
@@ -3699,7 +3705,7 @@ class PokerGame:
             return player_list
 
     def serialsAll(self):
-            return self.serial2player.keys()
+        return self.serial2player.keys()
 
     def playersAll(self):
         return self.serial2player.values()
@@ -3708,10 +3714,10 @@ class PokerGame:
         return len(self.serialsInGame())
 
     def serialsInGame(self):
-        return filter(lambda x: self.serial2player[x].isInGame(), self.player_list)
+        return [s for s, p in self.serial2player.iteritems() if p.isInGame()]
 
     def playersInGame(self):
-        return [self.serial2player[serial] for serial in self.serialsInGame()]
+        return [p for p in self.serial2player.itervalues() if p.isInGame()]
 
     def allInCount(self):
         return len(self.serialsAllIn())
