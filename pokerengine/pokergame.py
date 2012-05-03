@@ -3993,16 +3993,6 @@ class PokerGame:
                 game_event[serial2chips_index][serial] = money_map[serial]
             game_event[player_list_index][:] = player_list_new
         #
-        # else check for sit_outs without subsequent sitins
-        else:
-            serials_to_sitout = (
-                serial for serial in set(sits_for_player.keys() + sitouts_for_player.keys())
-                if max([0] + sits_for_player[serial]) - max([0] + sitouts_for_player[serial]) < 0
-            )
-            for serial in serials_to_sitout:
-                game_event[player_list_index].remove(serial)
-                del game_event[serial2chips_index][serial]
-        #
         # recreate and mark positions if needed
         for p_index in range(0,index):
             if (
