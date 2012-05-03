@@ -3939,7 +3939,7 @@ class PokerGame:
      
     def historyReduce(self):
         if self.historyCanBeReduced():
-            self.turn_history = PokerGame._historyReduce(self.turn_history)
+            self.turn_history = PokerGame._historyReduce(self.turn_history,self.moneyMap())
             self.turn_history_is_reduced = True
         elif self.verbose > 0:
             self.error("History cannot be reduced.")
@@ -3949,7 +3949,7 @@ class PokerGame:
         return event[0] in ("showdown","muck") or (event[0]=="round" and event[1] != GAME_STATE_BLIND_ANTE)
     
     @staticmethod
-    def _historyReduce(turn_history,in_place=False):
+    def _historyReduce(turn_history,money_map,in_place=False):
         player_list_index = 7
         serial2chips_index = 9
         
@@ -3989,6 +3989,8 @@ class PokerGame:
         if player_list_new is not None:
             for serial in set(game_event[player_list_index]) - set(player_list_new):
                 del game_event[serial2chips_index][serial]
+            for serial in set(player_list_new) - set(game_event[player_list_index]):
+                game_event[serial2chips_index][serial] = money_map[serial]
             game_event[player_list_index][:] = player_list_new
         #
         # else check for sit_outs without subsequent sitins
