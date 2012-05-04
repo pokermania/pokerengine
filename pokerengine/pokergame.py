@@ -1294,8 +1294,15 @@ class PokerGame:
                     elif (player.missed_blind == "n/a" and player.wait_for != "first_round"):
                         player.blind = "late"
                         player.wait_for = False
-                    else:  # pragma: no cover
-                        self.error("updateBlinds statement unexpectedly reached while evaluating late blind")  # pragma: no cover
+                    else:
+                        self.error(
+                            "updateBlinds statement unexpectedly reached while evaluating "
+                            "late blind (player: %s, missed_blind: %s, wait_for: %s)" % (
+                                player.serial,
+                                player.missed_blind,
+                                player.wait_for
+                            )
+                        )
                 else:
                     player.blind = False
             index += 1
