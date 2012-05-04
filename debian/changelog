@@ -1,3 +1,10 @@
+poker-engine (1.4.3-1) pokermania; urgency=low
+
+  * c1d6b83 historyReduce only filters players by using player_list
+  * 39e57c0 historyReduce gets new player_list entries' money, fixes #5716
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Fri, 04 May 2012 19:00:00 +0200
+
 poker-engine (1.4.2-2) pokermania; urgency=low
 
   * ignore sit event
