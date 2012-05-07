@@ -207,6 +207,8 @@ class PokerTournamentStats:
         
     def __call__(self,user_serial):
         ret = {
+            "serial": user_serial,
+            "tourney_serial": self._tourney.serial,
             "rank": self.players_money_rank.get(user_serial,0),   
             "chips_avg": self.chips_avg,
             "chips_max": self.chips_max,
