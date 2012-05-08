@@ -149,9 +149,9 @@ AUTO_MUCK_ALWAYS = AUTO_MUCK_WIN + AUTO_MUCK_LOSE
 
 
 class PokerPlayer:
-    def __init__(self, serial, game):
+    def __init__(self, serial, name, game):
         self.serial = serial
-        self.name = "noname"
+        self.name = name if name else "noname"
         self.game = game
         self.fold = False
         self.remove_next_turn = False
@@ -180,8 +180,7 @@ class PokerPlayer:
         self.user_data = None
 
     def copy(self):
-        other = PokerPlayer(self.serial, self.game)
-        other.name = self.name
+        other = PokerPlayer(self.serial, self.name, self.game)
         other.fold = self.fold
         other.remove_next_turn = self.remove_next_turn
         other.sit_out = self.sit_out
@@ -929,7 +928,7 @@ class PokerGame:
         else:
             return False
 
-    def addPlayer(self, serial, seat=-1):
+    def addPlayer(self, serial, seat=-1, name=None):
         if serial in self.serial2player:
             player = self.serial2player[serial]
             if seat == player.seat:
@@ -940,7 +939,7 @@ class PokerGame:
                 return False
 
         if self.canAddPlayer(serial):
-            player = PokerPlayer(serial, self)
+            player = PokerPlayer(serial, name, self)
             if self.is_directing:
                 if seat != -1:
                     if seat in self.seats_left:

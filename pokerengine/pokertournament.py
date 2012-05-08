@@ -254,7 +254,7 @@ class PokerTournament:
             self.start_time = int(time.mktime(time.strptime(self.start_time, "%Y/%m/%d %H:%M")))
         self.prefix = ""
         
-        self.players = []
+        self.players = {}
         self.need_balance = False
         self.registered = 0
         self.winners = []
@@ -435,7 +435,7 @@ class PokerTournament:
         self.callback_new_state(self, old_state, self.state)
 
     def isRegistered(self, serial):
-        return serial in self.players
+        return self.players.has_key(serial)
         
     def canRegister(self, serial):
         if self.can_register and self.registered < self.players_quota:
@@ -446,9 +446,9 @@ class PokerTournament:
     def canUnregister(self, serial):
         return self.isRegistered(serial) and self.state == TOURNAMENT_STATE_REGISTERING
         
-    def register(self, serial):
+    def register(self, serial, name=None):
         if self.can_register:
-            self.players.append(serial)
+            self.players[serial] = name
             self.registered += 1
             self.rank2prize = None
             if self.sit_n_go != 'y':
@@ -463,7 +463,7 @@ class PokerTournament:
 
     def unregister(self, serial):
         if self.state == TOURNAMENT_STATE_REGISTERING:
-            self.players.remove(serial)
+            del self.players[serial]
             self.registered -= 1
             if self.sit_n_go != 'y':
                 self.prizes_object.removePlayer()
@@ -475,7 +475,7 @@ class PokerTournament:
     def cancel(self):
         if self.state == TOURNAMENT_STATE_REGISTERING:
             self.callback_cancel(self)
-            self.players = []
+            self.players = {}
             self.registered = 0
             return True
         else:
@@ -494,7 +494,7 @@ class PokerTournament:
         from_game.open()
         to_game.open()
         from_player = from_game.getPlayer(serial)
-        to_game.addPlayer(serial)
+        to_game.addPlayer(serial,name=from_player.name)
         to_player = to_game.getPlayer(serial)
         to_game.payBuyIn(serial, from_player.money)
         to_game.sit(serial)
@@ -510,7 +510,7 @@ class PokerTournament:
     def createGames(self):
         games_count = int(ceil(self.registered / float(self.seats_per_game)))
         self.players_quota = games_count * self.seats_per_game
-        players = self.players[:]
+        players = list(self.players.iteritems()) 
         shuffler.shuffle(players)
         for id in xrange(1, games_count + 1):
             game = self.callback_create_game(self)
@@ -524,9 +524,8 @@ class PokerTournament:
             buy_in = game.buyIn()
             for seat in xrange(self.seats_per_game):
                 if not players: break
-                    
-                player = players.pop()
-                game.addPlayer(player)
+                player,player_name = players.pop()
+                game.addPlayer(player,name=player_name)
                 game.payBuyIn(player, buy_in)
                 game.sit(player)
                 game.autoBlindAnte(player)
