@@ -358,7 +358,6 @@ class PokerTournament:
             #
             # game_id is 0 when updateBreak is called after a table was destroyed
             # as a side effect of balanceGames
-            #
             if game_id > 0:
                 self.breaks_games_id.append(game_id)
             on_break = True
@@ -384,8 +383,6 @@ class PokerTournament:
                 #           all other tables are expecting the break (i.e. no
                 #           hand will be played), it can be added to the list
                 #           of tables ready for the break.
-                #
-                #
                 if game.id not in self.breaks_games_id and len(game.playersAll()) > 1:
                     on_break = False
                     break
@@ -524,14 +521,14 @@ class PokerTournament:
             buy_in = game.buyIn()
             for seat in xrange(self.seats_per_game):
                 if not players: break
-                player,player_name = players.pop()
-                game.addPlayer(player,name=player_name)
-                game.payBuyIn(player, buy_in)
-                game.sit(player)
-                game.autoBlindAnte(player)
+                serial,name = players.pop()
+                game.addPlayer(serial,name=name)
+                game.payBuyIn(serial, buy_in)
+                game.sit(serial)
+                game.autoBlindAnte(serial)
                 
             self.games.append(game)
-        self.id2game = dict(zip([ game.id for game in self.games ], self.games))
+        self.id2game = dict((game.id,game) for game in self.games)
         # Next, need to call balance games, because the table assignment
         # algorithm above does not account for scenarios where the last
         # few people end up a table too small.
@@ -576,7 +573,6 @@ class PokerTournament:
             else:
                 #
                 # This happens if game_id was destroyed by the call to balanceGames above
-                #
                 self.updateBreak(0)
             return True
         

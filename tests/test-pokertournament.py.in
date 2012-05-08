@@ -58,26 +58,26 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testTournamentDefaultInitialisation(self):
         """Test Poker Tournament : Default initialisation"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'name' : 'no name', \
-                            'description_short' : 'nodescription_short', \
-                            'description_long' :  'nodescription_long', \
-                            'serial' : 1, \
-                            'verbose' :  int(os.environ.get('VERBOSE_T', 3)), \
-                            'players_quota' :  10, \
-                            'variant' : 'holdem', \
-                            'betting_structure' : 'level-15-30-no-limit', \
-                            'seats_per_game' : 10, \
-                            'sit_n_go' : 'y', \
-                            'register_time' : 0, \
-                            'start_time' : 0, \
-                            'breaks_interval' : 60, \
-                            'rebuy_delay' : 0, \
-                            'add_on' : 0, \
-                            'add_on_delay' : 60, \
-                            'prizes_specs' : 'table', \
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'name': 'no name',
+            'description_short': 'nodescription_short',
+            'description_long': 'nodescription_long',
+            'serial': 1,
+            'verbose': int(os.environ.get('VERBOSE_T', 3)),
+            'players_quota': 10,
+            'variant': 'holdem',
+            'betting_structure': 'level-15-30-no-limit',
+            'seats_per_game': 10,
+            'sit_n_go': 'y',
+            'register_time': 0,
+            'start_time': 0,
+            'breaks_interval': 60,
+            'rebuy_delay': 0,
+            'add_on': 0,
+            'add_on_delay': 60,
+            'prizes_specs': 'table'
+        }
         
         tournament = pokertournament.PokerTournament(**arguments)
         for attribute, value in arguments.items():
@@ -95,26 +95,26 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testTournamentInitialisation(self):
         """Test Poker Tournament : Initialisation"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'name' : 'Test', \
-                            'description_short' : 'ShortDescription', \
-                            'description_long' :  'LongDescription', \
-                            'serial' : 3, \
-                            'verbose' :  int(os.environ.get('VERBOSE_T', 3)), \
-                            'players_quota' :  20, \
-                            'variant' : 'variant', \
-                            'betting_structure' : 'config', \
-                            'seats_per_game' : 2, \
-                            'sit_n_go' : 'n', \
-                            'register_time' : time.time() + 60, \
-                            'start_time' : '2006/04/22 12:00', \
-                            'breaks_interval' : 120, \
-                            'rebuy_delay' : 30, \
-                            'add_on' : 10, \
-                            'add_on_delay' : 120, \
-                            'prizes_specs' : 'table', \
-                            }                                
+        arguments = {
+            'dirs': self.dirs,
+            'name': 'Test',
+            'description_short': 'ShortDescription',
+            'description_long': 'LongDescription',
+            'serial': 3,
+            'verbose': int(os.environ.get('VERBOSE_T', 3)),
+            'players_quota': 20,
+            'variant': 'variant',
+            'betting_structure': 'config',
+            'seats_per_game': 2,
+            'sit_n_go': 'n',
+            'register_time': time.time() + 60,
+            'start_time': '2006/04/22 12:00',
+            'breaks_interval': 120,
+            'rebuy_delay': 30,
+            'add_on': 10,
+            'add_on_delay': 120,
+            'prizes_specs': 'table'
+        } 
             
         tournament = pokertournament.PokerTournament(**arguments)
         for attribute, value in arguments.items():
@@ -136,11 +136,11 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testUpdateRegistering(self):
         """Test Poker Tournament : Update registering"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'register_time' : time.time() + 3, \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }                                
+        arguments = {
+            'dirs': self.dirs,
+            'register_time': time.time() + 3,
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }                                
         
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -160,14 +160,14 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testRegister(self):
         """Test Poker Tounament : Register"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  25, \
-                            'players_min' :  20, \
-                            'start_time' : time.time() + 20000, \
-                            'sit_n_go' : 'n',  \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }                                
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 25,
+            'players_min': 20,
+            'start_time': time.time() + 20000,
+            'sit_n_go': 'n', 
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }                                
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -208,12 +208,12 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testChangeState(self):
         """Test Poker Tournament : Change state"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  5, \
-                            'sit_n_go' : 'n',  \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }                                
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 5,
+            'sit_n_go': 'n', 
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }                                
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -242,12 +242,12 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testCanUnregister(self):
         """Test Poker Tounament : Can unregister"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  2, \
-                            'sit_n_go' : 'y', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }                                
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 2,
+            'sit_n_go': 'y',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }                                
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -266,12 +266,12 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testUnregister(self):
         """Test Poker Tounament : Unregister"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  2, \
-                            'sit_n_go' : 'y', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }                                
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 2,
+            'sit_n_go': 'y',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }                                
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -295,17 +295,17 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testCreateGames(self):
         """Test Poker Tournament : Create games"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  10, \
-                            'players_min' :  10, \
-                            'start_time' : time.time() + 20000, \
-                            'seats_per_game' : 3, \
-                            'sit_n_go' : 'n', \
-                            'variant' : 'holdem', \
-                            'betting_structure' : 'level-15-30-no-limit', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 10,
+            'players_min': 10,
+            'start_time': time.time() + 20000,
+            'seats_per_game': 3,
+            'sit_n_go': 'n',
+            'variant': 'holdem',
+            'betting_structure': 'level-15-30-no-limit',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -341,15 +341,15 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testPrizesSnG(self):
         """Test Poker Tournament : Prizes for SnG tournaments"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  20, \
-                            'buy_in' :  100, \
-                            'seats_per_game' : 2, \
-                            'sit_n_go' : 'y', \
-                            'prizes_specs' :  'table', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 20,
+            'buy_in': 100,
+            'seats_per_game': 2,
+            'sit_n_go': 'y',
+            'prizes_specs': 'table',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
 
         tournament = pokertournament.PokerTournament(**arguments)
         prizes = tournament.prizes()
@@ -363,17 +363,17 @@ class PokerTournamentTestCase(unittest.TestCase):
         """Test Poker Tournament : Prizes for tournaments with guarantee amount"""
 
         prize_min = 1000
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  2, \
-                            'buy_in' :  100, \
-                            'seats_per_game' : 2, \
-                            'prize_min' : prize_min, \
-                            'start_time' : time.time() + 20000, \
-                            'sit_n_go' : 'n', \
-                            'prizes_specs' :  'table', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 2,
+            'buy_in': 100,
+            'seats_per_game': 2,
+            'prize_min': prize_min,
+            'start_time': time.time() + 20000,
+            'sit_n_go': 'n',
+            'prizes_specs': 'table',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
 
         tournament = pokertournament.PokerTournament(**arguments)
         self.assertEquals(prize_min, tournament.prizes()[0])
@@ -382,16 +382,16 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testPrizesRegular(self):
         """Test Poker Tournament : Prizes for regular tournaments"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  40, \
-                            'buy_in' :  100, \
-                            'start_time' : time.time() + 20000, \
-                            'seats_per_game' : 2, \
-                            'sit_n_go' : 'n', \
-                            'prizes_specs' :  'table', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 40,
+            'buy_in': 100,
+            'start_time': time.time() + 20000,
+            'seats_per_game': 2,
+            'sit_n_go': 'n',
+            'prizes_specs': 'table',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
 
         #
         # PrizesTable
@@ -444,15 +444,15 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testMovePlayer(self):
         """Test Poker Tournament : Move player"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  25, \
-                            'players_min' :  20, \
-                            'start_time' : time.time() + 20000, \
-                            'seats_per_game' : 5, \
-                            'sit_n_go' : 'n', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 25,
+            'players_min': 20,
+            'start_time': time.time() + 20000,
+            'seats_per_game': 5,
+            'sit_n_go': 'n',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -491,15 +491,15 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testEqualizeCandidates(self):
         """Test Poker Tournament : Equalize candidates"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  20, \
-                            'players_min' :  15, \
-                            'start_time' : time.time() + 20000, \
-                            'seats_per_game' : 5, \
-                            'sit_n_go' : 'n', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 20,
+            'players_min': 15,
+            'start_time': time.time() + 20000,
+            'seats_per_game': 5,
+            'sit_n_go': 'n',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -529,15 +529,15 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testEqualizeGames(self):
         """Test Poker Tournament : Equalize games"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  25, \
-                            'players_min' :  20, \
-                            'start_time' : time.time() + 20000, \
-                            'seats_per_game' : 5, \
-                            'sit_n_go' : 'n', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 25,
+            'players_min': 20,
+            'start_time': time.time() + 20000,
+            'seats_per_game': 5,
+            'sit_n_go': 'n',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
                             
         # Tournament => 2 complete games (6 players)
         tournament = pokertournament.PokerTournament(**arguments)
@@ -581,29 +581,29 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testBreakGame(self):
         """Test Poker Tournament : Break game"""
         
-        to_break = { \
-                        'id' : 1, \
-                        'to_add' : [], \
-                        'running' : True, \
-                        'seats_left' : 0, \
-                        'serials' : [1, 2] \
-                        }
+        to_break = {
+            'id': 1,
+            'to_add': [],
+            'running': True,
+            'seats_left': 0,
+            'serials': [1, 2]
+        }
                                 
-        to_fill_1 = { \
-                        'id' : 2, \
-                        'to_add' : [], \
-                        'running' : False, \
-                        'seats_left' : 2, \
-                        'serials' : [3, 4] \
-                        }
+        to_fill_1 = {
+            'id': 2,
+            'to_add': [],
+            'running': False,
+            'seats_left': 2,
+            'serials': [3, 4]
+        }
                         
-        to_fill_2 = { \
-                        'id' : 3, \
-                        'to_add' : [], \
-                        'running' : False, \
-                        'seats_left' : 2, \
-                        'serials' : [5, 6] \
-                        }
+        to_fill_2 = {
+            'id': 3,
+            'to_add': [],
+            'running': False,
+            'seats_left': 2,
+            'serials': [5, 6]
+        }
                             
         self.failIf(pokertournament.breakGame(to_break, [to_fill_1]))
         
@@ -630,15 +630,15 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testBreakGames(self):
         """Test Poker Tournament : Break games"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  50, \
-                            'players_min' :  25, \
-                            'start_time' : time.time() + 20000, \
-                            'seats_per_game' : 5, \
-                            'sit_n_go' : 'n', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 50,
+            'players_min': 25,
+            'start_time': time.time() + 20000,
+            'seats_per_game': 5,
+            'sit_n_go': 'n',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -673,15 +673,15 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testBalanceGamesRunning(self):
         """Test Poker Tournament : Balance games when state RUNNING"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  20, \
-                            'players_min' :  15, \
-                            'start_time' : time.time() + 20000, \
-                            'seats_per_game' : 5, \
-                            'sit_n_go' : 'n', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 20,
+            'players_min': 15,
+            'start_time': time.time() + 20000,
+            'seats_per_game': 5,
+            'sit_n_go': 'n',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -711,8 +711,10 @@ class PokerTournamentTestCase(unittest.TestCase):
         player2 = tournament.games[0].serialsAll()[1]
      
         # Ensure that the first game is the one selected for breaking
-        self.failUnlessEqual(pokertournament.breakGames(tournament.games),
-                             [(1, 3, [player1]), (1, 2, [player2])])
+        self.failUnlessEqual(
+            pokertournament.breakGames(tournament.games),
+            [(1, 3, [player1]), (1, 2, [player2])]
+        )
         
         # Test the balancing.  First, ensure that the players are still at
         # the first game
@@ -736,15 +738,15 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testBalanceGamesRegistering(self):
         """Test Poker Tournament : Balance games when state REGISTERING"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  20, \
-                            'players_min' :  15, \
-                            'start_time' : time.time() + 20000, \
-                            'seats_per_game' : 5, \
-                            'sit_n_go' : 'n', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 20,
+            'players_min': 15,
+            'start_time': time.time() + 20000,
+            'seats_per_game': 5,
+            'sit_n_go': 'n',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -796,15 +798,15 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         
         # Create a new tournament where is no need to break a game
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  20, \
-                            'players_min' :  15, \
-                            'start_time' : time.time() + 20000, \
-                            'seats_per_game' : 5, \
-                            'sit_n_go' : 'n', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 20,
+            'players_min': 15,
+            'start_time': time.time() + 20000,
+            'seats_per_game': 5,
+            'sit_n_go': 'n',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -836,13 +838,13 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testEndTurn(self):
         """Test Poker Tournament : End turn"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  10, \
-                            'seats_per_game' : 5, \
-                            'sit_n_go' : 'y', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 10,
+            'seats_per_game': 5,
+            'sit_n_go': 'y',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -914,14 +916,14 @@ class PokerTournamentTestCase(unittest.TestCase):
         ignore the fact it is gone and proceed to BREAK state.
         """
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  10, \
-                            'seats_per_game' : 5, \
-                            'sit_n_go' : 'y', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3)), \
-                            'breaks_first' : 0
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 10,
+            'seats_per_game': 5,
+            'sit_n_go': 'y',
+            'verbose': int(os.environ.get('VERBOSE_T', 3)),
+            'breaks_first': 0
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -999,13 +1001,13 @@ class PokerTournamentTestCase(unittest.TestCase):
            hand will be played), it can be added to the list
            of tables ready for the break.
         """
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  4, \
-                            'seats_per_game' : 2, \
-                            'sit_n_go' : 'y', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3)), \
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 4,
+            'seats_per_game': 2,
+            'sit_n_go': 'y',
+            'verbose': int(os.environ.get('VERBOSE_T', 3)),
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -1048,14 +1050,14 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testGetRank(self):
         """Test Poker Tournament : Get rank"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  20, \
-                            'seats_per_game' : 5, \
-                            'start_time' : time.time() + 20000, \
-                            'sit_n_go' : 'n', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 20,
+            'seats_per_game': 5,
+            'start_time': time.time() + 20000,
+            'sit_n_go': 'n',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -1076,15 +1078,15 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testCancel(self):
         """Test Poker Tournament : Cancel"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  20, \
-                            'players_min' :  5, \
-                            'start_time' : time.time() + 20000, \
-                            'seats_per_game' : 5, \
-                            'sit_n_go' : 'n', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 20,
+            'players_min': 5,
+            'start_time': time.time() + 20000,
+            'seats_per_game': 5,
+            'sit_n_go': 'n',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -1103,14 +1105,14 @@ class PokerTournamentTestCase(unittest.TestCase):
     def testRunRegular(self):
         """Test Poker Tournament : Cancel"""
         
-        arguments =  { \
-                            'dirs' : self.dirs, \
-                            'players_quota' :  20, \
-                            'start_time' : time.time() + 20000, \
-                            'seats_per_game' : 5, \
-                            'sit_n_go' : 'n', \
-                            'verbose' : int(os.environ.get('VERBOSE_T', 3))
-                            }
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 20,
+            'start_time': time.time() + 20000,
+            'seats_per_game': 5,
+            'sit_n_go': 'n',
+            'verbose': int(os.environ.get('VERBOSE_T', 3))
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         
@@ -1131,13 +1133,13 @@ class Breaks(unittest.TestCase):
     
     def test_remainingBreakSeconds(self):
         arguments = { 
-            'dirs' : [ '@top_srcdir@/conf' ],
-            'players_quota' :  20,
-            'start_time' : self.seconds(),
-            'seats_per_game' : 5,
-            'sit_n_go' : 'n',
-            'verbose' : int(os.environ.get('VERBOSE_T', 3)),
-            }
+            'dirs': [ '@top_srcdir@/conf' ],
+            'players_quota':  20,
+            'start_time': self.seconds(),
+            'seats_per_game': 5,
+            'sit_n_go': 'n',
+            'verbose': int(os.environ.get('VERBOSE_T', 3)),
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         self.assertEqual(None, tournament.remainingBreakSeconds())
@@ -1147,14 +1149,14 @@ class Breaks(unittest.TestCase):
 
     def test_updateBreak(self):
         
-        arguments ={ 
-            'dirs' : [ '@top_srcdir@/conf' ],
-            'players_quota' :  20,
-            'start_time' : self.seconds(),
-            'seats_per_game' : 5,
-            'sit_n_go' : 'n',
-            'verbose' : int(os.environ.get('VERBOSE_T', 3)),
-            }
+        arguments = { 
+            'dirs': [ '@top_srcdir@/conf' ],
+            'players_quota': 20,
+            'start_time': self.seconds(),
+            'seats_per_game': 5,
+            'sit_n_go': 'n',
+            'verbose': int(os.environ.get('VERBOSE_T', 3)),
+        }
                             
         tournament = pokertournament.PokerTournament(**arguments)
         tournament.state = pokertournament.TOURNAMENT_STATE_RUNNING
