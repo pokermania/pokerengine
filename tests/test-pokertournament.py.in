@@ -83,7 +83,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         for attribute, value in arguments.items():
             self.failUnlessEqual(getattr(tournament,attribute), value)
             
-        self.failUnlessEqual(tournament.players, [])
+        self.failUnlessEqual(tournament.players, {})
         self.failUnlessEqual(tournament.winners, [])
         self.failIf(tournament.need_balance)
         
@@ -120,10 +120,9 @@ class PokerTournamentTestCase(unittest.TestCase):
         for attribute, value in arguments.items():
             if attribute == 'start_time':
                 value = int(time.mktime(time.strptime(value, "%Y/%m/%d %H:%M")))
-                
             self.failUnlessEqual(getattr(tournament,attribute), value)
             
-        self.failUnlessEqual(tournament.players, [])
+        self.failUnlessEqual(tournament.players, {})
         self.failUnlessEqual(tournament.winners, [])
         self.failIf(tournament.need_balance)
         
@@ -172,7 +171,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         tournament = pokertournament.PokerTournament(**arguments)
         
         # The tournament has been created and players can be regsitered
-        self.failUnlessEqual(tournament.players, [])
+        self.failUnlessEqual(tournament.players, {})
         self.failUnlessEqual(tournament.registered, 0)
         
         # The player 1 can be registered
@@ -181,7 +180,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         # Register the player
         self.failUnless(tournament.register(1))
-        self.failUnlessEqual(tournament.players, [1])
+        self.failUnlessEqual(tournament.players, {1:None})
         self.failUnlessEqual(tournament.registered, 1)
         self.failUnless(tournament.isRegistered(1))
         
@@ -192,8 +191,8 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnless(tournament.canRegister(2))
         
         # Register the player
-        self.failUnless(tournament.register(2))
-        self.failUnlessEqual(tournament.players, [1, 2])
+        self.failUnless(tournament.register(2,'player2'))
+        self.failUnlessEqual(tournament.players, {1:None, 2:'player2'})
         self.failUnlessEqual(tournament.registered, 2)
         self.failUnless(tournament.isRegistered(2))
         
@@ -276,13 +275,13 @@ class PokerTournamentTestCase(unittest.TestCase):
         tournament = pokertournament.PokerTournament(**arguments)
         
         self.failUnless(tournament.register(1))
-        self.failUnlessEqual(tournament.players, [1])
+        self.failUnlessEqual(tournament.players, {1:None})
         self.failUnlessEqual(tournament.registered, 1)
         
         self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_REGISTERING)
         
         self.failUnless(tournament.unregister(1))
-        self.failUnlessEqual(tournament.players, [])
+        self.failUnlessEqual(tournament.players, {})
         self.failUnlessEqual(tournament.registered, 0)
         
         self.failUnless(tournament.register(1))
@@ -1093,11 +1092,11 @@ class PokerTournamentTestCase(unittest.TestCase):
         for player in range(3):
             self.failUnless(tournament.register(player))
         
-        self.failUnlessEqual([0, 1, 2], tournament.players)
+        self.failUnlessEqual({0:None, 1:None, 2:None}, tournament.players)
         tournament.start_time = 0
         self.assertEqual(None, tournament.canRun())
         tournament.updateRunning()
-        self.failUnlessEqual([], tournament.players)
+        self.failUnlessEqual({}, tournament.players)
         self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_CANCELED, tournament.state)
         self.failIf(tournament.cancel())
 
