@@ -749,30 +749,35 @@ class PokerGame:
         return self.isPlaying(serial) and self.getSerialInPosition() == serial
 
     def isInTurn(self, serial):
-        return (not self.isEndOrNull() and
-                 serial in self.serial2player and
-                 serial in self.player_list)
+        return \
+            not self.isEndOrNull() and \
+            serial in self.serial2player and \
+            serial in self.player_list
 
     def isPlaying(self, serial):
-        return (self.isRunning() and
-                 serial in self.serial2player and
-                 serial in self.player_list)
+        return \
+            self.isRunning() and \
+            serial in self.serial2player and \
+            serial in self.player_list
 
     def isInGame(self, serial):
-        return (self.isRunning() and
-                 serial in self.serial2player and
-                 serial in self.serialsInGame())
+        return \
+            self.isRunning() and \
+            serial in self.serial2player and \
+            serial in self.serialsInGame()
 
     def isSeated(self, serial):
         return serial in self.serial2player
 
     def isSit(self, serial):
-        return (serial in self.serial2player and
-                 self.serial2player[serial].isSit())
+        return \
+            serial in self.serial2player and \
+            self.serial2player[serial].isSit()
 
     def isSitOut(self, serial):
-        return (serial in self.serial2player and
-                 self.serial2player[serial].isSitOut())
+        return \
+            serial in self.serial2player and \
+            self.serial2player[serial].isSitOut()
 
     def sitOutNextTurn(self, serial):
         player = self.serial2player[serial]
