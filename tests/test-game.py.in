@@ -6014,6 +6014,24 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.blind(700)
         if self.game.historyCanBeReduced(): self.game.historyReduce()
 
+    def testHistoryReduceWhenLeavingInBlind(self):
+        game = self.game
+        player_serials = [10,20]
+        game.variant = 'holdem'
+        game.setMaxPlayers(9)
+        game.verbose = 3
+        players = {}
+        for serial in player_serials:
+            players[serial] = self.AddPlayerAndSit(serial)
+            game.noAutoBlindAnte(serial)
+        game.beginTurn(1)
+        game.blind(20)
+        game.sitOutNextTurn(20)
+        game.autoPlayer(20)
+        game.removePlayer(20)
+        game.blind(10)
+        game.historyReduce()
+    
     # ---------------------------------------------------------
     def AddPlayerAndSit(self, serial, seat = -1):
         self.failUnless(self.game.addPlayer(serial, seat))

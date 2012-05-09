@@ -658,8 +658,8 @@ class PokerGame:
         self.rake = None
         self.raked_amount = 0
         self.forced_dealer_seat = -1
-#        print "__init__ PokerGame %s" % self
 
+    
     def reset(self):
         self.state = GAME_STATE_NULL
         self.win_condition = WON_NULL
@@ -1794,6 +1794,7 @@ class PokerGame:
         if disconnected:
             self.historyAdd("leave",[(player.serial,player.seat) for player in disconnected])
         for player in disconnected:
+            self.player_list.remove(player.serial)
             self.__removePlayer(player.serial)
         self.historyAdd("finish", self.hand_serial)
 
@@ -3751,7 +3752,7 @@ class PokerGame:
         return len(self.serialsNotFold())
 
     def serialsNotFold(self):
-        return filter(lambda x: not self.serial2player[x].isFold(), self.player_list)
+        return [serial for serial in self.player_list if not self.serial2player[serial].isFold()]
 
     def playersNotFold(self):
         return [self.serial2player[serial] for serial in self.serialsNotFold()]
