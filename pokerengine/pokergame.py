@@ -811,10 +811,16 @@ class PokerGame:
 
     def sit(self, serial):
         player = self.serial2player[serial]
+        
+        if player.isSit():
+            if self.verbose > 0:
+                self.error("sit: refuse to sit player %d because has already a seat" % serial)
+            return False
+        
         if not player.isBuyInPayed() or self.isBroke(serial):
             if self.verbose > 0:
                 self.error(
-                    "sit: refuse to sit player %d because buy in == %s "
+                    "sit: refuse to sit player %d because buy in == %s " \
                     "instead of True or broke == %s instead of False" % (
                         serial,
                         player.buy_in_payed,
@@ -906,7 +912,6 @@ class PokerGame:
         if player is None and self.verbose >= 1:
             self.error("getPlayer(%d) returned None" % serial)
             self.message("".join(traceback.format_stack(limit=4)))
-
         return player
 
     def getPlayerMoney(self, serial):

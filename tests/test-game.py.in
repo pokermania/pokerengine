@@ -1013,12 +1013,16 @@ class PokerGameTestCase(unittest.TestCase):
         
         self.failUnlessEqual(self.game.addPlayer(1), True)
         player = self.GetPlayer(1)
+        # Can not sit because of missing buyin
         self.failUnlessEqual(self.game.sit(1), False)
 
+        # Can sit after buyin
         self.failUnlessEqual(self.game.payBuyIn(1,self.game.bestBuyIn()), True)
         self.failUnlessEqual(player.isBuyInPayed(), True)
-        
         self.failUnlessEqual(self.game.sit(1), True)
+        
+        # Can not sit, again, after being already seated
+        self.failUnlessEqual(self.game.sit(1), False)
         
     # ---------------------------------------------------------    
     def testPokerGameBuildPlayerList(self):
