@@ -72,7 +72,7 @@ class PokerPlayerTestCase(unittest.TestCase):
                                 
     # -----------------------------------------------------------------------------------------------------
     def setUp(self):
-        self.player = pokergame.PokerPlayer(1,None)
+        self.player = pokergame.PokerPlayer(1, 'name', None)
     
     # -----------------------------------------------------------------------------------------------------    
     def tearDown(self):
