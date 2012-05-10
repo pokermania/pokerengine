@@ -4044,7 +4044,6 @@ class PokerGame:
     def message(self, string):
         print self.prefix + "[PokerGame " + str(self.id) + "] " + string
 
-
 class PokerGameServer(PokerGame):
     def __init__(self, url, dirs):
         PokerGame.__init__(self, url, True, dirs)  # is_directing == True
