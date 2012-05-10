@@ -1799,7 +1799,8 @@ class PokerGame:
         if disconnected:
             self.historyAdd("leave",[(player.serial,player.seat) for player in disconnected])
         for player in disconnected:
-            self.player_list.remove(player.serial)
+            if player.serial in self.player_list: 
+                self.player_list.remove(player.serial)
             self.__removePlayer(player.serial)
         self.historyAdd("finish", self.hand_serial)
 
