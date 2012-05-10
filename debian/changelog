@@ -1,3 +1,13 @@
+poker-engine (1.4.4-1) pokermania; urgency=low
+
+  * fcabb4b player cannot sit if he is already sit and not sit out next turn
+  * 6863300 game.sit returns False if already seated, refs #5781
+  * 45ae0d5 handReplay working without table instance
+  * 28d6ea4 populate poker-engine's PokerPlayer with the appropriate name
+  * c36d2fe added missing TourneyStats attributes
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Fri, 10 May 2012 15:00:00 +0200
+
 poker-engine (1.4.3-1) pokermania; urgency=low
 
   * c1d6b83 historyReduce only filters players by using player_list
