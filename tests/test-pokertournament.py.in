@@ -1210,12 +1210,80 @@ class Breaks(unittest.TestCase):
         tournament.state = pokertournament.TOURNAMENT_STATE_CANCELED
         self.assertEqual(None, tournament.updateBreak())
 
+class PokerTournamentStatsTestCase(unittest.TestCase):
+    class MockObj(object):
+        _messages = []
+        def __init__(self,**kw):
+            for k,v in kw.items():
+                setattr(self, k, v)
+        def error(self,msg):
+            self._messages.append(msg)
+    class MockTourney(MockObj):
+        pass
+    class MockGame(MockObj):
+        pass
+    class MockPlayer(MockObj):
+        pass
+    
+    def setUp(self):
+        self.players = {
+            21: PokerTournamentStatsTestCase.MockPlayer(serial=21,name='Player21',money=4000),
+            12: PokerTournamentStatsTestCase.MockPlayer(serial=12,name='Player12',money=3000),
+            11: PokerTournamentStatsTestCase.MockPlayer(serial=11,name='Player11',money=2000),
+            22: PokerTournamentStatsTestCase.MockPlayer(serial=22,name='Player22',money=1000)
+        }
+        self.game1 = PokerTournamentStatsTestCase.MockGame(
+            serial2player = {11:self.players[11],12:self.players[12]}
+        )
+        self.game2 = PokerTournamentStatsTestCase.MockGame(
+            serial2player = {21:self.players[21],22:self.players[22]}
+        )
+        self.tourney = PokerTournamentStatsTestCase.MockTourney(
+            serial = 1,
+            winners = [],
+            games = [self.game1,self.game2]
+        )
+        self.stats = pokertournament.PokerTournamentStats(self.tourney)
+    
+    def testStats(self):
+        self.stats.update(None)
+        
+        # no inactive players (i.e. all are still playing)
+        stats = self.stats(0)
+        self.assertEqual(21, stats['player_chips_max_serial'])
+        self.assertEqual('Player21', stats['player_chips_max_name'])
+        self.assertEqual(self.players[21].money, stats['chips_max'])
+        
+        # stats was called with invalid serial -> rank is 0
+        self.assertEqual(0, stats['rank'])
+        
+        # stats called with chipsleader should return 1
+        stats = self.stats(21)
+        self.assertEqual(1, stats['rank'])
+        
+        # 21 lost (i.e. was added to the winners list) -> should be on last place (i.e. 4th)
+        self.tourney.winners = [21]
+        self.stats.update(0)
+        stats = self.stats(21)
+        self.assertEqual(12, stats['player_chips_max_serial'])
+        self.assertEqual(4, stats['rank'], '21 should be last (4th).')
+        
+        # update can not be called if there are no active players
+        # (the reasoning behind this is that in this way, it is called as a last moment when there is only
+        # one player left -> his chips are shown, he is inserted as a chipsleader, and everything else is
+        # ok too).
+        self.tourney.winners = self.players.keys()
+        self.assertEqual(False, self.stats.update(0))
+        self.assertTrue("need players in games" in self.tourney._messages[0])
+    
+
 # ---------------------------------------------------------
 def GetTestSuite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(PokerTournamentTestCase))
 #    suite.addTest(unittest.makeSuite(PokerTournamentTestCase, prefix = "testEndTurnFirstBreakAndSinglePlayer"))
     suite.addTest(unittest.makeSuite(Breaks))
+    suite.addTest(unittest.makeSuite(PokerTournamentStatsTestCase))
     # Comment out above and use line below this when you wish to run just
     # one test by itself (changing prefix as needed).
 #    suite.addTest(unittest.makeSuite(Breaks, prefix = "testPrizes"))
