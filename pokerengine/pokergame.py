@@ -817,9 +817,9 @@ class PokerGame:
     def sit(self, serial):
         player = self.serial2player[serial]
         
-        if player.isSit() and not player.sit_out_next_turn:
+        if player.isSit() and not player.sit_out_next_turn and not player.isAuto():
             if self.verbose > 0:
-                self.error("sit: refuse to sit player %d because has already a seat" % serial)
+                self.error("sit: refuse to sit player %d because is already seated." % serial)
             return False
         
         if not player.isBuyInPayed() or self.isBroke(serial):

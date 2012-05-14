@@ -1024,6 +1024,15 @@ class PokerGameTestCase(unittest.TestCase):
         # Can not sit, again, after being already seated
         self.failUnlessEqual(self.game.sit(1), False)
         
+        # Can sit in if sit_out_next_turn
+        self.game.isInTurn = lambda serial: True
+        self.game.sitOutNextTurn(1)
+        self.failUnlessEqual(self.game.sit(1), True)
+        
+        # Can sit in if autoPlayer
+        self.game.autoPlayer(1)
+        self.failUnlessEqual(self.game.sit(1), True)
+        
     # ---------------------------------------------------------    
     def testPokerGameBuildPlayerList(self):
         """Test Poker Game : Build player list"""
