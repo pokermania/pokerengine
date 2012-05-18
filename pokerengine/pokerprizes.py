@@ -22,19 +22,24 @@
 #  Loic Dachary <loic@dachary.org>
 #  Bradley M. Kuhn <bkuhn@ebb.org>
 #
+from pokerengine import log as engine_log
+log = engine_log.getChild('pokerprizes')
 from pokerengine.pokerengineconfig import Config
 
 class PokerPrizes:
     """PokerPrizesVirtual base class for PokerPrizes"""
     def __init__(self, buy_in_amount, player_count = 0, guarantee_amount = 0, config_dirs = None):
+        self.log = log.getChild(self.__class__.__name__)
         self.buy_in = buy_in_amount
         self.player_count = player_count
         self.guarantee_amount = guarantee_amount
 
     def error(self, string):
+        raise DeprecationWarning("message is deprecated")
         self.message("ERROR " + string)
 
     def message(self, string):
+        raise DeprecationWarning("error is deprecated")
         print "[PokerPrizes] " + string
 
     def addPlayer(self):
@@ -45,7 +50,7 @@ class PokerPrizes:
 
     def getPrizes(self):
         errStr = "getPrizes NOT IMPLEMENTED IN ABSTRACT BASE CLASS"
-        self.error(errStr)
+        self.log.error(errStr)
         raise NotImplementedError(errStr)
 
 class PokerPrizesAlgorithm(PokerPrizes):

@@ -32,6 +32,9 @@ def tournament_seconds():
 
 shuffler = random
 
+from pokerengine import log as engine_log
+log = engine_log.getChild('pokertournament')
+
 from pokerengine.pokergame import PokerGameServer
 from pokerengine import pokerprizes
 
@@ -61,7 +64,7 @@ def equalizeCandidates(games):
             provide_players.append((game.id, serials[:count - threshold]))
     return ( want_players, provide_players )
 
-def equalizeGames(games, verbose = 0, log_message = None):
+def equalizeGames(games, log = None):
     ( want_players, provide_players ) = equalizeCandidates(games)
 
     results = []
@@ -93,12 +96,12 @@ def equalizeGames(games, verbose = 0, log_message = None):
             if not distributed:
                 break
 
-    if log_message and verbose > 0 and len(results) > 0:
-        log_message("balanceGames equalizeGames: " + pformat(results))
+    if log and len(results) > 0:
+        log.inform("equalizeGame: %s", pformat(results))
 
     return results
 
-def breakGames(games, verbose = 0, log_message = None):
+def breakGames(games, log = None):
     if len(games) < 2:
         return []
 
@@ -116,10 +119,11 @@ def breakGames(games, verbose = 0, log_message = None):
         "to_add": [],
         "running": not game.isEndOrNull() } for game in games ]
 
-    if verbose > 2: log_message("balanceGames breakGames: %s" % to_break)
+    if log:
+        log.debug("breakGames: %s", to_break)
     results = []
     while True:
-        result = breakGame(to_break[0], to_break[1:], verbose, log_message)
+        result = breakGame(to_break[0], to_break[1:], log)
         to_break = filter(lambda game: game["seats_left"] > 0, to_break[1:])
         if result == False:
             break
@@ -127,12 +131,12 @@ def breakGames(games, verbose = 0, log_message = None):
         if len(to_break) < 2:
             break
 
-    if log_message and verbose > 0 and len(results) > 0:
-        log_message("balanceGames breakGames: " + pformat(results))
+    if log and len(results) > 0:
+        log.debug("breakGames: %s", pformat(results))
 
     return results
 
-def breakGame(to_break, to_fill, verbose = 0, log_message = None):
+def breakGame(to_break, to_fill, log = None):
     #
     # Can't break a game in which players were moved or
     # that are running.
@@ -186,7 +190,7 @@ class PokerTournamentStats:
                 if serial not in inactive_players
             )
         if not active_player_ranks:
-            self._tourney.error("updateStats: need players in games for tourney %d" % self._tourney.serial)
+            self._tourney.log.warn("updateStats: need players in games for tourney %d", self._tourney.serial)
             return False
         
         active_player_ranks.sort(key=lambda player: player.money, reverse=True)
@@ -221,6 +225,9 @@ class PokerTournamentStats:
 class PokerTournament:
 
     def __init__(self, *args, **kwargs):
+        self.log = log.getChild(self.__class__.__name__, refs=[
+            ('Tournament', self, lambda tournament: tournament.serial)
+        ])
         self.name = kwargs.get('name', 'no name')
         self.description_short = kwargs.get('description_short', 'nodescription_short')
         self.description_long = kwargs.get('description_long', 'nodescription_long')
@@ -288,6 +295,7 @@ class PokerTournament:
         self.prizes_object =  pokerprizes.__dict__['PokerPrizes' + self.prizes_specs.capitalize()](buy_in_amount = self.buy_in, player_count = player_count, guarantee_amount = self.prize_min, config_dirs = self.dirs)
 
     def message(self, message):
+        raise DeprecationWarning('message is deprecated')
         print self.prefix + "[PokerTournament %s] " % self.name + message
         
     def canRun(self):
@@ -321,7 +329,7 @@ class PokerTournament:
             else:
                 return self.register_time - now
         else:
-            if self.verbose > 0: self.message("updateRegistering: should not be called while tournament is not in announced state")
+            self.log.inform("updateRegistering: should not be called while tournament is not in announced state")
             return -1
 
     def updateRunning(self):
@@ -396,7 +404,7 @@ class PokerTournament:
                 self.changeState(TOURNAMENT_STATE_RUNNING)
 
         if self.state not in (TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT, TOURNAMENT_STATE_BREAK):
-            if self.verbose >= 0: print "PokerTournament:updateBreak: is not supposed to be called while in state %s" % self.state
+            self.log.inform("updateBreak is not supposed to be called while in state %s", self.state)
             return None
         
         return True
@@ -425,8 +433,9 @@ class PokerTournament:
             self.finish_time = tournament_seconds()
         else:
             if self.verbose >= 0: print "PokerTournament:changeState: cannot change from state %s to state %s" % ( self.state, state )
+            self.log.inform("changeState: cannot change from state %s to state %s", self.state, state)
             return
-        if self.verbose > 2: self.message("state change %s => %s" % ( self.state, state ))
+        self.log.debug("state change %s => %s", self.state, state)
         old_state = self.state
         self.state = state
         self.callback_new_state(self, old_state, self.state)
@@ -547,7 +556,7 @@ class PokerTournament:
         for serial in loosers:
             self.winners.insert(0, serial)
             self.callback_remove_player(self, game_id, serial)
-        if self.verbose > 2: self.message("winners %s" % self.winners)
+        self.log.debug("winners %s", self.winners)
         
         if len(self.winners) + 1 == self.registered:
             game = self.games[0]
@@ -558,8 +567,8 @@ class PokerTournament:
             player.money = 0
             expected = game.buyIn() * self.registered
             if money != expected and self.verbose >= 0:
-                self.message("ERROR winner has %d chips and should have %d chips" % ( money, expected ))
-            if self.verbose > 0: self.message("winners %s" % self.winners)
+                self.log.warn("winner has %s chips and should have %d chips", money, expected)
+            self.log.debug("winners %s", self.winners)
             self.callback_destroy_game(self, game)
             self.games = []
             self.id2game = {}
@@ -579,12 +588,12 @@ class PokerTournament:
     def balanceGames(self):
         self.need_balance = False
         if len(self.games) < 2: return
-        if self.verbose > 2: self.message("balanceGames")
-        to_break = breakGames(self.games, self.verbose, self.message)
+        self.log.debug("balanceGames")
+        to_break = breakGames(self.games, self.log)
         games_broken = {}
         for (from_id, to_id, serials) in to_break:
             for serial in serials:
-                if self.verbose > 2: self.message("balanceGames: player %d moved from %d to %d" % ( serial, from_id, to_id ))
+                self.log.debug("balanceGames: player %d moved from %d to %d", serial, from_id, to_id)
                 if self.state == TOURNAMENT_STATE_REGISTERING:
                     self.movePlayer(from_id, to_id, serial)
                 else:
@@ -597,12 +606,12 @@ class PokerTournament:
                 self.callback_destroy_game(self, game)
                 self.games.remove(game)
                 del self.id2game[game.id]
-            if self.verbose > 0: self.message("balanceGames: broke tables %s" % to_break)
+            self.log.inform("balanceGames: broken tables %s", to_break)
             return True
         
-        to_equalize = equalizeGames(self.games, self.verbose, self.message)
+        to_equalize = equalizeGames(self.games, self.log)
         for (from_id, to_id, serial) in to_equalize:
-            if self.verbose > 2: self.message("balanceGames: player %d moved from %d to %d" % ( serial, from_id, to_id ))
+            self.log.debug("balanceGames: player %d moved from %d to %d", serial, from_id, to_id)
             if self.state == TOURNAMENT_STATE_REGISTERING:
                 self.movePlayer(from_id, to_id, serial)
             else:
@@ -610,7 +619,8 @@ class PokerTournament:
 
         ( want_players, provide_players ) = equalizeCandidates(self.games)
         self.need_balance = want_players and not provide_players
-        if self.need_balance and self.verbose > 2: self.message("balanceGames: postponed game equalization")
+        if self.need_balance:
+            self.log.debug("balanceGames: postponed game equalization")
         
         return len(to_equalize) > 0
 

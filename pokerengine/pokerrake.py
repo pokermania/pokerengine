@@ -44,20 +44,19 @@ _get_rake_instance = None
 def get_rake_instance(game):
     global _get_rake_instance
     if _get_rake_instance == None:
-        verbose = game.verbose
         for dir in game.dirs:
             file = dir + "/pokerrake.py"
             if path.exists(file):
-                if verbose > 0: game.message("get_rake_instance: trying to load " + file)
+                game.log.debug("get_rake_instance: trying to load '%s'", file)
                 module = imp.load_source("user_defined_pokerrake", file)
                 get_instance = getattr(module, "get_rake_instance")
                 _get_rake_instance = get_instance
                 break
             else:
-                if verbose > 0: game.message("get_rake_instance: " + file + " does not exist")
+                game.log.inform("get_rake_instance: '%s' does not exist", file)
         if _get_rake_instance == None:
-            if verbose > 0: game.message("get_rake_instance: no pokerrake.py found in directories " + str(game.dirs))
+            game.log.inform("get_rake_instance: no pokerrake.py found in directories %s", str(game.dirs))
             _get_rake_instance = lambda game: PokerRake(game)
         else:
-            if verbose > 0: game.message("get_rake_instance: using custom implementation of get_rake_instance")
+            game.log.inform("get_rake_instance: using custom implementation of get_rake_instance")
     return apply(_get_rake_instance, [game])

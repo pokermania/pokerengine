@@ -29,6 +29,8 @@
 from types import StringType
 import re
 from pokerengine import version_number
+from pokerengine import log as engine_log
+log = engine_log.getChild('version')
 
 class Version:
 
@@ -42,6 +44,7 @@ class Version:
                             re.VERBOSE)
 
     def __init__ (self, vstring=None):
+        self.log = log.getChild(self.__class__.__name__)
         if vstring:
             self.parse(vstring)
 
@@ -121,7 +124,12 @@ class Version:
                      and ( version_to > current_version and version_to <= desired_version ) ):
                     upgrade_matrix.setdefault(version_from, {})
                     if upgrade_matrix[version_from].has_key(version_to):
-                        if Version.verbose >= 0: print "Version: duplicate upgrade string (%s => %s) keep %s, ignore %s" % ( version_from, version_to, upgrade_matrix[version_from][version_to], string)
+                        self.log.inform("duplicate upgrade string (%s => %s) keep %s, ignore %s",
+                            version_from,
+                            version_to,
+                            upgrade_matrix[version_from][version_to],
+                            string
+                        )
                     else:
                         upgrade_matrix[version_from][version_to] = string
         #

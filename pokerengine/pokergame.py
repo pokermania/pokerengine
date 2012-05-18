@@ -36,6 +36,9 @@ import platform
 
 import pokereval
 
+from pokerengine import log as engine_log
+log = engine_log.getChild('pokergame')
+
 from pokerengine.pokercards import *
 from pokerengine.pokerengineconfig import Config
 from pokerengine.pokerchips import PokerChips
@@ -150,6 +153,11 @@ AUTO_MUCK_ALWAYS = AUTO_MUCK_WIN + AUTO_MUCK_LOSE
 
 class PokerPlayer:
     def __init__(self, serial, name, game):
+        self.log = log.getChild(self.__class__.__name__, refs=[
+            ('Game', game, lambda game: game.id),
+            ('Hand', game, lambda game: game.hand_serial > 1 if game.hand_serial else None),
+            ('Player', self, lambda player: player.serial)
+        ])
         self.serial = serial
         self.name = name if name else "noname"
         self.game = game
@@ -553,11 +561,11 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
                             messages.extend(__historyResolve2messages(game, hands, serial2name, serial2displayed, frame))
                         else:
                             if verbose >= 0:
-                                print "ERROR history2messages unexpected showdown_stack frame type %s (%s)" % (frame['type'],str(frame))
+                                engine_log.warn("ERROR history2messages unexpected showdown_stack frame type %s (%s)", frame['type'], str(frame))
                         if message:
                             messages.append(message)
             else:
-                print "ERROR history2messages ignored empty showdown_stack"
+                engine_log.warn("ERROR history2messages ignored empty showdown_stack")
         elif event_type == "sitOut":
             serial = event[1]
             messages.append(_("%(name)s sits out") % {'name': serial2name(serial)})
@@ -571,7 +579,7 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
             pass
         else:
             if verbose >= 0:
-                print "ERROR history2messages: unknown history type %s " % event_type
+                engine_log.warn("ERROR history2messages: unknown history type %s", event_type)
 
     return (subject, messages)
 
@@ -599,6 +607,10 @@ WON_REGULAR = 3  # turn ended normally
 
 class PokerGame:
     def __init__(self, url, is_directing, dirs):
+        self.log = log.getChild(self.__class__.__name__, refs=[
+            ('Game', self, lambda game: game.id),
+            ('Hand', self, lambda game: game.hand_serial if game.hand_serial > 1 else None)
+        ])
         self.id = 0
         self.name = "noname"
         self.__variant = Config(dirs)
@@ -698,7 +710,7 @@ class PokerGame:
     def setMaxPlayers(self, max_players):
         self.max_players = max_players
         if (self.max_players < 2) or (self.max_players > ABSOLUTE_MAX_PLAYERS):
-            self.error("The number of players must be between %d and %d" % (2, ABSOLUTE_MAX_PLAYERS))
+            self.log.warn("The number of players must be between %d and %d", 2, ABSOLUTE_MAX_PLAYERS)
             self.max_players = 0
         self.resetSeatsLeft()
         self.serial2player = {}
@@ -740,7 +752,7 @@ class PokerGame:
 
     def canAddPlayer(self, serial):
         if len(self.seats_left) < 1:
-            self.error("no seats left for player %d" % serial)
+            self.log.warn("no seats left for player %d", serial)
             return False
         else:
             return self.is_open
@@ -798,7 +810,7 @@ class PokerGame:
         if player.isSitOut():
             return False
         if self.is_directing and self.isBlindAnteRound() and self.getSerialInPosition() != serial:
-            self.error("sitOut for player %d while paying the blinds although not in position" % serial)
+            self.log.warn("sitOut for player %d while paying the blinds although not in position", serial)
             return False
         if self.isPlaying(serial):
             self.historyAdd("sitOut", serial)
@@ -819,18 +831,17 @@ class PokerGame:
         
         if player.isSit() and not player.sit_out_next_turn and not player.isAuto():
             if self.verbose > 0:
-                self.error("sit: refuse to sit player %d because is already seated." % serial)
+                self.log.inform("sit: refuse to sit player %d because is already seated.", serial)
             return False
         
         if not player.isBuyInPayed() or self.isBroke(serial):
             if self.verbose > 0:
-                self.error(
+                self.log.inform(
                     "sit: refuse to sit player %d because buy in == %s " \
-                    "instead of True or broke == %s instead of False" % (
-                        serial,
-                        player.buy_in_payed,
-                        self.isBroke(serial)
-                    )
+                    "instead of True or broke == %s instead of False",
+                    serial,
+                    player.buy_in_payed,
+                    self.isBroke(serial)
                 )
             return False
         player.sit_requested = False
@@ -871,15 +882,15 @@ class PokerGame:
             self.acceptPlayersWaitingForFirstRound()
             self.cancelState()
             if self.sitCount() != 1:
-                self.error("%d players sit, expected exactly one" % self.sitCount())
+                self.log.inform("%d players sit, expected exactly one", self.sitCount())
             elif amount > 0:
                 self.bet2pot()
                 if self.pot != amount:
-                    self.error("pot contains %d, expected %d" % (self.pot, amount))
+                    self.log.inform("pot contains %d, expected %d", self.pot, amount)
                 else:
                     self.pot2money(serial)
         else:
-            self.error("canceled unexpected while in state %s (ignored)" % self.state)
+            self.log.warn("canceled unexpected while in state %s (ignored)", self.state)
 
     def returnBlindAnte(self):
         serial = 0
@@ -902,13 +913,13 @@ class PokerGame:
 
     def setPosition(self, position):
         if not self.isRunning():
-            self.error("changing position while the game is not running has no effect")
+            self.log.inform("changing position while the game is not running has no effect")
         else:
             self.position = position
 
     def setDealer(self, seat):
         if self.isRunning():
-            self.error("cannot change the dealer during the turn")
+            self.log.inform("cannot change the dealer during the turn")
         else:
             self.dealer_seat = seat
 
@@ -918,6 +929,10 @@ class PokerGame:
             self.error("getPlayer(%d) returned None" % serial)
             self.message("".join(traceback.format_stack(limit=4)))
         return player
+#        if serial not in self.serial2player:
+#            self.log.warn("getPlayer(%d) returned None\n%s", serial, exc_info=1)
+#            return None
+#        return self.serial2player[serial]
 
     def getPlayerMoney(self, serial):
         player = self.getPlayer(serial)
@@ -956,20 +971,19 @@ class PokerGame:
                         player.seat = seat
                         self.seats_left.remove(seat)
                     else:
-                        self.error("the seat %d is not among the remaining seats %s" % (seat, self.seats_left))
+                        self.log.inform("the seat %d is not among the remaining seats %s", seat, self.seats_left)
                         return False
                 else:
                     player.seat = self.seats_left.pop(0)
             else:
                 if seat not in self.seats_left:
-                    self.error("the seat %d is not among the remaining seats %s" % (seat, self.seats_left))
+                    self.log.inform("the seat %d is not among the remaining seats %s", seat, self.seats_left)
                     return False
 
                 player.seat = seat
                 self.seats_left.remove(seat)
 
-            if self.verbose >= 1:
-                self.message("player %d get seat %d" % (serial, player.seat))
+            self.log.debug("player %d gets seat %d", serial, player.seat)
 
             self.serial2player[serial] = player
             return True
@@ -990,7 +1004,7 @@ class PokerGame:
 
     def autoPlayer(self, serial):
         if self.verbose >= 2:
-            self.message("autoPlayer: player %d" % serial)
+            self.log.debug("autoPlayer: player %d", serial)
         player = self.getPlayer(serial)
         player.auto = True
         if not self.is_directing:
@@ -1008,7 +1022,7 @@ class PokerGame:
 
     def noAutoPlayer(self, serial):
         if self.verbose >= 2:
-            self.message("noAutoPlayer: player %d" % serial)
+            self.log.inform("noAutoPlayer: player %d", serial)
         player = self.getPlayer(serial)
         if player:
             player.auto = False
@@ -1043,26 +1057,26 @@ class PokerGame:
                 if seat in self.seats_left:
                     self.seats_left.remove(seat)
                 else:
-                    self.error("setSeats: seat %d not in seats_left %s" % (seat, self.seats_left))
+                    self.log.inform("setSeats: seat %d not in seats_left %s", seat, self.seats_left)
                     self.serial2player[serial].seat = -1
             seat += 1
         if self.seats() != seats:
-            self.error("seatSeats: wanted %s but got %s" % (seats, self.seats()))
+            self.log.inform("seatSeats: wanted %s but got %s", seats, self.seats())
 
     def beginTurn(self, hand_serial):
         if not self.isEndOrNull():
-            self.error("beginTurn: turn is not over yet")
+            self.log.warn("beginTurn: turn is not over yet")
             return
 
         self.hand_serial = hand_serial
         if self.verbose >= 1:
-            self.message("Dealing %s hand number %d" % (self.getVariantName(), self.hand_serial))
+            self.log.inform("Dealing %s hand number %d", self.getVariantName(), self.hand_serial)
         self.pot = 0
         self.raked_amount = 0
         self.board = PokerCards()
         self.winners = []
         if self.muckable_serials:
-            self.error("beginTurn: muckable_serials not empty %s" % self.muckable_serials)
+            self.log.warn("beginTurn: muckable_serials not empty %s", self.muckable_serials)
         self.muckable_serials = []
         self.win_condition = WON_NULL
         self.serial2best = {}
@@ -1106,7 +1120,7 @@ class PokerGame:
             self.autoPayBlindAnte()
 
         if self.verbose >= 2:
-            self.message("initialisation turn %d ... finished" % self.hand_serial)
+            self.log.debug("initialisation turn %d ... finished", self.hand_serial)
 
     def dealerFromDealerSeat(self):
         self.dealer = -1
@@ -1129,11 +1143,11 @@ class PokerGame:
                     self.dealer = len(self.player_list) - 1
                 break
         if self.dealer < 0:
-            self.error(
+            self.log.warn(
                 "dealer seat %d cannot be translated in player "
-                "position among the %d players willing to join the game" % (
-                    self.dealer_seat, self.playingCount()
-                )
+                "position among the %d players willing to join the game",
+                self.dealer_seat,
+                self.playingCount()
             )
 
     def moveDealerLeft(self):
@@ -1220,8 +1234,7 @@ class PokerGame:
         # big blind and the dealer pays the small blind.
         #
         if blind_ok_count < 2:
-            if self.verbose > 2:
-                self.message("Forbid missed blinds")
+            self.log.debug("Forbid missed blinds")
             for player in players:
                 if player and player.isSit():
                     player.resetMissedBlinds()
@@ -1240,8 +1253,7 @@ class PokerGame:
                         player.missed_blind = what
                     if player.missed_blind == "big" and what == "big":
                         player.missed_big_blind_count += 1
-                    if self.verbose > 2:
-                        self.message("%d big blind count is now %d because of %s" % (player.serial, player.missed_big_blind_count, what))
+                    self.log.debug("%d big blind count is now %d because of %s", player.serial, player.missed_big_blind_count, what)
                 index += 1
             return index
 
@@ -1267,7 +1279,7 @@ class PokerGame:
             index += 1
 
         if not done:
-            self.error("updateBlinds cannot assign the small blind")
+            self.log.warn("updateBlinds cannot assign the small blind")
 
         #
         # Big blind
@@ -1283,7 +1295,7 @@ class PokerGame:
                 player.blind = "big"
             index += 1
         else:
-            self.error("updateBlinds cannot assign big blind")
+            self.log.warn("updateBlinds cannot assign big blind")
         #
         #
         # Late blind
@@ -1304,23 +1316,22 @@ class PokerGame:
                         player.blind = "late"
                         player.wait_for = False
                     else:
-                        self.error(
+                        self.log.warn(
                             "updateBlinds statement unexpectedly reached while evaluating "
-                            "late blind (player: %s, missed_blind: %s, wait_for: %s)" % (
-                                player.serial,
-                                player.missed_blind,
-                                player.wait_for
-                            )
+                            "late blind (player: %s, missed_blind: %s, wait_for: %s)",
+                            player.serial,
+                            player.missed_blind,
+                            player.wait_for
                         )
                 else:
                     player.blind = False
             index += 1
         if self.verbose > 2:
             showblinds = lambda player: "%02d:%s:%s:%s" % (player.serial, player.blind, player.missed_blind, player.wait_for)
-            self.message("updateBlinds: in game (blind:missed:wait): " + ", ".join(map(showblinds, self.playersInGame())))
+            self.log.debug("updateBlinds: in game (blind:missed:wait): " + ", ".join(map(showblinds, self.playersInGame())))
             players = self.playersAll()
             players.sort(key=lambda i: i.seat)
-            self.message("updateBlinds: all     (blind:missed:wait): " + ", ".join(map(showblinds, players)))
+            self.log.debug("updateBlinds: all     (blind:missed:wait): " + ", ".join(map(showblinds, players)))
 
     def handsMap(self):
         pockets = {}
@@ -1356,7 +1367,7 @@ class PokerGame:
                 return (what["frequency"] - (self.hands_count - what["hands"]), "hand")
 
             else:
-                self.error("delayToLevelUp: unknown unit %s " % what["unit"])
+                self.log.warn("delayToLevelUp: unknown unit %s ", what["unit"])
 
         return False
 
@@ -1465,7 +1476,7 @@ class PokerGame:
             elif type(player.blind) == bool: # i.e. True or False
                 return (0, 0, player.blind)
             else:
-                self.error("blindAmount unexpected condition for player %d" % player.serial)
+                self.log.warn("blindAmount unexpected condition for player %d", player.serial)
         else:
             return (0, 0, False)
 
@@ -1534,7 +1545,7 @@ class PokerGame:
     def initRound(self):
         info = self.roundInfo()
         if self.verbose >= 2:
-            self.message("new round %s" % info["name"])
+            self.log.debug("new round %s", info["name"])
         if self.isFirstRound():
             if not self.is_directing:
                 self.buildPlayerList(False)
@@ -1542,7 +1553,7 @@ class PokerGame:
             self.acceptPlayersWaitingForFirstRound()
         self.round_cap_left = self.roundCap()
         if self.verbose > 2:
-            self.message("round cap reset to %d" % self.round_cap_left)
+            self.log.debug("round cap reset to %d", self.round_cap_left)
         self.first_betting_pass = True
         if info["position"] == "under-the-gun":
             #
@@ -1571,8 +1582,7 @@ class PokerGame:
             values = []
             for player in self.playersInGame():
                 values.append(self.eval.evaln(player.hand.getVisible()))
-                if self.verbose > 2:
-                    self.message("%s : %d" % (player.hand.getVisible(), values[-1]))
+                self.log.debug("%s : %d", player.hand.getVisible(), values[-1])
             if info["position"] == "low":
                 value = min(values)
             else:
@@ -1622,8 +1632,7 @@ class PokerGame:
         for player in self.playersInGame():
             player.talked_once = False
 
-        if self.verbose >= 2:
-            self.message("dealer %d, in position %d, last to talk %d" % (self.dealer, self.position, self.last_to_talk))
+        self.log.debug("dealer %d, in position %d, last to talk %d", self.dealer, self.position, self.last_to_talk)
         self.historyAdd("round", self.state, self.board.copy(), self.handsMap())
         self.historyAdd("position", self.position, self.player_list[self.position])
         self.__autoPlay()
@@ -1641,7 +1650,7 @@ class PokerGame:
 
     def buildPlayerList(self, with_wait_for):
         if self.sitCount() < 2:
-            self.error("cannot make a consistent player list with less than two players willing to join the game")
+            self.log.warn("cannot make a consistent player list with less than two players willing to join the game")
             return False
         #
         # The player list is the list of players seated, sorted by seat
@@ -1653,21 +1662,18 @@ class PokerGame:
         self.sortPlayerList()
         
         # extended logging
-        if self.verbose > 0 and \
-            self.is_directing and \
+        if self.is_directing and \
             self.state not in (GAME_STATE_NULL, GAME_STATE_END, GAME_STATE_BLIND_ANTE) and \
             len(self.player_list) > len(old_player_list):
-                self.message(
-                    "player_list grew unexpectedly (state=%s): %s -> %s\n%s" % (
-                        self.state,
-                        old_player_list,
-                        self.player_list,
-                        "".join(traceback.format_stack(limit=5)[:-1])
-                    )
+                self.log.warn(
+                    "player_list grew unexpectedly (state=%s): %s -> %s\n%s",
+                    self.state,
+                    old_player_list,
+                    self.player_list,
+                    "".join(traceback.format_stack(limit=5)[:-1])
                 )
 
-        if self.verbose >= 2:
-            self.message("player list: %s" % self.player_list)
+        self.log.debug("player list: %s", self.player_list)
         return True
 
     def getLevel(self):
@@ -1686,12 +1692,11 @@ class PokerGame:
                     level_info = info["levels"][level - 1]
                     blind_info["small"] = level_info["small"]
                     blind_info["big"] = level_info["big"]
-                elif self.verbose >= 1:
-                    self.message("unexpected blind change level %d " % level)
+                else:
+                    self.log.warn("unexpected blind change level %d ", level)
             else:
                 blind_info = None
-                if self.verbose >= 1:
-                    self.message("unexpected blind change method %s " % info["change"])
+                self.log.warn("unexpected blind change method %s ", info["change"])
 
         info = self.ante_info
         ante_info = None
@@ -1705,12 +1710,11 @@ class PokerGame:
                     level_info = info["levels"][level - 1]
                     ante_info["value"] = level_info["value"]
                     ante_info["bring-in"] = level_info["bring-in"]
-                elif self.verbose >= 1:
-                    self.message("unexpected ante change level %d " % level)
+                else:
+                    self.log.warn("unexpected ante change level %d " % level)
             else:
                 ante_info = None
-                if self.verbose >= 1:
-                    self.message("unexpected ante change method %s " % info["change"])
+                self.log.warn("unexpected ante change method %s ", info["change"])
 
         return (blind_info, ante_info)
 
@@ -1754,8 +1758,7 @@ class PokerGame:
             return False
 
     def endTurn(self):
-        if self.verbose >= 2:
-            self.message("---end turn--")
+        self.log.debug("---end turn--")
 
         self.hands_count += 1
         self.updateStatsEndTurn()
@@ -1808,12 +1811,11 @@ class PokerGame:
         #
         # Get his seat back
         #
-        if self.verbose >= 1:
-            self.message("removing player %d from game" % (serial))
+        self.log.debug("removing player %d from game", serial)
         if not self.serial2player[serial].seat in self.seats_left:
             self.seats_left.insert(0, self.serial2player[serial].seat)
         else:
-            self.error("%d alreay in seats_left" % self.serial2player[serial].seat)
+            self.log.inform("%d alreay in seats_left", self.serial2player[serial].seat)
         #
         # Forget about him
         #
@@ -1854,8 +1856,7 @@ class PokerGame:
             self.distributeMoney()
             to_show, muckable_candidates_serials = self.dispatchMuck()
 
-            if self.verbose > 2:
-                self.message("muckState: to_show = %s muckable_candidates = %s " % (to_show, muckable_candidates_serials))
+            self.log.debug("muckState: to_show = %s muckable_candidates = %s ", to_show, muckable_candidates_serials)
 
             muckable_serials = []
             for serial in to_show:
@@ -1873,8 +1874,7 @@ class PokerGame:
             self.setMuckableSerials(muckable_serials)
             self.__talked_muck()
         else:
-            if self.verbose >= 2:
-                self.message("muckState: not directing...")
+            self.log.debug("muckState: not directing...")
 
     def setRakedAmount(self, rake):
         if rake > 0:
@@ -1947,16 +1947,14 @@ class PokerGame:
                         if rake <= 0:
                             break
             else:
-                if self.verbose > 2:
-                    self.message("distributeRake: have no keys --> no rake. serial2rake = %s" % serial2rake)
+                self.log.debug("distributeRake: have no keys --> no rake. serial2rake = %s", serial2rake)
         return serial2rake
 
     def setMuckableSerials(self, muckable_serials):
         self.muckable_serials = list(muckable_serials)
         if muckable_serials:
             self.historyAdd("muck", self.muckable_serials[:])
-        if self.verbose > 2:
-            self.message("setMuckableSerials: muckable = %s " % self.muckable_serials)
+        self.log.debug("setMuckableSerials: muckable = %s", self.muckable_serials)
 
     def cancelState(self):
         self.current_round = -2
@@ -2084,8 +2082,7 @@ class PokerGame:
 
     def call(self, serial):
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.error("player %d cannot call. state = %s" %
-                       (serial, self.state))
+            self.log.inform("player %d cannot call. state = %s", serial, self.state)
             return False
 
         player = self.serial2player[serial]
@@ -2096,22 +2093,20 @@ class PokerGame:
             ) - player.bet,
             player.money
         )
-        if self.verbose >= 2:
-            self.message("player %d calls %d" % (serial, amount))
+        self.log.debug("player %d calls %d", serial, amount)
         self.historyAdd("call", serial, amount)
         self.bet(serial, amount)
         return True
 
     def callNraise(self, serial, amount):
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.error("player %d cannot raise. state = %s" %
-                       (serial, self.state))
+            self.log.inform("player %d cannot raise. state = %s", serial, self.state)
             return False
 
         if self.round_cap_left <= 0:
-            self.error("round capped, can't raise (ignored)")
+            self.log.inform("round capped, can't raise (ignored)")
             if self.round_cap_left < 0:
-                self.error("round cap below zero")
+                self.log.warn("round cap below zero")
             return False
 
         (min_bet, max_bet, to_call) = self.betLimits(serial)
@@ -2119,8 +2114,7 @@ class PokerGame:
             amount = min_bet
         elif amount > max_bet:
             amount = max_bet
-        if self.verbose >= 1:
-            self.message("player %d raises %d" % (serial, amount))
+        self.log.debug("player %d raises %d", serial, amount)
         self.historyAdd("raise", serial, amount)
         highest_bet = self.highestBetNotFold()
         self.money2bet(serial, amount)
@@ -2128,15 +2122,13 @@ class PokerGame:
             last_bet = self.highestBetNotFold() - highest_bet
             self.last_bet = max(self.last_bet, last_bet)
             self.round_cap_left -= 1
-            if self.verbose > 2:
-                self.message("round cap left %d" % self.round_cap_left)
+            self.log.debug("round cap left %d", self.round_cap_left)
             self.runCallbacks("round_cap_decrease", self.round_cap_left)
         self.__talked(serial)
         return True
 
     def bet(self, serial, amount):
-        if self.verbose >= 1:
-            self.message("player %d bets %s" % (serial, amount))
+        self.log.debug("player %d bets %s", serial, amount)
         #
         # Transfert the player money from his stack to the bet stack
         #
@@ -2145,15 +2137,14 @@ class PokerGame:
 
     def check(self, serial):
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.error("player %d cannot check. state = %s (ignored)" % (serial, self.state))
+            self.log.inform("player %d cannot check. state = %s (ignored)", serial, self.state)
             return False
 
         if not self.canCheck(serial):
-            self.error("player %d tries to check but should call or raise (ignored)" % serial)
+            self.log.inform("player %d tries to check but should call or raise (ignored)", serial)
             return False
 
-        if self.verbose >= 1:
-            self.message("player %d checks" % serial)
+        self.log.debug("player %d checks" % serial)
         self.historyAdd("check", serial)
         #
         # Nothing done: that's what "check" stands for
@@ -2163,16 +2154,14 @@ class PokerGame:
 
     def fold(self, serial):
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.error("player %d cannot fold. state = %s (ignored)" % (serial, self.state))
+            self.log.inform("player %d cannot fold. state = %s (ignored)", serial, self.state)
             return False
 
         if self.serial2player[serial].fold == True:
-            if self.verbose >= 1:
-                self.message("player %d already folded (presumably autoplay)" % serial)
+            self.log.inform("player %d already folded (presumably autoplay)", serial)
             return True
 
-        if self.verbose >= 1:
-            self.message("player %d folds" % serial)
+        self.log.debug("player %d folds", serial)
         self.historyAdd("fold", serial)
         self.serial2player[serial].fold = True
         #
@@ -2184,13 +2173,18 @@ class PokerGame:
 
     def waitBigBlind(self, serial):
         if not self.blind_info:
-            self.error("no blind due")
+            self.log.inform("no blind due")
             return False
         if not self.isBlindAnteRound():
-            self.error("player %d cannot pay blind while in state %s" % (serial, self.state))
+            self.log.inform("player %d cannot pay blind while in state %s", serial, self.state)
             return False
         if not self.canAct(serial):
-            self.error("player %d cannot wait for blind. state = %s, serial in position = %d (ignored)" % (serial, self.state, self.getSerialInPosition()))
+            self.log.inform(
+                "player %d cannot wait for blind. state = %s, serial in position = %d (ignored)",
+                serial,
+                self.state,
+                self.getSerialInPosition()
+            )
             return False
         player = self.serial2player[serial]
         player.wait_for = "big"
@@ -2202,13 +2196,13 @@ class PokerGame:
 
     def blind(self, serial, amount=0, dead=0):
         if not self.blind_info:
-            self.error("no blind due")
+            self.log.inform("no blind due")
             return False
         if not self.isBlindAnteRound():
-            self.error("player %d cannot pay blind while in state %s" % (serial, self.state))
+            self.log.inform("player %d cannot pay blind while in state %s", serial, self.state)
             return False
         if not self.canAct(serial):
-            self.error("player %d cannot pay blind. state = %s, serial in position = %d (ignored)" % (serial, self.state, self.getSerialInPosition()))
+            self.log.inform("player %d cannot pay blind. state = %s, serial in position = %d (ignored)", serial, self.state, self.getSerialInPosition())
             return False
         if self.is_directing and amount == 0:
             (amount, dead, state) = self.blindAmount(serial)
@@ -2230,8 +2224,7 @@ class PokerGame:
                 amount = money
             else:
                 dead = money - amount
-        if self.verbose >= 2:
-            self.message("player %d pays blind %d/%d" % (serial, amount, dead))
+        self.log.debug("player %d pays blind %d/%d", serial, amount, dead)
         self.historyAdd("blind", serial, amount, dead)
         if dead > 0:
             #
@@ -2253,13 +2246,17 @@ class PokerGame:
 
     def ante(self, serial, amount=0):
         if not self.ante_info:
-            self.error("no ante due")
+            self.log.inform("no ante due")
             return False
         if not self.isBlindAnteRound():
-            self.error("player %d cannot pay ante while in state %s" % (serial, self.state))
+            self.log.inform("player %d cannot pay ante while in state %s", serial, self.state)
             return False
         if not self.canAct(serial):
-            self.error("player %d cannot pay ante. state = %s, serial in position = %d (ignored)" % (serial, self.state, self.getSerialInPosition()))
+            self.log.inform("player %d cannot pay ante. state = %s, serial in position = %d (ignored)",
+                serial,
+                self.state,
+                self.getSerialInPosition()
+            )
             return False
         if self.is_directing and amount == 0:
             amount = self.ante_info['value']
@@ -2271,8 +2268,7 @@ class PokerGame:
     def payAnte(self, serial, amount):
         player = self.serial2player[serial]
         amount = min(amount, player.money)
-        if self.verbose >= 2:
-            self.message("player %d pays ante %d" % (serial, amount))
+        self.log.debug("player %d pays ante %d", serial, amount)
         self.historyAdd("ante", serial, amount)
         self.money2bet(serial, amount)
         self.bet2pot(serial)
@@ -2280,7 +2276,10 @@ class PokerGame:
 
     def blindAnteMoveToFirstRound(self):
         if (self.current_round - 1) not in self.side_pots['contributions']:
-            self.error("round %d not found in contributions (state: %s)" % (self.current_round - 1, self.state))
+            self.log.warn("round %d not found in contributions (state: %s)",
+                self.current_round - 1,
+                self.state
+            )
             raise KeyError(self.current_round - 1)
         else:
             self.side_pots['contributions'][self.current_round] = self.side_pots['contributions'][self.current_round - 1]
@@ -2296,28 +2295,25 @@ class PokerGame:
             # All players are all-in except one, distribute all
             # cards and figure out who wins.
             #
-            if self.verbose >= 2:
-                self.message("less than two players not all-in")
+            self.log.debug("less than two players not all-in")
             self.nextRound()
             self.blindAnteMoveToFirstRound()
             self.__makeSidePots()
             self.bet2pot()
 
-            if self.verbose >= 2:
-                self.message("money not yet distributed, assuming information is missing ...")
+            self.log.debug("money not yet distributed, assuming information is missing ...")
         else:
             self.nextRound()
 
     def muck(self, serial, want_to_muck):
         if not self.is_directing:
-            if self.verbose > 0:
-                self.message("muck action ignored...")
+            self.log.inform("muck action ignored...")
             return
         if not self.state == GAME_STATE_MUCK:
-            self.error("muck: game state muck expected, found %s" % self.state)
+            self.log.warn("muck: game state muck expected, found %s", self.state)
             return
         if serial not in self.muckable_serials:
-            self.error("muck: serial %s not found in muckable_serials" % serial)
+            self.log.warn("muck: serial %s not found in muckable_serials", serial)
             return
 
         self.muckable_serials.remove(serial)
@@ -2353,8 +2349,7 @@ class PokerGame:
                 # All players are all-in (except one, maybe), distribute all
                 # cards and figure out who wins.
                 #
-                if self.verbose >= 2:
-                    self.message("less than two players not all-in")
+                self.log.debug("less than two players not all-in")
                 self.nextRound()
                 self.blindAnteMoveToFirstRound()
                 self.__makeSidePots()
@@ -2380,8 +2375,7 @@ class PokerGame:
     def __talked(self, serial):
         self.getPlayer(serial).talked_once = True
         if self.__roundFinished(serial):
-            if self.verbose >= 2:
-                self.message("round finished")
+            self.log.debug("round finished")
 
             self.__makeSidePots()
             self.bet2pot()
@@ -2389,8 +2383,7 @@ class PokerGame:
             if self.notFoldCount() < 2:
                 self.position = self.indexNotFoldAdd(self.position, 1)
                 self.historyAdd("position", self.position, self.player_list[self.position])
-                if self.verbose >= 2:
-                    self.message("last player in game %d" % self.getSerialInPosition())
+                self.log.debug("last player in game %d", self.getSerialInPosition())
                 if self.isFirstRound():
                     self.updateStatsFlop(True)
 
@@ -2401,8 +2394,7 @@ class PokerGame:
                 # All players are all-in except one, distribute all
                 # cards and figure out who wins.
                 #
-                if self.verbose >= 2:
-                    self.message("less than two players not all-in")
+                self.log.debug("less than two players not all-in")
                 while not self.isLastRound():
                     self.nextRound()
                     self.dealCards()
@@ -2412,8 +2404,7 @@ class PokerGame:
                 #
                 # All bets equal, go to next round
                 #
-                if self.verbose >= 2:
-                    self.message("next state")
+                self.log.debug("next state")
                 if self.isLastRound():
                     self.muckState(WON_REGULAR)
                 else:
@@ -2423,14 +2414,12 @@ class PokerGame:
                         self.initRound()
                     else:
                         self.runCallbacks("end_round")
-                        if self.verbose >= 2:
-                            self.message("round not initialized, waiting for more information ... ")
+                        self.log.debug("round not initialized, waiting for more information ... ")
 
         else:
             self.position = self.indexInGameAdd(self.position, 1)
             self.historyAdd("position", self.position, self.player_list[self.position])
-            if self.verbose >= 2:
-                self.message("new position (%d)" % self.position)
+            self.log.debug("new position (%d)" % self.position)
             self.__autoPlay()
 
     def __talked_muck(self):
@@ -2444,7 +2433,7 @@ class PokerGame:
             # This method is called from :
             # - muckstate where the game state is set to the right state
             # - muck where this test is already done
-            self.error("muck: game state muck expected, found %s" % self.state)  # pragma: no cover
+            self.log.warn("muck: game state muck expected, found %s", self.state)
             return  # pragma: no cover
         if not self.muckable_serials:
             self.showdown()
@@ -2513,10 +2502,10 @@ class PokerGame:
                 else:
                     # Test impossible
                     # The actions returned by the possibleActions method can not be somethin else than fold, chack, call or raise
-                    self.error("__autoPlay: unexpected actions = %s" % actions)  # pragma: no cover
+                    self.log.warn("__autoPlay: unexpected actions = %s", actions)  # pragma: no cover
 
             else:
-                self.error("__autoPlay: no possible action")
+                self.log.warn("__autoPlay: no possible action")
         elif (player.isSitOut() or player.isAuto()):
             #
             # A player who is sitting but not playing (sitOut) automatically
@@ -2555,7 +2544,7 @@ class PokerGame:
             elif win_order == "high":
                 self.win_orders.append("hi")
             else:
-                self.error("unexpected win order: %s for variant %s" % (win_order, variant))
+                self.log.inform("unexpected win order: %s for variant %s", win_order, variant)
         if not self.win_orders:
             raise UserWarning("failed to read win orders from %s" % self.__variant.path)
 
@@ -2740,25 +2729,23 @@ class PokerGame:
         if self.verbose >= 1:
             if len(info["cards"]) > 0:
                 for serial in self.serialsNotFold():
-                    self.message("player %d cards: " % serial + self.getHandAsString(serial))
+                    self.log.debug("player %d cards: %s", serial, self.getHandAsString(serial))
             if len(info["board"]) > 0:
-                self.message("board: " + self.getBoardAsString())
+                self.log.debug("board: " + self.getBoardAsString())
 
     def __roundFinished(self, serial):
         #
         # The round finishes when there is only one player not fold ...
         #
         if self.notFoldCount() < 2:
-            if self.verbose >= 2:
-                self.message("only one player left in the game")
+            self.log.debug("only one player left in the game")
             return True
 
         #
         # ... or when all players are all-in.
         #
         if self.inGameCount() < 1:
-            if self.verbose >= 2:
-                self.message("all players are all-in")
+            self.log.debug("all players are all-in")
             return True
 
         if self.first_betting_pass:
@@ -2787,7 +2774,7 @@ class PokerGame:
     #
     def distributeMoney(self):
         if self.moneyDistributed():
-            self.error("distributeMoney must be called only once per turn")
+            self.log.inform("distributeMoney must be called only once per turn")
             return
 
         pot_backup = self.pot
@@ -2829,8 +2816,7 @@ class PokerGame:
                     'pot': pot_backup
                 }
             ]
-            if self.verbose > 2:
-                self.message(pformat(self.showdown_stack))
+            self.log.debug(pformat(self.showdown_stack))
             self.pot2money(serial)
             self.setWinners([serial])
             if not self.is_directing:
@@ -2840,8 +2826,7 @@ class PokerGame:
         serial2side_pot = {}
         for player in self.playersNotFold():
             serial2side_pot[player.serial] = side_pots['pots'][player.side_pot_index][1]
-        if self.verbose >= 2:
-            self.message("distribute a pot of %d" % self.pot)
+        self.log.debug("distribute a pot of %d", self.pot)
         #
         # Keep track of the best hands (high and low) for information
         # and for the showdown.
@@ -2909,7 +2894,7 @@ class PokerGame:
                 # In this case the uncalled_serial is zero.
                 #
                 if self.uncalled_serial != 0 and winner.serial != self.uncalled_serial:
-                    self.error(pformat(self.showdown_stack))  # pragma: no cover
+                    self.log.warn(pformat(self.showdown_stack))
                     raise UserWarning("distributeMoney: unexpected winner.serial != uncalled_serial / %d != %d" % (
                         winner.serial,
                         self.uncalled_serial
@@ -2922,7 +2907,7 @@ class PokerGame:
                     'last_round' in side_pots and \
                     side_pots['last_round'] >= 0:
                         if serial2side_pot[winner.serial] < self.uncalled:
-                            self.error(pformat(self.showdown_stack))  # pragma: no cover
+                            self.log.warn(pformat(self.showdown_stack))
                             raise UserWarning("serial2side_pot[winner.serial] < self.uncalled (%d != %d)" % (
                                     serial2side_pot[winner.serial],
                                     self.uncalled
@@ -2938,10 +2923,12 @@ class PokerGame:
             frame['serial2share'] = {}
             frame['serials'] = [player.serial for player in potential_winners]
 
-            if self.verbose >= 2:
-                self.message("looking for winners with board %s" % self.getBoardAsString())
-                for player in potential_winners:
-                    self.message("  => hand for player %d %s" % (player.serial, self.getHandAsString(player.serial)))
+            self.log.debug(
+                "looking for winners with boards %s\n%s",
+                self.getBoardAsString(),
+                "\n".join("  => hand for player %d %s" % (player.serial, self.getHandAsString(player.serial)) for player in potential_winners)
+            )
+            
             #
             #
             # Ask poker-eval to figure out who the winners actually are
@@ -2956,17 +2943,15 @@ class PokerGame:
             # forms to ease computing the results.
             #
             winners = []
-            if self.verbose >= 1:
-                self.message("winners:")
+            self.log.debug("winners:")
             for (side, indices) in poker_eval.iteritems():
                 side_winners = [potential_winners[i] for i in indices]
                 for winner in side_winners:
-                    if self.verbose >= 1:
-                        self.message(" => player %d %s (%s)" % (
-                            winner.serial,
-                            self.bestCardsAsString(self.serial2best, winner.serial, side),
-                            side
-                        ))
+                    self.log.debug(" => player %d %s (%s)",
+                        winner.serial,
+                        self.bestCardsAsString(self.serial2best, winner.serial, side),
+                        side
+                    )
                     serial2share.setdefault(winner.serial, 0)
                     frame['serial2share'][winner.serial] = 0
                 frame[side] = [winner.serial for winner in side_winners]
@@ -2980,8 +2965,7 @@ class PokerGame:
             #
             pot = min([serial2side_pot[player.serial] for player in winners])
             frame['pot'] = pot
-            if self.verbose >= 2:
-                self.message("  and share a pot of %d" % pot)
+            self.log.debug("  and share a pot of %d", pot)
             #
             # If there are no winners for the low hand (either because the
             # game is not hi/low or because there is no qualifying low
@@ -3082,15 +3066,14 @@ class PokerGame:
         self.showdown_stack = showdown_stack
         if not self.is_directing:
             self.updateHistoryEnd(self.winners, showdown_stack)
-        if self.verbose > 2:
-            self.message(pformat(self.showdown_stack))
+        self.log.debug(pformat(self.showdown_stack))
 
     def divideChips(self, amount, divider):
         return (amount / divider, amount % divider)
 
     def dispatchMuck(self):
         if not self.is_directing:
-            self.error("dispatchMuck: not supposed to be called by client")
+            self.log.inform("dispatchMuck: not supposed to be called by client")
             return None
 
         if self.isWinnerBecauseFold():
@@ -3190,7 +3173,7 @@ class PokerGame:
             player_index = serials.index(serial)
             return poker_eval["eval"][player_index]["ev"]
         else:
-            self.error("handEV: player %d is not holding cards in the hand" % serial)
+            self.log.warn("handEV: player %d is not holding cards in the hand", serial)
             return None
 
     def readableHandValueLong(self, side, value, cards):
@@ -3359,8 +3342,7 @@ class PokerGame:
             return False
 
     def setWinners(self, serials):
-        if self.verbose >= 2:
-            self.message("player(s) %s win" % serials)
+        self.log.debug("player(s) %s win", serials)
         self.winners = serials
 
     def bet2pot(self, serial=0, dead_money=False):
@@ -3381,7 +3363,7 @@ class PokerGame:
         player = self.serial2player[serial]
 
         if amount > player.money:
-            self.error("money2bet: %d > %d" % (amount, player.money))
+            self.log.inform("money2bet: %d > %d", amount, player.money)
             amount = player.money
         player.money -= amount
         player.bet += amount
@@ -3852,8 +3834,7 @@ class PokerGame:
 
     def payBuyIn(self, serial, amount):
         if not self.isTournament() and amount > self.maxBuyIn():
-            if self.verbose > 0:
-                self.error("payBuyIn: maximum buy in is %d and %d is too much" % (self.maxBuyIn(), amount))
+            self.log.inform("payBuyIn: maximum buy in is %d and %d is too much", self.maxBuyIn(), amount)
             return False
         player = self.getPlayer(serial)
         player.money = amount
@@ -3861,8 +3842,7 @@ class PokerGame:
             player.buy_in_payed = True
             return True
         else:
-            if self.verbose > 0:
-                self.error("payBuyIn: minimum buy in is %d but %d is not enough" % (self.buyIn(), player.money))
+            self.log.inform("payBuyIn: minimum buy in is %d but %d is not enough", self.buyIn(), player.money)
             return False
 
     def rebuy(self, serial, amount):
@@ -3911,8 +3891,7 @@ class PokerGame:
         return self.allCount() == 0
 
     def changeState(self, state):
-        if self.verbose >= 1:
-            self.message("changing state %s => %s" % (self.state, state))
+        self.log.debug("changing state %s => %s", self.state, state)
         self.state = state
 
     def isRunning(self):
@@ -3935,8 +3914,8 @@ class PokerGame:
     def historyAddNoDuplicate(self, *args):
         if len(self.turn_history) < 1 or self.turn_history[-1] != args:
             self.historyAdd(*args)
-        elif self.verbose >= 2:
-            self.message("ignore duplicate history event " + str(args))
+        else:
+            self.log.debug("ignore duplicate history event %s", args)
 
     def historyAdd(self, *args):
         self.runCallbacks(*args)
@@ -3959,8 +3938,8 @@ class PokerGame:
         if self.historyCanBeReduced():
             self.turn_history = PokerGame._historyReduce(self.turn_history,self.moneyMap())
             self.turn_history_is_reduced = True
-        elif self.verbose > 0:
-            self.error("History cannot be reduced.")
+        else:
+            self.log.inform("History cannot be reduced.")
         
     @staticmethod
     def _historyFinalEvent(event):
@@ -4036,13 +4015,7 @@ class PokerGame:
         
         if not in_place:
             return turn_history
-                
-        
-    def error(self, string):
-        if self.verbose >= 0: self.message("ERROR: " + string)
 
-    def message(self, string):
-        print self.prefix + "[PokerGame " + str(self.id) + "] " + string
 
 class PokerGameServer(PokerGame):
     def __init__(self, url, dirs):
