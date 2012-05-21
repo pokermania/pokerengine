@@ -924,15 +924,22 @@ class PokerGame:
             self.dealer_seat = seat
 
     def getPlayer(self, serial):
-        player = self.serial2player.get(serial, None)
-        if player is None and self.verbose >= 1:
-            self.error("getPlayer(%d) returned None" % serial)
-            self.message("".join(traceback.format_stack(limit=4)))
-        return player
+# original
+#        player = self.serial2player.get(serial, None)
+#        if player is None and self.verbose >= 1:
+#            self.error("getPlayer(%d) returned None" % serial)
+#            self.message("".join(traceback.format_stack(limit=4)))
+#        return player
+# second try
 #        if serial not in self.serial2player:
 #            self.log.warn("getPlayer(%d) returned None\n%s", serial, exc_info=1)
 #            return None
 #        return self.serial2player[serial]
+        try:
+            return self.serial2player[serial]
+        except KeyError:
+            self.log.warn("getPlayer(%d) returned None\n%s", serial, exc_info=1)
+            return None
 
     def getPlayerMoney(self, serial):
         player = self.getPlayer(serial)
@@ -1666,11 +1673,11 @@ class PokerGame:
             self.state not in (GAME_STATE_NULL, GAME_STATE_END, GAME_STATE_BLIND_ANTE) and \
             len(self.player_list) > len(old_player_list):
                 self.log.warn(
-                    "player_list grew unexpectedly (state=%s): %s -> %s\n%s",
+                    "player_list grew unexpectedly (state=%s): %s -> %s",
                     self.state,
                     old_player_list,
                     self.player_list,
-                    "".join(traceback.format_stack(limit=5)[:-1])
+                    exc_info=1
                 )
 
         self.log.debug("player list: %s", self.player_list)
