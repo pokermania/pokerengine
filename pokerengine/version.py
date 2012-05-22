@@ -123,7 +123,7 @@ class Version:
                 if ( ( version_from >= current_version and version_from < desired_version )
                      and ( version_to > current_version and version_to <= desired_version ) ):
                     upgrade_matrix.setdefault(version_from, {})
-                    if upgrade_matrix[version_from].has_key(version_to):
+                    if version_to in upgrade_matrix[version_from]:
                         self.log.inform("duplicate upgrade string (%s => %s) keep %s, ignore %s",
                             version_from,
                             version_to,

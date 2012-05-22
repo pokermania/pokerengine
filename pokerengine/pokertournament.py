@@ -441,7 +441,7 @@ class PokerTournament:
         self.callback_new_state(self, old_state, self.state)
 
     def isRegistered(self, serial):
-        return self.players.has_key(serial)
+        return serial in self.players
         
     def canRegister(self, serial):
         if self.can_register and self.registered < self.players_quota:
@@ -577,7 +577,7 @@ class PokerTournament:
         else:
             if loosers_count > 0 or self.need_balance:
                 self.balanceGames()
-            if self.id2game.has_key(game_id):
+            if game_id in self.id2game:
                 self.updateBreak(game_id)
             else:
                 #
