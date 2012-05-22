@@ -31,10 +31,12 @@ import sys, os
 sys.path.insert(0, "@top_srcdir@")
 sys.path.insert(0, "..")
 
-from pprint import pprint
 import unittest
 from pokerengine.pokergame import PokerGameServer
 from string import split
+
+import reflogging
+log = reflogging.Logger('test-blinds')
 
 class PokerPredefinedDecks:
     def __init__(self, decks):
@@ -67,9 +69,6 @@ class TestBlinds(unittest.TestCase):
     def tearDown(self):
         del self.game
 
-    def log(self, string):
-        print string
-
     def make_new_bot(self, serial, seat):
         game = self.game
         self.failUnless(game.addPlayer(serial, seat))
@@ -87,10 +86,10 @@ class TestBlinds(unittest.TestCase):
     def pay_blinds(self, skipSerials = {}):
         game = self.game
         for serial in game.serialsAll():
-            if skipSerials.has_key(serial): continue 
+            if serial in skipSerials: continue 
             game.autoBlindAnte(serial)
         for serial in game.serialsAll():
-            if skipSerials.has_key(serial): continue 
+            if serial in skipSerials: continue 
             game.noAutoBlindAnte(serial)
 
     def check_button(self, serial):
@@ -106,10 +105,10 @@ class TestBlinds(unittest.TestCase):
             (blind, missed, wait, missedCount) = descriptions.pop(0)
             if(blind != player.blind or missed != player.missed_blind or wait != player.wait_for or player.missed_big_blind_count != missedCount):
                 failStr = "%d check_blinds FAILED actual %s != from expected %s" % ( ii, (player.blind, player.missed_blind, player.wait_for, player.missed_big_blind_count), (blind, missed, wait, missedCount) )
-                if self.verbose >= 0: print failStr
+                log.debug(failStr)
             else:
                 goodStr = "%d check_blinds %s == %s" % (ii, (player.blind, player.missed_blind, player.wait_for, player.missed_big_blind_count), (blind, missed, wait, missedCount) )
-                if self.verbose > 0: print goodStr
+                log.debug(goodStr)
         if failStr:
             self.fail(failStr)
             

@@ -2042,14 +2042,14 @@ class PokerGameTestCase(unittest.TestCase):
         results = self.game.bestHands([1, 2])
         
         # Player 1 hand
-        self.failUnless(results.has_key(1))
-        self.failUnless(results[1].has_key('hi'))
+        self.failUnless(1 in results)
+        self.failUnless('hi' in results[1])
         self.failUnlessEqual(pokercards.PokerCards(results[1]['hi'][1][1:]), bestHand1)
         self.failUnlessEqual(self.game.readablePlayerBestHands(1), 'Aces full of Fours: As, Ad, Ah, 4d, 4h')
         
         # Player 2 hand        
-        self.failUnless(results.has_key(2))
-        self.failUnless(results[2].has_key('hi'))
+        self.failUnless(2 in results)
+        self.failUnless('hi' in results[2])
         self.failUnlessEqual(pokercards.PokerCards(results[2]['hi'][1][1:]), bestHand2)
         self.failUnlessEqual(self.game.readablePlayerBestHands(2), 'Flush Ten high: Td, 9d, 7d, 4d, 2d')
         
@@ -3773,7 +3773,6 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.rake = PokerRakeHalf(self.game)
         cards = [4, 37, 2, 29, 48, 16, 22, 23, 8, 3, 7]
         self.game.deck = self.game.eval.card2string(cards)
-        print zip(self.game.eval.card2string(cards),cards)
         self.game.shuffler = PokerPredefinedDecks([cards])
         
         # Create players
@@ -3906,16 +3905,10 @@ class PokerGameTestCase(unittest.TestCase):
             g.payBuyIn(s, g.buy_in)
             g.sit(s)
 
-        print g.eval.card2string(range(0, 13))
-        print g.eval.card2string(range(13, 26))
-        print g.eval.card2string(range(26, 39))
-        print g.eval.card2string(range(39, 52))
-
         # define a deck in which 2 players have flushes
 
         cards = [17, 16, 9, 8, 5, 4, 2, 1, 0]
         g.deck = g.eval.card2string(cards)
-        print g.eval.card2string(cards)
         g.shuffler = PokerPredefinedDecks([cards])
 
         g.beginTurn(1)
