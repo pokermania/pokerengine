@@ -35,8 +35,6 @@ class ConstantPlayerShuffler:
     def shuffle(self, what):
         what.sort()
 
-from tests.testmessages import restore_all_messages, silence_all_messages, search_output, clear_all_messages, get_messages
-
 from pokerengine import pokergame
 from pokerengine import pokertournament
 from pokerengine import pokerprizes
@@ -552,7 +550,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(tournament.games[1].allCount(), 5)
         
         # No need to equalize game
-        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, 3, None), [])
+        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games), [])
         
         # Tournament => 3 , has two tables of 3, then two tables of 5 
         tournament = pokertournament.PokerTournament(**arguments)
@@ -570,11 +568,11 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(tournament.games[3].allCount(), 5)
         
         # Nothing to equalize at first
-        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, int(os.environ.get('VERBOSE_T', 3)), sys.stdout.write), [])
+        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games), [])
 
         # Remove one player from first table, means players from 3 must be redistributed
         tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0])
-        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games, int(os.environ.get('VERBOSE_T', 3)), sys.stdout.write), [(3, 1, 1), (3, 1, 2), (4, 1, 0)])
+        self.failUnlessEqual(pokertournament.equalizeGames(tournament.games), [(3, 1, 1), (3, 1, 2), (4, 1, 0)])
         
     # -------------------------------------------------------
     def testBreakGame(self):
