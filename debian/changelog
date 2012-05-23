@@ -1,3 +1,11 @@
+poker-engine (1.4.5-1) pokermania; urgency=low
+
+  * e1d7f60 reflogging package created, added dependencies to network, engine
+  * e948e8c Seveity logging
+  * 80e9566 PokerGame.sit accepts player if auto, refs sit-back-in-tourney bug.
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Wed, 23 May 2012 13:44:30 +0200
+
 poker-engine (1.4.4-2) pokermania; urgency=low
 
   * 5ecc968 added PokerTournamentStatsTestCase
