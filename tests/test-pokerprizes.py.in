@@ -32,7 +32,14 @@ import os.path
 import types
 import time
 
-from tests.testmessages import restore_all_messages, silence_all_messages, search_output, clear_all_messages, get_messages
+from tests.testmessages import search_output, clear_all_messages, get_messages
+import logging
+from tests.testmessages import TestLoggingHandler
+logger = logging.getLogger()
+handler = TestLoggingHandler()
+logger.addHandler(handler)
+logger.setLevel(10)
+
 from pokerengine import pokerprizes
 
 class PokerPrizesTestCase(unittest.TestCase):
@@ -40,7 +47,6 @@ class PokerPrizesTestCase(unittest.TestCase):
         
     # ---------------------------------------------------------
     def setUp(self):
-        silence_all_messages()
         self.dirs = ['.', PokerPrizesTestCase.TestConfDirectory, '~/conf']
     
     # -------------------------------------------------------
@@ -150,11 +156,9 @@ class PokerPrizesTestCase(unittest.TestCase):
         self.assertEquals(v.player_count, 3)
         self.assertEquals(v.guarantee_amount, 100)
 
-        clear_all_messages()
-        v.error("test")
-        self.assertEquals(get_messages(), ['ERROR test'])
+        v.log.error("test")
+        self.assertEquals(get_messages(), ['test'])
 
-        clear_all_messages()
         exceptCaught = False
         try:
             v.getPrizes()
@@ -163,7 +167,7 @@ class PokerPrizesTestCase(unittest.TestCase):
             exceptCaught = True
             self.assertEquals(nie.__str__(), 'getPrizes NOT IMPLEMENTED IN ABSTRACT BASE CLASS')
         self.failUnless(exceptCaught)
-        self.assertEquals(get_messages(), ['ERROR getPrizes NOT IMPLEMENTED IN ABSTRACT BASE CLASS'])
+        self.assertEquals(get_messages(), ['test', 'getPrizes NOT IMPLEMENTED IN ABSTRACT BASE CLASS'])
 # ---------------------------------------------------------
 def GetTestSuite():
     suite = unittest.TestSuite()
