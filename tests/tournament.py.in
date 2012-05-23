@@ -381,9 +381,6 @@ class TestCreate(unittest.TestCase):
                     game.beginTurn(turn)
                     running = tourney.endTurn(game.id)
                     if not running: break
-        if self.verbose > 0:
-            for serial in tourney.winners:
-                print "%d\thas rank %d" % ( serial, tourney.getRank(serial) )
 
     def test2(self):
         #
@@ -434,9 +431,6 @@ class TestCreate(unittest.TestCase):
                     game.beginTurn(turn)
                     running = tourney.endTurn(game.id)
                     if not running: break
-        if self.verbose > 0:
-            for serial in tourney.winners:
-                print "%d\thas rank %d" % ( serial, tourney.getRank(serial) )
     # ----------------------------------------------------------------
     def tourneyTableStartBalancedHelper(self, num_players, seats, num_tables, min_per_table):
         """tourneyTableStartBalancedHelper
