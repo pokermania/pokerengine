@@ -2823,7 +2823,7 @@ class PokerGame:
                     'pot': pot_backup
                 }
             ]
-            self.log.debug(pformat(self.showdown_stack))
+            self.log.debug("%s", pformat(self.showdown_stack))
             self.pot2money(serial)
             self.setWinners([serial])
             if not self.is_directing:
@@ -2901,7 +2901,7 @@ class PokerGame:
                 # In this case the uncalled_serial is zero.
                 #
                 if self.uncalled_serial != 0 and winner.serial != self.uncalled_serial:
-                    self.log.warn(pformat(self.showdown_stack))
+                    self.log.warn("%", pformat(self.showdown_stack))
                     raise UserWarning("distributeMoney: unexpected winner.serial != uncalled_serial / %d != %d" % (
                         winner.serial,
                         self.uncalled_serial
@@ -2914,7 +2914,7 @@ class PokerGame:
                     'last_round' in side_pots and \
                     side_pots['last_round'] >= 0:
                         if serial2side_pot[winner.serial] < self.uncalled:
-                            self.log.warn(pformat(self.showdown_stack))
+                            self.log.warn("%s", pformat(self.showdown_stack))
                             raise UserWarning("serial2side_pot[winner.serial] < self.uncalled (%d != %d)" % (
                                     serial2side_pot[winner.serial],
                                     self.uncalled
@@ -3073,7 +3073,7 @@ class PokerGame:
         self.showdown_stack = showdown_stack
         if not self.is_directing:
             self.updateHistoryEnd(self.winners, showdown_stack)
-        self.log.debug(pformat(self.showdown_stack))
+        self.log.debug("%s", pformat(self.showdown_stack))
 
     def divideChips(self, amount, divider):
         return (amount / divider, amount % divider)
