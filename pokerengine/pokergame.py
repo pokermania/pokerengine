@@ -807,7 +807,7 @@ class PokerGame:
         if player.isSitOut():
             return False
         if self.is_directing and self.isBlindAnteRound() and self.getSerialInPosition() != serial:
-            self.log.warn("sitOut for player %d while paying the blinds although not in position", serial)
+            self.log.inform("sitOut for player %d while paying the blinds although not in position", serial)
             return False
         if self.isPlaying(serial):
             self.historyAdd("sitOut", serial)
