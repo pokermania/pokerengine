@@ -38,7 +38,6 @@ class Config:
 
     upgrades_repository = None
     upgrade_dry_run = False
-    verbose = 0
 
     def __init__(self, dirs):
         self.path = None

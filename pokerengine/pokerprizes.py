@@ -22,9 +22,9 @@
 #  Loic Dachary <loic@dachary.org>
 #  Bradley M. Kuhn <bkuhn@ebb.org>
 #
+from pokerengine.pokerengineconfig import Config
 from pokerengine import log as engine_log
 log = engine_log.getChild('pokerprizes')
-from pokerengine.pokerengineconfig import Config
 
 class PokerPrizes:
     """PokerPrizesVirtual base class for PokerPrizes"""
@@ -33,14 +33,6 @@ class PokerPrizes:
         self.buy_in = buy_in_amount
         self.player_count = player_count
         self.guarantee_amount = guarantee_amount
-
-    def error(self, string):
-        raise DeprecationWarning("message is deprecated")
-        self.message("ERROR " + string)
-
-    def message(self, string):
-        raise DeprecationWarning("error is deprecated")
-        print "[PokerPrizes] " + string
 
     def addPlayer(self):
         self.player_count += 1

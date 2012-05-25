@@ -412,7 +412,7 @@ def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame)
     return messages
 
 
-def history2messages(game, history, serial2name=str, pocket_messages=False, verbose=0):
+def history2messages(game, history, serial2name=str, pocket_messages=False):
     messages = []
     subject = ''
     for event in history:
@@ -560,8 +560,7 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
                         elif frame['type'] == 'resolve':
                             messages.extend(__historyResolve2messages(game, hands, serial2name, serial2displayed, frame))
                         else:
-                            if verbose >= 0:
-                                engine_log.warn("ERROR history2messages unexpected showdown_stack frame type %s (%s)", frame['type'], str(frame))
+                            engine_log.warn("history2messages unexpected showdown_stack frame type %s (%s)", frame['type'], str(frame))
                         if message:
                             messages.append(message)
             else:
@@ -578,8 +577,7 @@ def history2messages(game, history, serial2name=str, pocket_messages=False, verb
         elif event_type == "sit":
             pass
         else:
-            if verbose >= 0:
-                engine_log.warn("ERROR history2messages: unknown history type %s", event_type)
+            engine_log.warn("history2messages: unknown history type %s", event_type)
 
     return (subject, messages)
 
@@ -656,7 +654,6 @@ class PokerGame:
         self.is_directing = is_directing
 
         self.prefix = ""
-        self.verbose = 0
         self.callbacks = []
 
         self.first_turn = True
@@ -830,19 +827,17 @@ class PokerGame:
         player = self.serial2player[serial]
         
         if player.isSit() and not player.sit_out_next_turn and not player.isAuto():
-            if self.verbose > 0:
-                self.log.inform("sit: refuse to sit player %d because is already seated.", serial)
+            self.log.inform("sit: refuse to sit player %d because is already seated.", serial)
             return False
         
         if not player.isBuyInPayed() or self.isBroke(serial):
-            if self.verbose > 0:
-                self.log.inform(
-                    "sit: refuse to sit player %d because buy in == %s " \
-                    "instead of True or broke == %s instead of False",
-                    serial,
-                    player.buy_in_payed,
-                    self.isBroke(serial)
-                )
+            self.log.inform(
+                "sit: refuse to sit player %d because buy in == %s " \
+                "instead of True or broke == %s instead of False",
+                serial,
+                player.buy_in_payed,
+                self.isBroke(serial)
+            )
             return False
         player.sit_requested = False
         player.sit_out = False
@@ -924,17 +919,6 @@ class PokerGame:
             self.dealer_seat = seat
 
     def getPlayer(self, serial):
-# original
-#        player = self.serial2player.get(serial, None)
-#        if player is None and self.verbose >= 1:
-#            self.error("getPlayer(%d) returned None" % serial)
-#            self.message("".join(traceback.format_stack(limit=4)))
-#        return player
-# second try
-#        if serial not in self.serial2player:
-#            self.log.warn("getPlayer(%d) returned None\n%s", serial, exc_info=1)
-#            return None
-#        return self.serial2player[serial]
         try:
             return self.serial2player[serial]
         except KeyError:
@@ -1010,8 +994,7 @@ class PokerGame:
         self.noAutoPlayer(serial)
 
     def autoPlayer(self, serial):
-        if self.verbose >= 2:
-            self.log.debug("autoPlayer: player %d", serial)
+        self.log.debug("autoPlayer: player %d", serial)
         player = self.getPlayer(serial)
         player.auto = True
         if not self.is_directing:
@@ -1028,8 +1011,7 @@ class PokerGame:
             self.__autoPlay()
 
     def noAutoPlayer(self, serial):
-        if self.verbose >= 2:
-            self.log.inform("noAutoPlayer: player %d", serial)
+        self.log.inform("noAutoPlayer: player %d", serial)
         player = self.getPlayer(serial)
         if player:
             player.auto = False
@@ -1076,8 +1058,7 @@ class PokerGame:
             return
 
         self.hand_serial = hand_serial
-        if self.verbose >= 1:
-            self.log.inform("Dealing %s hand number %d", self.getVariantName(), self.hand_serial)
+        self.log.inform("Dealing %s hand number %d", self.getVariantName(), self.hand_serial)
         self.pot = 0
         self.raked_amount = 0
         self.board = PokerCards()
@@ -1126,8 +1107,7 @@ class PokerGame:
             self.updateBlinds()
             self.autoPayBlindAnte()
 
-        if self.verbose >= 2:
-            self.log.debug("initialisation turn %d ... finished", self.hand_serial)
+        self.log.debug("initialisation turn %d ... finished", self.hand_serial)
 
     def dealerFromDealerSeat(self):
         self.dealer = -1
@@ -1333,12 +1313,11 @@ class PokerGame:
                 else:
                     player.blind = False
             index += 1
-        if self.verbose > 2:
-            showblinds = lambda player: "%02d:%s:%s:%s" % (player.serial, player.blind, player.missed_blind, player.wait_for)
-            self.log.debug("updateBlinds: in game (blind:missed:wait): " + ", ".join(map(showblinds, self.playersInGame())))
-            players = self.playersAll()
-            players.sort(key=lambda i: i.seat)
-            self.log.debug("updateBlinds: all     (blind:missed:wait): " + ", ".join(map(showblinds, players)))
+        showblinds = lambda player: "%02d:%s:%s:%s" % (player.serial, player.blind, player.missed_blind, player.wait_for)
+        self.log.debug("updateBlinds: in game (blind:missed:wait): " + ", ".join(map(showblinds, self.playersInGame())))
+        players = self.playersAll()
+        players.sort(key=lambda i: i.seat)
+        self.log.debug("updateBlinds: all     (blind:missed:wait): " + ", ".join(map(showblinds, players)))
 
     def handsMap(self):
         pockets = {}
@@ -1551,16 +1530,14 @@ class PokerGame:
 
     def initRound(self):
         info = self.roundInfo()
-        if self.verbose >= 2:
-            self.log.debug("new round %s", info["name"])
+        self.log.debug("new round %s", info["name"])
         if self.isFirstRound():
             if not self.is_directing:
                 self.buildPlayerList(False)
                 self.dealerFromDealerSeat()
             self.acceptPlayersWaitingForFirstRound()
         self.round_cap_left = self.roundCap()
-        if self.verbose > 2:
-            self.log.debug("round cap reset to %d", self.round_cap_left)
+        self.log.debug("round cap reset to %d", self.round_cap_left)
         self.first_betting_pass = True
         if info["position"] == "under-the-gun":
             #
@@ -2733,12 +2710,11 @@ class PokerGame:
         for card in info["cards"]:
             for player in self.playersNotFold():
                 player.hand.add(self.deck.pop(), card == "up")
-        if self.verbose >= 1:
-            if len(info["cards"]) > 0:
-                for serial in self.serialsNotFold():
-                    self.log.debug("player %d cards: %s", serial, self.getHandAsString(serial))
-            if len(info["board"]) > 0:
-                self.log.debug("board: " + self.getBoardAsString())
+        if len(info["cards"]):
+            for serial in self.serialsNotFold():
+                self.log.debug("player %d cards: %s", serial, self.getHandAsString(serial))
+        if len(info["board"]):
+            self.log.debug("board: " + self.getBoardAsString())
 
     def __roundFinished(self, serial):
         #
@@ -2908,8 +2884,7 @@ class PokerGame:
                     ))
                 showdown_stack.insert(0, frame)
                 serial2share.setdefault(winner.serial, 0)
-                if self.verbose >= 2 and \
-                    self.uncalled_serial != 0 and \
+                if self.uncalled_serial != 0 and \
                     side_pots and \
                     'last_round' in side_pots and \
                     side_pots['last_round'] >= 0:

@@ -34,14 +34,8 @@ log = engine_log.getChild('version')
 
 class Version:
 
-    verbose = 0
-    
-    version_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)$',
-                            re.VERBOSE)
-
-
-    upgrade_re = re.compile(r'.*?(\d+\.\d+\.\d+)-(\d+\.\d+\.\d+)',
-                            re.VERBOSE)
+    version_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)$', re.VERBOSE)
+    upgrade_re = re.compile(r'.*?(\d+\.\d+\.\d+)-(\d+\.\d+\.\d+)', re.VERBOSE)
 
     def __init__ (self, vstring=None):
         self.log = log.getChild(self.__class__.__name__)

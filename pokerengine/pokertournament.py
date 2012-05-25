@@ -25,18 +25,17 @@
 from math import ceil
 from types import StringType
 from pprint import pformat
-import time, sys, random
+import time, random
 
 def tournament_seconds():
     return time.time()
 
 shuffler = random
 
-from pokerengine import log as engine_log
-log = engine_log.getChild('pokertournament')
-
 from pokerengine.pokergame import PokerGameServer
 from pokerengine import pokerprizes
+from pokerengine import log as engine_log
+log = engine_log.getChild('pokertournament')
 
 TOURNAMENT_STATE_ANNOUNCED = "announced"
 TOURNAMENT_STATE_REGISTERING = "registering"
@@ -101,7 +100,7 @@ def equalizeGames(games, log = None):
 
     return results
 
-def breakGames(games, log = None):
+def breakGames(games, log=None):
     if len(games) < 2:
         return []
 
@@ -232,7 +231,6 @@ class PokerTournament:
         self.description_short = kwargs.get('description_short', 'nodescription_short')
         self.description_long = kwargs.get('description_long', 'nodescription_long')
         self.serial = kwargs.get('serial', 1)
-        self.verbose = kwargs.get('verbose', 0)
         self.players_quota = kwargs.get('players_quota', 10)
         self.players_min = kwargs.get('players_min', 2)
         self.variant = kwargs.get('variant', 'holdem')
@@ -294,10 +292,6 @@ class PokerTournament:
             player_count = self.registered
         self.prizes_object =  pokerprizes.__dict__['PokerPrizes' + self.prizes_specs.capitalize()](buy_in_amount = self.buy_in, player_count = player_count, guarantee_amount = self.prize_min, config_dirs = self.dirs)
 
-    def message(self, message):
-        raise DeprecationWarning('message is deprecated')
-        print self.prefix + "[PokerTournament %s] " % self.name + message
-        
     def canRun(self):
         if self.start_time < tournament_seconds():
             if self.sit_n_go == 'y' and self.registered >= self.players_quota:
@@ -432,7 +426,6 @@ class PokerTournament:
                state == TOURNAMENT_STATE_COMPLETE ):
             self.finish_time = tournament_seconds()
         else:
-            if self.verbose >= 0: print "PokerTournament:changeState: cannot change from state %s to state %s" % ( self.state, state )
             self.log.inform("changeState: cannot change from state %s to state %s", self.state, state)
             return
         self.log.debug("state change %s => %s", self.state, state)
@@ -520,7 +513,6 @@ class PokerTournament:
         shuffler.shuffle(players)
         for id in xrange(1, games_count + 1):
             game = self.callback_create_game(self)
-            game.verbose = self.verbose
             game.setTime(0)
             game.setVariant(self.variant)
             game.setBettingStructure(self.betting_structure)
@@ -566,7 +558,7 @@ class PokerTournament:
             money = player.money
             player.money = 0
             expected = game.buyIn() * self.registered
-            if money != expected and self.verbose >= 0:
+            if money != expected:
                 self.log.warn("winner has %s chips and should have %d chips", money, expected)
             self.log.debug("winners %s", self.winners)
             self.callback_destroy_game(self, game)
