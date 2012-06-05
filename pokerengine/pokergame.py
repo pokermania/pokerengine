@@ -47,7 +47,6 @@ from pokerengine import pokerrake
 import locale
 import gettext
 
-import traceback
 from pprint import pformat
 
 from copy import deepcopy
