@@ -72,7 +72,6 @@ class PokerGameHistoryTestCase(unittest.TestCase):
     def setUp(self):
         conf_dirs = ['.', PokerGameHistoryTestCase.TestConfDirectory, '~/conf']
         self.game = pokergame.PokerGameServer(PokerGameHistoryTestCase.TestConfigUrl, conf_dirs)
-        self.game.verbose = int(os.environ.get('VERBOSE_T', 3))
         InitCallback()
         
     # ------------------------------------------------------------ 
@@ -460,7 +459,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
             ('Unknown',)
         ]
         
-        subject, message = self.GetMessagesFromHistory(history,verbose=-1)
+        subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
         self.failUnlessEqual(message, [])
         
@@ -635,14 +634,13 @@ class PokerGameHistoryTestCase(unittest.TestCase):
 #            ('position', 5, 700)
 #        ])
     # ------------------------------------------------------------ 
-    def GetMessagesFromHistory(self, history, serial2name = str, pocket_messages = False, verbose = None):
-        if verbose is None: int(os.environ.get('VERBOSE_T', 0))
+    def GetMessagesFromHistory(self, history, serial2name = str, pocket_messages = False):
         self.game.turn_history = []
         self.game.turn_history_reduced = []
         self.game.turn_history_unreduced_position = 0
         for message in history:
             self.game.historyAdd(*message)
-        return pokergame.history2messages(self.game, self.game.historyGet(), serial2name, pocket_messages, verbose=verbose)
+        return pokergame.history2messages(self.game, self.game.historyGet(), serial2name, pocket_messages)
     
 # ------------------------------------------------------------
 def GetTestSuite():
@@ -658,12 +656,12 @@ def GetTestedModule():
     return pokergame
   
 # ------------------------------------------------------------
-def Run(verbose):
-    return unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
+def Run():
+    return unittest.TextTestRunner().run(GetTestSuite())
     
 # ------------------------------------------------------------
 if __name__ == '__main__':
-    if Run(int(os.environ.get('VERBOSE_T', 2))).wasSuccessful():
+    if Run().wasSuccessful():
         sys.exit(0)
     else:
         sys.exit(1)

@@ -5652,7 +5652,6 @@ class PokerGameTestCase(unittest.TestCase):
         """ Test Poker Game : Allin with dead blind and lost to the winner although the winner has less money """
 
         game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        game.verbose = int(os.environ.get('VERBOSE_T', 3))
         game.setVariant("holdem")
         game.setBettingStructure("100-200-no-limit")
 
@@ -5702,7 +5701,6 @@ class PokerGameTestCase(unittest.TestCase):
         """ Test Poker Game : dead blind + a player has uncalled bet and is not the winner.
         """
         game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        game.verbose = int(os.environ.get('VERBOSE_T', 3))
         game.setVariant("holdem")
         game.setBettingStructure("100-200-no-limit")
 
@@ -5754,7 +5752,6 @@ class PokerGameTestCase(unittest.TestCase):
         another player is behind him. The turn ends now, the last player is not asked for his action.
         """
         game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        game.verbose = int(os.environ.get('VERBOSE_T', 3))
         game.setVariant("holdem")
         game.setBettingStructure("100-200-no-limit")
 
@@ -5809,7 +5806,6 @@ class PokerGameTestCase(unittest.TestCase):
             in which the allin player was not.
         """
         game = pokergame.PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        game.verbose = int(os.environ.get('VERBOSE_T', 3))
         game.setVariant("holdem")
         game.setBettingStructure("100-200-no-limit")
 
@@ -5915,7 +5911,6 @@ class PokerGameTestCase(unittest.TestCase):
         self.assertEqual(0,game.playerListIndexAdd(3, 4-2*players_truey_count, pred))
 
     def testHistoryReduceAutoPlaySitInAndOut(self):
-        self.game.verbose = 2
         histories = []
         self.game.variant = 'holdem'
         self.game.setMaxPlayers(4)
@@ -5988,7 +5983,6 @@ class PokerGameTestCase(unittest.TestCase):
         )
 
     def testHistoryReduceError(self):
-        self.game.verbose = 3
         histories = []
         self.game.variant = 'holdem'
         self.game.setMaxPlayers(9)
@@ -6021,7 +6015,6 @@ class PokerGameTestCase(unittest.TestCase):
         player_serials = [10,20]
         game.variant = 'holdem'
         game.setMaxPlayers(9)
-        game.verbose = 3
         players = {}
         for serial in player_serials:
             players[serial] = self.AddPlayerAndSit(serial)
@@ -6116,7 +6109,6 @@ class PokerGameTestCase(unittest.TestCase):
         
     # ---------------------------------------------------------
     def InitGame(self):
-        self.game.verbose = int(os.environ.get('VERBOSE_T', 3))
         self.game.setTime(0)
         
         if not self.CopyFile(self.VariantTmplFile, self.VariantTempFile):
@@ -6149,13 +6141,13 @@ def GetTestedModule():
     return pokergame
   
 # ---------------------------------------------------------
-def Run(verbose):
+def Run():
 #    unittest.TestLoader.testMethodPrefix = "testMuckStateSitOut"
-    return unittest.TextTestRunner(verbosity=verbose).run(GetTestSuite())
+    return unittest.TextTestRunner().run(GetTestSuite())
     
 # ---------------------------------------------------------
 if __name__ == '__main__':
-    if Run(int(os.environ.get('VERBOSE_T', 2))).wasSuccessful():
+    if Run().wasSuccessful():
         sys.exit(0)
     else:
         sys.exit(1)

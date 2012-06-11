@@ -50,7 +50,6 @@ class TestMuck(unittest.TestCase):
 
     def setUp(self):
         self.game = PokerGameServer("poker.%s.xml", [ "../conf", "@top_srcdir@/conf" ])
-        self.game.verbose = int(os.environ.get('VERBOSE_T', 3))
         self.game.setVariant("holdem")
         self.game.setBettingStructure("2-4-limit")
         predefined_decks = [
@@ -219,8 +218,7 @@ def run():
     # Comment out above and use line below this when you wish to run just
     # one test by itself (changing prefix as needed).
 #    suite.addTest(unittest.makeSuite(TestMuck, prefix = "test2"))
-    verbosity = int(os.environ.get('VERBOSE_T', 2))
-    unittest.TextTestRunner(verbosity=verbosity).run(suite)
+    unittest.TextTestRunner().run(suite)
     
 if __name__ == '__main__':
     run()

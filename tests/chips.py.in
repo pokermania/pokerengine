@@ -36,7 +36,7 @@ from pokerengine import pokerchips
 class TestChips(unittest.TestCase):
 
     def setUp(self):
-        self.verbose = int(os.environ.get('VERBOSE_T', 1))
+        pass
     
     def tearDown(self):
         pass
@@ -50,7 +50,6 @@ class TestChips(unittest.TestCase):
         self.assertEqual(chips.chips, [0, 0, 0, 0, 0])
 
         chips = PokerChips(values, 20000)
-        if self.verbose > 0: print "%s" % chips
         self.assertEqual(chips.toint(), 20000)
         self.assertEqual(chips.chips, [8, 6, 4, 6, 4])
         chips.add([150, 0, 0, 0, 0])
@@ -137,8 +136,7 @@ def run():
     # Comment out above and use line below this when you wish to run just
     # one test by itself (changing prefix as needed).
 #    suite.addTest(unittest.makeSuite(TestChips, prefix = "test2"))
-    verbosity = int(os.environ.get('VERBOSE_T', 2))
-    return unittest.TextTestRunner(verbosity=verbosity).run(suite)
+    return unittest.TextTestRunner().run(suite)
     
 if __name__ == '__main__':
     if run().wasSuccessful():
