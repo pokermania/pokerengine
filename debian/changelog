@@ -1,3 +1,13 @@
+poker-engine (1.4.5-2) pokermania; urgency=low
+
+  * c17da54 fixes for test-pokeravatar
+  * 7314246 changed log severity from warn to info for:
+  * a24394c got rid of verbose, message, error and some unused imports
+  * f613a06 all logging statements now use "static" strings as first argument
+  * 927ccd2 less debug statements in tournament tests
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Mon, 11 Jun 2012 16:00:00 +0200
+
 poker-engine (1.4.5-1) pokermania; urgency=low
 
   * e1d7f60 reflogging package created, added dependencies to network, engine
