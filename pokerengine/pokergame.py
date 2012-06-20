@@ -154,7 +154,7 @@ class PokerPlayer:
     def __init__(self, serial, name, game):
         self.log = log.getChild(self.__class__.__name__, refs=[
             ('Game', game, lambda game: game.id),
-            ('Hand', game, lambda game: game.hand_serial > 1 if game.hand_serial else None),
+            ('Hand', game, lambda game: game.hand_serial if game.hand_serial > 1 else None),
             ('Player', self, lambda player: player.serial)
         ])
         self.serial = serial
