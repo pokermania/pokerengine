@@ -1,4 +1,5 @@
 # -*- mode: python -*-
+# coding=utf8
 # Copyright (C) 2006 - 2010 Loic Dachary <loic@dachary.org>
 # Copyright (C) 2008 Bradley M. Kuhn <bkuhn@ebb.org>
 # Copyright (C) 2006 Mekensleep
@@ -64,20 +65,20 @@ class PokerI18NTest(unittest.TestCase):
     # ---------------------------------------------------------    
     def testWindowsFails(self):
         """Test I18N : windows fails"""
-        
-	pokergame.platform = FakePlatform("Windows")
-        pokergame.locale = FakeLocale("french")
+
+        pokergame.platform = FakePlatform("Windows")
+        pokergame.locale = FakeLocale("de")
         pokergame.init_i18n(None)
-        self.failUnlessEqual(pokergame._("Ace"), "Ace")
+        self.failUnlessEqual(pokergame._("King"), "King")
 
     # ---------------------------------------------------------    
     def testWindowsSuccess(self):
         """Test I18N : windows success"""
-        
-	pokergame.platform = FakePlatform("Windows")
-        pokergame.locale = FakeLocale("french")
+
+        pokergame.platform = FakePlatform("Windows")
+        pokergame.locale = FakeLocale("de")
         pokergame.init_i18n("./tmp")
-        self.failUnlessEqual(pokergame._("Ace"), "As")
+        self.failUnlessEqual(pokergame._("King"), u"König")
 
     # ---------------------------------------------------------    
     def testUserWrittenTranslationFunction(self):

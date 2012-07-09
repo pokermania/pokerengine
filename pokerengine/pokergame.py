@@ -83,12 +83,12 @@ def init_i18n(locale_dir, overrideTranslationFunction=None):
 
     if platform.system() == "Windows":
         lang = locale.getdefaultlocale()[0][:2]
-        if locale_dir == None:
+        if locale_dir is None:
             locale_dir = './../../locale'
 
     try:
         t = gettext.translation('poker-engine', localedir=locale_dir, languages=[lang])
-        _ = t.gettext
+        _ = t.ugettext
     except IOError:
         _ = lambda text: text
         return oldTranslationFunction
@@ -108,7 +108,7 @@ def uniq(elements):
 
 def find(fn,seq):
     """Return first item in sequence where f(item) == True."""
-    for item in seq: 
+    for item in seq:
         if fn(item): return item
 
 class PokerRandom(random.Random):

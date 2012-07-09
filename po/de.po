@@ -322,7 +322,7 @@ msgstr "Ass"
 # Translation #55596 (de)
 #: po/raw.py:5
 msgid "King"
-msgstr "Koenig"
+msgstr "König"
 
 # Translation #55597 (de)
 #: po/raw.py:6

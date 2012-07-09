@@ -43,8 +43,8 @@ DEFAULT_VERBOSE_T=3 # show very detailed information about everything (~2MB outp
 export VERBOSE_T
 
 # build context for i18n testing
-mkdir -p ./tmp/fr/LC_MESSAGES/
-msgfmt @top_srcdir@/po/fr.po -o ./tmp/fr/LC_MESSAGES/poker-engine.mo
+mkdir -p ./tmp/de/LC_MESSAGES/
+msgfmt @top_srcdir@/po/de.po -o ./tmp/de/LC_MESSAGES/poker-engine.mo
 
 DEFAULT_COVERAGE_FILES=$(echo ${top_srcdir}/pokerengine/*.py) 
 : ${COVERAGE_FILES:=$DEFAULT_COVERAGE_FILES}
