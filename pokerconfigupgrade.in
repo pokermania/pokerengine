@@ -1,5 +1,5 @@
 #!@PYTHON@
-# -*- encoding: iso-8859-1; mode: python -*-
+# -*- py-indent-offset: 4; coding: utf-8; mode: python -*-
 # Copyright (C) 2006 - 2010 Loic Dachary <loic@dachary.org>
 # Copyright (C) 2005, 2006 Mekensleep
 #
