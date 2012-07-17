@@ -88,7 +88,7 @@ def init_i18n(locale_dir, overrideTranslationFunction=None):
 
     try:
         t = gettext.translation('poker-engine', localedir=locale_dir, languages=[lang])
-        _ = t.ugettext
+        _ = t.gettext
     except IOError:
         _ = lambda text: text
         return oldTranslationFunction
