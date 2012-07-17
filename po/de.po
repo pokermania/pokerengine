@@ -21,7 +21,7 @@ msgstr ""
 #: pokerengine/pokergame.py:313
 #, python-format
 msgid "%(name)s shows %(value)s for %(side)s "
-msgstr "%(name)s zeigt %(value)s für %(side)s "
+msgstr "%(name)s zeigt %(value)s fuer %(side)s "
 
 # Translation #55535 (de)
 #: pokerengine/pokergame.py:315
@@ -33,7 +33,7 @@ msgstr "%(name)s verbirgt Verlierer-Hand"
 #: pokerengine/pokergame.py:322
 #, python-format
 msgid " tie for %(side)s "
-msgstr " Gleichstand für %(side)s "
+msgstr " Gleichstand fuer %(side)s "
 
 # Translation #55536 (de)
 #: pokerengine/pokergame.py:324
@@ -153,19 +153,19 @@ msgstr "%(name)s passt"
 #: pokerengine/pokergame.py:428
 #, python-format
 msgid "%(name)s raises %(amount)s"
-msgstr "%(name)s erhöht %(amount)s"
+msgstr "%(name)s erhoeht %(amount)s"
 
 # Translation #55559 (de)
 #: pokerengine/pokergame.py:433
 #, python-format
 msgid " (%(amount)s returned to %(name)s)"
-msgstr " (%(amount)s gehen zurück an %(name)s)"
+msgstr " (%(amount)s gehen zurueck an %(name)s)"
 
 # Translation #55560 (de)
 #: pokerengine/pokergame.py:436
 #, python-format
 msgid "turn canceled%(message)s"
-msgstr "Runde abgesagt %(message)s"
+msgstr "Turnier abgesagt %(message)s"
 
 # Translation #55563 (de)
 #: pokerengine/pokergame.py:444
@@ -177,13 +177,13 @@ msgstr "%(name)s bekommt %(amount)s (alle anderen haben gepasst)"
 #: pokerengine/pokergame.py:451
 #, python-format
 msgid "%(name)s receives %(amount)d odd chips"
-msgstr "%(name)s bekommt %(amount)d übrig gebliebene Chips"
+msgstr "%(name)s bekommt %(amount)d uebrig gebliebene Chips"
 
 # Translation #55569 (de)
 #: pokerengine/pokergame.py:453
 #, python-format
 msgid "returning uncalled bet %(amount)s to %(name)s"
-msgstr "Nicht mitgegangener Einsatz %(amount)s an %(name)s zurückgegeben"
+msgstr "Nicht mitgegangener Einsatz %(amount)s an %(name)s zurueckgegeben"
 
 # Translation #55570 (de)
 #: pokerengine/pokergame.py:464
@@ -362,7 +362,7 @@ msgstr "Sechs"
 # Translation #55604 (de)
 #: po/raw.py:13
 msgid "Five"
-msgstr "Fünf"
+msgstr "Fuenf"
 
 # Translation #55605 (de)
 #: po/raw.py:14
@@ -387,7 +387,7 @@ msgstr "Asse"
 # Translation #55609 (de)
 #: po/raw.py:19
 msgid "Kings"
-msgstr "Könige"
+msgstr "Koenige"
 
 # Translation #55610 (de)
 #: po/raw.py:20
@@ -427,7 +427,7 @@ msgstr "Sechsen"
 # Translation #55619 (de)
 #: po/raw.py:27
 msgid "Fives"
-msgstr "Fünfer"
+msgstr "Fuenfer"
 
 # Translation #55620 (de)
 #: po/raw.py:28
