@@ -78,18 +78,16 @@ class PokerI18NTest(unittest.TestCase):
         pokergame.platform = FakePlatform("Windows")
         pokergame.locale = FakeLocale("de")
         pokergame.init_i18n("./tmp")
-        self.failUnlessEqual(pokergame._("King"), u"König")
+        self.failUnlessEqual(pokergame._("King"), u"König".encode('utf8'))
 
     # ---------------------------------------------------------    
     def testUserWrittenTranslationFunction(self):
         """Test I18N : user written translation function"""
-        self.assertEquals(pokergame.init_i18n(None, 
-                            lambda text : 
-                            "All your string are translated to us.")
-                          ("DUMMY TEXT RETURN"),
-                          "DUMMY TEXT RETURN")
-        self.failUnlessEqual(pokergame._("Ace"),
-                             "All your string are translated to us.")
+        self.assertEquals(
+            pokergame.init_i18n(None, lambda text : "All your string are translated to us.")("DUMMY TEXT RETURN"),
+            "DUMMY TEXT RETURN"
+        )
+        self.failUnlessEqual(pokergame._("Ace"), "All your string are translated to us.")
 # ---------------------------------------------------------
 def run():
     suite = unittest.TestSuite()

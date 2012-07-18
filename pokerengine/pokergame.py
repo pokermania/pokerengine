@@ -381,7 +381,9 @@ def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame)
                     'side': _(side)
                 })
             else:
-                messages.append(_("%s mucks loosing hand") % (serial2name(serial),))
+                messages.append(_("%(name)s mucks loosing hand") % {
+                    'name': serial2name(serial)
+                })
 
     for side in ('hi', 'low'):
         if side not in frame:
@@ -483,16 +485,16 @@ def history2messages(game, history, serial2name=str, pocket_messages=False):
         elif event_type == "blind":
             serial, amount, dead = event[1:]
             if dead:
-                messages.append(_("%s pays %s blind and %d dead") % (
-                    serial2name(serial),
-                    PokerChips.tostring(amount),
-                    dead,
-                ))
+                messages.append(_("%(name)s pays %(amount)s blind and %(dead)d dead") % {
+                    'name': serial2name(serial),
+                    'amount': PokerChips.tostring(amount),
+                    'dead': dead,
+                })
             else:
-                messages.append(_("%s pays %s blind") % (
-                    serial2name(serial),
-                    PokerChips.tostring(amount),
-                ))
+                messages.append(_("%(name)s pays %(amount)s blind") % {
+                    'name': serial2name(serial),
+                    'amount': PokerChips.tostring(amount),
+                })
         elif event_type == "ante_request":
             pass
         elif event_type == "ante":
