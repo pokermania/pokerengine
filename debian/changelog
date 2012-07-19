@@ -1,3 +1,10 @@
+poker-engine (1.5.0-1) pokermania; urgency=low
+
+  * ad21569 use temporaryplayerspattern for whole line
+  * 726414c mega fixing. poker internal version 2.2.0
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Mon, 19 Jul 2012 03:15:00 +0200
+
 poker-engine (1.4.5-2) pokermania; urgency=low
 
   * c17da54 fixes for test-pokeravatar
