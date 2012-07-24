@@ -1,35 +1,17 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
 
-export DH_VERBOSE=1 
+COVERAGE=/usr/bin/env python-coverage
 
-include /usr/share/cdbs/1/rules/debhelper.mk
+PYTHON2=$(shell pyversions -vr)
 
-clean:: debian/stamp-autotools-configure
-	rm -f $(DEB_SRCDIR)/*cdbs-*
+%:
+	dh $@ --buildsystem=python_distutils --with=python2
 
-include /usr/share/cdbs/1/class/autotools.mk
+locales:
+	cd po ; make
 
-DEB_MAKE_CLEAN_TARGET = maintainer-clean
-
-DEB_CONFIGURE_EXTRA_FLAGS = --enable-maintainer-mode
-
-DEB_MAKE_CHECK_TARGET = check
-
-is_debug_package=$(if $(findstring noopt,$(DEB_BUILD_OPTIONS)),yes,)
-
-$(DEB_SRCDIR)/configure:: $(DEB_SRCDIR)/configure.ac
-	mkdir -p config
-	autoreconf --install
-	chmod a+x $@
-
-# override in order to add dependency to configure (should be a :: rule instead of a : rule)
-debian/stamp-autotools-configure: $(DEB_SRCDIR)/configure
-	chmod a+x $(DEB_CONFIGURE_SCRIPT)
-	$(DEB_CONFIGURE_INVOKE) $(cdbs_configure_flags) $(DEB_CONFIGURE_EXTRA_FLAGS) $(DEB_CONFIGURE_USER_FLAGS)
-
-binary-install/python-poker-engine::
-	dh_python2 -ppython-poker-engine
-
-# make check verbosity : very quiet
-export VERBOSE_T=-1
+override_dh_auto_test: locales
+	$(COVERAGE) run setup.py test
+	$(COVERAGE) report pokerengine/*.py
+	rm .coverage

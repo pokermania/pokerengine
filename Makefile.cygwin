@@ -1,4 +1,0 @@
-all:	mo
-
-mo: 
-	msgfmt ./po/fr.po -o ./po/fr.mo

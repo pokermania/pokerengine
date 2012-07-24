@@ -1,17 +1,16 @@
 Source: poker-engine
 Section: python
 Priority: optional
-Maintainer: Loic Dachary (OuoU) <loic@debian.org>
-Build-Depends-Indep: pkg-config, perl, automake1.9, rsync
-Build-Depends: debhelper (>= 5.0.37.2), cdbs (>= 0.4.90), python-all (>= 2.6.6), python-libxml2, python-libxslt1, python-pypoker-eval (>= 132.0), procps, python-poker-reflogging (>= 1)
-X-Python-Version: >=2.3
+Maintainer: Hannes <hannes@pokermania.de>
+Build-Depends: debhelper, python-all (>= 2.6.6), python-libxml2, python-libxslt1, python-pypoker-eval (>= 132.0), python-poker-reflogging, rsync, python-coverage
 Standards-Version: 3.9.1
+Homepage: http://github.com/pokermania/poker-network
 
 Package: python-poker-engine
 Section: python
 Architecture: all
 Conflicts: python2.3-poker-eval (<< 1.0.16), python2.4-poker-engine (<< 1.0.16), poker-engine-common
-Depends: ${python:Depends}, ${misc:Depends}, python-pypoker-eval (>= 132.0), python-libxml2, python-libxslt1, rsync, python-poker-reflogging (>= 1)
+Depends: ${misc:Depends}, python-all (>= 2.6.6), python-libxml2, python-libxslt1, python-pypoker-eval (>= 132.0), python-poker-reflogging, rsync
 Description: multiplayer poker engine with abstract variants specifications
  poker-engine is a Python library that implements poker rules according
  to variants and betting structures specified in configuration files.
