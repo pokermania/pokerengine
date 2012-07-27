@@ -47,6 +47,15 @@ from collections import namedtuple
 from pokerengine import pokercards
 from pokerengine import pokergame
 
+from tests.testmessages import search_output, clear_all_messages, get_messages
+#import logging
+#from tests.testmessages import TestLoggingHandler
+#logger = logging.getLogger()
+#handler = TestLoggingHandler()
+#logger.addHandler(handler)
+#logger.setLevel(10)
+
+
 CallbackIds = None
 CallbackArgs = None
 
@@ -6028,7 +6037,110 @@ class PokerGameTestCase(unittest.TestCase):
         game.removePlayer(20)
         game.blind(10)
         game.historyReduce()
-    
+
+    def _autoPlayTurn(self, actions={}, default_action='fold', additional_packets=None, expect=True):
+        state = self.game.state
+        if additional_packets:
+            for packet, args in additional_packets:
+                retval = getattr(self.game, packet)(*args)
+                self.game.log.debug( '%s > %s %r -> %r' % (state, packet, args, retval))
+
+        i=0
+        while self.game.state == state:
+            i += 1
+            if i > 20:
+                raise Exception('Infinity Loop')
+            player = self.game.getPlayerInPosition()
+            serial = player.serial
+            if isinstance(actions, dict):
+                action = actions.get(serial, default_action)
+            else:
+                action = actions[i]
+            if isinstance(action, (list, tuple)):
+                action, params = action
+            else:
+                params = ()
+            if action == 'raise':
+                action = 'callNraise'
+            retval = getattr(self.game,action)(serial,*params)
+            self.game.log.debug('%s > %s %s %r -> %s' %(state, action, serial, params, retval))
+            if retval in (True, False):
+                self.failUnless(retval == expect)
+
+    def _autoPlayInit(self):
+        clear_all_messages()
+
+        game = self.game
+        player_serials = [13,26]
+        game.variant = 'holdem'
+        game.setMaxPlayers(9)
+        players = {}
+        for serial in player_serials:
+            players[serial] = self.AddPlayerAndSit(serial)
+            players[serial].money = 200000000
+            game.noAutoBlindAnte(serial)
+
+        return players
+
+    def _autoPlay(self, additional_packets=(None, None, None, None), doitL=(None, None, None, None), expectedPlayers=2):
+        game = self.game
+        game.beginTurn(1)
+        self._autoPlayTurn(default_action='blind', expect=None)
+
+        doits = [
+            dict(actions={26:'autoPlayer', 13:('raise', (800,))}),
+            dict(actions={13:('raise', (900,)), 26:'call'}),
+            dict(actions={13:('raise', (1900,)), 26:'call'}),
+            dict(actions={13:'check', 26:'check'}),
+        ]
+
+        states = ['pre-flop','flop','turn','river']
+
+        for idx,(doit,doitfallback,additional_packet,state) in enumerate(map(None,doitL,doits,additional_packets,states)):
+            if state != game.state:
+                #print 'oO', state, game.state
+                continue
+            doitdict = doit if doit else doitfallback
+            self._autoPlayTurn(additional_packets=additional_packet, **doitdict)
+
+        self.failUnless(expectedPlayers == self.game.sitCount())
+
+    def testAutoPlayTourneyShouldFoldAfterSecondHand(self):
+        players = self._autoPlayInit()
+        self._autoPlay(doitL=(dict(actions={26:'autoPlayer',13:'autoPlayer'},),),
+            additional_packets=([('autoPlayerFoldNextTurn',(26,))],),
+            expectedPlayers=2)
+        self.game.beginTurn(2)
+        self._autoPlay(expectedPlayers=2)
+        hist = self.game.historyGet()
+        wrong = False
+        for line in hist:
+            if line[0] in ('call','check','raise') and line[1] == 26:
+                wrong = True
+
+        self.failIfEqual(wrong, True)
+
+    def testAutoPlayPlayerShouldBeAbleToGetBackToTheGame(self):
+        self._autoPlayInit()
+        self._autoPlay(doitL=(dict(actions={26:'autoPlayer',13:'autoPlayer'},),), additional_packets=([('sitOutNextTurn',(26,))],None,[('sit',(26,))]), expectedPlayers=1)
+        self.game.beginTurn(2)
+
+    def testAutoPlayPlayerShouldBeAbleToGetBackToTheGame(self):
+        self._autoPlayInit()
+        self._autoPlay(additional_packets=([('sitOutNextTurn',(26,))],None,[('sit',(26,))]),expectedPlayers=2)
+
+    def testAutoPlayPlayerShouldBeAbleToGetBackToTheGame_(self):
+        self._autoPlayInit()
+        self._autoPlay(additional_packets=([('sitOutNextTurn',(26,))],None,[('sit',(26,))]),expectedPlayers=2)
+
+    def testAutoPlayShouldEndAfterOneHandTournament(self):
+        self._autoPlayInit()
+        self._autoPlay(expectedPlayers=2)
+
+    def testAutoPlayShouldEndAfterOneHand(self):
+        self._autoPlayInit()
+        self._autoPlay()
+
     # ---------------------------------------------------------
     def AddPlayerAndSit(self, serial, seat = -1):
         self.failUnless(self.game.addPlayer(serial, seat))

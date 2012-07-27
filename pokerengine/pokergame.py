@@ -149,6 +149,16 @@ AUTO_MUCK_WIN = 0x01
 AUTO_MUCK_LOSE = 0x02
 AUTO_MUCK_ALWAYS = AUTO_MUCK_WIN + AUTO_MUCK_LOSE
 
+# auto play constants
+AUTO_PLAY_YES = 0x01
+AUTO_PLAY_NO = 0x00
+
+
+AUTO_PLAYER_POLICY_BOT = 'bot'
+AUTO_PLAYER_POLICY_SIMPLE_BOT = 'simple_bot'
+AUTO_PLAYER_POLICY_FOLD = 'fold'
+
+DEFAULT_AUTOPLAYER_POLICY = AUTO_PLAYER_POLICY_SIMPLE_BOT
 
 class PokerPlayer:
     def __init__(self, serial, name, game):
@@ -169,6 +179,9 @@ class PokerPlayer:
         self.auto = False
         self.auto_blind_ante = False
         self.auto_muck = AUTO_MUCK_ALWAYS  # AUTO_MUCK_NEVER, AUTO_MUCK_WIN, AUTO_MUCK_LOSE, AUTO_MUCK_ALWAYS
+        self.auto_play = AUTO_PLAY_YES
+        self.auto_player_policy = DEFAULT_AUTOPLAYER_POLICY
+        self.auto_player_fold_next_turn = False
         self.wait_for = False  # True, False, "late", "big", "first_round" ##
         self.missed_blind = "n/a"  # None, "n/a", "big", "small"
         self.missed_big_blind_count = 0
@@ -197,6 +210,8 @@ class PokerPlayer:
         other.auto = self.auto
         other.auto_blind_ante = self.auto_blind_ante
         other.auto_muck = self.auto_muck
+        other.auto_player_policy = self.auto_player_policy
+        other.auto_player_fold_next_turn = self.auto_player_fold_next_turn
         other.wait_for = self.wait_for
         other.missed_blind = self.missed_blind
         other.missed_big_blind_count = self.missed_big_blind_count
@@ -226,6 +241,8 @@ class PokerPlayer:
             "auto_blind_ante = %s, "
             "wait_for = %s, "
             "auto_muck = %d, "
+            "auto_player_policy = %s, "
+            "auto_player_fold_next_turn = %s, "
             "missed_blind = %s, "
             "missed_big_blind_count = %d, "
             "blind = %s, "
@@ -254,6 +271,8 @@ class PokerPlayer:
             self.auto_blind_ante,
             self.wait_for,
             self.auto_muck,
+            self.auto_player_policy,
+            self.auto_player_fold_next_turn,
             self.missed_blind,
             self.missed_big_blind_count,
             self.blind,
@@ -577,6 +596,8 @@ def history2messages(game, history, serial2name=str, pocket_messages=False):
             pass
         elif event_type == "sit":
             pass
+        elif event_type == "AutoPlayPolicy":
+            pass
         else:
             engine_log.warn("history2messages: unknown history type %s", event_type)
 
@@ -791,6 +812,13 @@ class PokerGame:
             serial in self.serial2player and \
             self.serial2player[serial].isSitOut()
 
+    def autoPlayerFoldNextTurn(self, serial):
+        player = self.serial2player[serial]
+        if not player.auto_player_fold_next_turn:
+            player.auto_player_fold_next_turn = True
+
+        return True
+
     def sitOutNextTurn(self, serial):
         player = self.serial2player[serial]
         if self.isInTurn(serial) and not (self.isBlindAnteRound() and self.getSerialInPosition() == serial):
@@ -866,6 +894,10 @@ class PokerGame:
             self.dealer_seat = player.seat
         if self.isRunning() and self.isBlindAnteRound():
             self.historyAdd("sit", serial, player.wait_for)
+        player.auto_player_fold_next_turn = False
+        if player.auto_player_policy != DEFAULT_AUTOPLAYER_POLICY:
+            player.auto_player_policy = DEFAULT_AUTOPLAYER_POLICY
+            self.historyAdd("autoPlayerPolicy", serial, DEFAULT_AUTOPLAYER_POLICY)
         return True
 
     def sitRequested(self, serial):
@@ -1774,7 +1806,9 @@ class PokerGame:
         # (regardless of the fact that a new player may join later)
         #
         sitting_out = []
+        self.log.debug('---- playersALL %r' % self.playersAll())
         for player in self.playersAll():
+            self.log.debug(':(%s) %s' % (player.serial, player.auto_player_fold_next_turn))
             if player.sit_out_next_turn:
                 self.historyAdd("sitOut", player.serial)
                 self.sitOut(player.serial)
@@ -1784,6 +1818,11 @@ class PokerGame:
                     self.historyAdd("sitOut", player.serial)
                     self.sitOut(player.serial)
                     sitting_out.append(player.serial)
+            if player.auto_player_fold_next_turn:
+                self.log.debug(': foldpolicy')
+                self.historyAdd("AutoPlayPolicy", player.serial, "fold")
+                player.auto_player_fold_next_turn = False
+                player.auto_player_policy = 'fold'
 
         disconnected = self.playersDisconnected()
         if disconnected:
@@ -2466,39 +2505,51 @@ class PokerGame:
         player = self.getPlayerInPosition()
         serial = player.serial
 
+        self.log.inform("Player(%s) isBot(%s) isSitOut(%s) isAuto(%s) APPolicy(%s) foldNext(%s)" \
+            % (
+                serial, player.isBot(), player.isSitOut(), player.isAuto(),
+                player.auto_player_policy, player.auto_player_fold_next_turn
+            )
+        )
         if player.isBot():
-            (desired_action, ev) = self.__botEval(serial)
             actions = self.possibleActions(serial)
-            if actions:
-                while not desired_action in actions:
-                    if desired_action == "check":
-                        desired_action = "fold"
-                    elif desired_action == "call":
-                        desired_action = "check"
-                    elif desired_action == "raise":
-                        desired_action = "call"
+        elif player.auto_play and (player.isSitOut() or player.isAuto()):
+            actions = self.possibleActions(serial)
+            if player.auto_player_policy == AUTO_PLAYER_POLICY_SIMPLE_BOT:
+                #
+                # A player who is sitting but not playing (sitOut) is played by a bot
+                # but should never raise.
+                #
+                actions = list(set(actions) - set(['raise']))
+            elif player.auto_player_policy == AUTO_PLAYER_POLICY_FOLD:
+                actions = ["fold"]
+        else:
+            return
 
-                if desired_action == "fold":
-                    self.fold(serial)
-                elif desired_action == "check":
-                    self.check(serial)
+        if actions:
+            (desired_action, ev) = self.__botEval(serial)
+            self.log.inform("__autoPlay desired action %s" % desired_action)
+            while not desired_action in actions:
+                self.log.inform(" autoPlay: desired action (%s) is not available %s" %(desired_action, actions))
+                if desired_action == "check":
+                    desired_action = "fold"
                 elif desired_action == "call":
-                    self.call(serial)
+                    desired_action = "check"
                 elif desired_action == "raise":
-                    self.callNraise(serial, 0)
-                else:
-                    # Test impossible
-                    # The actions returned by the possibleActions method can not be somethin else than fold, chack, call or raise
-                    self.log.warn("__autoPlay: unexpected actions = %s", actions)  # pragma: no cover
+                    desired_action = "call"
 
+            if desired_action == "fold":
+                self.fold(serial)
+            elif desired_action == "check":
+                self.check(serial)
+            elif desired_action == "call":
+                self.call(serial)
+            elif desired_action == "raise":
+                self.callNraise(serial, 0)
             else:
-                self.log.warn("__autoPlay: no possible action")
-        elif (player.isSitOut() or player.isAuto()):
-            #
-            # A player who is sitting but not playing (sitOut) automatically
-            # folds.
-            #
-            self.fold(serial)
+                # Test impossible
+                # The actions returned by the possibleActions method can not be somethin else than fold, chack, call or raise
+                self.log.warn("__autoPlay: unexpected actions = %s", actions)  # pragma: no cover
 
     def hasLow(self):
         return "low" in self.win_orders
@@ -3813,6 +3864,9 @@ class PokerGame:
 
     def noAutoBlindAnte(self, serial):
         self.getPlayer(serial).auto_blind_ante = False
+
+    def autoPlay(self, serial, auto_play):
+        self.getPlayer(serial).auto_play = auto_play
 
     def autoMuck(self, serial, auto_muck):
         self.getPlayer(serial).auto_muck = auto_muck
