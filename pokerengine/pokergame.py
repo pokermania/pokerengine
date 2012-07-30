@@ -744,9 +744,11 @@ class PokerGame:
         return len(self.seats_all)
 
     def canComeBack(self, serial):
-        return (serial in self.serial2player and
-                 (self.serial2player[serial].isDisconnected() or
-                   self.serial2player[serial].isAuto()))
+        return \
+            serial in self.serial2player and (
+                self.serial2player[serial].isDisconnected() or
+                self.serial2player[serial].isAuto()
+            )
 
     def canAddPlayer(self, serial):
         if len(self.seats_left) < 1:

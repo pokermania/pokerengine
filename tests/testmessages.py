@@ -26,7 +26,7 @@ import os
 import logging
 from collections import namedtuple
 
-Message = namedtuple('Message', ['severity', 'path', 'refs', 'message', 'args', 'formated'])
+Message = namedtuple('Message', ('severity', 'path', 'refs', 'message', 'args', 'formated'))
 messages_out = [] # a list of Message items
 
 class TestLoggingHandler(logging.Handler):
