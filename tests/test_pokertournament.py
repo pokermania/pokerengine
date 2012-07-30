@@ -35,6 +35,8 @@ class ConstantPlayerShuffler:
     def shuffle(self, what):
         what.sort()
 
+from tests.testmessages import get_messages, clear_all_messages
+
 from pokerengine import pokergame
 from pokerengine import pokertournament
 from pokerengine import pokerprizes
@@ -1097,6 +1099,38 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnless(tournament.register(2))
         
         self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_RUNNING, tournament.state)
+        
+    def testHistoryReduceWorksAfterPlayerRemove(self):
+
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 5,
+            'start_time': time.time() + 20000,
+            'seats_per_game': 5,
+            'sit_n_go': 'n',
+        }
+                            
+        tournament = pokertournament.PokerTournament(**arguments)
+        
+        self.failUnless(tournament.register(1))
+        tournament.start_time = 0
+        self.failUnless(tournament.register(2))
+        
+        self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_RUNNING, tournament.state)
+        game = tournament.games[0]
+        
+        game.beginTurn(1)
+        self.assertTrue(game.isFirstRound())
+        
+        # finish the tourney
+        game.callNraise(1,game.serial2player[1].money)
+        game.call(2)
+        
+        # remove a player from the tourney and call historyReduce
+        tournament.removePlayer(game.id,1)
+        self.assertTrue(game.historyCanBeReduced())
+        game.historyReduce()
+        
 
 class Breaks(unittest.TestCase):
 

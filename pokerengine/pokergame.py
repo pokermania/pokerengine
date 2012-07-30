@@ -1787,8 +1787,6 @@ class PokerGame:
         if disconnected:
             self.historyAdd("leave",[(player.serial,player.seat) for player in disconnected])
         for player in disconnected:
-            if player.serial in self.player_list: 
-                self.player_list.remove(player.serial)
             self.__removePlayer(player.serial)
         self.historyAdd("finish", self.hand_serial)
 
@@ -1804,6 +1802,8 @@ class PokerGame:
         #
         # Forget about him
         #
+        if serial in self.player_list:
+            self.player_list.remove(serial)
         del self.serial2player[serial]
 
     def isBlindAnteRound(self):
