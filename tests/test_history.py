@@ -1,4 +1,4 @@
-# -*- mode: python -*-
+# -*- coding: utf-8 -*-
 # Copyright (C) 2006 - 2010 Loic Dachary <loic@dachary.org>
 # Copyright (C) 2005, 2006 Mekensleep
 #

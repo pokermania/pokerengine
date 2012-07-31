@@ -21,3 +21,4 @@ setup(
     packages = ['pokerengine'],
     cmdclass = {'test': TestCommand, 'build': ExtendedBuild}
 )
+
