@@ -4,7 +4,7 @@
 import sys, os
 from distutils.core import setup
 sys.path.append('../common')
-from setup_extensions import TestCommand
+from setup_ext.test import TestCommand
 
 from distutils.command.build import build as DistutilsBuild
 

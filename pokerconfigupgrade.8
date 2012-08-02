@@ -1,0 +1,79 @@
+.\"
+.\" Copyright (C) 2006 - 2010 Loic Dachary <loic@dachary.org>
+.\" Copyright (C) 2005, 2006 Mekensleep
+.\"
+.\" Mekensleep
+.\" 26 rue des rosiers
+.\" 75004 Paris
+.\"       licensing@mekensleep.com
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+.\"
+.\" Authors:
+.\"  Loic Dachary <loic@dachary.org>
+.\"
+.TH pokerconfigupgrade 8 local
+.SH NAME
+pokerconfigupgrade \- upgrade poker XML configuration files to match the software version
+
+.SH SYNOPSIS
+pokerconfigupgrade [--module=<python_module>] [--help] [--verbose=<level>] [--dry-run]
+                   [--upgrades=<directory>] [--reference=<directory>]
+                   [directory or file.xml] ...
+
+.SH DESCRIPTION
+
+Apply the XSL files found in the upgrades directory to upgrade the configuration files
+given in argument to reach the same version as the config software module.
+
+.SH OPTIONS
+
+.TP
+.B --upgrades=<directory>
+Get the XSL files from 
+.B <directory>.
+
+.TP
+.B --reference=<directory>
+Requires that a single directory is provided in argument. 
+The files that exist in 
+.B <directory> 
+but not in the target directory provided in argument are copied.
+The files that exist in the target directory but not in the reference
+are removed. The files that exists in both directories are upgraded
+if necessary.
+
+.TP
+.B --verbose=<level>
+Set the verbosity level. 0 (the default) means silent. 1 means print 
+comments about actions taken.
+
+.TP
+.B --module=<python_module>
+Use the 
+.B <python_module>.config
+module instead of the default pokerengine.pokerengineconfig module.
+
+.TP
+.B --dry-run
+Do not actually do the upgrade but run the code anyways.
+
+.TP
+.B --help
+Print help message and exit.
+.
+.SH AUTHORS
+
+Loic Dachary <loic@gnu.org>
