@@ -2513,15 +2513,18 @@ class PokerGame:
         )
         if player.isBot():
             actions = self.possibleActions(serial)
-        elif player.auto_play and (player.isSitOut() or player.isAuto()):
-            actions = self.possibleActions(serial)
-            if player.auto_player_policy == AUTO_PLAYER_POLICY_SIMPLE_BOT:
-                #
-                # A player who is sitting but not playing (sitOut) is played by a bot
-                # but should never raise.
-                #
-                actions = list(set(actions) - set(['raise']))
-            elif player.auto_player_policy == AUTO_PLAYER_POLICY_FOLD:
+        elif (player.isSitOut() or player.isAuto()):
+            if player.auto_play:
+                actions = self.possibleActions(serial)
+                if player.auto_player_policy == AUTO_PLAYER_POLICY_SIMPLE_BOT:
+                    #
+                    # A player who is sitting but not playing (sitOut) is played by a bot
+                    # but should never raise.
+                    #
+                    actions = list(set(actions) - set(['raise']))
+                elif player.auto_player_policy == AUTO_PLAYER_POLICY_FOLD:
+                    actions = ["fold"]
+            else:
                 actions = ["fold"]
         else:
             return

@@ -6105,6 +6105,22 @@ class PokerGameTestCase(unittest.TestCase):
 
         self.failUnless(expectedPlayers == self.game.sitCount())
 
+    def _didPlayerFold(self, player_id, allow_other_actions=True):
+        hist = self.game.historyGet()
+        didPlayerFold = False
+        other_actions = False
+        for line in hist:
+            if line[1] == player_id:
+                if line[0] in ('call','check','raise'):
+                    other_actions = True
+                if line[0] == 'fold':
+                    didPlayerFold = True
+        if didPlayerFold:
+            if not allow_other_actions and other_actions:
+                return False
+            return True
+        return False
+
     def testAutoPlayTourneyShouldFoldAfterSecondHand(self):
         players = self._autoPlayInit()
         self._autoPlay(doitL=(dict(actions={26:'autoPlayer',13:'autoPlayer'},),),
@@ -6112,18 +6128,25 @@ class PokerGameTestCase(unittest.TestCase):
             expectedPlayers=2)
         self.game.beginTurn(2)
         self._autoPlay(expectedPlayers=2)
-        hist = self.game.historyGet()
-        wrong = False
-        for line in hist:
-            if line[0] in ('call','check','raise') and line[1] == 26:
-                wrong = True
 
-        self.failIfEqual(wrong, True)
+        self.failUnless(self._didPlayerFold(26, False))
 
     def testAutoPlayPlayerShouldBeAbleToGetBackToTheGame(self):
         self._autoPlayInit()
         self._autoPlay(doitL=(dict(actions={26:'autoPlayer',13:'autoPlayer'},),), additional_packets=([('sitOutNextTurn',(26,))],None,[('sit',(26,))]), expectedPlayers=1)
         self.game.beginTurn(2)
+
+    def testAutoPlayPlayerShouldFoldIfSettingIsNotActive(self):
+        self._autoPlayInit()
+        self._autoPlay(additional_packets=(
+            [
+                ('sitOutNextTurn',(26,)),
+                ('autoPlay',(26, pokergame.AUTO_PLAY_NO))
+            ],
+            None,[('sit',(26,))]),expectedPlayers=1)
+        self.failIfEqual(self._didPlayerFold(26), False)
+
+        self.failUnless(self._didPlayerFold(26))
 
     def testAutoPlayPlayerShouldBeAbleToGetBackToTheGame(self):
         self._autoPlayInit()
