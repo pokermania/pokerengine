@@ -74,6 +74,7 @@ class TestPosition(unittest.TestCase):
         self.assert_(self.game.addPlayer(i))
         player = self.game.serial2player[i]
         player.money = initial_money
+        player.auto_play = 0
         player.buy_in_payed = True
         self.assert_(self.game.sit(i))
         player.auto_blind_ante = True
@@ -192,7 +193,7 @@ class TestPosition(unittest.TestCase):
         game.check(1)
         for stage in ("flop", "turn", "river"):
             self.assertEqual(game.state, stage)
-            self.assertEqual(game.last_to_talk, player[5]) # player[5] is gone, but a bot is still playing for him
+            self.assertEqual(game.last_to_talk, player[4])
             self.assertEqual(game.position, player[6]) # next to the dealer is gone, therefore it's the next to him
             for serial in (6, 1, 4):
                 self.assertEqual(game.position, player[serial])
