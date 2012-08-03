@@ -6078,6 +6078,7 @@ class PokerGameTestCase(unittest.TestCase):
         for serial in player_serials:
             players[serial] = self.AddPlayerAndSit(serial)
             players[serial].money = 200000000
+            players[serial].auto_play = pokergame.AUTO_PLAY_YES
             game.noAutoBlindAnte(serial)
 
         return players
