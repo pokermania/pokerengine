@@ -179,7 +179,7 @@ class PokerPlayer:
         self.auto = False
         self.auto_blind_ante = False
         self.auto_muck = AUTO_MUCK_ALWAYS  # AUTO_MUCK_NEVER, AUTO_MUCK_WIN, AUTO_MUCK_LOSE, AUTO_MUCK_ALWAYS
-        self.auto_play = AUTO_PLAY_YES
+        self.auto_play = AUTO_PLAY_NO
         self.auto_player_policy = DEFAULT_AUTOPLAYER_POLICY
         self.auto_player_fold_next_turn = False
         self.wait_for = False  # True, False, "late", "big", "first_round" ##
