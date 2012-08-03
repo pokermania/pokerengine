@@ -51,9 +51,18 @@ from pprint import pformat
 
 from copy import deepcopy
 from collections import defaultdict
+from functools import wraps
+
+def update_player_last_auto_move(fn):
+    @wraps(fn)
+    def new_function(self_, serial, *args, **kw):
+        val = fn(self_, serial, *args, **kw)
+        if val:
+            self_.last_auto_action[serial] = None
+        return val
+    return new_function
 
 gettext.bind_textdomain_codeset('poker-engine', 'UTF-8')
-
 
 def init_i18n(locale_dir, overrideTranslationFunction=None):
 
@@ -690,6 +699,7 @@ class PokerGame:
         self.raked_amount = 0
         self.forced_dealer_seat = -1
 
+        self.last_auto_action = {}
     
     def reset(self):
         self.state = GAME_STATE_NULL
@@ -2106,12 +2116,13 @@ class PokerGame:
     def inSmallBlindPosition(self):
         return self.indexInGameAdd(self.dealer, 1) == self.position
 
+    @update_player_last_auto_move
     def call(self, serial):
+        player = self.serial2player[serial]
         if self.isBlindAnteRound() or not self.canAct(serial):
             self.log.inform("player %d cannot call. state = %s", serial, self.state)
             return False
 
-        player = self.serial2player[serial]
         amount = min(
             max(
                 self.highestBetNotFold(),
@@ -2124,13 +2135,17 @@ class PokerGame:
         self.bet(serial, amount)
         return True
 
+    @update_player_last_auto_move
     def callNraise(self, serial, amount):
+        player = self.serial2player[serial]
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.log.inform("player %d cannot raise. state = %s", serial, self.state)
+            self.log.inform("player %d cannot raise. state = %s [last_auto_action=%r]",
+                serial, self.state, self.last_auto_action.get(serial))
             return False
 
         if self.round_cap_left <= 0:
-            self.log.inform("round capped, can't raise (ignored)")
+            self.log.inform("round capped, can't raise (ignored) [last_auto_action=%r]",
+                self.last_auto_action.get(serial))
             if self.round_cap_left < 0:
                 self.log.warn("round cap below zero")
             return False
@@ -2161,13 +2176,17 @@ class PokerGame:
         self.money2bet(serial, amount)
         self.__talked(serial)
 
+    @update_player_last_auto_move
     def check(self, serial):
+        player = self.serial2player[serial]
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.log.inform("player %d cannot check. state = %s (ignored)", serial, self.state)
+            self.log.inform("player %d cannot check. state = %s (ignored) [last_auto_action=%r]",
+                serial, self.state, self.last_auto_action.get(serial))
             return False
 
         if not self.canCheck(serial):
-            self.log.inform("player %d tries to check but should call or raise (ignored)", serial)
+            self.log.inform("player %d tries to check but should call or raise (ignored) [last_auto_action=%r]",
+                serial, self.last_auto_action.get(serial))
             return False
 
         self.log.debug("player %d checks" % serial)
@@ -2178,18 +2197,22 @@ class PokerGame:
         self.__talked(serial)
         return True
 
+    @update_player_last_auto_move
     def fold(self, serial):
+        player = self.serial2player[serial]
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.log.inform("player %d cannot fold. state = %s (ignored)", serial, self.state)
+            self.log.inform("player %d cannot fold. state = %s (ignored) [last_auto_action=%r]",
+                serial, self.state, self.last_auto_action.get(serial))
             return False
 
-        if self.serial2player[serial].fold == True:
-            self.log.inform("player %d already folded (presumably autoplay)", serial)
+        if player.fold == True:
+            self.log.inform("player %d already folded (presumably autoplay) [last_auto_action=%r]",
+                serial, self.last_auto_action.get(serial))
             return True
 
         self.log.debug("player %d folds", serial)
         self.historyAdd("fold", serial)
-        self.serial2player[serial].fold = True
+        player.fold = True
         #
         # His money goes to the pot
         #
@@ -2553,6 +2576,8 @@ class PokerGame:
                 # Test impossible
                 # The actions returned by the possibleActions method can not be somethin else than fold, chack, call or raise
                 self.log.warn("__autoPlay: unexpected actions = %s", actions)  # pragma: no cover
+
+            self.last_auto_action[serial] = desired_action
 
     def hasLow(self):
         return "low" in self.win_orders
