@@ -612,8 +612,6 @@ def history2messages(game, history, serial2name=str, pocket_messages=False):
             pass
         elif event_type == "sit":
             pass
-        elif event_type == "AutoPlayPolicy":
-            pass
         else:
             engine_log.warn("history2messages: unknown history type %s", event_type)
 
@@ -912,9 +910,7 @@ class PokerGame:
         if self.isRunning() and self.isBlindAnteRound():
             self.historyAdd("sit", serial, player.wait_for)
         player.auto_player_fold_next_turn = False
-        if player.auto_player_policy != DEFAULT_AUTOPLAYER_POLICY:
-            player.auto_player_policy = DEFAULT_AUTOPLAYER_POLICY
-            self.historyAdd("autoPlayerPolicy", serial, DEFAULT_AUTOPLAYER_POLICY)
+        player.auto_player_policy = DEFAULT_AUTOPLAYER_POLICY
         return True
 
     def sitRequested(self, serial):
@@ -1063,7 +1059,7 @@ class PokerGame:
             self.__autoPlay()
 
     def noAutoPlayer(self, serial):
-        self.log.inform("noAutoPlayer: player %d", serial)
+        self.log.debug("noAutoPlayer: player %d", serial)
         player = self.getPlayer(serial)
         if player:
             player.auto = False
@@ -1823,9 +1819,7 @@ class PokerGame:
         # (regardless of the fact that a new player may join later)
         #
         sitting_out = []
-        self.log.debug('---- playersALL %r' % self.playersAll())
         for player in self.playersAll():
-            self.log.debug(':(%s) %s' % (player.serial, player.auto_player_fold_next_turn))
             if player.sit_out_next_turn:
                 self.historyAdd("sitOut", player.serial)
                 self.sitOut(player.serial)
@@ -1836,10 +1830,9 @@ class PokerGame:
                     self.sitOut(player.serial)
                     sitting_out.append(player.serial)
             if player.auto_player_fold_next_turn:
-                self.log.debug(': foldpolicy')
-                self.historyAdd("AutoPlayPolicy", player.serial, "fold")
+                self.log.debug("setting player %d on auto_player_policy %s", player.serial, AUTO_PLAYER_POLICY_FOLD)
                 player.auto_player_fold_next_turn = False
-                player.auto_player_policy = 'fold'
+                player.auto_player_policy = AUTO_PLAYER_POLICY_FOLD
 
         disconnected = self.playersDisconnected()
         if disconnected:
@@ -1860,8 +1853,8 @@ class PokerGame:
         #
         # Forget about him
         #
-        if serial in self.player_list:
-            self.player_list.remove(serial)
+        if serial in self.player_list: self.player_list.remove(serial)
+        if serial in self.last_auto_action: del self.last_auto_action[serial]
         del self.serial2player[serial]
 
     def isBlindAnteRound(self):
@@ -2144,24 +2137,26 @@ class PokerGame:
 
     @update_player_last_auto_move
     def callNraise(self, serial, amount):
-        player = self.serial2player[serial]
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.log.inform("player %d cannot raise. state = %s [last_auto_action=%r]",
-                serial, self.state, self.last_auto_action.get(serial))
+            self.log.inform(
+                "player %d cannot raise. state = %s, last_auto_action = %s",
+                serial, self.state, self.last_auto_action.get(serial)
+            )
             return False
 
         if self.round_cap_left <= 0:
-            self.log.inform("round capped, can't raise (ignored) [last_auto_action=%r]",
-                self.last_auto_action.get(serial))
+            self.log.inform(
+                "round capped, cannot raise. last_auto_action = %s (ignored)",
+                self.last_auto_action.get(serial)
+            )
             if self.round_cap_left < 0:
                 self.log.warn("round cap below zero")
             return False
 
-        (min_bet, max_bet, to_call) = self.betLimits(serial)
-        if amount < min_bet:
-            amount = min_bet
-        elif amount > max_bet:
-            amount = max_bet
+        (min_bet, max_bet, _to_call) = self.betLimits(serial)
+        if amount < min_bet: amount = min_bet
+        elif amount > max_bet: amount = max_bet
+        
         self.log.debug("player %d raises %d", serial, amount)
         self.historyAdd("raise", serial, amount)
         highest_bet = self.highestBetNotFold()
@@ -2185,15 +2180,18 @@ class PokerGame:
 
     @update_player_last_auto_move
     def check(self, serial):
-        player = self.serial2player[serial]
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.log.inform("player %d cannot check. state = %s (ignored) [last_auto_action=%r]",
-                serial, self.state, self.last_auto_action.get(serial))
+            self.log.inform(
+                "player %d cannot check. state = %s. last_auto_action = %s (ignored)",
+                serial, self.state, self.last_auto_action.get(serial)
+            )
             return False
 
         if not self.canCheck(serial):
-            self.log.inform("player %d tries to check but should call or raise (ignored) [last_auto_action=%r]",
-                serial, self.last_auto_action.get(serial))
+            self.log.inform(
+                "player %d tries to check but should call or raise. last_auto_action = %s (ignored)",
+                serial, self.last_auto_action.get(serial)
+            )
             return False
 
         self.log.debug("player %d checks" % serial)
@@ -2208,13 +2206,17 @@ class PokerGame:
     def fold(self, serial):
         player = self.serial2player[serial]
         if self.isBlindAnteRound() or not self.canAct(serial):
-            self.log.inform("player %d cannot fold. state = %s (ignored) [last_auto_action=%r]",
-                serial, self.state, self.last_auto_action.get(serial))
+            self.log.inform(
+                "player %d cannot fold. state = %s, last_auto_action = %s (ignored)",
+                serial, self.state, self.last_auto_action.get(serial)
+            )
             return False
 
         if player.fold == True:
-            self.log.inform("player %d already folded (presumably autoplay) [last_auto_action=%r]",
-                serial, self.last_auto_action.get(serial))
+            self.log.inform(
+                "player %d already folded (presumably autoplay). last_auto_action = %s",
+                serial, self.last_auto_action.get(serial)
+            )
             return True
 
         self.log.debug("player %d folds", serial)
@@ -2237,9 +2239,7 @@ class PokerGame:
         if not self.canAct(serial):
             self.log.inform(
                 "player %d cannot wait for blind. state = %s, serial in position = %d (ignored)",
-                serial,
-                self.state,
-                self.getSerialInPosition()
+                serial, self.state, self.getSerialInPosition()
             )
             return False
         player = self.serial2player[serial]
@@ -2258,10 +2258,13 @@ class PokerGame:
             self.log.inform("player %d cannot pay blind while in state %s", serial, self.state)
             return False
         if not self.canAct(serial):
-            self.log.inform("player %d cannot pay blind. state = %s, serial in position = %d (ignored)", serial, self.state, self.getSerialInPosition())
+            self.log.inform(
+                "player %d cannot pay blind. state = %s, serial in position = %d (ignored)", 
+                serial, self.state, self.getSerialInPosition()
+            )
             return False
         if self.is_directing and amount == 0:
-            (amount, dead, state) = self.blindAmount(serial)
+            (amount, dead, _state) = self.blindAmount(serial)
         self.payBlind(serial, amount, dead)
         if self.is_directing:
             self.__talkedBlindAnte()
@@ -2309,9 +2312,7 @@ class PokerGame:
             return False
         if not self.canAct(serial):
             self.log.inform("player %d cannot pay ante. state = %s, serial in position = %d (ignored)",
-                serial,
-                self.state,
-                self.getSerialInPosition()
+                serial, self.state, self.getSerialInPosition()
             )
             return False
         if self.is_directing and amount == 0:
@@ -2542,30 +2543,31 @@ class PokerGame:
             )
         )
         if player.isBot():
-            actions = self.possibleActions(serial)
+            actions = set(self.possibleActions(serial))
         elif (player.isSitOut() or player.isAuto()):
             if player.auto_play:
-                actions = self.possibleActions(serial)
+                actions = set(self.possibleActions(serial))
                 if player.auto_player_policy == AUTO_PLAYER_POLICY_SIMPLE_BOT:
                     #
                     # A player who is sitting but not playing (sitOut) is played by a bot
                     # but should never raise.
                     #
-                    actions = list(set(actions) - set(['raise']))
+                    actions -= set(['raise'])
                 elif player.auto_player_policy == AUTO_PLAYER_POLICY_FOLD:
-                    actions = ["fold"]
+                    actions = set(["fold"])
             else:
-                actions = ["fold"]
+                actions = set(["fold"])
         else:
             return
 
         if actions:
             if player.raise_count >= 3:
-                actions = list(set(actions) - set(['raise']))
-            (desired_action, ev) = self.__botEval(serial)
-            self.log.inform("__autoPlay desired action %s" % desired_action)
+                actions -= set(['raise'])
+            (desired_action, _ev) = self.__botEval(serial)
+            self.log.debug("__autoPlay desired action %s", desired_action)
+            # try to find the next best action if not found in possible actions
             while not desired_action in actions:
-                self.log.inform(" autoPlay: desired action (%s) is not available %s" %(desired_action, actions))
+                self.log.debug("__autoPlay: desired action %s is not in available actions %s", desired_action, actions)
                 if desired_action == "check":
                     desired_action = "fold"
                 elif desired_action == "call":
@@ -2585,7 +2587,7 @@ class PokerGame:
                 # Test impossible
                 # The actions returned by the possibleActions method can not be somethin else than fold, chack, call or raise
                 self.log.warn("__autoPlay: unexpected actions = %s", actions)  # pragma: no cover
-
+            # update last_auto_action with the action taken
             self.last_auto_action[serial] = desired_action
 
     def hasLow(self):
