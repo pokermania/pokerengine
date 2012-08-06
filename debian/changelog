@@ -1,3 +1,12 @@
+poker-engine (1.5.2-1) pokermania; urgency=low
+
+  * e6ff0c6 removed python-all dependency
+  * b0fd732 If the response of a user will be delayed we can see in the logs if his response will differ from the bots choice.
+  * df120d6 autoplay instead of fold (for the first hand only)
+  * 21c0ebb no more .in files in tests..
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Tue, 07 Aug 2012 01:55:26 +0200
+
 poker-engine (1.5.1-1) pokermania; urgency=low
 
   * 27f2def game.__removePlayer removes player also from .players, fixes #6089
