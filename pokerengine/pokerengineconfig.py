@@ -61,8 +61,8 @@ class Config:
         self.header = self.doc.xpathNewContext()
 
     def load(self, path):
-        for dir in self.dirs:
-            tmppath = abspath(expanduser(dir and (dir + "/" + path) or path ))
+        for prefix in self.dirs:
+            tmppath = abspath(expanduser((prefix + "/" + path) if prefix else path ))
             if exists(tmppath):
                 self.path = tmppath
                 break
@@ -107,11 +107,11 @@ class Config:
 
     def upgrade(self, version_attribute, file_version, software_version, upgrades_repository):
         if upgrades_repository and os.path.exists(upgrades_repository):
-            files = map(lambda file: upgrades_repository + "/" + file, os.listdir(upgrades_repository))
-            files = filter(lambda file: isfile(file) and ".xsl" in file, files)
-            for file in file_version.upgradeChain(software_version, files):
-                log.inform("upgrade: '%s' with '%s'", self.path, file)
-                styledoc = libxml2.parseFile(file)
+            files = map(lambda f: upgrades_repository + "/" + f, os.listdir(upgrades_repository))
+            files = filter(lambda f: isfile(f) and ".xsl" in f, files)
+            for upgradefile in file_version.upgradeChain(software_version, files):
+                log.inform("upgrade: '%s' with '%s'", self.path, upgradefile)
+                styledoc = libxml2.parseFile(upgradefile)
                 style = libxslt.parseStylesheetDoc(styledoc)
                 result = style.applyStylesheet(self.doc, None)
                 if not self.upgrade_dry_run:
@@ -147,7 +147,7 @@ class Config:
         
     def headerGet(self, name):
         results = self.header.xpathEval(name)
-        return results and results[0].content or ""
+        return results[0].content if results else ""
         
     def headerSet(self, name, value):
         results = self.header.xpathEval(name)
@@ -161,8 +161,8 @@ class Config:
 
     def headerNodeProperties(self, node):
         result = {}
-        property = node.properties
-        while property != None:
-            result[property.name] = property.content
-            property = property.next
+        properties = node.properties
+        while properties != None:
+            result[properties.name] = properties.content
+            properties = properties.next
         return result
