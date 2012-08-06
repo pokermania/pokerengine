@@ -3,7 +3,7 @@
 
     <description>No limit tournament</description>
 
-    <blind change="levels" frequency="8" unit="minutes" levels="poker.levels-blinds.xml" />
+    <blind change="levels" frequency="8" unit="hands" levels="poker.levels-blinds.xml" />
 
     <all_in method="side"/> 
 

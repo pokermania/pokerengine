@@ -56,6 +56,12 @@ from functools import wraps
 def update_player_last_auto_move(fn):
     @wraps(fn)
     def new_function(self_, serial, *args, **kw):
+        player = self_.serial2player.get(serial)
+        if player:
+            if 'raise' in fn.__name__:
+                player.raise_count += 1
+            else:
+                player.raise_count = 0
         val = fn(self_, serial, *args, **kw)
         if val:
             self_.last_auto_action[serial] = None
@@ -207,6 +213,7 @@ class PokerPlayer:
         self.dead = 0
         self.talked_once = False
         self.user_data = None
+        self.raise_count = 0
 
     def copy(self):
         other = PokerPlayer(self.serial, self.name, self.game)
@@ -2553,6 +2560,8 @@ class PokerGame:
             return
 
         if actions:
+            if player.raise_count >= 3:
+                actions = list(set(actions) - set(['raise']))
             (desired_action, ev) = self.__botEval(serial)
             self.log.inform("__autoPlay desired action %s" % desired_action)
             while not desired_action in actions:
