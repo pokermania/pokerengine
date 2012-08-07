@@ -30,7 +30,6 @@ from os import path
 TESTS_PATH = path.dirname(path.realpath(__file__))
 sys.path.insert(0, path.join(TESTS_PATH, ".."))
 
-from tests.testmessages import get_messages, clear_all_messages
 import logging
 from tests.testmessages import TestLoggingHandler
 logger = logging.getLogger()
@@ -154,8 +153,6 @@ class PokerPrizesTestCase(unittest.TestCase):
         self.assertEquals(v.player_count, 3)
         self.assertEquals(v.guarantee_amount, 100)
 
-        clear_all_messages()
-
         exceptCaught = False
         try:
             v.getPrizes()
@@ -164,7 +161,6 @@ class PokerPrizesTestCase(unittest.TestCase):
             exceptCaught = True
             self.assertEquals(nie.__str__(), 'getPrizes NOT IMPLEMENTED IN ABSTRACT BASE CLASS')
         self.failUnless(exceptCaught)
-        self.assertEquals(get_messages(), ['getPrizes NOT IMPLEMENTED IN ABSTRACT BASE CLASS'])
 # ---------------------------------------------------------
 def GetTestSuite():
     suite = unittest.TestSuite()
