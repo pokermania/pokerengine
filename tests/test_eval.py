@@ -76,21 +76,22 @@ class TestPosition(unittest.TestCase):
         game.beginTurn(1)
         for serial in (2, 3, 4, 5):
             player[serial].hand = self.make_cards('__', '__')
+
         player[1].hand = self.make_cards('Ad', 'As')
-        self.assertIn(game.handEV(1, 100000), range(540,570) )
+        self.assertTrue(540 <= game.handEV(1, 100000) <= 570)
         player[1].hand = self.make_cards('2c', '7s')
-        self.assertIn(game.handEV(1, 100000), range(100,120) )
+        self.assertTrue(100 <= game.handEV(1, 100000) <= 120)
         game.board = self.make_cards('2c', '3c', '4s')
         player[1].hand = self.make_cards('2s', '7s')
-        self.assertIn(game.handEV(1, 100000), range(160,180) )
+        self.assertTrue(160 <= game.handEV(1, 100000) <= 180)
 
         game.board = self.make_cards('2c', '3c', '4s', '4c')
         player[1].hand = self.make_cards('2s', '7s')
-        self.assertIn(game.handEV(1, 100000), range(70,80) )
+        self.assertTrue(70 <= game.handEV(1, 100000) <= 80)
 
         game.board = self.make_cards('2c', '3c', '4s', '4c', 'Kc')
         player[1].hand = self.make_cards('2s', '7s')
-        self.assertIn(game.handEV(1, 100000), range(3,9))
+        self.assertTrue(3 <= game.handEV(1, 100000) <= 9)
 
 def GetTestSuite():
     suite = unittest.TestSuite()
