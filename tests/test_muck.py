@@ -221,7 +221,12 @@ def GetTestSuite():
     return suite
 
 def run():
-    unittest.TextTestRunner().run(GetTestSuite())
+    try:
+        import xmlrunner
+        runner = xmlrunner.XMLTestRunner(output='build/tests')
+    except ImportError:
+        runner = unittest.TextTestRunner()
+    runner.run(GetTestSuite())
     
 if __name__ == '__main__':
     run()
