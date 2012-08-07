@@ -1,3 +1,9 @@
+poker-engine (1.5.2-2) pokermania; urgency=low
+
+  * fe93b0a python 2.6 compat
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Tue, 07 Aug 2012 02:24:30 +0200
+
 poker-engine (1.5.2-1) pokermania; urgency=low
 
   * e6ff0c6 removed python-all dependency
