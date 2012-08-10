@@ -741,9 +741,10 @@ class PokerGame:
     def close(self):
         self.is_open = False
 
-    def setMaxPlayers(self, max_players):
-        self.max_players = max_players
-        if (self.max_players < 2) or (self.max_players > ABSOLUTE_MAX_PLAYERS):
+    def setMaxPlayers(self, _max):
+        if 2 <= _max <= ABSOLUTE_MAX_PLAYERS:
+            self.max_players = _max
+        else:
             self.log.warn("The number of players must be between %d and %d", 2, ABSOLUTE_MAX_PLAYERS)
             self.max_players = 0
         self.resetSeatsLeft()
@@ -1496,7 +1497,7 @@ class PokerGame:
 
     def blindAmount(self, serial):
         if self.blind_info:
-            player = self.getPlayer(serial)
+            player = self.serial2player[serial]
             big = self.blind_info["big"]
             small = self.blind_info["small"]
             if player.blind == "big":
@@ -1507,7 +1508,7 @@ class PokerGame:
                 return (small, 0, player.blind)
             elif player.blind == "big_and_dead":
                 return (big, small, player.blind)
-            elif type(player.blind) == bool: # i.e. True or False
+            elif player.blind in (True, False):
                 return (0, 0, player.blind)
             else:
                 self.log.warn("blindAmount unexpected condition for player %d", player.serial)
