@@ -6132,11 +6132,6 @@ class PokerGameTestCase(unittest.TestCase):
 
         self.failUnless(self._didPlayerFold(26, False))
 
-    def testAutoPlayPlayerShouldBeAbleToGetBackToTheGame(self):
-        self._autoPlayInit()
-        self._autoPlay(doitL=(dict(actions={26:'autoPlayer',13:'autoPlayer'},),), additional_packets=([('sitOutNextTurn',(26,))],None,[('sit',(26,))]), expectedPlayers=1)
-        self.game.beginTurn(2)
-
     def testAutoPlayPlayerShouldFoldIfSettingIsNotActive(self):
         self._autoPlayInit()
         self._autoPlay(additional_packets=(
