@@ -89,16 +89,9 @@ class TestSit(unittest.TestCase):
         self.bot_players()
 
         #
-        # Next round the new player is waiting for the late blind
+        # Next round the new player is waiting for the late blind, and pays it
         #
         self.game.beginTurn(2)
-        self.assertEqual(self.game.player_list, [1,2])
-        self.pay_blinds()
-
-        #
-        # This round the new player is in
-        #
-        self.game.beginTurn(3)
         self.assertEqual(self.game.player_list, [1,2,3])
         self.pay_blinds()
 
