@@ -1144,7 +1144,7 @@ def run():
         runner = xmlrunner.XMLTestRunner(output='build/tests')
     except ImportError:
         runner = unittest.TextTestRunner()
-    return runner.run(GetTestSuite)
+    return runner.run(GetTestSuite())
     
 if __name__ == '__main__':
     if run().wasSuccessful():
