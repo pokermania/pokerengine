@@ -6199,10 +6199,6 @@ class PokerGameTestCase(unittest.TestCase):
         self._autoPlayInit()
         self._autoPlay(additional_packets=([('sitOutNextTurn',(26,))],None,[('sit',(26,))]),expectedPlayers=2)
 
-    def testAutoPlayPlayerShouldBeAbleToGetBackToTheGame_(self):
-        self._autoPlayInit()
-        self._autoPlay(additional_packets=([('sitOutNextTurn',(26,))],None,[('sit',(26,))]),expectedPlayers=2)
-
     def testAutoPlayShouldEndAfterOneHandTournament(self):
         self._autoPlayInit()
         self._autoPlay(expectedPlayers=2)
