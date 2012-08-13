@@ -586,7 +586,7 @@ class TestBlinds(unittest.TestCase):
                 (False,   None,  False, 0),
                 ("late",  "n/a", False, 0),
                 ("late",  "n/a", False, 0),
-                (False,   None,  False, 0),
+                (True,   None,  False, 0),
                 ])
     # --------------------------------------------------------------------------
     def test9_fivePlayers_missedBothBlinds_onlyBigRequired(self):
