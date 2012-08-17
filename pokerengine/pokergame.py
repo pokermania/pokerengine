@@ -741,9 +741,9 @@ class PokerGame:
     def close(self):
         self.is_open = False
 
-    def setMaxPlayers(self, _max):
-        if 2 <= _max <= ABSOLUTE_MAX_PLAYERS:
-            self.max_players = _max
+    def setMaxPlayers(self, max_players):
+        if 2 <= max_players <= ABSOLUTE_MAX_PLAYERS:
+            self.max_players = max_players
         else:
             self.log.warn("The number of players must be between %d and %d", 2, ABSOLUTE_MAX_PLAYERS)
             self.max_players = 0
