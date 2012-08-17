@@ -1542,6 +1542,16 @@ class PokerGame:
                 # the blind/ante round is over.
                 #
                 continue
+            if self.ante_info and player.ante == False:
+                self.historyAddNoDuplicate("position", self.position, self.player_list[self.position])
+                if player.isAutoBlindAnte():
+                    self.payAnte(serial, self.ante_info["value"])
+                    auto_payed = True
+                else:
+                    self.historyAdd("ante_request", serial, self.ante_info["value"])
+                    auto_payed = False
+                    break
+            
             if self.blind_info:
                 (amount, dead, state) = self.blindAmount(serial)
                 if amount > 0:
@@ -1553,15 +1563,6 @@ class PokerGame:
                         self.historyAdd("blind_request", serial, amount, dead, state)
                         auto_payed = False
                         break
-            if self.ante_info and player.ante == False:
-                self.historyAddNoDuplicate("position", self.position, self.player_list[self.position])
-                if player.isAutoBlindAnte():
-                    self.payAnte(serial, self.ante_info["value"])
-                    auto_payed = True
-                else:
-                    self.historyAdd("ante_request", serial, self.ante_info["value"])
-                    auto_payed = False
-                    break
             if self.isBlindAntePayed():
                 break
 
@@ -3480,6 +3481,7 @@ class PokerGame:
                 self.uncalled = highest_bet - player.bet
             if player.bet == highest_bet:
                 self.uncalled_serial = player.serial
+                
 
     def updatePots(self, serial, amount):
         pot_index = len(self.side_pots['pots']) - 1

@@ -6105,6 +6105,27 @@ class PokerGameTestCase(unittest.TestCase):
      
         self.assertEqual(game.player_list,[1,2,3])
         
+    def testBlindAndAnteTogetherAllIn(self):
+        game = self.game
+        game.variant = 'holdem'
+        game.setMaxPlayers(9)
+        game.blind_info = False
+        game.blind_info = {'small': 2000,'big': 4000,'change': False}
+        game.ante_info = {'value': 100, 'bring-in': 500, 'change': False}
+        game.best_buy_in = 10000
+
+        players = {}
+        serials = [10, 20]
+        money = [5000, 10000]
+        for s,m in zip(serials,money):
+            players[s] = self.AddPlayerAndSit(s)
+            game.autoBlindAnte(s)
+            players[s].money = m
+        
+        game.beginTurn(1)
+        game.callNraise(20, 20000)
+        game.call(10)
+    
     def _autoPlayTurn(self, actions={}, default_action='fold', additional_packets=None, expect=True):
         state = self.game.state
         if additional_packets:
