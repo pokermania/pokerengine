@@ -1850,7 +1850,8 @@ class PokerGame:
         #
         self.log.debug("removing player %d from game", serial)
         if not self.serial2player[serial].seat in self.seats_left:
-            self.seats_left.insert(0, self.serial2player[serial].seat)
+            self.seats_left.append(self.serial2player[serial].seat)
+            self.seats_left.sort(key=self.seats_all.index)
         else:
             self.log.inform("%d alreay in seats_left", self.serial2player[serial].seat)
         #

@@ -363,7 +363,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnless(self.game.addPlayer(2,7))
         self.failUnless(self.game.isSeated(2))
         self.failUnlessEqual(self.game.seatsLeftCount(), 0)
-        
+    
     # ---------------------------------------------------------    
     def testPokerGameAddPlayerClientGame(self):
         """Test Poker Game : Add a player client game"""
@@ -434,6 +434,23 @@ class PokerGameTestCase(unittest.TestCase):
         seats = self.game.seats()
         self.failUnlessEqual(seats[2], 1)
         self.failUnlessEqual(seats[7], 2)
+        
+    def testPokerGameSeatsAreDeterministic(self):
+        game = self.game
+        game.variant = 'holdem'
+        game.setMaxPlayers(3)
+        self.assertEqual(game.seats_all, [2,7,5])
+        self.assertEqual(game.seats_left, [2,7,5])
+        
+        self.AddPlayerAndSit(1, 2)
+        self.AddPlayerAndSit(2, 5)
+        self.assertEqual(game.seats_left, [7])
+        
+        game.removePlayer(2)
+        self.assertEqual(game.seats_left, [7,5])
+        
+        player3 = self.AddPlayerAndSit(3)
+        self.assertEqual(player3.seat, 7)
         
     # ---------------------------------------------------------    
     def testPokerGamePlayerCanComeBack(self):
@@ -4426,7 +4443,7 @@ class PokerGameTestCase(unittest.TestCase):
         
         # The player seat is now left
         self.failUnlessEqual(self.game.seatsLeftCount(), 2)
-        self.failUnlessEqual(self.game.seats_left, [7, 2])
+        self.failUnlessEqual(self.game.seats_left, [2, 7])
         
         # Add two players on the same seat
         player1 = self.AddPlayerAndSit(1)
@@ -6087,7 +6104,6 @@ class PokerGameTestCase(unittest.TestCase):
             game.autoBlindAnte(serial)
      
         self.assertEqual(game.player_list,[1,2,3])
-        
         
     def _autoPlayTurn(self, actions={}, default_action='fold', additional_packets=None, expect=True):
         state = self.game.state
