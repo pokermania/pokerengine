@@ -4027,7 +4027,7 @@ class PokerGame:
         return event[0] in ("showdown","muck") or (event[0]=="round" and event[1] != GAME_STATE_BLIND_ANTE)
     
     @staticmethod
-    def _historyReduce(turn_history,money_map,in_place=False):
+    def _historyReduce(turn_history, money_map, in_place=False):
         player_list_index = 7
         serial2chips_index = 9
         
@@ -4090,7 +4090,7 @@ class PokerGame:
             else:
                 remove_indexes.append(p_index)
         #
-        # actually delete all obsolete elements
+        # delete all obsolete elements
         for index in sorted(remove_indexes,reverse=True):
             del turn_history[index]
         
