@@ -1,6 +1,7 @@
 locale usr/share
 pokerconfigupgrade usr/sbin
 pokerconfigupgrade.8 usr/share/man/man8
-conf/*.xml usr/share/poker-engine/conf
 conf/*.xml etc/poker-engine
+conf/*.xml usr/share/poker-engine/conf
+upgrades usr/share/poker-engine
 AUTHORS README usr/share/doc/python-poker-engine
