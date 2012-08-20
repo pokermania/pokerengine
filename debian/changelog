@@ -1,3 +1,19 @@
+poker-engine (1.5.2-4) pokermania; urgency=low
+
+  * e294465 activate buildconf in setup.py
+  * 9dfc77a delete betting structures that can be generated. generate them with the makefile
+  * df336a0 changed pokerengine version number in __init__
+  * 48080b2 upgrades folder is recreated
+  * eba44f1 call ante before blind, fixes #6496
+  * 345d4a9 getting a seat deterministically returns the next best seat
+  * 1753b9c fix test8 in test_blinds #6402
+  * 5e34004 reset index after small/big blind for late blind, refs #6402
+  * daed517 removed all pokermania betting structures
+  * 1eea417 Changing the test, so that they produce a jenkins compatible xml file
+  * cf590b6 python-coverage 2.x compat
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Mon, 20 Aug 2012 20:36:23 +0200
+
 poker-engine (1.5.2-3) pokermania; urgency=low
 
   * cf590b6 python-coverage 2.x compat
