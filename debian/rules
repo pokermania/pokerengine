@@ -12,6 +12,6 @@ locales:
 	cd po ; make
 
 override_dh_auto_test: locales
-	$(COVERAGE) -x setup.py test
+	$(COVERAGE) -x setup.py test -f
 	$(COVERAGE) -r pokerengine/*.py
 	rm .coverage

@@ -2,7 +2,7 @@ Source: poker-engine
 Section: python
 Priority: optional
 Maintainer: Hannes <hannes@pokermania.de>
-Build-Depends: debhelper, python (>= 2.6.6), python-libxml2, python-libxslt1, python-pypoker-eval (>= 132.0), python-poker-reflogging, rsync, python-coverage
+Build-Depends: debhelper, python (>= 2.6.6), python-libxml2, python-libxslt1, python-pypoker-eval (>= 132.0), python-poker-reflogging, rsync, python-coverage, python-poker-distutils (>=0.1.1-1)
 Standards-Version: 3.9.1
 Homepage: http://github.com/pokermania/poker-network
 

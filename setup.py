@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys, os
+import os
 from distutils.core import setup
-sys.path.append('../common')
-from setup_ext.test import TestCommand
 
 from distutils.command.build import build as DistutilsBuild
 
@@ -19,6 +17,6 @@ setup(
     name = 'poker-engine',
     version = '1.4.5',
     packages = ['pokerengine'],
-    cmdclass = {'test': TestCommand, 'build': ExtendedBuild}
+    cmdclass = {'build': ExtendedBuild}
 )
 
