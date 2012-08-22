@@ -235,6 +235,7 @@ class PokerTournament:
         self.players_min = kwargs.get('players_min', 2)
         self.variant = kwargs.get('variant', 'holdem')
         self.betting_structure = kwargs.get('betting_structure', 'level-15-30-no-limit')
+        self.skin = kwargs.get('skin', 'default')
         self.dirs = kwargs.get('dirs', [])
         self.seats_per_game = kwargs.get('seats_per_game', 10)
         self.sit_n_go = kwargs.get('sit_n_go', 'y')
