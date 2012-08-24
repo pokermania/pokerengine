@@ -6125,43 +6125,48 @@ class PokerGameTestCase(unittest.TestCase):
         game.callNraise(20, 20000)
         game.call(10)
         
-    def testAutoAuto(self):
+    def testSitBeforeBlindAndAllSitOutAfterwards(self):
         game = self.game
         game.variant = 'holdem'
         game.setMaxPlayers(9)
-        players = {}
-        serials = [11603, 11173, 11172]
         
-        players[11603] = self.AddPlayerAndSit(11603)
+        # add player 10
+        player10 = self.AddPlayerAndSit(10)
         
-        self.assertTrue(game.addPlayer(11173))
-        self.assertTrue(game.payBuyIn(11173,game.bestBuyIn()))
-        players[11173] = self.GetPlayer(11173)
+        # add player 20, but don't get a seat just yet
+        self.assertTrue(game.addPlayer(20))
+        self.assertTrue(game.payBuyIn(20, game.bestBuyIn()))
+        player20 = self.GetPlayer(20)
 
-        players[11172] = self.AddPlayerAndSit(11172)
+        # add player 30
+        player30 = self.AddPlayerAndSit(30)
 
-        for serial in serials:
-            game.noAutoBlindAnte(serial)
-        
+        # change the seat and begin the turn
         game.forced_dealer_seat = 2
         game.beginTurn(1)
         
-        self.assertTrue(game.sit(11173))
+        # we did not activate autoblindante, so we are still in the blind ante round
+        self.assertTrue(game.isBlindAnteRound())
+        
+        # before any blinds are payed, player 20 is seated
+        self.assertTrue(game.sit(20))
 
-        game.blind(11603)
+        # pay small and big blinds
+        game.blind(10)
+        game.blind(30)
         
-        game.blind(11172)
+        # the game should still be in the blindAnteRound, because player 20 is missing
+        self.assertTrue(game.isBlindAnteRound())
         
+        # player 20 is set on auto, i.e. he folds, because we are still in blind/ante
+        game.autoPlayer(20)
         
-        game.sitOutNextTurn(11173)
-        game.autoPlayer(11173)
+        # the game should be in its first round now
+        self.assertTrue(game.isFirstRound())
         
-        game.sitOutNextTurn(11603)
-        game.autoPlayer(11603)
-        
-        game.sitOutNextTurn(11172)
-        game.autoPlayer(11172)
-        
+        # the other players are set on autoplay and should now finish the round
+        game.fold(10)
+        self.assertTrue(game.isEndOrNull())
     
     
     def _autoPlayTurn(self, actions={}, default_action='fold', additional_packets=None, expect=True):
