@@ -2391,10 +2391,10 @@ class PokerGame:
 
         if self.isBlindAntePayed():
             #
-            # Once the blind and antes are payed, it may be necessary to
-            # recompute the list of players willing to participate in the
-            # turn. Some of them may have declined to pay the blind/ante
-            # and thus excluded themselves from the turn.
+            # It is necessary to recompute the list of players willing to 
+            # participate in the turn. Some of them may have declined to 
+            # pay the blind/ante and thus excluded themselves from the turn,
+            # while other could have joined just beofore/during the blind/ante turn.
             #
             player_list = self.player_list[:]
             self.buildPlayerList(False)
@@ -2404,6 +2404,15 @@ class PokerGame:
                     if player.wait_for:
                         self.historyAdd("wait_for", serial, player.wait_for)
                 self.historyAdd("player_list", self.player_list)
+        
+        #
+        # If self.player_list was rebuilt, and new players were added,
+        # it can happen that now these new players did not yet pay the blind/ante,
+        # If the block above is executed unconditionally, we rebuild the player_list
+        # more often and too early than needed.
+        # Because of this we have to check twice for isBlindAntePayed.
+        #
+        if self.isBlindAntePayed():
             self.dealerFromDealerSeat()
             self.first_turn = False
             if self.inGameCount() < 2 and self.betsEqual():

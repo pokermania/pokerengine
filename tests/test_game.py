@@ -5993,7 +5993,6 @@ class PokerGameTestCase(unittest.TestCase):
         # 3 has to pay the blind now
         self.game.blind(300)
         if self.game.historyCanBeReduced(): self.game.historyReduce()
-
         self.failUnless(self.game.isFirstRound())
         
         
@@ -6125,6 +6124,45 @@ class PokerGameTestCase(unittest.TestCase):
         game.beginTurn(1)
         game.callNraise(20, 20000)
         game.call(10)
+        
+    def testAutoAuto(self):
+        game = self.game
+        game.variant = 'holdem'
+        game.setMaxPlayers(9)
+        players = {}
+        serials = [11603, 11173, 11172]
+        
+        players[11603] = self.AddPlayerAndSit(11603)
+        
+        self.assertTrue(game.addPlayer(11173))
+        self.assertTrue(game.payBuyIn(11173,game.bestBuyIn()))
+        players[11173] = self.GetPlayer(11173)
+
+        players[11172] = self.AddPlayerAndSit(11172)
+
+        for serial in serials:
+            game.noAutoBlindAnte(serial)
+        
+        game.forced_dealer_seat = 2
+        game.beginTurn(1)
+        
+        self.assertTrue(game.sit(11173))
+
+        game.blind(11603)
+        
+        game.blind(11172)
+        
+        
+        game.sitOutNextTurn(11173)
+        game.autoPlayer(11173)
+        
+        game.sitOutNextTurn(11603)
+        game.autoPlayer(11603)
+        
+        game.sitOutNextTurn(11172)
+        game.autoPlayer(11172)
+        
+    
     
     def _autoPlayTurn(self, actions={}, default_action='fold', additional_packets=None, expect=True):
         state = self.game.state
