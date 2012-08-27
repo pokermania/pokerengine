@@ -2,6 +2,7 @@ Source: poker-engine
 Section: python
 Priority: optional
 Maintainer: Hannes <hannes@pokermania.de>
+X-Python-Version: >= 2.6, << 3.0
 Build-Depends:
     debhelper,
     python-all,
@@ -19,7 +20,6 @@ Package: python-poker-engine
 Section: python
 Architecture: all
 Provides: ${python:Provides}
-X-Python-Version: >= 2.6.6
 Depends:
     ${misc:Depends},
     ${python:Depends},
