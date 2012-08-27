@@ -1,3 +1,14 @@
+poker-engine (1.5.2-5) pokermania; urgency=low
+
+  * 9d374a7 deleted remaining 3 bet structs
+  * f486390 updated debian/control and improved build
+  * 41395fc check twice for blindAntePayed, fixes #6619
+  * b7c8747 added skin to tourneys_schedule and tourneys in order to pass it to table
+  * 6feaa1d remove poker_engine_version from poker.level files
+  * 5ba9eed now using pokerdistutils.test command
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Mon, 27 Aug 2012 16:49:23 +0200
+
 poker-engine (1.5.2-4) pokermania; urgency=low
 
   * e294465 activate buildconf in setup.py
