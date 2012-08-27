@@ -1,3 +1,9 @@
+poker-engine (1.5.2-6) pokermania; urgency=low
+
+  * 3bc6cac removed python-poker-prizes dep
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Mon, 27 Aug 2012 16:55:23 +0200
+
 poker-engine (1.5.2-5) pokermania; urgency=low
 
   * 9d374a7 deleted remaining 3 bet structs
