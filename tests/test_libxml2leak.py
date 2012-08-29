@@ -137,14 +137,12 @@ class LeakTestCase(unittest.TestCase):
 
 class QuickLeakTestCase(LeakTestCase):
 
-    def setUp(self):
-        self.iterations = 30
+    iterations = 30
 
     
 class LongLeakTestCase(LeakTestCase):
 
-    def setUp(self):
-        self.iterations = 1000
+    iterations = 1000
 
 
 # ---------------------------------------------------------
