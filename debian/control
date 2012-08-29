@@ -12,7 +12,7 @@ Build-Depends:
     python-poker-reflogging,
     rsync,
     python-coverage,
-    python-poker-distutils (>=0.1.2-1)
+    python-poker-distutils (>=0.1.3-1)
 Standards-Version: 3.9.1
 Homepage: http://github.com/pokermania/poker-network
 
