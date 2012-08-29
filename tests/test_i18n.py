@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# coding=utf8
 # Copyright (C) 2006 - 2010 Loic Dachary <loic@dachary.org>
 # Copyright (C) 2008 Bradley M. Kuhn <bkuhn@ebb.org>
 # Copyright (C) 2006 Mekensleep
