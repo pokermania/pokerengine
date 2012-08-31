@@ -293,7 +293,7 @@ msgstr "Drilling %(card)s"
 #: pokerengine/pokergame.py:3346
 #, python-format
 msgid "Straight %(card)s high"
-msgstr "hohe Straße %(card)s"
+msgstr "Straight %(card)s hoch"
 
 # Translation #55591 (de)
 #: pokerengine/pokergame.py:3359
