@@ -1716,7 +1716,6 @@ class PokerGame:
                     exc_info=1
                 )
 
-        self.log.debug("player list: %s", self.player_list)
         return True
 
     def getLevel(self):

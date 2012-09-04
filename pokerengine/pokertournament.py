@@ -265,12 +265,14 @@ class PokerTournament:
         self.players = {}
         self.need_balance = False
         self.registered = 0
-        self.winners = []
+        self.winners_dict = {}
+        self._winners_dict_tmp = {}
         self.state = TOURNAMENT_STATE_ANNOUNCED
         self.can_register = False
         self.games = []
         self.id2game = {}
         self.stats = PokerTournamentStats(self)
+        self._last_winner_position = 0
         
         self.callback_new_state = lambda tournament, old_state, new_state: True
         self.callback_create_game = lambda tournament: PokerGameServer("poker.%s.xml", tournament.dirs)
@@ -283,16 +285,44 @@ class PokerTournament:
         self.callback_game_filled = lambda tournament, game: True
         self.callback_destroy_game = lambda tournament, game: True
         self.callback_move_player = lambda tournament, from_game_id, to_game_id, serial: self.movePlayer(from_game_id, to_game_id, serial)
-        self.callback_remove_player = lambda tournament, game_id, serial: self.removePlayer(game_id, serial)
+        self.callback_remove_player = lambda tournament, game_id, serial, *rest, **kw: self.removePlayer(game_id, serial, *rest, **kw)
+        self.callback_reenter_game = lambda game_id, serial: True
         self.callback_cancel = lambda tournament: True
         self.loadPayouts()
         self.updateRegistering()
 
+    
+    def _getWinners(self):
+        """returns a list of serials of players that already lost the game."""
+        return [k for (k,_v) in sorted(self.winners_dict.iteritems(), key=lambda (a,b): (b,a), reverse=True)]
+
+    def _setWinners(self, alist):
+        """replaces the current winners list. alist is an iterable of player serials"""
+        self.winners_dict = {}
+        for i,e in enumerate(alist): self.winners_dict[e] = i
+
+    winners = property(_getWinners, _setWinners)
+
+    def _incrementToNextWinnerPosition(self):
+        """increments the position to the next 'winner' (i.e. a person who left the game) and returns that position."""
+        self._last_winner_position = max((len(self._winners_dict_tmp)+len(self.winners_dict)), (self._last_winner_position+1))
+        return self._last_winner_position
+
+    def finallyRemovePlayer(self, serial, now=False):
+        """finallyRemovePlayer(serial) should be called right after the user is removed from the game.
+        it is importent that it is called after the callback_remove_player was called
+        """
+        assert serial in self._winners_dict_tmp or now, 'player %d not found in winners_dict_tmp' % serial
+        pos = self._winners_dict_tmp.pop(serial) if not now else self._incrementToNextWinnerPosition()
+        self.addWinner(serial, pos)
+
+    def addWinner(self, serial, pos):
+        """adds the serial to winnerslist"""
+        assert serial not in self.winners_dict, 'player %d already part of the winners_dict' % serial
+        self.winners_dict[serial] = pos
+
     def loadPayouts(self):
-        if self.sit_n_go == 'y':
-            player_count = self.players_quota
-        else:
-            player_count = self.registered
+        player_count = self.players_quota if self.sit_n_go == 'y' else self.registered
         self.prizes_object =  pokerprizes.__dict__['PokerPrizes' + self.prizes_specs.capitalize()](buy_in_amount = self.buy_in, player_count = player_count, guarantee_amount = self.prize_min, config_dirs = self.dirs)
 
     def canRun(self):
@@ -308,6 +338,14 @@ class PokerTournament:
                 return False
         else:
             return False
+
+    def isRebuyAllowed(self, serial):
+        now = tournament_seconds()
+        if (self.start_time + self.rebuy_delay) > now:
+            return True
+        else:
+            explain = "st(%s) + delay(%s) == (%s) < now(%s)" %(self.start_time, self.rebuy_delay, self.start_time+self.rebuy_delay, now)
+            self.log.warn("rebuy during tourney %s not allowed for player %s [%s]" % (self.serial, serial, explain))
 
     def getRank(self, serial):
         try:
@@ -486,9 +524,10 @@ class PokerTournament:
     def sitPlayer(self, serial):
         pass
 
-    def removePlayer(self, game_id, serial):
+    def removePlayer(self, game_id, serial, now=False):
         game = self.id2game[game_id]
         game.removePlayer(serial)
+        self.finallyRemovePlayer(serial, now=now)
 
     def movePlayer(self, from_game_id, to_game_id, serial):
         from_game = self.id2game[from_game_id]
@@ -543,21 +582,46 @@ class PokerTournament:
             self.callback_game_filled(self, game)
             game.close()
 
+
+    def reenterGame(self, game_id, serial):
+        """
+        reenterGame(game_id, serial) will be called when a player buys in. So he could reenter the game.
+        This function gets called by the table.
+        """
+        assert serial in self._winners_dict_tmp
+        self._winners_dict_tmp.pop(serial)
+        self.callback_reenter_game(game_id, serial)
+
+
+    def removeBrokePlayers(self, game_id, now=False):
+        """removeBrokePlayers(game_id) returns amount of broke players"""
+        game = self.id2game[game_id]
+        loosers = game.serialsBroke()
+        pos = self._incrementToNextWinnerPosition()
+        new_loosers = (s for s in loosers if s not in self._winners_dict_tmp)
+        for serial in new_loosers:
+            self._winners_dict_tmp[serial] = pos
+            self.callback_remove_player(self, game_id, serial, now=now)
+
+        self.need_balance = bool(loosers)
+
+        return len(loosers)
+
     def endTurn(self, game_id):
+        """endTurn(game_id) is called by the game each time a hand ends."""
+        return self.removeBrokePlayers(game_id)
+
+    def tourneyEnd(self, game_id):
         game = self.id2game[game_id]
         loosers = game.serialsBroke()
         loosers_count = len(loosers)
-
-        for serial in loosers:
-            self.winners.insert(0, serial)
-            self.callback_remove_player(self, game_id, serial)
-        self.log.debug("winners %s", self.winners)
-        
         if len(self.winners) + 1 == self.registered:
             game = self.games[0]
-            player = game.playersAll()[0]
-            self.winners.insert(0, player.serial)
-            self.callback_remove_player(self, game.id, player.serial)
+            remainingPlayers = game.playersAll()
+            assert len(remainingPlayers) == 1, 'more than one player remaining, %r ' % [p.serial for p in remainingPlayers]
+            player = remainingPlayers[0]
+            self._winners_dict_tmp[player.serial]=time.time()
+            self.callback_remove_player(self, game.id, player.serial, now=True)
             money = player.money
             player.money = 0
             expected = game.buyIn() * self.registered

@@ -38,7 +38,6 @@ class ConstantPlayerShuffler:
 
 from tests.testmessages import get_messages, clear_all_messages
 
-from pokerengine import pokergame
 from pokerengine import pokertournament
 from pokerengine import pokerprizes
 pokertournament.shuffler = ConstantPlayerShuffler()
@@ -451,7 +450,7 @@ class PokerTournamentTestCase(unittest.TestCase):
             self.failUnless(tournament.register(player))
             
         tournament.createGames()
-        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0])
+        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0], now=True)
         move = pokertournament.equalizeGames(tournament.games)
         self.failUnlessEqual(move, [(2, 1, 3), (3, 1, 0), (3, 1, 1)])
         
@@ -509,7 +508,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(provide,  [(1, []), (2, [3]), (3, [0, 1])])
 
         # Remove one from three and he should have one fewer to provide
-        tournament.removePlayer(tournament.games[2].id, tournament.games[2].serialsAll()[0])
+        tournament.removePlayer(tournament.games[2].id, tournament.games[2].serialsAll()[0], now=True)
 
         want, provide = pokertournament.equalizeCandidates(tournament.games)
         self.failUnlessEqual(len(want), 0)
@@ -563,7 +562,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(pokertournament.equalizeGames(tournament.games), [])
 
         # Remove one player from first table, means players from 3 must be redistributed
-        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0])
+        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0], now=True)
         self.failUnlessEqual(pokertournament.equalizeGames(tournament.games), [(3, 1, 1), (3, 1, 2), (4, 1, 0)])
         
     # -------------------------------------------------------
@@ -642,12 +641,12 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(tournament.games[2].allCount(), 5)
 
         # This remove leaves us with 2, 4, 5, which means that nothing can be broken.
-        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0])
+        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0], now=True)
         self.failUnlessEqual(pokertournament.breakGames(tournament.games), [])
 
         # This will leave us with 2, 4, 4, which means table 0 can be broken, and one player
         #  wil be sent to each table.
-        tournament.removePlayer(tournament.games[2].id, tournament.games[2].serialsAll()[0])
+        tournament.removePlayer(tournament.games[2].id, tournament.games[2].serialsAll()[0], now=True)
 
         player1 = tournament.games[0].serialsAll()[0]
         player2 = tournament.games[0].serialsAll()[1]
@@ -689,9 +688,9 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(len(tournament.games[2].serialsAll()), 5)
 
         # Remove one player from every game.
-        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0])
-        tournament.removePlayer(tournament.games[1].id, tournament.games[1].serialsAll()[0])
-        tournament.removePlayer(tournament.games[2].id, tournament.games[2].serialsAll()[0])
+        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0], now=True)
+        tournament.removePlayer(tournament.games[1].id, tournament.games[1].serialsAll()[0], now=True)
+        tournament.removePlayer(tournament.games[2].id, tournament.games[2].serialsAll()[0], now=True)
         
         # Get the players of the first game
         player1 = tournament.games[0].serialsAll()[0]
@@ -752,9 +751,9 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(len(tournament.games[2].serialsAll()), 5)
 
         # Remove one player from every game.
-        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0])
-        tournament.removePlayer(tournament.games[1].id, tournament.games[1].serialsAll()[0])
-        tournament.removePlayer(tournament.games[2].id, tournament.games[2].serialsAll()[0])
+        tournament.removePlayer(tournament.games[0].id, tournament.games[0].serialsAll()[0], now=True)
+        tournament.removePlayer(tournament.games[1].id, tournament.games[1].serialsAll()[0], now=True)
+        tournament.removePlayer(tournament.games[2].id, tournament.games[2].serialsAll()[0], now=True)
         
         # Get the players of the first game
         player1 = tournament.games[0].serialsAll()[0]
@@ -854,7 +853,8 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(game2.brokeCount(), 3)
         
         # End turn of game 2
-        self.failUnless(tournament.endTurn(2))
+        tournament.removeBrokePlayers(2, now=True)
+        self.failUnless(tournament.tourneyEnd(2))
         
         # Players broke removed
         # Game balanced
@@ -868,7 +868,8 @@ class PokerTournamentTestCase(unittest.TestCase):
             self.failUnless(game2.isBroke(players[num].serial))
             
         # End turn of game 2
-        self.failUnless(tournament.endTurn(2))
+        tournament.removeBrokePlayers(2, now=True)
+        self.failUnless(tournament.tourneyEnd(2))
         
         # Game 2 break
         self.failUnlessEqual(len(tournament.games), 1)
@@ -880,7 +881,8 @@ class PokerTournamentTestCase(unittest.TestCase):
             self.failUnless(game1.isBroke(players[num].serial))
             
         # End turn of game 1
-        self.failIf(tournament.endTurn(1))
+        tournament.removeBrokePlayers(1, now=True)
+        self.failIf(tournament.tourneyEnd(1))
         
         # End of the tounament
         self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_COMPLETE)
@@ -932,7 +934,8 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(game1.brokeCount(), 1)
 
         # End turn of game 1
-        self.failUnless(tournament.endTurn(1))
+        tournament.removeBrokePlayers(1, now=True)
+        self.failUnless(tournament.tourneyEnd(1))
         self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_BREAK_WAIT, tournament.state)
         self.failUnlessEqual([1], tournament.breaks_games_id)
         
@@ -944,7 +947,8 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(game2.brokeCount(), 4)
         
         # End turn of game 2
-        self.failUnless(tournament.endTurn(2))
+        tournament.removeBrokePlayers(2, now=True)
+        self.failUnless(tournament.tourneyEnd(2))
         
         # Players broke removed
         # Game balanced, game2 discarded, game1 left
@@ -961,7 +965,8 @@ class PokerTournamentTestCase(unittest.TestCase):
             self.failUnless(game1.isBroke(players[num].serial))
             
         # End turn of game 1
-        self.failIf(tournament.endTurn(1))
+        tournament.removeBrokePlayers(1, now=True)
+        self.failIf(tournament.tourneyEnd(1))
         
         # End of the tounament
         self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_COMPLETE)
@@ -1014,7 +1019,8 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(game2.brokeCount(), 1)
 
         # End turn of game 2
-        self.failUnless(tournament.endTurn(2))
+        tournament.removeBrokePlayers(2, now=True)
+        self.failUnless(tournament.tourneyEnd(2))
         self.failUnlessEqual(len(game2.playersAll()), 1)
         self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_RUNNING, tournament.state)
 
@@ -1022,7 +1028,8 @@ class PokerTournamentTestCase(unittest.TestCase):
         tournament.breaks_first = 0
         
         # End turn of game 1
-        self.failUnless(tournament.endTurn(1))
+        tournament.removeBrokePlayers(1, now=True)
+        self.failUnless(tournament.tourneyEnd(1))
         self.failUnlessEqual([game1,game2], tournament.games)
         self.failUnlessEqual(pokertournament.TOURNAMENT_STATE_BREAK, tournament.state)
         self.failUnlessEqual(len(game1.playersAll()), 2)
@@ -1128,7 +1135,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         game.call(2)
         
         # remove a player from the tourney and call historyReduce
-        tournament.removePlayer(game.id,1)
+        tournament.removePlayer(game.id,1, now=True)
         self.assertTrue(game.historyCanBeReduced())
         game.historyReduce()
         

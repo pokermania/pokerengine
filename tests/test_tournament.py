@@ -35,7 +35,6 @@ sys.path.insert(0, path.join(TESTS_PATH, ".."))
 import time
 from string import split
 
-import unittest
 from pokerengine.pokergame import PokerGameServer
 from pokerengine.pokertournament import equalizeGames, breakGames, PokerTournament
 
@@ -355,17 +354,157 @@ class TestBreak(TestTournament):
         #
         self.assertEqual(breakGames(self.games[:]), [(4, 3, [400, 401, 402, 403, 404])])
         
+class TestRebuy(unittest.TestCase):
+
+    def setUp(self):
+        self.tourney = PokerTournament(name = 'Test create',
+            players_quota = 4,
+            dirs = [path.join(TESTS_PATH, '../conf')],
+            seats_per_game = 4)
+        for serial in xrange(1,5):
+            self.assertTrue(self.tourney.register(serial))
+
+        self.game = self.tourney.games[0]
+        self.players = self.game.playersAll()
+
+    def tearDown(self):
+        del self.tourney
+
+    def test1_insertedWinnersAreCorrect(self):
+        winners = [1,2,3,4]
+
+        self.tourney.winners = winners
+        self.assertEqual(self.tourney.winners, winners)
+
+        self.tourney.winners = []
+        self.assertEqual(self.tourney.winners, [])
+    
+    def test2(self):
+        tourney = self.tourney
+        game = self.game
+        players = self.players
+
+        def myremove_player(tournament, game_id, serial, now=False):
+            if now:
+                tournament.removePlayer(game_id, serial, now)
+
+        tourney.callback_remove_player = myremove_player
+
+        def setMoney(serial, money=0):
+            for player in players:
+                if player.serial != serial:
+                    continue
+                player.money = money
+                if money == 0:
+                    self.assertTrue(game.isBroke(serial))
+
+        # Player got broke
+        setMoney(1)
+        self.assertEqual(tourney.winners, [])
+
+        # Even removeBrokePlayers and endTurn doesn't removed him, 
+        # because he has a chance for rebuy
+        tourney.removeBrokePlayers(1)
+        self.assertEqual(tourney.winners, [])
+
+        # Player 2 gets broke, and chooses not to rebuy
+        setMoney(2)
+        tourney.removeBrokePlayers(1)
+        tourney.tourneyEnd(1)
+        tourney.removePlayer(1, 2)
+        self.assertEqual(tourney.winners, [2])
+        self.assertEqual(tourney.getRank(2), 4)
+
+        # After Player 1 Timed out, he will be also removed
+        # Note: this changes the rank for player 2
+        tourney.removePlayer(1, 1)
+
+        self.assertEqual(tourney.winners, [2, 1])
+        self.assertEqual(tourney.getRank(2), 3)
+        self.assertEqual(tourney.getRank(1), 4)
+
+        # Player 3 get broke but rebuys a few times
+        for _i in range(4):
+            setMoney(3)
+
+            tourney.removeBrokePlayers(1)
+            tourney.tourneyEnd(1)
+            self.assertEqual(tourney.winners, [2, 1])
+
+            setMoney(3, 2000)
+            tourney.reenterGame(1, 3)
+
+            tourney.removeBrokePlayers(1)
+            tourney.tourneyEnd(1)
+            self.assertEqual(tourney.winners, [2, 1])
+
+        setMoney(4)
+
+        tourney.removeBrokePlayers(1)
+        tourney.tourneyEnd(1)
+        self.assertEqual(tourney.winners, [2, 1])
+
+        setMoney(4, 2000)
+        tourney.reenterGame(1, 4)
+
+        tourney.removeBrokePlayers(1)
+        tourney.tourneyEnd(1)
+        self.assertEqual(tourney.winners, [2, 1])
+
+        setMoney(4)
+        tourney.removeBrokePlayers(1)
+        tourney.tourneyEnd(1)
+        tourney.removePlayer(1, 4)
+
+        self.assertFalse(tourney.tourneyEnd(1))
+
+        self.assertEqual(tourney.winners, [3,4,2,1])
+
+    def testGetNextPositionWillReturnCorrectValue(self):
+        def setMoney(ids, money=0):
+            for player in self.players:
+                if player.serial not in ids:
+                    continue
+                player.money = money
+                if money == 0:
+                    self.assertTrue(self.game.isBroke(player.serial))
+
+        def sortTmpWinner():
+            return [k for k,_v in sorted(self.tourney._winners_dict_tmp.iteritems() ,key=lambda (a,b):(b,a),reverse=True)]
+            return self.tourney._winners_dict_tmp.keys()
+
+        def removePlayer(serials):
+            nid = self.tourney._incrementToNextWinnerPosition()
+            for serial in serials:
+                self.tourney._winners_dict_tmp[serial] = nid
+
+        def reenterPlayer(serials):
+            for serial in serials:
+                del self.tourney._winners_dict_tmp[serial]
+
+        self.assertEqual(sortTmpWinner(), [])
+        removePlayer([3,4])
+        self.assertEqual(sortTmpWinner(), [4,3])
+        removePlayer([2])
+        self.assertEqual(sortTmpWinner(), [2,4,3])
+        reenterPlayer([3,4])
+        self.assertEqual(sortTmpWinner(), [2])
+        removePlayer([1])
+        self.assertEqual(sortTmpWinner(), [1,2])
+
 class TestCreate(unittest.TestCase):
 
     def setUp(self):
         pass
         
     def test1(self):
-        tourney = PokerTournament(name = 'Test create',
-                                  players_quota = 4,
-                                  dirs = [path.join(TESTS_PATH, '../conf')],
-                                  seats_per_game = 4,
-                                  betting_structure = "level-10-20-no-limit")
+        tourney = PokerTournament(
+            name = 'Test create',
+            players_quota = 4,
+            dirs = [path.join(TESTS_PATH, '../conf')],
+            seats_per_game = 4,
+            betting_structure = "level-10-20-no-limit"
+        )
 
         for serial in xrange(1,5):
             self.failUnless(tourney.register(serial))
@@ -377,20 +516,25 @@ class TestCreate(unittest.TestCase):
         turn = 1
         running = True
         while running:
+            turn += 1
+            if turn >= 200: raise Exception('Suspecting infity loop (more than 200 turns were played).')
             for game in tourney.games:
-                if game.sitCount() > 1:
-                    game.beginTurn(turn)
-                    running = tourney.endTurn(game.id)
-                    if not running: break
+                game.beginTurn(turn)
+                tourney.removeBrokePlayers(game.id, now=True)
+                if not tourney.tourneyEnd(game.id):
+                    running = False 
+                    break
 
     def test2(self):
         #
         # One table sit-n-go
         #
-        tourney = PokerTournament(name = 'Test create',
-                                       players_quota = 4,
-                                       dirs = [path.join(TESTS_PATH, '../conf')],
-                                       seats_per_game = 4)
+        tourney = PokerTournament(
+            name = 'Test create',
+            players_quota = 4,
+            dirs = [path.join(TESTS_PATH, '../conf')],
+            seats_per_game = 4
+        )
 
         for serial in xrange(1,4):
             self.failUnless(tourney.register(serial))
@@ -410,10 +554,12 @@ class TestCreate(unittest.TestCase):
         seats_per_game = 10
         games_count = 2
         players_count = seats_per_game * games_count
-        tourney = PokerTournament(name = 'Test create',
-                                  players_quota = players_count,
-                                  dirs = [path.join(TESTS_PATH, '../conf')],
-                                  seats_per_game = seats_per_game)
+        tourney = PokerTournament(
+            name = 'Test create',
+            players_quota = players_count,
+            dirs = [path.join(TESTS_PATH, '../conf')],
+            seats_per_game = seats_per_game
+        )
 
         for serial in xrange(1,players_count + 1):
             self.failUnless(tourney.register(serial))
@@ -425,22 +571,28 @@ class TestCreate(unittest.TestCase):
         turn = 1
         running = True
         while running:
+            turn += 1
+            if turn >= 200: raise Exception('Suspecting infity loop (more than 200 turns were played).')
             for game in tourney.games:
                 if game.sitCount() > 1:
                     game.beginTurn(turn)
-                    running = tourney.endTurn(game.id)
-                    if not running: break
-    # ----------------------------------------------------------------
+                    tourney.removeBrokePlayers(game.id, now=True)
+                    if not tourney.tourneyEnd(game.id):
+                        running = False 
+                        break
+
     def tourneyTableStartBalancedHelper(self, num_players, seats, num_tables, min_per_table):
         """tourneyTableStartBalancedHelper
         Helper function to test various scenarios of initial seating"""
 
-        tourney = PokerTournament(name = 'Only%d' % num_players,
-                                  players_quota = num_players,
-                                  players_min = num_players,
-                                  dirs = [path.join(TESTS_PATH, '../conf')],
-                                  seats_per_game = seats,
-                                  betting_structure = "level-10-20-no-limit")
+        tourney = PokerTournament(
+            name = 'Only%d' % num_players,
+            players_quota = num_players,
+            players_min = num_players,
+            dirs = [path.join(TESTS_PATH, '../conf')],
+            seats_per_game = seats,
+            betting_structure = "level-10-20-no-limit"
+        )
 
         for serial in xrange(1,num_players+1):
             self.failUnless(tourney.register(serial))
@@ -448,7 +600,7 @@ class TestCreate(unittest.TestCase):
         self.assertEquals(len(tourney.games), num_tables)
         for game in tourney.games:
             self.failUnless(len(game.serial2player.values()) >= min_per_table)
-    # ----------------------------------------------------------------
+
     def test4_tourneyTableStartBalanced(self):
         """test4_tourneyTableStartBalanced
 
@@ -458,7 +610,8 @@ class TestCreate(unittest.TestCase):
 
         self.tourneyTableStartBalancedHelper(6, 5, 2, 2)
         self.tourneyTableStartBalancedHelper(13, 6, 3, 4)
-# ----------------------------------------------------------------
+        
+        
 class TestPrizes(unittest.TestCase):
 
     def assertTourneyPrizes(self, prizes_specs, quota, register_i, assert_prizes):
@@ -513,6 +666,7 @@ def GetTestSuite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestEqualize))
     suite.addTest(unittest.makeSuite(TestBreak))
+    suite.addTest(unittest.makeSuite(TestRebuy))
     suite.addTest(unittest.makeSuite(TestCreate))
     suite.addTest(unittest.makeSuite(TestPrizes))
     return suite
