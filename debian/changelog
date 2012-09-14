@@ -1,3 +1,10 @@
+poker-engine (1.5.2-7) pokermania; urgency=low
+
+  * 9795766 updated translations, fixes #6585
+  * c7ace04 added mysql replacement string for postinst, fixes #6645
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Fri, 14 Sep 2012 16:55:23 +0200
+
 poker-engine (1.5.2-6) pokermania; urgency=low
 
   * 3bc6cac removed python-poker-prizes dep
