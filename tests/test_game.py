@@ -4815,16 +4815,16 @@ class PokerGameTestCase(unittest.TestCase):
                             
         # Init game infos
         game_infos = {
-                            'hand_serial' : hand_serial,
-                            'pot' : 0,
-                            'board' : pokercards.PokerCards(),
-                            'winners' : [],
-                            'muckable_serials' : [],
-                            'win_condition' : pokergame.WON_NULL,
-                            'serial2best' : {},
-                            'showdown_stack' : [],
-                            'side_pots' : side_pots_infos
-                            }
+            'hand_serial': hand_serial,
+            'pot': 0,
+            'board': pokercards.PokerCards(),
+            'winners': [],
+            'muckable_serials': [],
+            'win_condition': pokergame.WON_NULL,
+            'serial2best': {},
+            'showdown_stack': [],
+            'side_pots': side_pots_infos
+        }
                             
         # Check game initialisation
         for attribute, value in game_infos.items():
@@ -4854,23 +4854,23 @@ class PokerGameTestCase(unittest.TestCase):
         """Test Poker Game : Init round"""
         
         round_infos = {
-                            0 :     { 
-                                    'name' : 'pre-flop',
-                                    'position' : 'under-the-gun'
-                                    },
-                            1 :     { 
-                                    'name' : 'flop',
-                                    'position' : 'next-to-dealer'
-                                    },
-                            2 :    { 
-                                    'name' : 'turn',
-                                    'position' : 'high'
-                                    },
-                            3 :    { 
-                                    'name' : 'river',
-                                    'position' : 'invalid'
-                                    }
-                            }
+            0: { 
+                'name': 'pre-flop',
+                'position': 'under-the-gun'
+            },
+            1: { 
+                'name': 'flop',
+                'position': 'next-to-dealer'
+            },
+            2: { 
+                'name': 'turn',
+                'position': 'high'
+            },
+            3: { 
+                'name': 'river',
+                'position': 'invalid'
+            }
+        }
                             
         # Change the round turn properties
         round_turn_properties = {  'type' : 'high' }

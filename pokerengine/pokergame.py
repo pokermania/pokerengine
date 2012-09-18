@@ -572,7 +572,7 @@ def history2messages(game, history, serial2name=str, pocket_messages=False):
             winners, showdown_stack = event[1:]
             if showdown_stack:
                 game_state = showdown_stack[0]
-                if 'serial2best' not in game_state:
+                if game_state['foldwin']:
                     serial = winners[0]
                     messages.append(_("%(name)s receives %(amount)s (everyone else folded)") % {
                         'name': serial2name(serial),
@@ -2885,12 +2885,17 @@ class PokerGame:
 
             self.setRakedAmount(self.rake.getRake(self.getPotAmount(), self.getUncalled(), self.isTournament()))
             self.pot -= self.getRakedAmount()
-
+            
             serial2rake[serial] = self.getRakedAmount()
             serial2delta[serial] += self.pot
+            
+            self.serial2best = self.bestHands([serial])
+            self.side2winners = {'hi': [], 'low': []}
+            
             self.showdown_stack = [
                 {
                     'type': 'game_state',
+                    'serial2best': self.serial2best,
                     'player_list': self.player_list,
                     'side_pots': side_pots,
                     'pot': pot_backup,
