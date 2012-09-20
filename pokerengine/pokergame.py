@@ -3153,6 +3153,7 @@ class PokerGame:
             'player_list': self.player_list,
             'side_pots': side_pots,
             'pot': pot_backup,
+            'foldwin': False,
             'serial2share': serial2share,
             'serial2rake': serial2rake,
             'serial2delta': serial2delta
