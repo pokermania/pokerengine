@@ -62,7 +62,7 @@ class Config:
 
     def load(self, path):
         for prefix in self.dirs:
-            tmppath = abspath(expanduser((prefix + "/" + path) if prefix else path ))
+            tmppath = abspath(expanduser((prefix + "/" + path) if prefix and path[0] != "/" else path ))
             if exists(tmppath):
                 self.path = tmppath
                 break
