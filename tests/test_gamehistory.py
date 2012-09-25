@@ -313,7 +313,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.game.variant = 'holdem'
         
         # The player 1 wins because all the other players are fold
-        game_state ={ 'serial2share': { 1: 500 } }
+        game_state ={'serial2share': {1: 500 }, 'foldwin': True}
         
         history = [ ('end', [1], [game_state]) ]
         
@@ -328,10 +328,15 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         hand1 = pokercards.PokerCards(['Ad', 'As'])
         board = pokercards.PokerCards(['9d', '6s', 'Td', '4d', '4h'])
         
-        game_state = { 'serial2best' : { 1 : { 
-             'hi' : self.game.eval.best('hi', hand1.tolist(True) + board.tolist(True), []), 
-            'low' : self.game.eval.best('low', hand1.tolist(True) + board.tolist(True), []) 
-        }}}
+        game_state = {
+            'serial2best': {
+                1: { 
+                    'hi': self.game.eval.best('hi', hand1.tolist(True) + board.tolist(True), []), 
+                    'low': self.game.eval.best('low', hand1.tolist(True) + board.tolist(True), []) 
+                }
+            },
+            'foldwin': False
+        }
                             
         history = [ ('end', [1], [game_state, invalid_frame]) ]
         
@@ -379,16 +384,19 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         hand2 = pokercards.PokerCards(['Ac', '2c'])
         board = pokercards.PokerCards(['9d', '5s', '3h', '4d', '5s'])
         
-        game_state ={ 'serial2best' : { 
-            1 : { 
-                'hi' : self.game.eval.best('hi', hand1.tolist(True) + board.tolist(True), []), 
-                'low' : self.game.eval.best('low', hand1.tolist(True) + board.tolist(True), [])
+        game_state ={
+            'serial2best': { 
+                1: { 
+                    'hi' : self.game.eval.best('hi', hand1.tolist(True) + board.tolist(True), []), 
+                    'low' : self.game.eval.best('low', hand1.tolist(True) + board.tolist(True), [])
+                },
+                2: { 
+                    'hi' : self.game.eval.best('hi', hand2.tolist(True) + board.tolist(True), []), 
+                    'low' : self.game.eval.best('low', hand2.tolist(True) + board.tolist(True), []) 
+                }
             },
-            2 : { 
-                'hi' : self.game.eval.best('hi', hand2.tolist(True) + board.tolist(True), []), 
-                'low' : self.game.eval.best('low', hand2.tolist(True) + board.tolist(True), []) 
-            }
-        }}
+            'foldwin': False
+        }
                 
         history = [ ('end', [1], [game_state, frame]) ]
         subject, message = self.GetMessagesFromHistory(history)
@@ -419,15 +427,18 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         hand2 = pokercards.PokerCards(['Kd', '3c'])
         board = pokercards.PokerCards(['9d', '6s', 'Td', '4d', '4h'])
         
-        game_state = { 'serial2best' : { 
-            1 : {
-                'hi' : self.game.eval.best('hi', hand1.tolist(True) + board.tolist(True), []), 
-                'low' : self.game.eval.best('low', hand1.tolist(True) + board.tolist(True), []) 
+        game_state = {
+            'serial2best': { 
+                1: {
+                    'hi' : self.game.eval.best('hi', hand1.tolist(True) + board.tolist(True), []), 
+                    'low' : self.game.eval.best('low', hand1.tolist(True) + board.tolist(True), []) 
+                },
+                2: { 
+                    'hi' : self.game.eval.best('hi', hand2.tolist(True) + board.tolist(True), [])
+                }
             },
-            2 : { 
-                'hi' : self.game.eval.best('hi', hand2.tolist(True) + board.tolist(True), [])
-            }
-        }}
+            'foldwin': False
+        }
                 
         history = [ ('end', [1], [game_state, frame]) ]
         subject, message = self.GetMessagesFromHistory(history)
