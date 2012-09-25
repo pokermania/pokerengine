@@ -2550,7 +2550,7 @@ class PokerGame:
         player = self.getPlayerInPosition()
         serial = player.serial
 
-        self.log.inform("Player(%s) isBot(%s) isSitOut(%s) isAuto(%s) APPolicy(%s) foldNext(%s)" \
+        self.log.debug("Player(%s) isBot(%s) isSitOut(%s) isAuto(%s) APPolicy(%s) foldNext(%s)" \
             % (
                 serial, player.isBot(), player.isSitOut(), player.isAuto(),
                 player.auto_player_policy, player.auto_player_fold_next_turn
