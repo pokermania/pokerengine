@@ -1,3 +1,10 @@
+poker-engine (1.5.2-8) pokermania; urgency=low
+
+  * 589f8e8 dont add path prefix if passed path is absolute, fixes test_pokerservice.TourneySelectInfoTestCase.test04_ok
+  * 1111594 squash commit for #4956
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Tue, 25 Sep 2012 16:55:23 +0200
+
 poker-engine (1.5.2-7) pokermania; urgency=low
 
   * 9795766 updated translations, fixes #6585
