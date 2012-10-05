@@ -197,13 +197,13 @@ class PokerGameTestCase(unittest.TestCase):
         player2 = self.AddPlayerAndSit(2, 5)
         player3 = self.AddPlayerAndSit(3, 7)
         
-        # Position initially set to 0
-        self.failUnlessEqual(self.game.position, 0)
+        # Position initially set to -1
+        self.failUnlessEqual(self.game.position, -1)
         
         # The game is not running, the set position function is not avalaible
         self.failIf(self.game.isRunning())
         self.game.setPosition(5)
-        self.failUnlessEqual(self.game.position, 0)      
+        self.failUnlessEqual(self.game.position, -1)
         
         # Blind and ante turn
         self.game.forced_dealer_seat = 2

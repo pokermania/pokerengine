@@ -715,7 +715,7 @@ class PokerGame:
         self.resetSeatsLeft()
         self.dealer = -1
         self.dealer_seat = -1
-        self.position = 0
+        self.position = -1
         self.last_to_talk = -1
         self.raked_amount = 0
         self.pot = False
