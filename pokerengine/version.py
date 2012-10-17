@@ -30,15 +30,16 @@ from types import StringType
 import re
 from pokerengine import version_number
 from pokerengine import log as engine_log
-log = engine_log.getChild('version')
+log = engine_log.get_child('version')
 
 class Version:
 
     version_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)$', re.VERBOSE)
     upgrade_re = re.compile(r'.*?(\d+\.\d+\.\d+)-(\d+\.\d+\.\d+)', re.VERBOSE)
 
+    log = log.get_child('Version')
+
     def __init__ (self, vstring=None):
-        self.log = log.getChild(self.__class__.__name__)
         if vstring:
             self.parse(vstring)
 

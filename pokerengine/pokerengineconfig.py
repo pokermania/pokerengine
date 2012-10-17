@@ -28,7 +28,7 @@ import os
 from os.path import exists, expanduser, abspath, isfile
 from pokerengine.version import Version, version
 from pokerengine import log as engine_log
-log = engine_log.getChild('config')
+log = engine_log.get_child('config')
 import re
 
 import libxml2

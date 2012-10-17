@@ -24,12 +24,14 @@
 #
 from pokerengine.pokerengineconfig import Config
 from pokerengine import log as engine_log
-log = engine_log.getChild('pokerprizes')
+log = engine_log.get_child('pokerprizes')
 
 class PokerPrizes:
     """PokerPrizesVirtual base class for PokerPrizes"""
+
+    log = log.get_child('PokerPrizes')
+
     def __init__(self, buy_in_amount, player_count = 0, guarantee_amount = 0, config_dirs = None):
-        self.log = log.getChild(self.__class__.__name__)
         self.buy_in = buy_in_amount
         self.player_count = player_count
         self.guarantee_amount = guarantee_amount

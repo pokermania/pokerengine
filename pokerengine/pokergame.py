@@ -37,7 +37,7 @@ import platform
 import pokereval
 
 from pokerengine import log as engine_log
-log = engine_log.getChild('pokergame')
+log = engine_log.get_child('pokergame')
 
 from pokerengine.pokercards import *
 from pokerengine.pokerengineconfig import Config
@@ -176,8 +176,11 @@ AUTO_PLAYER_POLICY_FOLD = 'fold'
 DEFAULT_AUTOPLAYER_POLICY = AUTO_PLAYER_POLICY_SIMPLE_BOT
 
 class PokerPlayer:
+
+    log = log.get_child('PokerPlayer')
+
     def __init__(self, serial, name, game):
-        self.log = log.getChild(self.__class__.__name__, refs=[
+        self.log = PokerPlayer.log.get_instance(self, refs=[
             ('Game', game, lambda game: game.id),
             ('Hand', game, lambda game: game.hand_serial if game.hand_serial > 1 else None),
             ('Player', self, lambda player: player.serial)
@@ -640,8 +643,11 @@ WON_REGULAR = 3  # turn ended normally
 
 
 class PokerGame:
+
+    log = log.get_child('PokerGame')
+
     def __init__(self, url, is_directing, dirs):
-        self.log = log.getChild(self.__class__.__name__, refs=[
+        self.log = PokerGame.log.get_instance(self, refs=[
             ('Game', self, lambda game: game.id),
             ('Hand', self, lambda game: game.hand_serial if game.hand_serial > 1 else None)
         ])
@@ -1107,7 +1113,8 @@ class PokerGame:
             return
 
         self.hand_serial = hand_serial
-        self.log.inform("Dealing %s hand number %d", self.getVariantName(), self.hand_serial)
+        if self.is_directing:
+            self.log.inform("Dealing %s hand number %d", self.getVariantName(), self.hand_serial)
         self.pot = 0
         self.raked_amount = 0
         self.board = PokerCards()

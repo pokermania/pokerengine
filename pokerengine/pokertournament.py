@@ -35,7 +35,7 @@ shuffler = random
 from pokerengine.pokergame import PokerGameServer
 from pokerengine import pokerprizes
 from pokerengine import log as engine_log
-log = engine_log.getChild('pokertournament')
+log = engine_log.get_child('pokertournament')
 
 TOURNAMENT_STATE_ANNOUNCED = "announced"
 TOURNAMENT_STATE_REGISTERING = "registering"
@@ -223,8 +223,10 @@ class PokerTournamentStats:
         
 class PokerTournament:
 
+    log = log.get_child('PokerTournament')
+
     def __init__(self, *args, **kwargs):
-        self.log = log.getChild(self.__class__.__name__, refs=[
+        self.log = PokerTournament.log.get_child(self, refs=[
             ('Tournament', self, lambda tournament: tournament.serial)
         ])
         self.name = kwargs.get('name', 'no name')
