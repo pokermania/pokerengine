@@ -4110,10 +4110,25 @@ class PokerGame:
                 else None
             if position == position_reduced:
                 pass # no need to replace if it's already equal
-            elif position_reduced is not None and position: 
+            elif position_reduced is not None and position >= 0: 
                 turn_history[p_index] = (event_type, position_reduced, serial)
             else:
                 remove_indexes.append(p_index)
+        #
+        # delete duplicate positions
+        pos_last = None
+        for p_index in range(0,index):
+            if (
+                not turn_history[p_index][0] == "position" or 
+                not turn_history[p_index][1] >= 0 
+                or p_index in remove_indexes
+            ):
+                continue
+            pos_current = turn_history[p_index]
+            if pos_current == pos_last:
+                remove_indexes.append(p_index)
+            else:
+                pos_last = pos_current
         #
         # delete all obsolete elements
         for index in sorted(remove_indexes,reverse=True):
