@@ -1226,7 +1226,7 @@ class PokerTournamentStatsTestCase(unittest.TestCase):
         def __init__(self,**kw):
             for k,v in kw.items():
                 setattr(self, k, v)
-            self.log = log.getChild('MockObj')
+            self.log = log.get_child('MockObj')
         def error(self,msg):
             self._messages.append(msg)
     class MockTourney(MockObj):
