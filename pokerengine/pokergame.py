@@ -3957,10 +3957,15 @@ class PokerGame:
             return False
         if player.money + amount + player.rebuy > self.maxBuyIn():
             return False
+
         if self.isPlaying(serial):
+            # history will be added later
             player.rebuy += amount
         else:
+            # history add should be added now
+            self.historyAdd("rebuy", serial, amount)
             player.money += amount
+
         return True
 
     def buyIn(self):
