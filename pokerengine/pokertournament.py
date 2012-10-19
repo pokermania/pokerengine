@@ -226,7 +226,7 @@ class PokerTournament:
     log = log.get_child('PokerTournament')
 
     def __init__(self, *args, **kwargs):
-        self.log = PokerTournament.log.get_child(self, refs=[
+        self.log = PokerTournament.log.get_instance(self, refs=[
             ('Tournament', self, lambda tournament: tournament.serial)
         ])
         self.name = kwargs.get('name', 'no name')

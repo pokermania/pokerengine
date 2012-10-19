@@ -44,7 +44,7 @@ from pokerengine import pokerprizes
 pokertournament.shuffler = ConstantPlayerShuffler()
 
 import reflogging
-log = reflogging.Logger('test-pokertournament')
+log = reflogging.root_logger.get_child('test-pokertournament')
 
 class PokerTournamentTestCase(unittest.TestCase):
     

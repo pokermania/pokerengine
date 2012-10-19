@@ -38,7 +38,7 @@ from pokerengine.pokergame import PokerGameServer
 from string import split
 
 import reflogging
-log = reflogging.Logger('test_blinds')
+log = reflogging.root_logger.get_child('test_blinds')
 
 class PokerPredefinedDecks:
 
