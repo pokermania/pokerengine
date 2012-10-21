@@ -15,7 +15,7 @@ class ExtendedBuild(DistutilsBuild):
 
 setup(
     name = 'poker-engine',
-    version = '1.4.5',
+    version = '1.5.3',
     packages = ['pokerengine'],
     cmdclass = {'build': ExtendedBuild}
 )

@@ -1,3 +1,12 @@
+poker-engine (1.5.3-1) pokermania; urgency=low
+
+  * 4899145 rebuy history will be added even if the player is playing right now, fixes #7133
+  * 45173d2 debian/control: python-poker-reflogging -> python-reflogging
+  * 4f7f54a check also for position >= 0, refs #7187
+  * d5339dd now using new reflogging from github.com/tuco86/reflogging
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Tue, 09 Oct 2012 12:00:00 +0200
+
 poker-engine (1.5.2-9) pokermania; urgency=low
 
   * bed8c17 fix for explain IndexError, refs #7088
