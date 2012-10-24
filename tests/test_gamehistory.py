@@ -617,7 +617,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
 #                'wrong tail position: %s' % "" # history_with_split
 #            )
 #        # buildup
-#        game_event = ('game', 0, 1, 0, 0, 'holdem', '1-2-no-limit', [100, 200, 300, 400, 500, 600, 700], 2, {100: 1000, 200: 1000, 300: 1000, 400: 1000, 500: 1000, 600: 1000, 700: 1000})
+#        game_event = ('game', 0, 1, 0, 0, 'holdem', '1-2_20-200_no-limit', [100, 200, 300, 400, 500, 600, 700], 2, {100: 1000, 200: 1000, 300: 1000, 400: 1000, 500: 1000, 600: 1000, 700: 1000})
 #        self.game.player_list = [100, 200, 300, 400, 500, 600, 700]
 #        self.game.turn_history = [game_event]
 #        
@@ -638,7 +638,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
 #        reduceAndCheck(('position', 5, 700), None)
 #        
 #        self.assertEquals(self.game.turn_history_reduced,[
-#            ('game', 0, 1, 0, 0, 'holdem', '1-2-no-limit', [100, 200, 300, 400, 600, 700], 2, {100: 1000, 200: 1000, 300: 1000, 400: 1000, 600: 1000, 700: 1000}),
+#            ('game', 0, 1, 0, 0, 'holdem', '1-2_20-200_no-limit', [100, 200, 300, 400, 600, 700], 2, {100: 1000, 200: 1000, 300: 1000, 400: 1000, 600: 1000, 700: 1000}),
 #            ('position', 3, 400), ('blind', 400, 20, 0), 
 #            ('position', 4, 600), ('blind', 600, 40, 0), 
 #            ('position', 5, 700)

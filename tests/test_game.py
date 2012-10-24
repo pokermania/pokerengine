@@ -3922,9 +3922,9 @@ class PokerGameTestCase(unittest.TestCase):
     # ---------------------------------------------------------
 
     def testFlushes(self):
-        g = pokergame.PokerGame('poker.%s.xml', True, [path.join(TESTS_PATH, 'conf'), PokerGameTestCase.TestConfDirectory])
+        g = pokergame.PokerGame('poker.%s.xml', True, [path.join(TESTS_PATH, '../conf'), PokerGameTestCase.TestConfDirectory])
         g.setVariant('holdem')
-        g.setBettingStructure('5-10-no-limit')
+        g.setBettingStructure('5-10_100-1000_no-limit')
 
         players = [1,2]
 
@@ -5685,9 +5685,9 @@ class PokerGameTestCase(unittest.TestCase):
     def testAllinWithDead(self):
         """ Test Poker Game : Allin with dead blind and lost to the winner although the winner has less money """
 
-        game = pokergame.PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, 'conf'), PokerGameTestCase.TestConfDirectory])
+        game = pokergame.PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, '../conf'), PokerGameTestCase.TestConfDirectory])
         game.setVariant("holdem")
-        game.setBettingStructure("100-200-no-limit")
+        game.setBettingStructure("100-200_2000-20000_no-limit")
 
         player = {}
 
@@ -5734,9 +5734,9 @@ class PokerGameTestCase(unittest.TestCase):
     def testDeadWithUncalled(self):
         """ Test Poker Game : dead blind + a player has uncalled bet and is not the winner.
         """
-        game = pokergame.PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, 'conf'), PokerGameTestCase.TestConfDirectory])
+        game = pokergame.PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, '../conf'), PokerGameTestCase.TestConfDirectory])
         game.setVariant("holdem")
-        game.setBettingStructure("100-200-no-limit")
+        game.setBettingStructure("100-200_2000-20000_no-limit")
 
         player = {}
 
@@ -5785,9 +5785,9 @@ class PokerGameTestCase(unittest.TestCase):
         """ Test Poker Game : player folds (although he could check) while a player is allin and
         another player is behind him. The turn ends now, the last player is not asked for his action.
         """
-        game = pokergame.PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, 'conf'), PokerGameTestCase.TestConfDirectory])
+        game = pokergame.PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, '../conf'), PokerGameTestCase.TestConfDirectory])
         game.setVariant("holdem")
-        game.setBettingStructure("100-200-no-limit")
+        game.setBettingStructure("100-200_2000-20000_no-limit")
 
         player = {}
 
@@ -5839,9 +5839,9 @@ class PokerGameTestCase(unittest.TestCase):
             round. The winner has an uncalled amount AND wins the pot 
             in which the allin player was not.
         """
-        game = pokergame.PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, 'conf'), PokerGameTestCase.TestConfDirectory])
+        game = pokergame.PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, '../conf'), PokerGameTestCase.TestConfDirectory])
         game.setVariant("holdem")
-        game.setBettingStructure("100-200-no-limit")
+        game.setBettingStructure("100-200_2000-20000_no-limit")
 
         player = {}
 

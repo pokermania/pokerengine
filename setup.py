@@ -11,7 +11,7 @@ class ExtendedBuild(DistutilsBuild):
     def run(self):
         DistutilsBuild.run(self)
         os.system("make -C po all")
-        os.system("make -C conf buildconf")
+        os.system("conf/build.sh")
 
 setup(
     name = 'poker-engine',

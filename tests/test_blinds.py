@@ -56,9 +56,9 @@ class PokerPredefinedDecks:
 class TestBlinds(unittest.TestCase):
 
     def setUp(self):
-        self.game = PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, 'conf')])
+        self.game = PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, '../conf')])
         self.game.setVariant("holdem")
-        self.game.setBettingStructure("2-4-limit")
+        self.game.setBettingStructure("1-2_20-200_limit")
         self.amounts = {}
         self.amounts['big'] = 200
         self.amounts['small'] = 100

@@ -54,9 +54,9 @@ class PokerPredefinedDecks:
 class TestPosition(unittest.TestCase):
 
     def setUp(self):
-        self.game = PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, 'conf')])
+        self.game = PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, '../conf')])
         self.game.setVariant("holdem")
-        self.game.setBettingStructure("2-4-limit")
+        self.game.setBettingStructure("1-2_20-200_limit")
         predefined_decks = [
             "8d 2h 2c 8c 4c Kc Ad 9d Ts Jd 5h Tc 4d 9h 8h 7h 9c 2s 3c Kd 5s Td 5d Th 3s Kh Js Qh 7d 2d 3d 9s Qd Ac Jh Jc Qc 6c 7s Ks 5c 4h 7c 4s Qs 6s 6h Ah 6d As 3h 8s", # distributed from the end
             ]

@@ -48,7 +48,7 @@ log = reflogging.root_logger.get_child('test-pokertournament')
 
 class PokerTournamentTestCase(unittest.TestCase):
     
-    TestConfDirectory = path.join(TESTS_PATH, 'conf')
+    TestConfDirectory = path.join(TESTS_PATH, '../conf')
         
     # ---------------------------------------------------------
     def setUp(self):
@@ -1144,7 +1144,7 @@ class Breaks(unittest.TestCase):
     
     def test_remainingBreakSeconds(self):
         arguments = { 
-            'dirs': [path.join(TESTS_PATH, 'conf')],
+            'dirs': [path.join(TESTS_PATH, '../conf')],
             'players_quota':  20,
             'start_time': self.seconds(),
             'seats_per_game': 5,
@@ -1160,7 +1160,7 @@ class Breaks(unittest.TestCase):
     def test_updateBreak(self):
         
         arguments = { 
-            'dirs': [path.join(TESTS_PATH, 'conf')],
+            'dirs': [path.join(TESTS_PATH, '../conf')],
             'players_quota': 20,
             'start_time': self.seconds(),
             'seats_per_game': 5,

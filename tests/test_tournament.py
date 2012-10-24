@@ -60,9 +60,9 @@ class TestTournament(unittest.TestCase):
             ]
         self.games = []
         for i in xrange(NGAMES):
-            game = PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, 'conf')])
+            game = PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, '../conf')])
             game.setVariant("7stud")
-            game.setBettingStructure("0-0-limit")
+            game.setBettingStructure("0-0_50-5000_limit")
             game.id = i
             game.shuffler = PokerPredefinedDecks(map(lambda deck: game.eval.string2card(split(deck)), predefined_decks))
             self.games.append(game)
@@ -363,7 +363,7 @@ class TestCreate(unittest.TestCase):
     def test1(self):
         tourney = PokerTournament(name = 'Test create',
                                   players_quota = 4,
-                                  dirs = [path.join(TESTS_PATH, 'conf')],
+                                  dirs = [path.join(TESTS_PATH, '../conf')],
                                   seats_per_game = 4,
                                   betting_structure = "level-10-20-no-limit")
 
@@ -389,7 +389,7 @@ class TestCreate(unittest.TestCase):
         #
         tourney = PokerTournament(name = 'Test create',
                                        players_quota = 4,
-                                       dirs = [path.join(TESTS_PATH, 'conf')],
+                                       dirs = [path.join(TESTS_PATH, '../conf')],
                                        seats_per_game = 4)
 
         for serial in xrange(1,4):
@@ -412,7 +412,7 @@ class TestCreate(unittest.TestCase):
         players_count = seats_per_game * games_count
         tourney = PokerTournament(name = 'Test create',
                                   players_quota = players_count,
-                                  dirs = [path.join(TESTS_PATH, 'conf')],
+                                  dirs = [path.join(TESTS_PATH, '../conf')],
                                   seats_per_game = seats_per_game)
 
         for serial in xrange(1,players_count + 1):
@@ -438,7 +438,7 @@ class TestCreate(unittest.TestCase):
         tourney = PokerTournament(name = 'Only%d' % num_players,
                                   players_quota = num_players,
                                   players_min = num_players,
-                                  dirs = [path.join(TESTS_PATH, 'conf')],
+                                  dirs = [path.join(TESTS_PATH, '../conf')],
                                   seats_per_game = seats,
                                   betting_structure = "level-10-20-no-limit")
 
@@ -463,7 +463,7 @@ class TestPrizes(unittest.TestCase):
 
     def assertTourneyPrizes(self, prizes_specs, quota, register_i, assert_prizes):
         tourney = PokerTournament(
-            dirs = [path.join(TESTS_PATH, 'conf')],
+            dirs = [path.join(TESTS_PATH, '../conf')],
             prizes_specs=prizes_specs,
             start_time = time.time() + 2000,
             sit_n_go = 'n',

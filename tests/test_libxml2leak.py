@@ -83,38 +83,38 @@ class LeakTestCase(unittest.TestCase):
 
     def test01_config(self):
         def func():
-            config = pokerengineconfig.Config([path.join(TESTS_PATH, 'conf')])
+            config = pokerengineconfig.Config([path.join(TESTS_PATH, '../conf')])
             config.load('poker.holdem.xml')
         self.leakWatch(func, "pokerengineconfig.Config")
 
     def test02_libxml_freeDoc(self):
         def func():
-            mydoc = libxml2.parseFile(path.join(TESTS_PATH, 'conf/poker.holdem.xml'))
+            mydoc = libxml2.parseFile(path.join(TESTS_PATH, '../conf/poker.holdem.xml'))
             mydoc.freeDoc()
         self.leakWatch(func, "libxml2.freeDoc")
 
     def test03_game_setVariant(self):
-        game = pokergame.PokerGame("poker.%s.xml", False, [path.join(TESTS_PATH, 'conf')])
+        game = pokergame.PokerGame("poker.%s.xml", False, [path.join(TESTS_PATH, '../conf')])
         def func():
             game.setVariant("holdem")
         self.leakWatch(func, "game.setVariant")
 
     def test04_config_load(self):
-        config = pokerengineconfig.Config([path.join(TESTS_PATH, 'conf')])
+        config = pokerengineconfig.Config([path.join(TESTS_PATH, '../conf')])
         def func():
             config.load('poker.holdem.xml')
         self.leakWatch(func, "Config.load")
         config.free()
 
     def test05_config_reload(self):
-        config = pokerengineconfig.Config([path.join(TESTS_PATH, 'conf')])
+        config = pokerengineconfig.Config([path.join(TESTS_PATH, '../conf')])
         config.load('poker.holdem.xml')
         def func():
             config.reload()
         self.leakWatch(func, "Config.reload")
 
     def test06_config_save(self):
-        config = pokerengineconfig.Config([path.join(TESTS_PATH, 'conf')])
+        config = pokerengineconfig.Config([path.join(TESTS_PATH, '../conf')])
         config.load('poker.holdem.xml')
         config.path = "leaktmp"
         def func():
@@ -123,14 +123,14 @@ class LeakTestCase(unittest.TestCase):
         os.unlink("leaktmp")
 
     def test07_config_headerGet(self):
-        config = pokerengineconfig.Config([path.join(TESTS_PATH, 'conf')])
+        config = pokerengineconfig.Config([path.join(TESTS_PATH, '../conf')])
         config.load('poker.holdem.xml')
         def func():
             config.headerGet("/poker/@poker_engine_version")
         self.leakWatch(func, "Config.headerGet")
 
     def test08_config_headerGetProperties(self):
-        config = pokerengineconfig.Config([path.join(TESTS_PATH, 'conf')])
+        config = pokerengineconfig.Config([path.join(TESTS_PATH, '../conf')])
         config.load('poker.holdem.xml')
         def func():
             config.headerGetProperties("/poker")

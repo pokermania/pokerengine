@@ -41,7 +41,7 @@ logger.setLevel(10)
 from pokerengine import pokerprizes
 
 class PokerPrizesTestCase(unittest.TestCase):
-    TestConfDirectory = path.join(TESTS_PATH, 'conf')
+    TestConfDirectory = path.join(TESTS_PATH, '../conf')
         
     # ---------------------------------------------------------
     def setUp(self):

@@ -42,9 +42,9 @@ _initial_money = 1000
 class TestDeal(unittest.TestCase):
 
     def setUp(self):
-        self.game = PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, 'conf')])
+        self.game = PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, '../conf')])
         self.game.setVariant("7stud")
-        self.game.setBettingStructure("ante-10-20-limit")
+        self.game.setBettingStructure("5-10_50-1000000_ante-limit")
 
     def tearDown(self):
         del self.game

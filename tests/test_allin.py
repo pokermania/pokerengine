@@ -45,7 +45,7 @@ _initial_money = 1000
 class TestAllIn(unittest.TestCase):
 
     def setUp(self, variant, betting):
-        self.game = PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, 'conf')])
+        self.game = PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, '../conf')])
         self.game.setVariant(variant)
         self.game.setBettingStructure(betting)
 
@@ -93,7 +93,7 @@ class TestAllIn(unittest.TestCase):
 class TestCommonAllIn(TestAllIn):
 
     def setUp(self):
-        TestAllIn.setUp(self, "holdem", "2-4-no-limit")
+        TestAllIn.setUp(self, "holdem", "2-4_40-400_no-limit")
 
     def test1_AllIn(self):
         #
@@ -196,7 +196,7 @@ class TestCommonAllIn(TestAllIn):
 class TestAllInCase2(TestAllIn):
 
     def setUp(self):
-        TestAllIn.setUp(self, "holdem", "2-4-no-limit")
+        TestAllIn.setUp(self, "holdem", "2-4_40-400_no-limit")
 
     def test1_AllIn(self):
         #
@@ -251,7 +251,7 @@ class TestAllInCase2(TestAllIn):
 class TestRaise(TestAllIn):
 
     def setUp(self):
-        TestAllIn.setUp(self, "holdem", "10-20-no-limit")
+        TestAllIn.setUp(self, "holdem", "10-20_200-2000_no-limit")
 
     def test1_Raise(self):
         #
@@ -277,7 +277,7 @@ class TestRaise(TestAllIn):
 class TestHoldemAllIn(TestAllIn):
 
     def setUp(self):
-        TestAllIn.setUp(self, "holdem", "0-0-limit")
+        TestAllIn.setUp(self, "holdem", "0-0_50-5000_limit")
         
     def test1_ChipLeft(self):
         """
@@ -312,7 +312,7 @@ class TestHoldemAllIn(TestAllIn):
 class TestOmaha8AllIn(TestAllIn):
 
     def setUp(self):
-        TestAllIn.setUp(self, "omaha8", "0-0-limit")
+        TestAllIn.setUp(self, "omaha8", "0-0_50-5000_limit")
         
     def dealCardsOne(self):
         """
@@ -483,7 +483,7 @@ class TestOmaha8AllIn(TestAllIn):
 class TestHoldemPlayBoard(TestAllIn):
 
     def setUp(self):
-        TestAllIn.setUp(self, "holdem", "0-0-limit")
+        TestAllIn.setUp(self, "holdem", "0-0_50-5000_limit")
         
     def dealCardsOne(self):
         """
@@ -520,7 +520,7 @@ class TestHoldemPlayBoard(TestAllIn):
 class TestHoldemSplit(TestAllIn):
 
     def setUp(self):
-        TestAllIn.setUp(self, "holdem", "0-0-limit")
+        TestAllIn.setUp(self, "holdem", "0-0_50-5000_limit")
         
     def dealCardsOne(self):
         """
