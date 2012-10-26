@@ -26,6 +26,7 @@ from math import ceil
 from types import StringType
 from pprint import pformat
 import time, random
+from twisted.internet import protocol, reactor, defer
 
 def tournament_seconds():
     return time.time()
@@ -290,8 +291,20 @@ class PokerTournament:
         self.callback_cancel = lambda tournament: True
         self.loadPayouts()
         self.updateRegistering()
+        reactor.callLater(20, self._rebalance_games)
 
-    
+    def _rebalance_games(self):
+        empty_game_count = 0
+        for game in self.games:
+            if game.allCount() < ((self.seats_per_game / 2)+ 1):
+                empty_game_count += 1
+            if empty_game_count >= 2:
+                self.balanceGames()
+                break
+
+        if len(self.games) >= 2:
+            reactor.callLater(20, self._rebalance_games)
+
     def _getWinners(self):
         """returns a list of serials of players that already lost the game."""
         return [k for (k,_v) in sorted(self.winners_dict.iteritems(), key=lambda (a,b): (b,a), reverse=True)]
@@ -634,8 +647,8 @@ class PokerTournament:
             self.changeState(TOURNAMENT_STATE_COMPLETE)
             return False
         else:
-            if loosers_count > 0 or self.need_balance:
-                self.balanceGames()
+            # if loosers_count > 0 or self.need_balance:
+            #     self.balanceGames()
             if game_id in self.id2game:
                 self.updateBreak(game_id)
             else:
