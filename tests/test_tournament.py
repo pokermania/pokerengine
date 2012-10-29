@@ -582,7 +582,7 @@ class TestCreate(unittest.TestCase):
             for game in tourney.games:
                 game.beginTurn(turn)
                 tourney.removeBrokePlayers(game.id, now=True)
-                if not tourney.tourneyEnd(game.id):
+                if game.id in tourney.id2game and not tourney.tourneyEnd(game.id):
                     running = False 
                     break
 
@@ -638,7 +638,7 @@ class TestCreate(unittest.TestCase):
                 if game.sitCount() > 1:
                     game.beginTurn(turn)
                     tourney.removeBrokePlayers(game.id, now=True)
-                    if not tourney.tourneyEnd(game.id):
+                    if game.id in tourney.id2game and not tourney.tourneyEnd(game.id):
                         running = False 
                         break
 

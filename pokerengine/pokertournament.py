@@ -315,6 +315,7 @@ class PokerTournament:
         assert serial in self._winners_dict_tmp or now, 'player %d not found in winners_dict_tmp' % serial
         pos = self._winners_dict_tmp.pop(serial) if not now else self._incrementToNextWinnerPosition()
         self.addWinner(serial, pos)
+        self.balanceGames()
 
     def addWinner(self, serial, pos):
         """adds the serial to winnerslist"""
@@ -603,7 +604,7 @@ class PokerTournament:
             self._winners_dict_tmp[serial] = pos
             self.callback_remove_player(self, game_id, serial, now=now)
 
-        self.need_balance = bool(loosers)
+        self.need_balance = bool(self.need_balance or loosers)
 
         return len(loosers)
 
@@ -614,7 +615,6 @@ class PokerTournament:
     def tourneyEnd(self, game_id):
         game = self.id2game[game_id]
         loosers = game.serialsBroke()
-        loosers_count = len(loosers)
         if len(self.winners) + 1 == self.registered:
             game = self.games[0]
             remainingPlayers = game.playersAll()
@@ -634,13 +634,12 @@ class PokerTournament:
             self.changeState(TOURNAMENT_STATE_COMPLETE)
             return False
         else:
-            if loosers_count > 0 or self.need_balance:
+            if self.need_balance or loosers:
                 self.balanceGames()
             if game_id in self.id2game:
                 self.updateBreak(game_id)
             else:
-                #
-                # This happens if game_id was destroyed by the call to balanceGames above
+                # this happens if game_id was destroyed by the call to balanceGames above
                 self.updateBreak(0)
             return True
         
@@ -676,8 +675,8 @@ class PokerTournament:
             else:
                 self.callback_move_player(self, from_id, to_id, serial)
 
-        ( want_players, provide_players ) = equalizeCandidates(self.games)
-        self.need_balance = want_players and not provide_players
+        want_players, provide_players = equalizeCandidates(self.games)
+        self.need_balance = bool(want_players and not provide_players)
         if self.need_balance:
             self.log.debug("balanceGames: postponed game equalization")
         
