@@ -31,9 +31,14 @@ from os import path
 
 TESTS_PATH = path.dirname(path.realpath(__file__))
 sys.path.insert(0, path.join(TESTS_PATH, ".."))
+sys.path.insert(1, path.join(TESTS_PATH, "../../common"))
+
+from log_history import log_history
 
 import time
-from string import split
+
+import reflogging
+log = reflogging.root_logger.get_child('test-tournament')
 
 from pokerengine.pokergame import PokerGameServer
 from pokerengine.pokertournament import equalizeGames, breakGames, PokerTournament
@@ -63,7 +68,7 @@ class TestTournament(unittest.TestCase):
             game.setVariant("7stud")
             game.setBettingStructure("0-0_50-5000_limit")
             game.id = i
-            game.shuffler = PokerPredefinedDecks(map(lambda deck: game.eval.string2card(split(deck)), predefined_decks))
+            game.shuffler = PokerPredefinedDecks(map(lambda deck: game.eval.string2card(deck.split(' ')), predefined_decks))
             self.games.append(game)
 
     def tearDown(self):
@@ -402,7 +407,7 @@ class TestRebuy(unittest.TestCase):
         setMoney(1)
         self.assertEqual(tourney.winners, [])
 
-        # Even removeBrokePlayers and endTurn doesn't removed him, 
+        # Even removeBrokePlayers and endTurn doesn't remove him, 
         # because he has a chance for rebuy
         tourney.removeBrokePlayers(1)
         self.assertEqual(tourney.winners, [])
