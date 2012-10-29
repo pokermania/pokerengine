@@ -496,6 +496,62 @@ class TestRebuy(unittest.TestCase):
         self.assertEqual(sortTmpWinner(), [2])
         removePlayer([1])
         self.assertEqual(sortTmpWinner(), [1,2])
+    
+    def testUnequalTables(self):
+            
+        tourney = PokerTournament(
+            name = 'Test create',
+            players_quota = 4,
+            dirs = [path.join(TESTS_PATH, '../conf')],
+            seats_per_game = 2
+        )
+        
+        def tourneySoftRemovePlayer(self, game_id, serial, now):
+            game = self.id2game[game_id]
+            game.removePlayer(serial)
+            self.finallyRemovePlayer(serial, now)
+        
+        def gameCallbackTourneyEndTurn(game_id, game_type, *args):
+            if game_type == 'end':
+                tourney.endTurn(game_id)
+                tourney.tourneyEnd(game_id)
+                
+        for serial in xrange(1,5): self.assertTrue(tourney.register(serial))
+        
+        #
+        # register the tourney endTurn callback for all games 
+        for g in tourney.games: g.registerCallback(gameCallbackTourneyEndTurn)
+        #
+        # register the custom remove_player callback
+#        tourney.callback_remove_player = tourneySoftRemovePlayer
+        tourney.callback_remove_player = lambda *a, **kw: None
+        
+        players = {}
+        for g in tourney.games:
+            for (serial,player) in g.serial2player.iteritems(): players[serial] = player
+        
+        for g in tourney.games:
+            g.beginTurn(1)
+        
+        broke_info = {}
+        # in all games, one of the two players is getting broke.
+        for g in tourney.games:
+            serial = g.getSerialInPosition()
+            broke_player = players[serial]
+            broke_info[serial] = g.id
+            broke_player.money = 0
+            g.fold(serial)
+        
+        # call removePlayer functions only now
+        for serial, game_id in broke_info.iteritems(): 
+            tourneySoftRemovePlayer(tourney, game_id, serial, False)
+            
+        # print 'games', ', '.join('[%d: state: %s, players: %s]' % (g.id,g.state,g.serial2player.keys()) for g in tourney.games)
+        # print 'winners', tourney.winners
+        # print 'winners_tmp', tourney._winners_dict_tmp
+        self.assertEquals(len(tourney.games),1,'there should be only one game left (games: %s)' % tourney.id2game.keys())
+        
+        
 
 class TestCreate(unittest.TestCase):
 
