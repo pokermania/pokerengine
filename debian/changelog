@@ -1,3 +1,15 @@
+poker-engine (1.5.4-1) pokermania; urgency=low
+
+  * 8b3e15d fix for testUnequalTables, refs #6613
+  * bf84bcc added test_tournament.testUnequalTables in order to test missing balancing
+  * cdd0187 add log_history to test_tournament
+  * f941be2 Revert "fix multitable tourneys balance games problem"
+  * 055cedb fix multitable tourneys balance games problem
+  * 60459ce added support for rebuys during a tourney, refs #6613
+  * 6fb08e5 betting structure names fixed
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Wed, 31 Oct 2012 12:00:00 +0200
+
 poker-engine (1.5.3-1) pokermania; urgency=low
 
   * 4899145 rebuy history will be added even if the player is playing right now, fixes #7133
