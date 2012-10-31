@@ -1,3 +1,9 @@
+poker-engine (1.5.4-2) pokermania; urgency=low
+
+  * 3f41e1b added bc dependency
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Wed, 31 Oct 2012 18:00:00 +0200
+
 poker-engine (1.5.4-1) pokermania; urgency=low
 
   * 8b3e15d fix for testUnequalTables, refs #6613
