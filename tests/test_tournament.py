@@ -518,13 +518,7 @@ class TestRebuy(unittest.TestCase):
                 
         for serial in xrange(1,5): self.assertTrue(tourney.register(serial))
         
-        #
-        # register the tourney endTurn callback for all games 
         for g in tourney.games: g.registerCallback(gameCallbackTourneyEndTurn)
-        #
-        # register the custom remove_player callback
-#        tourney.callback_remove_player = tourneySoftRemovePlayer
-        tourney.callback_remove_player = lambda *a, **kw: None
         
         players = {}
         for g in tourney.games:
@@ -542,13 +536,6 @@ class TestRebuy(unittest.TestCase):
             broke_player.money = 0
             g.fold(serial)
         
-        # call removePlayer functions only now
-        for serial, game_id in broke_info.iteritems(): 
-            tourneySoftRemovePlayer(tourney, game_id, serial, False)
-            
-        # print 'games', ', '.join('[%d: state: %s, players: %s]' % (g.id,g.state,g.serial2player.keys()) for g in tourney.games)
-        # print 'winners', tourney.winners
-        # print 'winners_tmp', tourney._winners_dict_tmp
         self.assertEquals(len(tourney.games),1,'there should be only one game left (games: %s)' % tourney.id2game.keys())
         
         
