@@ -618,9 +618,8 @@ class PokerTournament:
         if len(self.winners) + 1 == self.registered:
             game = self.games[0]
             remainingPlayers = game.playersAll()
-            assert len(remainingPlayers) == 1, 'more than one player remaining, %r ' % [p.serial for p in remainingPlayers]
             player = remainingPlayers[0]
-            self._winners_dict_tmp[player.serial]=time.time()
+            self._winners_dict_tmp[player.serial] = self._incrementToNextWinnerPosition()
             self.callback_remove_player(self, game.id, player.serial, now=True)
             money = player.money
             player.money = 0
