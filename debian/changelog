@@ -1,3 +1,13 @@
+poker-engine (1.5.4-3) pokermania; urgency=low
+
+  * ebb9f9b remove obsolete tourneySoftRemovePlayer hackery because old behavior is reused
+  * 669618c Fix that one player could attend multiple tourneys
+  * c8e1f3c tourney balance games fix
+  * d3a7f75 sit_n_go tourneys generate the prizes object similar to regular tourneys now, refs #7284
+  * fb647b7 don't use time.time for winners_dict_tmp position
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Wed, 05 Nov 2012 17:30:00 +0200
+
 poker-engine (1.5.4-2) pokermania; urgency=low
 
   * 3f41e1b added bc dependency
