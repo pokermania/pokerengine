@@ -84,12 +84,9 @@ class PokerPrizesAlgorithm(PokerPrizes):
         return prizes
 
 class PokerPrizesTable(PokerPrizes):
-    def __init__(self, buy_in_amount, player_count = 0, guarantee_amount = 0, config_dirs = ['.'],
-                 config_file_name = "poker.payouts.xml"):
+    def __init__(self, buy_in_amount, player_count = 0, guarantee_amount = 0, config_dirs = ['.'], config_file_name = "poker.payouts.xml"):
         self._loadPayouts(config_dirs, config_file_name)
-
-        PokerPrizes.__init__(self, buy_in_amount = buy_in_amount, player_count = player_count,
-                             guarantee_amount = guarantee_amount)
+        PokerPrizes.__init__(self, buy_in_amount=buy_in_amount, player_count=player_count, guarantee_amount=guarantee_amount)
 
     def _loadPayouts(self, dirs, config_file_name):
         config = Config(dirs)
@@ -97,7 +94,7 @@ class PokerPrizesTable(PokerPrizes):
         self.payouts = []
         for node in config.header.xpathEval("/payouts/payout"):
             properties = config.headerNodeProperties(node)
-            self.payouts.append(( int(properties['max']), map(lambda percent: float(percent) / 100, node.content.split())))
+            self.payouts.append((int(properties['max']), [float(percent)/100 for percent in node.content.split()]))
 
     def getPrizes(self):
         buy_in = self.buy_in

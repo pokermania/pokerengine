@@ -323,8 +323,7 @@ class PokerTournament:
         self.winners_dict[serial] = pos
 
     def loadPayouts(self):
-        player_count = self.players_quota if self.sit_n_go == 'y' else self.registered
-        self.prizes_object =  pokerprizes.__dict__['PokerPrizes' + self.prizes_specs.capitalize()](buy_in_amount = self.buy_in, player_count = player_count, guarantee_amount = self.prize_min, config_dirs = self.dirs)
+        self.prizes_object = pokerprizes.__dict__['PokerPrizes' + self.prizes_specs.capitalize()](buy_in_amount = self.buy_in, player_count = self.registered, guarantee_amount = self.prize_min, config_dirs = self.dirs)
 
     def canRun(self):
         if self.start_time < tournament_seconds():
@@ -492,8 +491,7 @@ class PokerTournament:
             self.players[serial] = name
             self.registered += 1
             self.rank2prize = None
-            if self.sit_n_go != 'y':
-                self.prizes_object.addPlayer()
+            self.prizes_object.addPlayer()
             if self.state == TOURNAMENT_STATE_REGISTERING:
                 self.updateRunning()
             if self.state == TOURNAMENT_STATE_RUNNING:
@@ -506,9 +504,8 @@ class PokerTournament:
         if self.state == TOURNAMENT_STATE_REGISTERING:
             del self.players[serial]
             self.registered -= 1
-            if self.sit_n_go != 'y':
-                self.prizes_object.removePlayer()
-                self.rank2prize = None
+            self.prizes_object.removePlayer()
+            self.rank2prize = None
             return True
         else:
             return False
