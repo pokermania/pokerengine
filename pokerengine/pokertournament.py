@@ -315,7 +315,6 @@ class PokerTournament:
         assert serial in self._winners_dict_tmp or now, 'player %d not found in winners_dict_tmp' % serial
         pos = self._winners_dict_tmp.pop(serial) if not now else self._incrementToNextWinnerPosition()
         self.addWinner(serial, pos)
-        self.balanceGames()
 
     def addWinner(self, serial, pos):
         """adds the serial to winnerslist"""

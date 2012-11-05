@@ -347,7 +347,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         tournament = pokertournament.PokerTournament(**arguments)
         prizes = tournament.prizes()
         self.failUnless(tournament.register(1))
-        self.assertEquals(prizes, tournament.prizes())
+        self.assertNotEquals(prizes, tournament.prizes())
         self.failUnless(tournament.unregister(1))
         self.assertEquals(prizes, tournament.prizes())
 
