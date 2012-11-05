@@ -286,7 +286,7 @@ class PokerTournament:
         self.callback_destroy_game = lambda tournament, game: True
         self.callback_move_player = lambda tournament, from_game_id, to_game_id, serial: self.movePlayer(from_game_id, to_game_id, serial)
         self.callback_remove_player = lambda tournament, game_id, serial, *rest, **kw: self.removePlayer(game_id, serial, *rest, **kw)
-        self.callback_reenter_game = lambda game_id, serial: True
+        self.callback_reenter_game = lambda tourney_serial, serial: True
         self.callback_cancel = lambda tournament: True
         self.loadPayouts()
         self.updateRegistering()
@@ -587,7 +587,7 @@ class PokerTournament:
         """
         assert serial in self._winners_dict_tmp
         self._winners_dict_tmp.pop(serial)
-        self.callback_reenter_game(game_id, serial)
+        self.callback_reenter_game(self.serial, serial)
 
 
     def removeBrokePlayers(self, game_id, now=False):
