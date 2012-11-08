@@ -977,7 +977,7 @@ class PokerGame:
         try:
             return self.serial2player[serial]
         except KeyError:
-            self.log.warn("getPlayer(%d) returned None", serial, exc_info=1)
+            self.log.inform("getPlayer(%d) returned None", serial)
             return None
 
     def getPlayerMoney(self, serial):
