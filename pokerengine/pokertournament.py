@@ -64,7 +64,7 @@ def equalizeCandidates(games):
     return ( want_players, provide_players )
 
 def equalizeGames(games, log = None):
-    ( want_players, provide_players ) = equalizeCandidates(games)
+    want_players, provide_players = equalizeCandidates(games)
 
     results = []
 
@@ -72,7 +72,7 @@ def equalizeGames(games, log = None):
         return results
 
     consumer_index = 0
-    for (id, serials) in provide_players:
+    for (game_id, serials) in provide_players:
         want_players.sort(key=lambda i: i[1])
         if want_players[0][1] == 0:
             #
@@ -82,13 +82,13 @@ def equalizeGames(games, log = None):
 
         while len(serials) > 0:
             distributed = False
-            for i in xrange(len(want_players)):
+            for _i in xrange(len(want_players)):
                 consumer = want_players[consumer_index]
-                consumer_index = ( consumer_index + 1 ) % len(want_players)
+                consumer_index = (consumer_index+1) % len(want_players)
                 if consumer[1] > 0:
                     consumer[1] -= 1
                     serial = serials.pop(0)
-                    results.append(( id, consumer[0], serial ))
+                    results.append(( game_id, consumer[0], serial ))
                     distributed = True
                     if len(serials) <= 0:
                         break
@@ -104,48 +104,47 @@ def breakGames(games, log=None):
     if len(games) < 2:
         return []
 
-    games = games[:]
     #
     # Games not running first, then games running.
     # Each is sorted with games that have least players first.
     #
-    games.sort(cmp=lambda a,b: cmp(b.isEndOrNull(),a.isEndOrNull()) or cmp(a.allCount(),b.allCount()))
+    games = sorted(games, key=lambda game: (not game.isEndOrNull(), game.allCount()))
 
-    to_break = [ {
-        "id": game.id,
-        "seats_left": game.max_players - game.allCount(),
-        "serials": game.serialsAll(),
-        "to_add": [],
-        "running": not game.isEndOrNull() } for game in games ]
+    to_break = [
+        {
+            "id": game.id,
+            "seats_left": game.max_players-game.allCount(),
+            "serials": game.serialsAll(),
+            "to_add": [],
+            "running": not game.isEndOrNull()
+        } for game in games 
+    ]
 
-    if log:
-        log.debug("breakGames: %s", to_break)
+    if log: log.debug("breakGames: %s", to_break)
     results = []
     while True:
         result = breakGame(to_break[0], to_break[1:], log)
-        to_break = filter(lambda game: game["seats_left"] > 0, to_break[1:])
+        to_break = [game for game in to_break[1:] if game["seats_left"] > 0]
         if result == False:
             break
         results.extend(result)
         if len(to_break) < 2:
             break
 
-    if log and len(results) > 0:
-        log.debug("breakGames: %s", pformat(results))
+    if log and results: log.debug("breakGames: %s", pformat(results))
 
     return results
 
 def breakGame(to_break, to_fill, log = None):
     #
-    # Can't break a game in which players were moved or
-    # that are running.
+    # Can't break a game in which players were moved.
     #
     if len(to_break["to_add"]) > 0 or to_break["running"]:
         return False
     
-    seats_left = sum([ game["seats_left"] for game in to_fill ])
+    seats_left = sum(game["seats_left"] for game in to_fill)
     serials = to_break["serials"]
-    id = to_break["id"]
+    game_id = to_break["id"]
     #
     # Don't break a game if there is not enough seats at the
     # other games
@@ -164,10 +163,10 @@ def breakGame(to_break, to_fill, log = None):
             count = min(game["seats_left"], len(serials))
             game["to_add"].extend(serials[:count])
             game["seats_left"] -= count
-            result.append((id, game["id"], serials[:count]))
+            result.append((game_id, game["id"], serials[:count]))
             serials = serials[count:]
             if len(serials) <= 0:
-                break;
+                break
 
     return result
 

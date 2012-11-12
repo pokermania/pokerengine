@@ -236,7 +236,7 @@ class TestBreak(TestTournament):
         # Players from table 0 go to table 4
         # Players from table 1 to to table 3
         #
-        self.assertEqual(breakGames(self.games[:]), [
+        self.assertEqual(breakGames(self.games), [
             (0, 4, [0, 1, 2, 3, 4]),
             (1, 3, [104, 100, 101, 102, 103])
             ])
@@ -252,7 +252,7 @@ class TestBreak(TestTournament):
         # Players from table 1 go to table 4
         # Players from table 2 go to table 3
         #
-        self.assertEqual(breakGames(self.games[:]), [
+        self.assertEqual(breakGames(self.games), [
             (1, 4, [104, 100, 101, 102, 103]),
             (2, 3, [200, 201, 202, 203, 204])
             ])
@@ -273,7 +273,7 @@ class TestBreak(TestTournament):
         # Players from table 1 are spread on tables
         # 4, 3, 2
         #
-        self.assertEqual(breakGames(self.games[:]), [
+        self.assertEqual(breakGames(self.games), [
             (1, 4, [100, 101, 102]),
             (1, 3, [103, 104, 105]),
             (1, 2, [106])
@@ -295,7 +295,7 @@ class TestBreak(TestTournament):
         # 3, 4, 2. Table 3 is chosen first because it is the
         # table with the largest number of players.
         #
-        self.assertEqual(breakGames(self.games[:]), [
+        self.assertEqual(breakGames(self.games), [
             (1, 3, [100]),
             (1, 4, [101, 102, 103]),
             (1, 2, [104, 105, 106])
@@ -316,7 +316,7 @@ class TestBreak(TestTournament):
         # Can't break any table : 6 free seats and smallest table
         # has seven players.
         #
-        self.assertEqual(breakGames(self.games[:]), [])
+        self.assertEqual(breakGames(self.games), [])
 
     def test2(self):
         #
@@ -357,7 +357,7 @@ class TestBreak(TestTournament):
         #
         # Players from table 4 go to table 3
         #
-        self.assertEqual(breakGames(self.games[:]), [(4, 3, [400, 401, 402, 403, 404])])
+        self.assertEqual(breakGames(self.games), [(4, 3, [400, 401, 402, 403, 404])])
         
 class TestRebuy(unittest.TestCase):
 
