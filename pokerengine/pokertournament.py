@@ -598,8 +598,8 @@ class PokerTournament:
         for serial in new_loosers:
             self._winners_dict_tmp[serial] = pos
             self.callback_remove_player(self, game_id, serial, now=now)
-
-        self.need_balance = bool(self.need_balance or loosers)
+        if loosers:
+            self.need_balance = True
 
         return len(loosers)
 
