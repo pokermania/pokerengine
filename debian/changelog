@@ -1,3 +1,11 @@
+poker-engine (1.5.4-4) pokermania; urgency=low
+
+  * d5f1310 don't call tourneyEnd if the turn did not end
+  * f9e7a1e balanceGames: use key instead of cmp to sort
+  * 0869bd8 updated some debug messages (which where warn, now infrom)
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Tue, 13 Nov 2012 17:15:00 +0200
+
 poker-engine (1.5.4-3) pokermania; urgency=low
 
   * ebb9f9b remove obsolete tourneySoftRemovePlayer hackery because old behavior is reused
