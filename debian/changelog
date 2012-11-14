@@ -1,3 +1,9 @@
+poker-engine (1.5.4-5) pokermania; urgency=low
+
+  * update build system
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Tue, 14 Nov 2012 17:51:00 +0200
+
 poker-engine (1.5.4-4) pokermania; urgency=low
 
   * d5f1310 don't call tourneyEnd if the turn did not end
