@@ -1,3 +1,9 @@
+poker-engine (1.5.4-6) pokermania; urgency=low
+
+  * 9d8dbbb pokerconfigupgrade moved from sbin to bin
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Tue, 14 Nov 2012 18:03:00 +0200
+
 poker-engine (1.5.4-5) pokermania; urgency=low
 
   * update build system
