@@ -5682,7 +5682,7 @@ class PokerGameTestCase(unittest.TestCase):
         
         # FIXME check, if now a player that wants to play the small blind sits down, what happens
         
-    def testAllinWithDead(self):
+    def testAllInWithDead(self):
         """ Test Poker Game : Allin with dead blind and lost to the winner although the winner has less money """
 
         game = pokergame.PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, '../conf'), PokerGameTestCase.TestConfDirectory])
@@ -6402,7 +6402,6 @@ def GetTestedModule():
   
 # ---------------------------------------------------------
 def run():
-#    unittest.TestLoader.testMethodPrefix = "testMuckStateSitOut"
     try:
         import xmlrunner
         runner = xmlrunner.XMLTestRunner(output='build/tests')
