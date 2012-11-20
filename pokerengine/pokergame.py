@@ -1000,41 +1000,39 @@ class PokerGame:
             return False
 
     def addPlayer(self, serial, seat=-1, name=None):
-        if serial in self.serial2player:
-            player = self.serial2player[serial]
-            if seat == player.seat:
-                # Player already added on this seat
-                return True
-            else:
-                # Player already added on another seat
-                return False
+        "Add and return player if possible."
+        player = self.getPlayer(serial)
+        if player:
+            # check if player already seated, but on another seat
+            if seat > -1 and player.seat != seat:
+                return None
+            return player
 
-        if self.canAddPlayer(serial):
-            player = PokerPlayer(serial, name, self)
-            if self.is_directing:
-                if seat != -1:
-                    if seat in self.seats_left:
-                        player.seat = seat
-                        self.seats_left.remove(seat)
-                    else:
-                        self.log.inform("the seat %d is not among the remaining seats %s", seat, self.seats_left)
-                        return False
-                else:
-                    player.seat = self.seats_left.pop(0)
-            else:
-                if seat not in self.seats_left:
-                    self.log.inform("the seat %d is not among the remaining seats %s", seat, self.seats_left)
-                    return False
+        # check if seats left and game open
+        if not self.canAddPlayer(serial):
+            return None
 
-                player.seat = seat
-                self.seats_left.remove(seat)
+        # no random seat in non_direction games
+        if seat == -1 and not self.is_directing:
+            self.log.error("No random seats in non directing games!", refs=[('User', self, lambda x: serial)])
+            return None
 
-            self.log.debug("player %d gets seat %d", serial, player.seat)
+        # get seat if not given
+        elif seat == -1:
+            seat = self.seats_left[0]
 
-            self.serial2player[serial] = player
-            return True
-        else:
-            return False
+        # check if seat is amongst left seats
+        elif seat not in self.seats_left:
+            self.log.inform("the seat %d is not among the remaining seats %s", seat, self.seats_left)
+            return None
+
+        # finally add player
+        player = PokerPlayer(serial, name, self)
+        player.seat = seat
+        self.seats_left.remove(seat)
+        self.serial2player[serial] = player
+        self.log.debug("player %d gets seat %d", serial, seat)
+        return player
 
     def botPlayer(self, serial):
         self.serial2player[serial].bot = True

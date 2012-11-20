@@ -315,12 +315,13 @@ class PokerGameTestCase(unittest.TestCase):
         """Test Poker Game : Add a player without a selected seat"""
 
         # Add a new player
-        self.failUnless(self.game.addPlayer(1))
+        p1 = self.game.addPlayer(1)
+        self.failUnless(p1 != None)
         self.failUnless(self.game.isSeated(1))
         self.failUnlessEqual(self.game.seatsLeftCount(), 1)
                 
         # Try to add the same player
-        self.failIf(self.game.addPlayer(1))
+        self.failUnless(p1 == self.game.addPlayer(1))
         self.failUnlessEqual(self.game.seatsLeftCount(), 1)
         
         # Add a new player
@@ -387,16 +388,16 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.seatsLeftCount(), 1)
         
         # Try to add the same player on another seat
-        self.failIf(self.game.addPlayer(1,7))
+        self.failUnless(self.game.addPlayer(1,7) == None)
         self.failUnlessEqual(self.game.seatsLeftCount(), 1)
         
         # Try to add a new player on an invalid seat
-        self.failIf(self.game.addPlayer(2,3))
+        self.failUnless(self.game.addPlayer(2,3) == None)
         self.failIf(self.game.isSeated(2))
         self.failUnlessEqual(self.game.seatsLeftCount(), 1)
         
         # Try to add a new player on an unavailable seat
-        self.failIf(self.game.addPlayer(2,2))
+        self.failUnless(self.game.addPlayer(2,2) == None)
         self.failUnlessEqual(self.game.seatsLeftCount(), 1)
         
         # Add a player on the seat 7
@@ -428,8 +429,8 @@ class PokerGameTestCase(unittest.TestCase):
         for seat in seats:
             self.failUnlessEqual(seats[seat], 0)
         
-        self.failUnlessEqual(self.game.addPlayer(1, 2), True)
-        self.failUnlessEqual(self.game.addPlayer(2, 7), True)
+        self.failIf(self.game.addPlayer(1, 2) == None)
+        self.failIf(self.game.addPlayer(2, 7) == None)
         
         seats = self.game.seats()
         self.failUnlessEqual(seats[2], 1)
@@ -509,7 +510,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.serialsSitOut(), [])
         self.failUnlessEqual(self.game.playersSitOut(), [])
         
-        self.failUnlessEqual(self.game.addPlayer(1), True)
+        self.failIf(self.game.addPlayer(1) == None)
         
         player = self.GetPlayer(1)
         
@@ -981,7 +982,7 @@ class PokerGameTestCase(unittest.TestCase):
     def testPokerGamePayBuyIn(self):
         """Test Poker Game : Pay buy in"""
                 
-        self.failUnlessEqual(self.game.addPlayer(1), True)
+        self.failIf(self.game.addPlayer(1) == None)
         player = self.GetPlayer(1)
             
         # Get the buy in values
@@ -1027,7 +1028,7 @@ class PokerGameTestCase(unittest.TestCase):
     def testPokerGameSitRequested(self):
         """Test Poker Game : Sit requested"""
         
-        self.failUnlessEqual(self.game.addPlayer(1), True)
+        self.failIf(self.game.addPlayer(1) == None)
         self.game.sitRequested(1)
         player = self.GetPlayer(1)
         
@@ -1039,7 +1040,7 @@ class PokerGameTestCase(unittest.TestCase):
     def testPokerGameSit(self):
         """Test Poker Game : Sit"""
         
-        self.failUnlessEqual(self.game.addPlayer(1), True)
+        self.failIf(self.game.addPlayer(1) == None)
         player = self.GetPlayer(1)
         # Can not sit because of missing buyin
         self.failUnlessEqual(self.game.sit(1), False)
