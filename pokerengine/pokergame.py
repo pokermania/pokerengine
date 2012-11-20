@@ -974,11 +974,11 @@ class PokerGame:
             self.dealer_seat = seat
 
     def getPlayer(self, serial):
+        "Returns a player object if in game or None if serial is unknown."
         try:
             return self.serial2player[serial]
         except KeyError:
-            self.log.inform("getPlayer(%d) returned None", serial)
-            return None
+            self.log.debug("getPlayer(%d) returned None", serial)
 
     def getPlayerMoney(self, serial):
         player = self.getPlayer(serial)
