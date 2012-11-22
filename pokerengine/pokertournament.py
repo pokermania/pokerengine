@@ -549,16 +549,16 @@ class PokerTournament:
         self.players_quota = games_count * self.seats_per_game
         players = list(self.players.iteritems()) 
         shuffler.shuffle(players)
-        for id in xrange(1, games_count + 1):
+        for game_id in xrange(1, games_count + 1):
             game = self.callback_create_game(self)
             game.setTime(0)
             game.setVariant(self.variant)
             game.setBettingStructure(self.betting_structure)
             game.setMaxPlayers(self.seats_per_game)
-            if game.id == 0: game.id = id
+            if game.id == 0: game.id = game_id
 
             buy_in = game.buyIn()
-            for seat in xrange(self.seats_per_game):
+            for _seat in xrange(self.seats_per_game):
                 if not players: break
                 serial,name = players.pop()
                 game.addPlayer(serial,name=name)

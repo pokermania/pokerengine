@@ -836,9 +836,7 @@ class PokerGame:
 
     def autoPlayerFoldNextTurn(self, serial):
         player = self.serial2player[serial]
-        if not player.auto_player_fold_next_turn:
-            player.auto_player_fold_next_turn = True
-
+        player.auto_player_fold_next_turn = True
         return True
 
     def sitOutNextTurn(self, serial):
@@ -880,7 +878,8 @@ class PokerGame:
         player = self.serial2player[serial]
         
         if player.isSit() and not player.sit_out_next_turn and not player.isAuto():
-            self.log.inform("sit: refuse to sit player %d because is already seated.", serial)
+            if self.is_directing:
+                self.log.inform("sit: refuse to sit player %d because is already seated.", serial)
             return False
         
         if not player.isBuyInPayed() or self.isBroke(serial):
@@ -2555,12 +2554,10 @@ class PokerGame:
         player = self.getPlayerInPosition()
         serial = player.serial
 
-        self.log.debug("Player(%s) isBot(%s) isSitOut(%s) isAuto(%s) APPolicy(%s) foldNext(%s)" \
-            % (
-                serial, player.isBot(), player.isSitOut(), player.isAuto(),
-                player.auto_player_policy, player.auto_player_fold_next_turn
-            )
-        )
+        self.log.debug("Player(%s) isBot(%s) isSitOut(%s) isAuto(%s) APPolicy(%s) foldNext(%s)" % (
+            serial, player.isBot(), player.isSitOut(), player.isAuto(),
+            player.auto_player_policy, player.auto_player_fold_next_turn
+        ))
         if player.isBot():
             actions = set(self.possibleActions(serial))
         elif (player.isSitOut() or player.isAuto()):
