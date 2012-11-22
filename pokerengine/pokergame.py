@@ -2571,7 +2571,7 @@ class PokerGame:
                     # A player who is sitting but not playing (sitOut) is played by a bot
                     # but should never raise.
                     #
-                    actions -= set(['raise'])
+                    actions -= set(["raise"])
                 elif player.auto_player_policy == AUTO_PLAYER_POLICY_FOLD:
                     actions = set(["fold"])
             else:
@@ -2581,7 +2581,7 @@ class PokerGame:
 
         if actions:
             if player.raise_count >= 3:
-                actions -= set(['raise'])
+                actions -= set(["raise"])
             (desired_action, _ev) = self.__botEval(serial)
             self.log.debug("__autoPlay desired action %s", desired_action)
             # try to find the next best action if not found in possible actions
