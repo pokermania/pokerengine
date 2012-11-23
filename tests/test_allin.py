@@ -566,12 +566,7 @@ def GetTestSuite():
     return suite
 
 def run():
-    try:
-        import xmlrunner
-        runner = xmlrunner.XMLTestRunner(output='build/tests')
-    except ImportError:
-        runner = unittest.TextTestRunner()
-    return runner.run(GetTestSuite())
+    return unittest.TextTestRunner().run(GetTestSuite())
     
 if __name__ == '__main__':
     if run().wasSuccessful():
