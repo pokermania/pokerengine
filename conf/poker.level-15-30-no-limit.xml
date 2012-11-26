@@ -15,7 +15,7 @@
     </variants>
 
     <variants ids="7stud 7stud8">
-      <round name="pre-flop" min_pow_level="3000" cap="-1"/>
+      <round name="first" min_pow_level="3000" cap="-1"/>
       <round name="third" min_pow_level="3000" cap="-1"/>
       <round name="fourth" min_pow_level="3000" cap="-1"/>
       <round name="fifth" min_pow_level="3000" cap="-1"/>
