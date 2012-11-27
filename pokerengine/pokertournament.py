@@ -614,6 +614,7 @@ class PokerTournament:
         if success == True:
             game.rebuy(serial, game.buyIn())
             self.reenterGame(game.id, serial)
+            self.prizes_object.rebuy()
             return (True, None)
         else:
             return (False, reason)

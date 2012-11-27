@@ -35,12 +35,16 @@ class PokerPrizes:
         self.buy_in = buy_in_amount
         self.player_count = player_count
         self.guarantee_amount = guarantee_amount
+        self.rebuy_count = 0
 
     def addPlayer(self):
         self.player_count += 1
 
     def removePlayer(self):
         self.player_count -= 1
+
+    def rebuy(self):
+        self.rebuy_count += 1
 
     def getPrizes(self):
         errStr = "getPrizes NOT IMPLEMENTED IN ABSTRACT BASE CLASS"
@@ -68,8 +72,9 @@ class PokerPrizesAlgorithm(PokerPrizes):
         else:
             winners = int(candidates_count * 0.1)
 
+        buy_in_count = candidates_count + self.rebuy_count
         prizes = []
-        prize_pool = max(self.guarantee_amount, buy_in * candidates_count)
+        prize_pool = max(self.guarantee_amount, buy_in * buy_in_count)
         money_left = prize_pool
         while winners > 0:
             if money_left / winners < max(1, prize_pool / 100, int(buy_in * 2.5)):
@@ -102,7 +107,7 @@ class PokerPrizesTable(PokerPrizes):
             if self.player_count <= maximum:
                 break
 
-        total = max(self.guarantee_amount, self.player_count * buy_in)
+        total = max(self.guarantee_amount, (self.player_count + self.rebuy_count) * buy_in)
         prizes = map(lambda percent: int(total * percent), payouts)
         #
         # What's left because of rounding errors goes to the tournament winner
