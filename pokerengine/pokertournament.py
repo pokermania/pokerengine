@@ -287,6 +287,7 @@ class PokerTournament:
         self.callback_remove_player = lambda tournament, game_id, serial, *rest, **kw: self.removePlayer(game_id, serial, *rest, **kw)
         self.callback_reenter_game = lambda tourney_serial, serial: True
         self.callback_cancel = lambda tournament: True
+        self.callback_rebuy = lambda tournament, serial, game_id, amount: (True, None)
         self.loadPayouts()
         self.updateRegistering()
 
@@ -337,13 +338,22 @@ class PokerTournament:
         else:
             return False
 
-    def isRebuyAllowed(self, serial):
+    def isRebuyAllowed(self, serial="unknown"):
+        """
+        returns True if a rebuy is possible in this tourney at this moment.
+        the optional parameter serial could be used for debug messages in case of an error
+        """
         now = tournament_seconds()
         if (self.start_time + self.rebuy_delay) > now:
             return True
         else:
             explain = "st(%s) + delay(%s) == (%s) < now(%s)" %(self.start_time, self.rebuy_delay, self.start_time+self.rebuy_delay, now)
-            self.log.warn("rebuy during tourney %s not allowed for player %s [%s]" % (self.serial, serial, explain))
+            self.log.warn("rebuy during tourney %s not allowed: player %s [%s]" % (self.serial, serial, explain))
+            return False
+
+    def isRebuyAllowedForUser(self, serial):
+        """return True if User could rebuy but ignores if tourney would allow a rebuy"""
+        return True
 
     def getRank(self, serial):
         try:
@@ -587,6 +597,26 @@ class PokerTournament:
         assert serial in self._winners_dict_tmp
         self._winners_dict_tmp.pop(serial)
         self.callback_reenter_game(self.serial, serial)
+
+    def rebuy(self, serial):
+        game = [g for g in self.games if g.getPlayer(serial)][0]
+
+        if not self.isRebuyAllowed(serial):
+            return (False, "timeout")
+
+        if not self.isRebuyAllowedForUser(serial):
+            return (False, "user")
+
+        amount = self.buy_in
+        currency_serial = 1
+
+        success, reason = self.callback_rebuy(self, serial, game.id, amount)
+        if success == True:
+            game.rebuy(serial, game.buyIn())
+            self.reenterGame(game.id, serial)
+            return (True, None)
+        else:
+            return (False, reason)
 
 
     def removeBrokePlayers(self, game_id, now=False):

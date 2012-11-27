@@ -365,7 +365,8 @@ class TestRebuy(unittest.TestCase):
         self.tourney = PokerTournament(name = 'Test create',
             players_quota = 4,
             dirs = [path.join(TESTS_PATH, '../conf')],
-            seats_per_game = 4)
+            seats_per_game = 4,
+            rebuy_delay = 600,)
         for serial in xrange(1,5):
             self.assertTrue(self.tourney.register(serial))
 
@@ -388,23 +389,33 @@ class TestRebuy(unittest.TestCase):
         tourney = self.tourney
         game = self.game
         players = self.players
+        player3 = [p for p in players if p.serial == 3][0]
+        original_startmoney = player3.money
 
         def myremove_player(tournament, game_id, serial, now=False):
             if now:
                 tournament.removePlayer(game_id, serial, now)
 
         tourney.callback_remove_player = myremove_player
+        def my_rebuy(tournament, serial, game_id, amount):
+            self.assertEqual(game_id, game.id)
+            self.assertEqual(tourney.buy_in, amount)
+            if serial == 1:
+                return (False, "test")
+            return (True, None)
 
-        def setMoney(serial, money=0):
+        tourney.callback_rebuy = my_rebuy
+
+
+        def looseMoney(serial):
             for player in players:
                 if player.serial != serial:
                     continue
-                player.money = money
-                if money == 0:
-                    self.assertTrue(game.isBroke(serial))
+                player.money = 0
+                self.assertTrue(game.isBroke(serial))
 
         # Player got broke
-        setMoney(1)
+        looseMoney(1)
         self.assertEqual(tourney.winners, [])
 
         # Even removeBrokePlayers and endTurn doesn't remove him, 
@@ -413,12 +424,18 @@ class TestRebuy(unittest.TestCase):
         self.assertEqual(tourney.winners, [])
 
         # Player 2 gets broke, and chooses not to rebuy
-        setMoney(2)
+        looseMoney(2)
         tourney.removeBrokePlayers(1)
         tourney.tourneyEnd(1)
         tourney.removePlayer(1, 2)
         self.assertEqual(tourney.winners, [2])
         self.assertEqual(tourney.getRank(2), 4)
+
+        # Player 1 tries to rebuy but has not enough money
+        err, reason = tourney.rebuy(1)
+        self.assertFalse(err)
+        # the error reason from our callback should be the same we get here
+        self.assertEquals(reason, "test")
 
         # After Player 1 Timed out, he will be also removed
         # Note: this changes the rank for player 2
@@ -430,33 +447,36 @@ class TestRebuy(unittest.TestCase):
 
         # Player 3 get broke but rebuys a few times
         for _i in range(4):
-            setMoney(3)
+            looseMoney(3)
+            self.assertEqual(player3.money, 0)
 
             tourney.removeBrokePlayers(1)
             tourney.tourneyEnd(1)
             self.assertEqual(tourney.winners, [2, 1])
 
-            setMoney(3, 2000)
-            tourney.reenterGame(1, 3)
+            err, reason = tourney.rebuy(3)
+            self.assertTrue(err, reason)
 
             tourney.removeBrokePlayers(1)
             tourney.tourneyEnd(1)
             self.assertEqual(tourney.winners, [2, 1])
 
-        setMoney(4)
+        # after the rebuy player 3 has the same money as he started 
+        self.assertEqual(original_startmoney, player3.money)
+        looseMoney(4)
 
         tourney.removeBrokePlayers(1)
         tourney.tourneyEnd(1)
         self.assertEqual(tourney.winners, [2, 1])
 
-        setMoney(4, 2000)
-        tourney.reenterGame(1, 4)
+        err, reason = tourney.rebuy(4)
+        self.assertTrue(err, reason)
 
         tourney.removeBrokePlayers(1)
         tourney.tourneyEnd(1)
         self.assertEqual(tourney.winners, [2, 1])
 
-        setMoney(4)
+        looseMoney(4)
         tourney.removeBrokePlayers(1)
         tourney.tourneyEnd(1)
         tourney.removePlayer(1, 4)
@@ -466,14 +486,6 @@ class TestRebuy(unittest.TestCase):
         self.assertEqual(tourney.winners, [3,4,2,1])
 
     def testGetNextPositionWillReturnCorrectValue(self):
-        def setMoney(ids, money=0):
-            for player in self.players:
-                if player.serial not in ids:
-                    continue
-                player.money = money
-                if money == 0:
-                    self.assertTrue(self.game.isBroke(player.serial))
-
         def sortTmpWinner():
             return [k for k,_v in sorted(self.tourney._winners_dict_tmp.iteritems() ,key=lambda (a,b):(b,a),reverse=True)]
             return self.tourney._winners_dict_tmp.keys()
