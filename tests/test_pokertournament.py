@@ -1144,7 +1144,10 @@ class Breaks(unittest.TestCase):
 
     def setUp(self):
         self.now = time.time() + 20000
-        pokertournament.tournament_seconds = self.seconds
+        self.seconds_original, pokertournament.tournament_seconds = pokertournament.tournament_seconds, self.seconds
+        
+    def tearDown(self):
+        pokertournament.tournament_seconds = self.seconds_original
         
     def seconds(self):
         return self.now
@@ -1298,13 +1301,10 @@ class PokerTournamentStatsTestCase(unittest.TestCase):
 # ---------------------------------------------------------
 def GetTestSuite():
     suite = unittest.TestSuite()
+#    suite.addTest(unittest.makeSuite(PokerTournamentTestCase, prefix = "test2"))
     suite.addTest(unittest.makeSuite(PokerTournamentTestCase))
-#    suite.addTest(unittest.makeSuite(PokerTournamentTestCase, prefix = "testEndTurnFirstBreakAndSinglePlayer"))
     suite.addTest(unittest.makeSuite(Breaks))
     suite.addTest(unittest.makeSuite(PokerTournamentStatsTestCase))
-    # Comment out above and use line below this when you wish to run just
-    # one test by itself (changing prefix as needed).
-#    suite.addTest(unittest.makeSuite(Breaks, prefix = "testPrizes"))
     return suite
     
 # ---------------------------------------------------------

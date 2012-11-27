@@ -6392,8 +6392,6 @@ class PokerGameTestCase(unittest.TestCase):
 def GetTestSuite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(PokerGameTestCase))
-    # Comment out above and use line below this when you wish to run just
-    # one test by itself (changing prefix as needed).
 #    suite.addTest(unittest.makeSuite(PokerGameTestCase, prefix = "test2"))
     return suite
     
