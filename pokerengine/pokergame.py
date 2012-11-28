@@ -1383,7 +1383,11 @@ class PokerGame:
     def moneyMap(self):
         money = dict((player.serial,player.money) for player in self.playersNotFold())
         return money
-
+    
+    def moneyMapWithBets(self):
+        money = dict((player.serial,player.money+player.bet+player.dead) for player in self.playersNotFold())
+        return money
+    
     def isTournament(self):
         return self.hasLevel()
 
@@ -4036,13 +4040,12 @@ class PokerGame:
     def historyGet(self):
         return self.turn_history
     
-    
     def historyCanBeReduced(self):
         return bool(not self.turn_history_is_reduced and find(PokerGame._historyFinalEvent,self.turn_history))
      
     def historyReduce(self):
         if self.historyCanBeReduced():
-            self.turn_history = PokerGame._historyReduce(self.turn_history,self.moneyMap())
+            self.turn_history = PokerGame._historyReduce(self.turn_history, self.moneyMapWithBets())
             self.turn_history_is_reduced = True
         else:
             self.log.inform("History cannot be reduced.")
