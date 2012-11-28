@@ -8,18 +8,18 @@
     <all_in method="side"/> 
 
     <variants ids="omaha omaha8 holdem">
-      <round name="pre-flop" min="_BIG_" cap="10000"/>
-      <round name="flop" min="_BIG_" cap="10000"/>
-      <round name="turn" min="_BIG_" cap="10000"/>
-      <round name="river" min="_BIG_" cap="10000"/>
+      <round name="pre-flop" min="_BIG_" cap="-1"/>
+      <round name="flop" min="_BIG_" cap="-1"/>
+      <round name="turn" min="_BIG_" cap="-1"/>
+      <round name="river" min="_BIG_" cap="-1"/>
     </variants>
 
     <variants ids="7stud 7stud8">
-      <round name="first" min="_BIG_" cap="10000"/>
-      <round name="third" min="_BIG_" cap="10000"/>
-      <round name="fourth" min="_BIG_" cap="10000"/>
-      <round name="fifth" min="_BIG_" cap="10000"/>
-      <round name="sixth" min="_BIG_" cap="10000"/>
-      <round name="seventh" min="_BIG_" cap="10000"/>
+      <round name="first" min="_BIG_" cap="-1"/>
+      <round name="third" min="_BIG_" cap="-1"/>
+      <round name="fourth" min="_BIG_" cap="-1"/>
+      <round name="fifth" min="_BIG_" cap="-1"/>
+      <round name="sixth" min="_BIG_" cap="-1"/>
+      <round name="seventh" min="_BIG_" cap="-1"/>
     </variants>
 </bet>
