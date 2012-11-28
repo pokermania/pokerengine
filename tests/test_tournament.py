@@ -366,7 +366,9 @@ class TestRebuy(unittest.TestCase):
             players_quota = 4,
             dirs = [path.join(TESTS_PATH, '../conf')],
             seats_per_game = 4,
-            rebuy_delay = 600,)
+            rebuy_delay = 600,
+            buy_in=5,
+            prizes_specs="algorithm")
         for serial in xrange(1,5):
             self.assertTrue(self.tourney.register(serial))
 
@@ -484,6 +486,8 @@ class TestRebuy(unittest.TestCase):
         self.assertFalse(tourney.tourneyEnd(1))
 
         self.assertEqual(tourney.winners, [3,4,2,1])
+        # We have just one winner and he wins the complete pot (4 * buy_in) + ( 5 * succesfull_rebuys)
+        self.assertEqual(tourney.prizes(), [45])
 
     def testGetNextPositionWillReturnCorrectValue(self):
         def sortTmpWinner():
