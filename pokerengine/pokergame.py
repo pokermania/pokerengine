@@ -212,6 +212,7 @@ class PokerPlayer:
         self.hand = PokerCards()
         self.money = 0
         self.rebuy = 0
+        self.rebuy_given = 0
         self.bet = 0
         self.dead = 0
         self.talked_once = False
@@ -243,6 +244,7 @@ class PokerPlayer:
         other.hand = self.hand.copy()
         other.money = self.money
         other.rebuy = self.rebuy
+        other.rebuy_given = self.rebuy_given
         other.bet = self.bet
         other.dead = self.dead
         other.talked_once = self.talked_once
@@ -273,6 +275,7 @@ class PokerPlayer:
             "hand = %s, "
             "money = %d, "
             "rebuy = %d, "
+            "rebuy_given = %d, "
             "bet = %d, "
             "dead = %d, "
             "talked_once = %s, "
@@ -302,6 +305,7 @@ class PokerPlayer:
             self.seat, self.hand,
             self.money,
             self.rebuy,
+            self.rebuy_given,
             self.bet,
             self.dead,
             self.talked_once,
@@ -317,6 +321,7 @@ class PokerPlayer:
     def beginTurn(self):
         self.bet = 0
         self.dead = 0
+        self.rebuy_given = 0
         self.fold = False
         self.hand = PokerCards()
         self.side_pot_index = 0
@@ -3964,6 +3969,7 @@ class PokerGame:
             # history add should be added now
             self.historyAdd("rebuy", serial, amount)
             player.money += amount
+            player.rebuy_given += amount
 
         return True
 
