@@ -68,10 +68,7 @@ def update_player_last_auto_move(fn):
         return val
     return new_function
 
-gettext.bind_textdomain_codeset('poker-engine', 'UTF-8')
-
 def init_i18n(locale_dir, overrideTranslationFunction=None):
-
     global _
 
     # If we've been fed the function that we know will work to translate
@@ -85,35 +82,36 @@ def init_i18n(locale_dir, overrideTranslationFunction=None):
     # so.
 
     # First, if our _() has never been defined, we simply set it to None
-    try:
-        oldTranslationFunction = _
-    except NameError:
-        oldTranslationFunction = None
+    
+    # save the old translation function (will be returned)
+    try: oldTranslationFunction = _
+    except NameError: oldTranslationFunction = None
 
-    if callable(overrideTranslationFunction):
+    # if an overrideTranslationFunction was passed, we use that instead of the
+    # default gettext
+    if overrideTranslationFunction and callable(overrideTranslationFunction):
         _ = overrideTranslationFunction
-        return oldTranslationFunction
+    else:
+        lang = ''
+    
+        if platform.system() == "Windows":
+            lang = locale.getdefaultlocale()[0][:2]
+            if locale_dir is None:
+                locale_dir = './../../locale'
+        try:
+            t = gettext.translation('poker-engine', localedir=locale_dir, languages=[lang])
+            _ = t.gettext
+        except IOError:
+            _ = lambda text: text
+    return oldTranslationFunction
 
-    lang = ''
-
-    if platform.system() == "Windows":
-        lang = locale.getdefaultlocale()[0][:2]
-        if locale_dir is None:
-            locale_dir = './../../locale'
-
-    try:
-        t = gettext.translation('poker-engine', localedir=locale_dir, languages=[lang])
-        _ = t.gettext
-    except IOError:
-        _ = lambda text: text
-        return oldTranslationFunction
-
+# initialize the global gettext function
+_ = None
+gettext.bind_textdomain_codeset('poker-engine', 'UTF-8')
 init_i18n(None)
 
 ABSOLUTE_MAX_PLAYERS = 10
-
 LEVELS_CACHE = {}
-
 
 def uniq(elements):
     temp = {}
@@ -168,7 +166,7 @@ AUTO_MUCK_ALWAYS = AUTO_MUCK_WIN + AUTO_MUCK_LOSE
 AUTO_PLAY_YES = 0x01
 AUTO_PLAY_NO = 0x00
 
-
+# auto player policies
 AUTO_PLAYER_POLICY_BOT = 'bot'
 AUTO_PLAYER_POLICY_SIMPLE_BOT = 'simple_bot'
 AUTO_PLAYER_POLICY_FOLD = 'fold'

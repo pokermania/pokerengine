@@ -100,10 +100,13 @@ class PokerCards:
         return type(self) != type(other) or not self.__eq__(other)
 
     def __str__(self):
-        return str([ "Card(%d, %s)" %
-                     (x & PokerCards.VALUE_CARD_MASK,
-                      (x & PokerCards.VISIBLE_CARD_MASK and "not visible") or "visible")
-                     for x in self.cards ])
+        return str([
+            "Card(%d, %s)" % (
+                x & PokerCards.VALUE_CARD_MASK,
+                "not visible" if x & PokerCards.VISIBLE_CARD_MASK else "visible"
+            )
+            for x in self.cards 
+        ])
             
     def __repr__(self):
         return "%s(%s)" % (self.__class__.__name__, self.cards)
@@ -161,8 +164,8 @@ class PokerCards:
     def hasCard(self, value):
         for card in self.cards:
             if value == self.nocard():
-               if card == self.nocard():
-                   return True
+                if card == self.nocard():
+                    return True
             elif card & PokerCards.VALUE_CARD_MASK == value:
                 return True
         return False

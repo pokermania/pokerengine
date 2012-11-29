@@ -37,20 +37,18 @@ from pokerengine import pokergame
 
 #---------------------------
 class FakePlatform:
+    def __init__(self, system):
+        self._system = system
 
-  def __init__(self, system):
-    self._system = system
-
-  def system(self):
-    return self._system
+    def system(self):
+        return self._system
 
 class FakeLocale:
+    def __init__(self, lang):
+        self._lang = lang
 
-  def __init__(self, lang):
-    self._lang = lang
-
-  def getdefaultlocale(self):
-    return (self._lang, None)
+    def getdefaultlocale(self):
+        return (self._lang, None)
 
 # ---------------------------------------------------------    
 class PokerI18NTest(unittest.TestCase):
@@ -83,7 +81,7 @@ class PokerI18NTest(unittest.TestCase):
         old_platform, pokergame.platform = pokergame.platform, FakePlatform("Windows")
         old_locale, pokergame.locale = pokergame.locale, FakeLocale("de")
         pokergame.init_i18n(path.join(TESTS_PATH, "../locale"))
-        self.failUnlessEqual(pokergame._("King"), u"König".encode('utf8'))
+        self.failUnlessEqual(pokergame._("King"), "König")
         pokergame.platform = old_platform
         pokergame.locale = old_locale
         pokergame.init_i18n(None)
