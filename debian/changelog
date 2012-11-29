@@ -1,3 +1,14 @@
+poker-engine (1.5.4-8) pokermania; urgency=low
+
+  * 53a93a3 double money test added and fixed, refs #7582
+  * c913758 set cap on -1 on no-limit template
+  * b955fb0 added pokergame.moneyMapWithBets, adds bet and dead to dict, refs #7582
+  * 61887be all tests are working
+  * 382479a consistent autoplayer behavior, refs #7503
+  * 8b36ac5 reset position if player_list is recreated, refs #7368
+
+ -- Andor Goetzendorff <andor@pokermania.de>  Thu, 29 Nov 2012 16:00:00 +0200
+
 poker-engine (1.5.4-7) pokermania; urgency=low
 
   * 8b36ac5 reset position if player_list is recreated, refs #7368
