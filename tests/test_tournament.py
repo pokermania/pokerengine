@@ -399,12 +399,12 @@ class TestRebuy(unittest.TestCase):
                 tournament.removePlayer(game_id, serial, now)
 
         tourney.callback_remove_player = myremove_player
-        def my_rebuy(tournament, serial, game_id, amount):
-            self.assertEqual(game_id, game.id)
-            self.assertEqual(tourney.buy_in, amount)
+        def my_rebuy(tournament, serial, table_id, player_chips, tourney_chips):
+            self.assertEqual(table_id, game.id)
+            self.assertEqual(tourney.buy_in, player_chips)
             if serial == 1:
-                return (False, "test")
-            return (True, None)
+                return 0
+            return tourney_chips
 
         tourney.callback_rebuy = my_rebuy
 
@@ -437,7 +437,7 @@ class TestRebuy(unittest.TestCase):
         err, reason = tourney.rebuy(1)
         self.assertFalse(err)
         # the error reason from our callback should be the same we get here
-        self.assertEquals(reason, "test")
+        self.assertEquals(reason, "money")
 
         # After Player 1 Timed out, he will be also removed
         # Note: this changes the rank for player 2

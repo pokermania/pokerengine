@@ -44,6 +44,11 @@ TOURNAMENT_STATE_BREAK_WAIT = "breakwait"
 TOURNAMENT_STATE_BREAK = "break"
 TOURNAMENT_STATE_COMPLETE = "complete"
 TOURNAMENT_STATE_CANCELED = "canceled"
+
+TOURNEY_REBUY_ERROR_TIMEOUT = "timeout"
+TOURNEY_REBUY_ERROR_USER = "user"
+TOURNEY_REBUY_ERROR_MONEY = "money"
+TOURNEY_REBUY_ERROR_OTHER = "other"
             
 def equalizeCandidates(games):
     #
@@ -287,7 +292,7 @@ class PokerTournament:
         self.callback_remove_player = lambda tournament, game_id, serial, *rest, **kw: self.removePlayer(game_id, serial, *rest, **kw)
         self.callback_reenter_game = lambda tourney_serial, serial: True
         self.callback_cancel = lambda tournament: True
-        self.callback_rebuy = lambda tournament, serial, game_id, amount: (True, None)
+        self.callback_rebuy = lambda tournament, serial, table_id, player_chips, tourney_chips: tourney_chips 
         self.loadPayouts()
         self.updateRegistering()
 
@@ -602,22 +607,23 @@ class PokerTournament:
         game = [g for g in self.games if g.getPlayer(serial)][0]
 
         if not self.isRebuyAllowed(serial):
-            return (False, "timeout")
+            return (False, None, TOURNEY_REBUY_ERROR_TIMEOUT)
 
         if not self.isRebuyAllowedForUser(serial):
-            return (False, "user")
+            return (False, None, TOURNEY_REBUY_ERROR_USER)
 
-        amount = self.buy_in
-        currency_serial = 1
+        amount = self.callback_rebuy(self, serial=serial, table_id=game.id, 
+            player_chips=self.buy_in + self.rake, tourney_chips=game.buyIn())
+        
+        if amount == 0:
+            self.log.warn("player %d  has not enough money, tourney rebuy denied", serial)
+            return (False, None, TOURNEY_REBUY_ERROR_MONEY)
 
-        success, reason = self.callback_rebuy(self, serial, game.id, amount)
-        if success == True:
-            game.rebuy(serial, game.buyIn())
-            self.reenterGame(game.id, serial)
-            self.prizes_object.rebuy()
-            return (True, None)
-        else:
-            return (False, reason)
+        game.rebuy(serial, game.buyIn())
+        self.reenterGame(game.id, serial)
+        self.prizes_object.rebuy()
+        return (True, game.id, None)
+
 
 
     def removeBrokePlayers(self, game_id, now=False):
