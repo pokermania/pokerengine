@@ -69,6 +69,7 @@ class PokerPlayerTestCase(unittest.TestCase):
                                     'hand' , \
                                     'money' , \
                                     'rebuy' , \
+                                    'rebuy_given' , \
                                     'bet' , \
                                     'dead' , \
                                     'talked_once' ,\
