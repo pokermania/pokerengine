@@ -42,7 +42,7 @@ log = reflogging.root_logger.get_child('test-tournament')
 
 from pokerengine.pokergame import PokerGameServer
 from pokerengine.pokertournament import equalizeGames, breakGames, PokerTournament
-
+    
 NGAMES = 5
 
 class PokerPredefinedDecks:

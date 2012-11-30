@@ -343,13 +343,20 @@ class PokerTournament:
         else:
             return False
 
+    def getRebuyTimeRemaining(self):
+        """returns the timeperiod (seconds) in which a user could perform a rebuy"""
+        remainingTime = (self.start_time + self.rebuy_delay) - tournament_seconds()
+        if remainingTime > 0:
+            return int(remainingTime)
+        else:
+            return 0
+        
     def isRebuyAllowed(self, serial="unknown"):
         """
         returns True if a rebuy is possible in this tourney at this moment.
         the optional parameter serial could be used for debug messages in case of an error
         """
-        now = tournament_seconds()
-        if (self.start_time + self.rebuy_delay) > now:
+        if self.getRebuyTimeRemaining() > 0:
             return True
         else:
             explain = "st(%s) + delay(%s) == (%s) < now(%s)" %(self.start_time, self.rebuy_delay, self.start_time+self.rebuy_delay, now)
