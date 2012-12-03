@@ -36,14 +36,18 @@ class PokerPrizes:
         self.player_count = player_count
         self.guarantee_amount = guarantee_amount
         self.rebuy_count = 0
+        self.changed = True
 
     def addPlayer(self):
+        self.changed = True
         self.player_count += 1
 
     def removePlayer(self):
+        self.changed = True
         self.player_count -= 1
 
     def rebuy(self):
+        self.changed = True
         self.rebuy_count += 1
 
     def getPrizes(self):
@@ -86,6 +90,7 @@ class PokerPrizesAlgorithm(PokerPrizes):
                 prizes.append(money_left)
         rest = prize_pool - sum(prizes)
         prizes[0] += rest
+        self.changed = False
         return prizes
 
 class PokerPrizesTable(PokerPrizes):
@@ -113,4 +118,5 @@ class PokerPrizesTable(PokerPrizes):
         # What's left because of rounding errors goes to the tournament winner
         #
         prizes[0] += total - sum(prizes)
+        self.changed = False
         return prizes

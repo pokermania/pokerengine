@@ -362,13 +362,21 @@ class TestBreak(TestTournament):
 class TestRebuy(unittest.TestCase):
 
     def setUp(self):
-        self.tourney = PokerTournament(name = 'Test create',
-            players_quota = 4,
-            dirs = [path.join(TESTS_PATH, '../conf')],
-            seats_per_game = 4,
-            rebuy_delay = 600,
-            buy_in=5,
-            prizes_specs="algorithm")
+        self._set_up()
+
+    def _set_up(self, options=None):
+        default_opts = {
+            'name': 'Test create',
+            'players_quota': 4,
+            'dirs': [path.join(TESTS_PATH, '../conf')],
+            'seats_per_game': 4,
+            'rebuy_delay': 600,
+            'buy_in': 5,
+            'prizes_specs':"table"
+        }
+        if options is not None:
+            default_opts.update(options)
+        self.tourney = PokerTournament(**default_opts)
         for serial in xrange(1,5):
             self.assertTrue(self.tourney.register(serial))
 
@@ -377,6 +385,8 @@ class TestRebuy(unittest.TestCase):
 
     def tearDown(self):
         del self.tourney
+        del self.game
+        del self.players
 
     def test1_insertedWinnersAreCorrect(self):
         winners = [1,2,3,4]
@@ -386,7 +396,6 @@ class TestRebuy(unittest.TestCase):
 
         self.tourney.winners = []
         self.assertEqual(self.tourney.winners, [])
-    
     def test2(self):
         tourney = self.tourney
         game = self.game
@@ -409,12 +418,18 @@ class TestRebuy(unittest.TestCase):
         tourney.callback_rebuy = my_rebuy
 
 
-        def looseMoney(serial):
+        def looseMoney(serial, set_money_to=0):
             for player in players:
                 if player.serial != serial:
                     continue
-                player.money = 0
-                self.assertTrue(game.isBroke(serial))
+
+                player.money = set_money_to
+                if set_money_to == 0:
+                    self.assertTrue(game.isBroke(serial))
+
+        # prizes will be cached, but we have to make sure that the rebuy process 
+        # will update the cache.
+        tourney.prizes()
 
         # Player got broke
         looseMoney(1)
@@ -434,9 +449,8 @@ class TestRebuy(unittest.TestCase):
         self.assertEqual(tourney.getRank(2), 4)
 
         # Player 1 tries to rebuy but has not enough money
-        err, reason = tourney.rebuy(1)
+        err, game_id, reason = tourney.rebuy(1)
         self.assertFalse(err)
-        # the error reason from our callback should be the same we get here
         self.assertEquals(reason, "money")
 
         # After Player 1 Timed out, he will be also removed
@@ -456,7 +470,7 @@ class TestRebuy(unittest.TestCase):
             tourney.tourneyEnd(1)
             self.assertEqual(tourney.winners, [2, 1])
 
-            err, reason = tourney.rebuy(3)
+            err, game_id, reason = tourney.rebuy(3)
             self.assertTrue(err, reason)
 
             tourney.removeBrokePlayers(1)
@@ -465,13 +479,31 @@ class TestRebuy(unittest.TestCase):
 
         # after the rebuy player 3 has the same money as he started 
         self.assertEqual(original_startmoney, player3.money)
-        looseMoney(4)
+        looseMoney(4,set_money_to=20)
 
-        tourney.removeBrokePlayers(1)
-        tourney.tourneyEnd(1)
         self.assertEqual(tourney.winners, [2, 1])
 
-        err, reason = tourney.rebuy(4)
+        #import rpdb2; rpdb2.start_embedded_debugger("haha")
+        # rebuy will fail because users money plus the new game.buyIn() is bigger than game.maxBuyIn() 
+        err, game_id, reason = tourney.rebuy(4)
+        self.assertFalse(err)
+        self.assertEqual(reason, "user")
+
+        looseMoney(4)
+        tourney.removeBrokePlayers(1)
+        tourney.tourneyEnd(1)
+        
+        # if game.rebuy fails, there should be an error message in the log!
+        log_history.reset()
+        self.assertEqual(log_history.get_all(), [])
+        old_rebuy = game.rebuy
+        game.rebuy = lambda *args, **kw: False
+        err, game_id, reason = tourney.rebuy(4)
+        self.assertFalse(err)
+        self.assertEqual(len(log_history.get_all()), 1)
+
+        game.rebuy = old_rebuy
+        err, game_id, reason = tourney.rebuy(4)
         self.assertTrue(err, reason)
 
         tourney.removeBrokePlayers(1)
@@ -487,7 +519,13 @@ class TestRebuy(unittest.TestCase):
 
         self.assertEqual(tourney.winners, [3,4,2,1])
         # We have just one winner and he wins the complete pot (4 * buy_in) + ( 5 * succesfull_rebuys)
-        self.assertEqual(tourney.prizes(), [45])
+        self.assertEqual(sum(tourney.prizes()), 45)
+
+    def test3(self):
+        # test2 should also pass with a different prizes object 
+        self.tearDown()
+        self._set_up({'prizes_specs':"algorithm"})
+        self.test2()
 
     def testGetNextPositionWillReturnCorrectValue(self):
         def sortTmpWinner():

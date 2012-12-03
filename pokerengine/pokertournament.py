@@ -256,6 +256,7 @@ class PokerTournament:
         self.buy_in = int(kwargs.get('buy_in', 0))
         self.rake = int(kwargs.get('rake', 0))
         self.rebuy_delay = kwargs.get('rebuy_delay', 0)
+        self.rebuy_count = 0
         self.add_on = kwargs.get('add_on', 0)
         self.add_on_delay = kwargs.get('add_on_delay', 60)
         self.prize_min = kwargs.get('prize_min', 0)
@@ -363,8 +364,12 @@ class PokerTournament:
             self.log.warn("rebuy during tourney %s not allowed: player %s [%s]" % (self.serial, serial, explain))
             return False
 
-    def isRebuyAllowedForUser(self, serial):
+    def isRebuyAllowedForUser(self, serial, game):
         """return True if User could rebuy but ignores if tourney would allow a rebuy"""
+        maximum = game.maxBuyIn() - (game.getPlayerMoney(serial) + game.buyIn())
+        if maximum < 0:
+            self.log.warn("player %d can't bring more money to the table", serial)
+            return False
         return True
 
     def getRank(self, serial):
@@ -600,7 +605,29 @@ class PokerTournament:
             self.callback_game_filled(self, game)
             game.close()
 
+    def forTourneyInfo(self):
+        return {
+            'serial': self.serial,
+            'schedule_serial': self.schedule_serial,
+            'buy_in': self.buy_in,
+            'rake': self.rake,
+            'start_time': self.start_time,
+            'rebuy_time_remaining': self.getRebuyTimeRemaining(),
+            'sit_n_go': self.sit_n_go,
+            'players_quota': self.players_quota,
+            'registered': self.registered,
+            'currency_serial': self.currency_serial,
+            'breaks_first': self.breaks_first,
+            'breaks_interval': self.breaks_interval,
+            'breaks_duration': self.breaks_duration,
+            'description_short': self.description_short,
+            'variant': self.variant,
+            'state': self.state,
+            'name': self.name,
+            'description_long': self.description_long,
+        }
 
+    
     def reenterGame(self, game_id, serial):
         """
         reenterGame(game_id, serial) will be called when a player buys in. So he could reenter the game.
@@ -611,12 +638,24 @@ class PokerTournament:
         self.callback_reenter_game(self.serial, serial)
 
     def rebuy(self, serial):
+        """
+        performs a tourney rebuy for the player with the given serial
+
+        returns a triplet (success_state, game_id, reason)
+
+        success_state is either True or False
+        game_id is the game_id if the success_state is True otherwise None
+        reason is None if success_state is True otherwise a short StringType
+
+        e.g. (True, 13, None) # successful returncode
+             (False, None, "money") # unsuccessful, the user has not enough money
+        """
         game = [g for g in self.games if g.getPlayer(serial)][0]
 
         if not self.isRebuyAllowed(serial):
             return (False, None, TOURNEY_REBUY_ERROR_TIMEOUT)
 
-        if not self.isRebuyAllowedForUser(serial):
+        if not self.isRebuyAllowedForUser(serial, game):
             return (False, None, TOURNEY_REBUY_ERROR_USER)
 
         amount = self.callback_rebuy(self, serial=serial, table_id=game.id, 
@@ -626,9 +665,16 @@ class PokerTournament:
             self.log.warn("player %d  has not enough money, tourney rebuy denied", serial)
             return (False, None, TOURNEY_REBUY_ERROR_MONEY)
 
-        game.rebuy(serial, game.buyIn())
+        if not game.rebuy(serial, game.buyIn()):
+            # This should never happen! We need to give the user the money back
+            # and the winner of the tourney would get too much chips
+            self.log.error("rebuy denied for user %s" % serial)
+            return (False, None, TOURNEY_REBUY_ERROR_OTHER)
+
+        
         self.reenterGame(game.id, serial)
         self.prizes_object.rebuy()
+        self.rebuy_count += 1
         return (True, game.id, None)
 
 
@@ -662,7 +708,7 @@ class PokerTournament:
             self.callback_remove_player(self, game.id, player.serial, now=True)
             money = player.money
             player.money = 0
-            expected = game.buyIn() * self.registered
+            expected = game.buyIn() * (self.registered + self.rebuy_count)
             if money != expected:
                 self.log.warn("winner has %s chips and should have %d chips", money, expected)
             self.log.debug("winners %s", self.winners)
@@ -721,6 +767,6 @@ class PokerTournament:
         return len(to_equalize) > 0
 
     def prizes(self):
-        if not self.rank2prize:
+        if not self.rank2prize or self.prizes_object.changed:
             self.rank2prize = self.prizes_object.getPrizes()
         return self.rank2prize
