@@ -391,8 +391,9 @@ class PokerTournament:
                 running_max = self.breaks_interval
             else:
                 running_max = self.breaks_first
+
             if running_duration >= running_max:
-                self.breaks_games_id = []
+                self.breaks_games_id = [g.id for g in self.games if g.isEndOrNull() and g.id != game_id]
                 self.changeState(TOURNAMENT_STATE_BREAK_WAIT)
                 
         if self.state == TOURNAMENT_STATE_BREAK_WAIT:

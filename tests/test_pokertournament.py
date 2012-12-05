@@ -37,9 +37,10 @@ class ConstantPlayerShuffler:
         what.sort()
 
 from tests.testmessages import get_messages, clear_all_messages
-
 from pokerengine import pokertournament
 from pokerengine import pokerprizes
+from pokerengine.pokergame import GAME_STATE_FLOP, GAME_STATE_END
+
 pokertournament.shuffler = ConstantPlayerShuffler()
 
 import reflogging
@@ -925,6 +926,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         # Get created games
         game1 = tournament.id2game[1]
         game2 = tournament.id2game[2]
+        game2.state = GAME_STATE_FLOP
         
         # Game 1, players 1 broke
         players = game1.playersAll()
@@ -948,6 +950,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         # End turn of game 2
         tournament.removeBrokePlayers(2, now=True)
+        game2.state = GAME_STATE_END
         self.failUnless(tournament.tourneyEnd(2))
         
         # Players broke removed
@@ -1167,8 +1170,17 @@ class Breaks(unittest.TestCase):
         tournament.breaks_duration = 2
         self.assertEqual(1, tournament.remainingBreakSeconds())
 
-    def test_updateBreak(self):
-        
+
+    class Game:
+        def __init__(self, id):
+            self.id = id
+            self.state = GAME_STATE_FLOP
+        def playersAll(self):
+            return map(lambda x: 10*self.id+x, [1,2,3])
+        def isEndOrNull(self):
+            return self.state == GAME_STATE_END
+
+    def _get_tournament(self):
         arguments = { 
             'dirs': [path.join(TESTS_PATH, '../conf')],
             'players_quota': 20,
@@ -1192,6 +1204,41 @@ class Breaks(unittest.TestCase):
         tournament.breaks_first = 10
         tournament.breaks_interval = 10
         tournament.breaks_duration = 1
+        return tournament
+
+    def test_updateBreak_tournament_break_wait(self):
+        tournament = self._get_tournament()
+
+        g1, g2 = self.Game(1), self.Game(2)
+        tournament.games = [g1, g2]
+        g1.state = GAME_STATE_END
+        tournament.updateBreak(1)
+        g1.state = GAME_STATE_FLOP
+        self.now = tournament.breaks_running_since + tournament.breaks_first
+        g2.state = GAME_STATE_END
+        tournament.updateBreak(2)
+        #
+        # RUNNING -> BREAK_WAIT 
+        #
+        self.assertEqual(tournament.state, pokertournament.TOURNAMENT_STATE_BREAK_WAIT)
+
+    def test_updateBreak_tournament_break(self):
+        tournament = self._get_tournament()
+        
+        g1, g2 = self.Game(1), self.Game(2)
+        tournament.games = [g1, g2]
+        g1.state = GAME_STATE_END
+        tournament.updateBreak(1)
+        self.now = tournament.breaks_running_since + tournament.breaks_first
+        g2.state = GAME_STATE_END
+        tournament.updateBreak(2)
+        #
+        # RUNNING -> BREAK
+        #
+        self.assertEqual(tournament.state, pokertournament.TOURNAMENT_STATE_BREAK)
+
+    def test_updateBreak(self):    
+        tournament = self._get_tournament()
         tournament.breaks_count = 1
         self.failUnless(tournament.updateBreak())
         tournament.breaks_count = 0
@@ -1200,13 +1247,8 @@ class Breaks(unittest.TestCase):
         # RUNNING -> BREAK_WAIT 
         #
         self.now = tournament.breaks_running_since + tournament.breaks_first
-        class Game:
-            def __init__(self, id):
-                self.id = id
-            def playersAll(self):
-                return [1,2,3]
                 
-        tournament.games = [Game(1), Game(2)]
+        tournament.games = [self.Game(1), self.Game(2)]
         self.failUnless(tournament.updateBreak(1))
         self.failUnless(hasattr(tournament, 'breaks_games_id'))
         self.assertEqual([1],tournament.breaks_games_id)
