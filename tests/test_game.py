@@ -2608,11 +2608,12 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.getRequestedAction(3), 'rebuy')
         
         # Change the blind properties
-        blind_properties = {  'change' : 'levels',
-                              'levels' : PokerGameTestCase.TestLevelsTemplateFile,
-                              'frequency' : '15',
-                              'unit' : 'minute'
-                            }
+        blind_properties = {
+            'change': 'levels',
+            'levels': PokerGameTestCase.TestLevelsTemplateFile,
+            'frequency': '15',
+            'unit': 'minute'
+        }
 
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet/blind', None, blind_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
@@ -2914,6 +2915,15 @@ class PokerGameTestCase(unittest.TestCase):
         # The player money + the rebuy amount is too high
         player1.money = 5000
         self.failIf(self.game.rebuy(1, 5001))
+        
+        # The player money + the rebuy amount is too high, but game is not directing
+        self.game.is_directing = False
+        player1.money = 5000
+        self.failUnless(self.game.rebuy(1, 5001))
+        
+        # Reset game and player money
+        self.game.is_directing = True
+        player1.money = 5000
         
         # The player money + the player rebuy + the rebuy amount is too high
         player1.rebuy = 2000
