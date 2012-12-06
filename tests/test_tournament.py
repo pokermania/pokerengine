@@ -479,9 +479,9 @@ class TestRebuy(unittest.TestCase):
 
         # after the rebuy player 3 has the same money as he started 
         self.assertEqual(original_startmoney, player3.money)
-        looseMoney(4,set_money_to=20)
-
         self.assertEqual(tourney.winners, [2, 1])
+
+        looseMoney(4, set_money_to=game.buyIn())
 
         #import rpdb2; rpdb2.start_embedded_debugger("haha")
         # rebuy will fail because users money plus the new game.buyIn() is bigger than game.maxBuyIn() 
@@ -489,6 +489,10 @@ class TestRebuy(unittest.TestCase):
         self.assertFalse(err)
         self.assertEqual(reason, "user")
 
+        looseMoney(4, set_money_to=game.buyIn()-1)
+        err, game_id, reason = tourney.rebuy(4)
+        self.assertTrue(err)
+        
         looseMoney(4)
         tourney.removeBrokePlayers(1)
         tourney.tourneyEnd(1)
@@ -505,6 +509,7 @@ class TestRebuy(unittest.TestCase):
         game.rebuy = old_rebuy
         err, game_id, reason = tourney.rebuy(4)
         self.assertTrue(err, reason)
+        self.assertEqual(game_id, game.id)
 
         tourney.removeBrokePlayers(1)
         tourney.tourneyEnd(1)
@@ -518,8 +523,8 @@ class TestRebuy(unittest.TestCase):
         self.assertFalse(tourney.tourneyEnd(1))
 
         self.assertEqual(tourney.winners, [3,4,2,1])
-        # We have just one winner and he wins the complete pot (4 * buy_in) + ( 5 * succesfull_rebuys)
-        self.assertEqual(sum(tourney.prizes()), 45)
+        # We have just one winner and he wins the complete pot (4 * buy_in) + ( 6 * succesfull_rebuys)
+        self.assertEqual(sum(tourney.prizes()), 50)
 
     def test3(self):
         # test2 should also pass with a different prizes object 

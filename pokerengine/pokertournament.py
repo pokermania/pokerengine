@@ -256,7 +256,6 @@ class PokerTournament:
         self.buy_in = int(kwargs.get('buy_in', 0))
         self.rake = int(kwargs.get('rake', 0))
         self.rebuy_delay = kwargs.get('rebuy_delay', 0)
-        self.rebuy_count = 0
         self.add_on = kwargs.get('add_on', 0)
         self.add_on_delay = kwargs.get('add_on_delay', 60)
         self.prize_min = kwargs.get('prize_min', 0)
@@ -357,10 +356,11 @@ class PokerTournament:
         returns True if a rebuy is possible in this tourney at this moment.
         the optional parameter serial could be used for debug messages in case of an error
         """
-        if self.getRebuyTimeRemaining() > 0:
+        time_remaining = self.getRebuyTimeRemaining()
+        if time_remaining > 0:
             return True
         else:
-            explain = "st(%s) + delay(%s) == (%s) < now(%s)" %(self.start_time, self.rebuy_delay, self.start_time+self.rebuy_delay, now)
+            explain = "start(%s), delay(%s) == remaining(%s)" %(self.start_time, self.rebuy_delay, time_remaining)
             self.log.warn("rebuy during tourney %s not allowed: player %s [%s]" % (self.serial, serial, explain))
             return False
 
@@ -607,26 +607,11 @@ class PokerTournament:
             game.close()
 
     def forTourneyInfo(self):
-        return {
-            'serial': self.serial,
-            'schedule_serial': self.schedule_serial,
-            'buy_in': self.buy_in,
-            'rake': self.rake,
-            'start_time': self.start_time,
-            'rebuy_time_remaining': self.getRebuyTimeRemaining(),
-            'sit_n_go': self.sit_n_go,
-            'players_quota': self.players_quota,
-            'registered': self.registered,
-            'currency_serial': self.currency_serial,
-            'breaks_first': self.breaks_first,
-            'breaks_interval': self.breaks_interval,
-            'breaks_duration': self.breaks_duration,
-            'description_short': self.description_short,
-            'variant': self.variant,
-            'state': self.state,
-            'name': self.name,
-            'description_long': self.description_long,
-        }
+        """ 
+        returns a dict of all tournament properties, useful for PACKET_POKER_TOURNEY
+        """
+        return dict(self.__dict__.items() + [('rebuy_time_remaining', self.getRebuyTimeRemaining())])
+        
 
     
     def reenterGame(self, game_id, serial):
@@ -634,8 +619,8 @@ class PokerTournament:
         reenterGame(game_id, serial) will be called when a player buys in. So he could reenter the game.
         This function gets called by the table.
         """
-        assert serial in self._winners_dict_tmp
-        self._winners_dict_tmp.pop(serial)
+        if serial in self._winners_dict_tmp:
+            self._winners_dict_tmp.pop(serial) 
         self.callback_reenter_game(self.serial, serial)
 
     def rebuy(self, serial):
@@ -675,7 +660,6 @@ class PokerTournament:
         
         self.reenterGame(game.id, serial)
         self.prizes_object.rebuy()
-        self.rebuy_count += 1
         return (True, game.id, None)
 
 
@@ -709,9 +693,6 @@ class PokerTournament:
             self.callback_remove_player(self, game.id, player.serial, now=True)
             money = player.money
             player.money = 0
-            expected = game.buyIn() * (self.registered + self.rebuy_count)
-            if money != expected:
-                self.log.warn("winner has %s chips and should have %d chips", money, expected)
             self.log.debug("winners %s", self.winners)
             self.callback_destroy_game(self, game)
             self.games = []
