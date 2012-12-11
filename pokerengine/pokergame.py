@@ -319,7 +319,6 @@ class PokerPlayer:
     def beginTurn(self):
         self.bet = 0
         self.dead = 0
-        self.rebuy_given = 0
         self.fold = False
         self.hand = PokerCards()
         self.side_pot_index = 0
@@ -1814,6 +1813,7 @@ class PokerGame:
         self.historyAdd("end", self.winners[:], self.showdown_stack)
 
         for player in self.playersAll():
+            player.rebuy_given = 0
             if player.rebuy > 0:
                 player.money += player.rebuy
                 self.historyAdd("rebuy", player.serial, player.rebuy)
