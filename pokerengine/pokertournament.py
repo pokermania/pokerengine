@@ -605,14 +605,6 @@ class PokerTournament:
         for game in self.games:
             self.callback_game_filled(self, game)
             game.close()
-
-    def forTourneyInfo(self):
-        """ 
-        returns a dict of all tournament properties, useful for PACKET_POKER_TOURNEY
-        """
-        return dict(self.__dict__.items() + [('rebuy_time_remaining', self.getRebuyTimeRemaining())])
-        
-
     
     def reenterGame(self, game_id, serial):
         """
@@ -620,7 +612,7 @@ class PokerTournament:
         This function gets called by the table.
         """
         if serial in self._winners_dict_tmp:
-            self._winners_dict_tmp.pop(serial) 
+            del self._winners_dict_tmp[serial]
         self.callback_reenter_game(self.serial, serial)
 
     def rebuy(self, serial):
