@@ -319,7 +319,6 @@ class PokerPlayer:
     def beginTurn(self):
         self.bet = 0
         self.dead = 0
-        self.rebuy_given = 0
         self.fold = False
         self.hand = PokerCards()
         self.side_pot_index = 0
@@ -1814,6 +1813,7 @@ class PokerGame:
         self.historyAdd("end", self.winners[:], self.showdown_stack)
 
         for player in self.playersAll():
+            player.rebuy_given = 0
             if player.rebuy > 0:
                 player.money += player.rebuy
                 self.historyAdd("rebuy", player.serial, player.rebuy)
@@ -3957,7 +3957,13 @@ class PokerGame:
         player = self.getPlayer(serial)
         if not player:
             return False
-        if player.money + amount + player.rebuy > self.maxBuyIn():
+        
+        # if the game is directing, check if the player has already more money than the 
+        # max buyin. if this is the case, he is not allowed to rebuy.
+        # if the game is not directing, this check should not be made, as the player who
+        # made the rebuy could have won in the current round, while still getting a delayed
+        # rebuy at the end of the current round.
+        if self.is_directing and player.money + amount + player.rebuy > self.maxBuyIn():
             return False
 
         if self.isPlaying(serial):
