@@ -5489,7 +5489,6 @@ class PokerGameTestCase(unittest.TestCase):
         
         # Move the dealer
         self.game.moveDealerLeft()
-        self.game.playersBeginTurn()
         
         # Update blinds
         blinds = {
@@ -5508,7 +5507,6 @@ class PokerGameTestCase(unittest.TestCase):
                 
         # Move the dealer
         self.game.moveDealerLeft()
-        self.game.playersBeginTurn()
         
         # Update blinds
         blinds = {
@@ -5602,7 +5600,7 @@ class PokerGameTestCase(unittest.TestCase):
         
         blinds = {
             1 : { 'blind' :  False, 'missed_blind' : None, 'wait_for' : False},
-            2 : { 'blind' :  'late', 'missed_blind' : 'small', 'wait_for' : False},
+            2 : { 'blind' :  False, 'missed_blind' : 'small', 'wait_for' : 'late'},
             3 : { 'blind' :  'small', 'missed_blind' : None, 'wait_for' : False},
             4 : { 'blind' :  'big', 'missed_blind' : None, 'wait_for' : False}
         }
@@ -5676,22 +5674,18 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.updateBlinds()
         
         # Check player 1 blinds
-        blinds1 = {'blind' :  False, 'missed_blind' : None, 'wait_for' : 'first_round'}
+        blinds1 = {'blind' :  'late', 'missed_blind' : None, 'wait_for' : 'first_round'}
             
         # Check blinds
         for attribute, value in blinds1.items():
-            player = self.game.getPlayer(1)
-            self.failUnlessEqual(getattr(player, attribute), value)
+            self.failUnlessEqual(getattr(self.game.getPlayer(1), attribute), value)
         
-        blinds = {'blind' :  False, 'missed_blind' : None, 'wait_for' : 'big'}
+        blinds = {'blind' :  'late', 'missed_blind' : None, 'wait_for' : 'big'}
         
         # Check players blinds
         for num in range(1, pokergame.ABSOLUTE_MAX_PLAYERS):
             for attribute, value in blinds.items():
-                player = self.game.getPlayer(num+1)
-                self.failUnlessEqual(getattr(player, attribute), value)
-        
-        # FIXME check, if now a player that wants to play the small blind sits down, what happens
+                self.failUnlessEqual(getattr(self.game.getPlayer(num + 1), attribute), value)
         
     def testAllInWithDead(self):
         """ Test Poker Game : Allin with dead blind and lost to the winner although the winner has less money """
@@ -6071,50 +6065,6 @@ class PokerGameTestCase(unittest.TestCase):
         game.blind(10)
         game.historyReduce()
 
-    def testSitNextRound(self):
-        clear_all_messages()
-
-        game = self.game
-        game.variant = 'holdem'
-        game.setMaxPlayers(3)
-        player1 = self.AddPlayerAndSit(1, 2)
-        player2 = self.AddPlayerAndSit(2, 5)
-
-        # make sure that player 2 will not sitted out
-        player2.money = 7000
-        player1.money = 5000
-        
-        game.beginTurn(1)
-        self.failUnless(game.isBlindAnteRound())
-
-        # get serials and automatically pay the blind
-        for serial in game.serialsAll():
-            game.autoBlindAnte(serial)
-
-        self.failUnless(game.isFirstRound())
-
-        game.call(2)
-        game.check(1)
-        game.check(2)
-        game.check(1)
-        game.check(2)
-        game.check(1)
-
-        # new player enters
-        player3 = self.AddPlayerAndSit(3, 7)
-        player3.money = 5000
-        self.assertEqual(player3.wait_for, False)
-        
-        game.check(2)
-        game.check(1)
-
-        game.beginTurn(2)
-        
-        for serial in game.serialsAll():
-            game.autoBlindAnte(serial)
-     
-        self.assertEqual(game.player_list,[1,2,3])
-        
     def testBlindAndAnteTogetherAllIn(self):
         game = self.game
         game.variant = 'holdem'
@@ -6167,7 +6117,7 @@ class PokerGameTestCase(unittest.TestCase):
         game.blind(30)
         
         # the game should still be in the blindAnteRound, because player 20 is missing
-        self.assertTrue(game.isBlindAnteRound())
+        self.assertTrue(game.isFirstRound())
         
         # player 20 is set on auto, i.e. he folds, because we are still in blind/ante
         game.autoPlayer(20)
@@ -6178,7 +6128,6 @@ class PokerGameTestCase(unittest.TestCase):
         # the other players are set on autoplay and should now finish the round
         game.fold(10)
         self.assertTrue(game.isEndOrNull())
-    
     
     def _autoPlayTurn(self, actions={}, default_action='fold', additional_packets=None, expect=True):
         state = self.game.state

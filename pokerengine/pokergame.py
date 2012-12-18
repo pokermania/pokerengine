@@ -1342,15 +1342,13 @@ class PokerGame:
         #
         # Late blind
         #
-        index = 0
         while index < ABSOLUTE_MAX_PLAYERS:
             player = players[index]
-            # check only players that did not already pay some blind
-            if player and player.blind not in (True, "big", "small"):
+            if player:
                 if not player.sit_out:
                     if player.wait_for == "big" or player.missed_blind == None:
                         player.blind = False
-                    elif player.missed_blind in ("big", "small"):
+                    elif player.missed_blind in ('big', 'small'):
                         if sit_count > 5:
                             player.blind = "big_and_dead"
                         else:
