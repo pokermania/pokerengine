@@ -11,7 +11,7 @@ before_install:
  - git clone git://github.com/tuco86/poker-distutils.git /tmp/poker-distutils && sudo pip install /tmp/poker-distutils
  - git clone https://github.com/pokermania/reflogging /tmp/reflogging && sudo pip install /tmp/reflogging
 
-install: sudo apt-get install -qq python-libxml2 python-libxslt1 python-pypoker-eval python-cjson
+install: sudo apt-get install -qq python-libxml2 python-libxslt1 python-pypoker-eval python-cjson bc
 
 
 # command to run tests, e.g. python setup.py test
