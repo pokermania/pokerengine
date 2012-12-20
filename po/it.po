@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: poker-engine VERSION\n"
 "Report-Msgid-Bugs-To: http://github.com/pokermania/poker-network\n"
-"POT-Creation-Date: 2012-12-17 13:47+0100\n"
+"POT-Creation-Date: 2012-12-20 12:08+0100\n"
 "PO-Revision-Date: 2008-11-25 16:30+0200\n"
 "Last-Translator: devteam <devteam@orbus.fr>\n"
 "Language-Team: <pokersource-users@gna.org>\n"
@@ -192,108 +192,108 @@ msgid "%(name)s sits out"
 msgstr "%(name)s si alza"
 
 # Translation #56505 (it)
-#: pokerengine/pokergame.py:3288 pokerengine/pokergame.py:3344
+#: pokerengine/pokergame.py:3286 pokerengine/pokergame.py:3342
 msgid "The wheel"
 msgstr "La ruota"
 
 # Translation #56507 (it)
-#: pokerengine/pokergame.py:3292 pokerengine/pokergame.py:3348
+#: pokerengine/pokergame.py:3290 pokerengine/pokergame.py:3346
 #, python-format
 msgid "High card %(card)s"
 msgstr "Carta più alta: %(card)s"
 
 # Translation #56522 (it)
-#: pokerengine/pokergame.py:3294
+#: pokerengine/pokergame.py:3292
 #, python-format
 msgid "A pair of %(card)s"
 msgstr "Coppia di %(card)s"
 
 # Translation #56526 (it)
-#: pokerengine/pokergame.py:3296 pokerengine/pokergame.py:3303
-#: pokerengine/pokergame.py:3309 pokerengine/pokergame.py:3329
+#: pokerengine/pokergame.py:3294 pokerengine/pokergame.py:3301
+#: pokerengine/pokergame.py:3307 pokerengine/pokergame.py:3327
 #, python-format
 msgid ", %(card)s kicker"
 msgstr ", %(card)s kicker"
 
 # Translation #56527 (it)
-#: pokerengine/pokergame.py:3300
+#: pokerengine/pokergame.py:3298
 #, python-format
 msgid "Two pairs %(card1)s and %(card2)s"
 msgstr "Doppia coppia di %(card1)s e %(card2)s"
 
 # Translation #56529 (it)
-#: pokerengine/pokergame.py:3307
+#: pokerengine/pokergame.py:3305
 #, python-format
 msgid "Three of a kind %(card)s"
 msgstr "Tris di %(card)s"
 
 # Translation #56533 (it)
-#: pokerengine/pokergame.py:3313
+#: pokerengine/pokergame.py:3311
 #, python-format
 msgid "Straight %(card1)s to %(card2)s"
 msgstr "Scala da %(card1)s a %(card2)s"
 
 # Translation #56539 (it)
-#: pokerengine/pokergame.py:3318 pokerengine/pokergame.py:3365
+#: pokerengine/pokergame.py:3316 pokerengine/pokergame.py:3363
 #, python-format
 msgid "Flush %(card)s high"
 msgstr "Colore, %(card)s alte"
 
 # Translation #56540 (it)
-#: pokerengine/pokergame.py:3322 pokerengine/pokergame.py:3369
+#: pokerengine/pokergame.py:3320 pokerengine/pokergame.py:3367
 #, python-format
 msgid "%(card1)ss full of %(card2)ss"
 msgstr "%(card1)ss full di %(card2)ss"
 
 # Translation #56543 (it)
-#: pokerengine/pokergame.py:3327
+#: pokerengine/pokergame.py:3325
 #, python-format
 msgid "Four of a kind %(card)s"
 msgstr "Poker di %(card)s"
 
 # Translation #56545 (it)
-#: pokerengine/pokergame.py:3334 pokerengine/pokergame.py:3381
+#: pokerengine/pokergame.py:3332 pokerengine/pokergame.py:3379
 msgid "Royal flush"
 msgstr "Scala reale"
 
 # Translation #57264 (it)
-#: pokerengine/pokergame.py:3336
+#: pokerengine/pokergame.py:3334
 #, python-format
 msgid "Straight flush %(card)s high"
 msgstr "Scala di colore, %(card)s alte"
 
 # Translation #57265 (it)
-#: pokerengine/pokergame.py:3350
+#: pokerengine/pokergame.py:3348
 #, python-format
 msgid "Pair of %(card)s"
 msgstr "Coppia di %(card)s"
 
 # Translation #57266 (it)
-#: pokerengine/pokergame.py:3352
+#: pokerengine/pokergame.py:3350
 #, python-format
 msgid "Pairs of %(card1)s and %(card2)s"
 msgstr "Doppia coppia di %(card1)s e  %(card2)s"
 
 # Translation #57267 (it)
-#: pokerengine/pokergame.py:3357
+#: pokerengine/pokergame.py:3355
 #, python-format
 msgid "Trips %(card)s"
 msgstr "Tris di %(card)s"
 
 # Translation #57268 (it)
-#: pokerengine/pokergame.py:3361
+#: pokerengine/pokergame.py:3359
 #, python-format
 msgid "Straight %(card)s high"
 msgstr "Scala di %(card)s alte"
 
 # Translation #57269 (it)
-#: pokerengine/pokergame.py:3374
+#: pokerengine/pokergame.py:3372
 #, python-format
 msgid "Quads %(card)s"
 msgstr "Poker di %(card)s"
 
 # Translation #57270 (it)
-#: pokerengine/pokergame.py:3383
+#: pokerengine/pokergame.py:3381
 msgid "Straight flush"
 msgstr "Scala di colore"
 

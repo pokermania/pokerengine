@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: poker-engine VERSION\n"
 "Report-Msgid-Bugs-To: http://github.com/pokermania/poker-network\n"
-"POT-Creation-Date: 2012-12-17 13:47+0100\n"
+"POT-Creation-Date: 2012-12-20 12:08+0100\n"
 "PO-Revision-Date: 2008-11-25 16:30+0200\n"
 "Last-Translator: devteam <devteam@orbus.fr>\n"
 "Language-Team: <pokersource-users@gna.org>\n"
@@ -192,108 +192,108 @@ msgid "%(name)s sits out"
 msgstr "%(name)s sits out"
 
 # Translation #54848 (fi)
-#: pokerengine/pokergame.py:3288 pokerengine/pokergame.py:3344
+#: pokerengine/pokergame.py:3286 pokerengine/pokergame.py:3342
 msgid "The wheel"
 msgstr "Paras mahdollinen käsi"
 
 # Translation #54849 (fi)
-#: pokerengine/pokergame.py:3292 pokerengine/pokergame.py:3348
+#: pokerengine/pokergame.py:3290 pokerengine/pokergame.py:3346
 #, python-format
 msgid "High card %(card)s"
 msgstr "High card %(card)s"
 
 # Translation #54850 (fi)
-#: pokerengine/pokergame.py:3294
+#: pokerengine/pokergame.py:3292
 #, python-format
 msgid "A pair of %(card)s"
 msgstr "A pair of %(card)s"
 
 # Translation #54851 (fi)
-#: pokerengine/pokergame.py:3296 pokerengine/pokergame.py:3303
-#: pokerengine/pokergame.py:3309 pokerengine/pokergame.py:3329
+#: pokerengine/pokergame.py:3294 pokerengine/pokergame.py:3301
+#: pokerengine/pokergame.py:3307 pokerengine/pokergame.py:3327
 #, python-format
 msgid ", %(card)s kicker"
 msgstr ", %(card)s kicker"
 
 # Translation #54852 (fi)
-#: pokerengine/pokergame.py:3300
+#: pokerengine/pokergame.py:3298
 #, python-format
 msgid "Two pairs %(card1)s and %(card2)s"
 msgstr "Two pairs %(card1)s and %(card2)s"
 
 # Translation #54853 (fi)
-#: pokerengine/pokergame.py:3307
+#: pokerengine/pokergame.py:3305
 #, python-format
 msgid "Three of a kind %(card)s"
 msgstr "Three of a kind %(card)s"
 
 # Translation #54854 (fi)
-#: pokerengine/pokergame.py:3313
+#: pokerengine/pokergame.py:3311
 #, python-format
 msgid "Straight %(card1)s to %(card2)s"
 msgstr "Straight %(card1)s to %(card2)s"
 
 # Translation #54855 (fi)
-#: pokerengine/pokergame.py:3318 pokerengine/pokergame.py:3365
+#: pokerengine/pokergame.py:3316 pokerengine/pokergame.py:3363
 #, python-format
 msgid "Flush %(card)s high"
 msgstr "Flush %(card)s high"
 
 # Translation #54856 (fi)
-#: pokerengine/pokergame.py:3322 pokerengine/pokergame.py:3369
+#: pokerengine/pokergame.py:3320 pokerengine/pokergame.py:3367
 #, python-format
 msgid "%(card1)ss full of %(card2)ss"
 msgstr "%(card1)ss full of %(card2)ss"
 
 # Translation #54857 (fi)
-#: pokerengine/pokergame.py:3327
+#: pokerengine/pokergame.py:3325
 #, python-format
 msgid "Four of a kind %(card)s"
 msgstr "Four of a kind %(card)s"
 
 # Translation #54858 (fi)
-#: pokerengine/pokergame.py:3334 pokerengine/pokergame.py:3381
+#: pokerengine/pokergame.py:3332 pokerengine/pokergame.py:3379
 msgid "Royal flush"
 msgstr "Royal flush"
 
 # Translation #54859 (fi)
-#: pokerengine/pokergame.py:3336
+#: pokerengine/pokergame.py:3334
 #, python-format
 msgid "Straight flush %(card)s high"
 msgstr "Straight flush %(card)s high"
 
 # Translation #54860 (fi)
-#: pokerengine/pokergame.py:3350
+#: pokerengine/pokergame.py:3348
 #, python-format
 msgid "Pair of %(card)s"
 msgstr "Pair of %(card)s"
 
 # Translation #54861 (fi)
-#: pokerengine/pokergame.py:3352
+#: pokerengine/pokergame.py:3350
 #, python-format
 msgid "Pairs of %(card1)s and %(card2)s"
 msgstr "Pairs of %(card1)s and %(card2)s"
 
 # Translation #54862 (fi)
-#: pokerengine/pokergame.py:3357
+#: pokerengine/pokergame.py:3355
 #, python-format
 msgid "Trips %(card)s"
 msgstr "Trips %(card)s"
 
 # Translation #54863 (fi)
-#: pokerengine/pokergame.py:3361
+#: pokerengine/pokergame.py:3359
 #, python-format
 msgid "Straight %(card)s high"
 msgstr "Straight %(card)s high"
 
 # Translation #54864 (fi)
-#: pokerengine/pokergame.py:3374
+#: pokerengine/pokergame.py:3372
 #, python-format
 msgid "Quads %(card)s"
 msgstr "Quads %(card)s"
 
 # Translation #54865 (fi)
-#: pokerengine/pokergame.py:3383
+#: pokerengine/pokergame.py:3381
 msgid "Straight flush"
 msgstr "Värisuora"
 

@@ -13,5 +13,7 @@ before_install:
 
 install: sudo apt-get install -qq python-libxml2 python-libxslt1 python-pypoker-eval python-cjson
 
+
 # command to run tests, e.g. python setup.py test
+berfore_script: python setup.py build
 script:  python setup.py test
