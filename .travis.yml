@@ -15,5 +15,5 @@ install: sudo apt-get install -qq python-libxml2 python-libxslt1 python-pypoker-
 
 
 # command to run tests, e.g. python setup.py test
-berfore_script: python setup.py build
+before_script: python setup.py build
 script:  python setup.py test
