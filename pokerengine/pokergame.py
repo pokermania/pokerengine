@@ -4106,9 +4106,12 @@ class PokerGame:
             for serial in set(player_list_new) - set(game_event[player_list_index]):
                 game_event[serial2chips_index][serial] = money_map[serial]
             game_event[player_list_index][:] = player_list_new
+            for index,event in enumerate(turn_history):
+                if event[0] == 'rebuy' and event[1] in player_list_new:
+                    remove_indexes.append(index)
         #
         # recreate and mark positions if needed
-        for p_index in range(0,index):
+        for p_index in range(0,len(turn_history)):
             if (
                 not turn_history[p_index][0] == "position" or 
                 not turn_history[p_index][1] >= 0 
@@ -4128,7 +4131,7 @@ class PokerGame:
         #
         # delete duplicate positions
         pos_last = None
-        for p_index in range(0,index):
+        for p_index in range(0,len(turn_history)):
             if (
                 not turn_history[p_index][0] == "position" or 
                 not turn_history[p_index][1] >= 0 
