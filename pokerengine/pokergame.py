@@ -3965,14 +3965,16 @@ class PokerGame:
             return False
 
         if self.isPlaying(serial):
-            # history will be added later
+            # the rebuy happens at the end of the round
             player.rebuy += amount
         else:
-            # history add should be added now
-            self.historyAdd("rebuy", serial, amount)
+            # player can rebuy right now
             player.money += amount
-            player.rebuy_given += amount
-
+            self.historyAdd("rebuy", serial, amount)
+            
+            # memorize the rebuy given if the game is running in order to subtract it if
+            # the chips of the players are loaded afterwards
+            if self.isRunning(): player.rebuy_given += amount
         return True
 
     def buyIn(self):
