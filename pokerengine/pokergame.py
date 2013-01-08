@@ -2402,7 +2402,7 @@ class PokerGame:
             # It is necessary to recompute the list of players willing to 
             # participate in the turn. Some of them may have declined to 
             # pay the blind/ante and thus excluded themselves from the turn,
-            # while other could have joined just beofore/during the blind/ante turn.
+            # while other could have joined just before/during the blind/ante turn.
             # If this is the case, the position has to be reset.
             #
             player_list = self.player_list[:]
