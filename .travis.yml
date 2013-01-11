@@ -6,12 +6,12 @@ python:
 virtualenv:
   system_site_packages: true
 
-before_install:
- - sudo apt-get update -qq
- - git clone git://github.com/pokermania/pokerdistutils.git /tmp/pokerdistutils && sudo pip install /tmp/pokerdistutils
- - git clone https://github.com/pokermania/reflogging /tmp/reflogging && sudo pip install /tmp/reflogging
+before_install: sudo apt-get update -qq
 
-install: sudo apt-get install -qq python-libxml2 python-libxslt1 python-pypoker-eval python-cjson bc
+install:
+ - sudo apt-get install -qq python-libxml2 python-libxslt1 python-pypoker-eval python-cjson bc
+ - pip install http://github.com/pokermania/pokerdistutils/archive/master.zip
+ - pip install http://github.com/pokermania/reflogging/archive/master.zip
 
 # command to run tests, e.g. python setup.py test
 before_script: python setup.py build
