@@ -165,8 +165,11 @@ class PokerEngineConfigTestCase(unittest.TestCase):
     # -----------------------------------------------------------------------------------------------------
     def testConfigLoadFileNotFound(self):
         """Test Poker Engine : Load file not found"""
-        
-        self.failIf(self.Config.load(PokerEngineConfigTestCase.TestConfigNotFoundFile))
+        try:
+            self.Config.load(PokerEngineConfigTestCase.TestConfigNotFoundFile)
+            self.fail("Found file, although it shouldn't")
+        except:
+            pass
         
     # -----------------------------------------------------------------------------------------------------
     def testConfigLoadInvalidFile(self):

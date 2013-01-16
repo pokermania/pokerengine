@@ -74,7 +74,7 @@ class Config:
                 self.checkVersion("poker_engine_version", version, Config.upgrades_repository)
             return True
         else:
-            log.warn("load: unable to find '%s' in directories %s", path, self.dirs)
+            raise Exception("load: unable to find '%s' in directories %s" % (path, self.dirs))
             return False
 
     def checkVersion(self, version_attribute, software_version, upgrades_repository, default_version = "1.0.5"):
