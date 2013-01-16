@@ -12,7 +12,7 @@ class ExtendedBuild(DistutilsBuild):
     
     def run(self):
         os.system("make -C po")
-        os.system("conf/build.sh")
+        os.system("bash conf/build.sh")
         DistutilsBuild.run(self)
 
 from pprint import pprint as pp
