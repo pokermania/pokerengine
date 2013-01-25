@@ -36,6 +36,7 @@ setup(
             'conf/poker..05-.10_1-10_limit.xml',
             'conf/poker..05-.10_1-10_no-limit.xml',
             'conf/poker..05-.10_1-10_pot-limit.xml',
+            'conf/poker.100000-200000_6000000-8000000_pokermania.xml',
             'conf/poker.100-200_10000-15000_pokermania.xml',
             'conf/poker.100-200_2000-20000_no-limit.xml',
             'conf/poker.100-200_2000-20000_pot-limit.xml',
