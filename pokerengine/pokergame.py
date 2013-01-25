@@ -797,7 +797,7 @@ class PokerGame:
 
     def canAddPlayer(self, serial):
         if len(self.seats_left) < 1:
-            self.log.warn("no seats left for player %d", serial)
+            self.log.inform("no seats left for player %d", serial)
             return False
         else:
             return self.is_open
