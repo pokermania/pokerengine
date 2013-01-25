@@ -125,7 +125,7 @@ setup(
             'conf/poker.razz.xml',
         ]),
         ('share/man/man8', ['pokerconfigupgrade.8']),
-        ('share/doc/python-poker-engine', ['AUTHORS', 'README'])
+        ('share/doc/python-poker-engine', ['AUTHORS', 'README.md'])
     ] + [(
         'share/locale/%s/LC_MESSAGES' % locale,
         ['locale/%s/LC_MESSAGES/poker-engine.mo' % locale]
