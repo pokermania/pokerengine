@@ -102,7 +102,7 @@ def equalizeGames(games, log = None):
                 break
 
     if log and len(results) > 0:
-        log.inform("equalizeGame: %s", pformat(results))
+        log.inform("equalizeGame: %s", lambda: pformat(results))
 
     return results
 
@@ -137,7 +137,7 @@ def breakGames(games, log=None):
         if len(to_break) < 2:
             break
 
-    if log and results: log.debug("breakGames: %s", pformat(results))
+    if log and results: log.debug("breakGames: %s", lambda: pformat(results))
 
     return results
 
