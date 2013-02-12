@@ -327,7 +327,7 @@ class PokerPlayer:
         self.ante = False
 
     def isInGame(self):
-        return not self.isAllIn() and not self.isFold()
+        return not self.all_in and not self.fold
 
     def isAllIn(self):
         return self.all_in
