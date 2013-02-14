@@ -3025,11 +3025,11 @@ class PokerGame:
             frame['serials'] = [player.serial for player in potential_winners]
 
             self.log.debug(
-                "looking for winners with boards %s\n%s",
-                self.getBoardAsString(),
-                "\n".join("  => hand for player %d %s" % (player.serial, self.getHandAsString(player.serial)) for player in potential_winners)
+                "looking for winners with boards %s\n" + "\n".join("    hand for player %d: %s" for p in potential_winners),
+                lambda: self.getBoardAsString(),
+                *reduce(lambda a, b: a + b, [(p.serial, self.getHandAsString(p.serial)) for p in potential_winners], ())
             )
-            
+
             #
             #
             # Ask poker-eval to figure out who the winners actually are
