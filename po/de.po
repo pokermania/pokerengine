@@ -45,7 +45,7 @@ msgstr " gewinnt %(side)s"
 #: pokerengine/pokergame.py:441 pokerengine/pokergame.py:445
 #, python-format
 msgid "winners share a pot of %(pot)s"
-msgstr "Gewinner teilen einen Pot von %(pot)s"
+msgstr "Gewinner teilen sich den Pot von %(pot)s" 
 
 # Translation #55538 (de)
 #: pokerengine/pokergame.py:442
@@ -123,13 +123,13 @@ msgstr "%(name)s zahlt %(amount)s blind"
 #: pokerengine/pokergame.py:542
 #, python-format
 msgid "%(name)s pays %(amount)s ante"
-msgstr "%(name)s zahlt %(amount)s ante"
+msgstr "%(name)s zahlt %(amount)s Ante"
 
 # Translation #55554 (de)
 #: pokerengine/pokergame.py:548
 #, python-format
 msgid "%(name)s is all in"
-msgstr "%(name)s ist all in"
+msgstr "%(name)s ist All-In"
 
 # Translation #55555 (de)
 #: pokerengine/pokergame.py:551
@@ -159,7 +159,7 @@ msgstr "%(name)s erhöht um %(amount)s"
 #
 #: pokerengine/pokergame.py:570 pokerengine/pokergame.py:575
 msgid "turn canceled"
-msgstr "Runde abgesagt"
+msgstr "Turn abgebrochen"
 
 # Translation #55559 (de)
 #: pokerengine/pokergame.py:570
@@ -183,7 +183,7 @@ msgstr "%(name)s bekommt %(amount)d übrig gebliebene Chips"
 #: pokerengine/pokergame.py:597
 #, python-format
 msgid "returning uncalled bet %(amount)s to %(name)s"
-msgstr "Nicht mitgegangener Einsatz %(amount)s an %(name)s zurückgegeben"
+msgstr "Nicht mitgegangener Einsatz %(amount)s geht zurück an %(name)s"
 
 # Translation #55570 (de)
 #: pokerengine/pokergame.py:611
@@ -219,7 +219,7 @@ msgstr ", %(card)s Kicker"
 #: pokerengine/pokergame.py:3298
 #, python-format
 msgid "Two pairs %(card1)s and %(card2)s"
-msgstr "Zwei Paar %(card1)s und %(card2)s"
+msgstr "Zwei Paare, %(card1)s und %(card2)s"
 
 # Translation #55580 (de)
 #: pokerengine/pokergame.py:3305
@@ -231,7 +231,7 @@ msgstr "Drilling %(card)s"
 #: pokerengine/pokergame.py:3311
 #, python-format
 msgid "Straight %(card1)s to %(card2)s"
-msgstr "Strasse %(card1)s zu %(card2)s"
+msgstr "Straße %(card1)s zu %(card2)s"
 
 # Translation #55582 (de)
 #: pokerengine/pokergame.py:3316 pokerengine/pokergame.py:3363
@@ -284,13 +284,13 @@ msgstr "Drilling %(card)s"
 #: pokerengine/pokergame.py:3359
 #, python-format
 msgid "Straight %(card)s high"
-msgstr "Straight %(card)s hoch"
+msgstr "Straße %(card)s hoch"
 
 # Translation #55591 (de)
 #: pokerengine/pokergame.py:3372
 #, python-format
 msgid "Quads %(card)s"
-msgstr "Quads %(card)s"
+msgstr "Vierling %(card)s"
 
 # Translation #55592 (de)
 #: pokerengine/pokergame.py:3381
