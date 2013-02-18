@@ -3313,7 +3313,7 @@ class PokerGame:
                 'card2': _(letter2name[cards[4][0]])
             }
         elif value == "Flush":
-            return _("Flush %(card)s high") % {
+            return _("Flush %(card)s") % {
                 'card': _(letter2name[cards[0][0]])
             }
         elif value == "FlHouse":
@@ -3331,7 +3331,7 @@ class PokerGame:
             if letter2name[cards[0][0]] == 'Ace':
                 return _("Royal flush")
             else:
-                return _("Straight flush %(card)s high") % {'card': _(letter2name[cards[0][0]])}
+                return _("Straight flush %(card)s") % {'card': _(letter2name[cards[0][0]])}
         return value
 
     def readableHandValueShort(self, side, value, cards):
@@ -3356,11 +3356,11 @@ class PokerGame:
                 'card': _(letter2names[cards[0][0]])
             }
         elif value == "Straight":
-            return _("Straight %(card)s high") % {
+            return _("Straight %(card)s") % {
                 'card': _(letter2name[cards[0][0]])
             }
         elif value == "Flush":
-            return _("Flush %(card)s high") % {
+            return _("Flush %(card)s") % {
                 'card': _(letter2name[cards[0][0]])
             }
         elif value == "FlHouse":

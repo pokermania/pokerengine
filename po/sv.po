@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: poker-engine VERSION\n"
 "Report-Msgid-Bugs-To: http://github.com/pokermania/poker-network\n"
-"POT-Creation-Date: 2012-12-20 12:08+0100\n"
+"POT-Creation-Date: 2013-02-18 14:56+0100\n"
 "PO-Revision-Date: 2008-11-25 16:31+0200\n"
 "Last-Translator: devteam <devteam@orbus.fr>\n"
 "Language-Team: <pokersource-users@gna.org>\n"
@@ -236,8 +236,8 @@ msgstr "Straight i %(card1)s till %(card2)s"
 # Translation #58103 (sv)
 #: pokerengine/pokergame.py:3316 pokerengine/pokergame.py:3363
 #, python-format
-msgid "Flush %(card)s high"
-msgstr "Färg %(card)s i höga kort"
+msgid "Flush %(card)s"
+msgstr "Färg %(card)s"
 
 # Translation #58104 (sv)
 #: pokerengine/pokergame.py:3320 pokerengine/pokergame.py:3367
@@ -259,8 +259,8 @@ msgstr "Royal flush"
 # Translation #58107 (sv)
 #: pokerengine/pokergame.py:3334
 #, python-format
-msgid "Straight flush %(card)s high"
-msgstr "Straight flush %(card)s i höga kort"
+msgid "Straight flush %(card)s"
+msgstr "Straight flush %(card)s"
 
 # Translation #58108 (sv)
 #: pokerengine/pokergame.py:3348
@@ -283,8 +283,8 @@ msgstr "Triss i %(card)s"
 # Translation #58111 (sv)
 #: pokerengine/pokergame.py:3359
 #, python-format
-msgid "Straight %(card)s high"
-msgstr "Straight %(card)s i höga kort"
+msgid "Straight %(card)s"
+msgstr "Straight %(card)s"
 
 # Translation #58112 (sv)
 #: pokerengine/pokergame.py:3372
