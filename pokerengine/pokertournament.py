@@ -490,8 +490,7 @@ class PokerTournament:
             self.can_register = False
             self.cancel()
             self.finish_time = tournament_seconds()
-        elif ( self.state in ( TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT ) and
-               state == TOURNAMENT_STATE_COMPLETE ):
+        elif self.state in (TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT) and state == TOURNAMENT_STATE_COMPLETE:
             self.finish_time = tournament_seconds()
         else:
             self.log.inform("changeState: cannot change from state %s to state %s", self.state, state)
@@ -629,7 +628,7 @@ class PokerTournament:
         e.g. (True, 13, None) # successful returncode
              (False, None, "money") # unsuccessful, the user has not enough money
         """
-        game = [g for g in self.games if g.getPlayer(serial)][0]
+        game = (g for g in self.games if g.getPlayer(serial)).next()
 
         if not self.isRebuyAllowed(serial):
             return (False, None, TOURNEY_REBUY_ERROR_TIMEOUT)
@@ -680,12 +679,13 @@ class PokerTournament:
         loosers = game.serialsBroke()
         if len(self.winners) + 1 == self.registered:
             game = self.games[0]
-            remainingPlayers = game.playersAll()
-            player = remainingPlayers[0]
+            player = game.playersAll()[0]
             self._winners_dict_tmp[player.serial] = self._incrementToNextWinnerPosition()
             self.callback_remove_player(self, game.id, player.serial, now=True)
-            money = player.money
             player.money = 0
+            return True
+        elif len(self.winners) == self.registered:
+            game = self.games[0]
             self.log.debug("winners %s", self.winners)
             self.callback_destroy_game(self, game)
             self.games = []
