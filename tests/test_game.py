@@ -568,10 +568,10 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.bestBuyIn(), 1600)
         self.failUnlessEqual(self.game.getChipUnit(), 300)
                 
-        bet_properties = {  'buy-in' : '100',
-                            'max-buy-in' : '20000',
-                            'best-buy-in' : '1000',
-                            'unit' : '600'
+        bet_properties = {  'buy-in': '100',
+                            'max-buy-in': '20000',
+                            'best-buy-in': '1000',
+                            'unit': '600'
                         }
         
         if not self.ModifyXMLFile(self.ConfigTempFile, '/bet', None, bet_properties):
@@ -584,20 +584,20 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.bestBuyIn(), 1000)
         self.failUnlessEqual(self.game.getChipUnit(), 600)
         
-        rounds_properties =  [ \
-                                    {   'name' : 'pre-flop', \
-                                        'cap' : 3 \
-                                    }, \
-                                    {   'name' : 'flop', \
-                                        'cap' : sys.maxint \
-                                    }, \
-                                    {   'name' : 'turn', \
-                                        'cap' : sys.maxint \
-                                    }, \
-                                    {   'name' : 'river', \
-                                        'cap' : 3 \
-                                    } \
-                                    ]
+        rounds_properties =  [
+            {   'name': 'pre-flop',
+                'cap': 3
+            },
+            {   'name': 'flop',
+                'cap': sys.maxint
+            },
+            {   'name': 'turn',
+                'cap': sys.maxint
+            },
+            {   'name': 'river',
+                'cap': 3
+            }
+        ]
         
         self.failUnlessEqual(len(self.game.bet_info), len(rounds_properties))
         
@@ -2080,7 +2080,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnless(2 in results)
         self.failUnless('hi' in results[2])
         self.failUnlessEqual(pokercards.PokerCards(results[2]['hi'][1][1:]), bestHand2)
-        self.failUnlessEqual(self.game.readablePlayerBestHands(2), 'Flush Ten high: Td, 9d, 7d, 4d, 2d')
+        self.failUnlessEqual(self.game.readablePlayerBestHands(2), 'Flush Ten: Td, 9d, 7d, 4d, 2d')
         
         # Then hand with a NOCARD can not be evaluate
         player1.hand = pokercards.PokerCards(['Jh', '5c', '7d', pokercards.PokerCards.NOCARD])
@@ -2138,13 +2138,13 @@ class PokerGameTestCase(unittest.TestCase):
         
         player1.hand = pokercards.PokerCards(['7h', '8s', '9d', 'Ts', 'Js'])
         cards = self.game.bestHandCards('hi', 1)
-        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Straight Jack high')
+        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Straight Jack')
         self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Straight Jack to Seven')
         
         player1.hand = pokercards.PokerCards(['2s', '5s', '6s', '9s', 'Ks'])
         cards = self.game.bestHandCards('hi', 1)
-        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Flush King high')
-        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Flush King high')
+        self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Flush King')
+        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Flush King')
         
         player1.hand = pokercards.PokerCards(['Qh', 'Qs', 'Qc', 'Ts', 'Td'])
         cards = self.game.bestHandCards('hi', 1)
@@ -2159,7 +2159,7 @@ class PokerGameTestCase(unittest.TestCase):
         player1.hand = pokercards.PokerCards(['7h', '8h', '9h', 'Th', 'Jh'])
         cards = self.game.bestHandCards('hi', 1)
         self.failUnlessEqual(self.game.readableHandValueShort('hi', cards[0], cards[1:]), 'Straight flush')
-        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Straight flush Jack high')
+        self.failUnlessEqual(self.game.readableHandValueLong('hi', cards[0], cards[1:]), 'Straight flush Jack')
             
         player1.hand = pokercards.PokerCards(['Ts', 'Js', 'Qs', 'Ks', 'As'])
         cards = self.game.bestHandCards('hi', 1)
@@ -4368,11 +4368,7 @@ class PokerGameTestCase(unittest.TestCase):
         if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/wins', None, { 'ways' : '2'}):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
-        winner_properties = {
-                                    'id' : '2',
-                                    'type' : 'hand',
-                                    'order' : 'low8'
-                                    }
+        winner_properties = {'id': '2', 'type': 'hand', 'order': 'low8'}
                                     
         if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/wins', 'winner', winner_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
@@ -4512,7 +4508,7 @@ class PokerGameTestCase(unittest.TestCase):
         
         self.game.setMaxPlayers(3)
         
-         # Initial pots
+        # Initial pots
         pots =  {
                     'contributions': { 'total': {} },
                     'pots': [[0, 0]],
@@ -4884,13 +4880,13 @@ class PokerGameTestCase(unittest.TestCase):
         }
                             
         # Change the round turn properties
-        round_turn_properties = {  'type' : 'high' }
+        round_turn_properties = {'type': 'high'}
                                 
         if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/round[@name="turn"]/position', None, round_turn_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
             
         # Change the round river properties
-        round_river_properties = {  'type' : 'invalid' }
+        round_river_properties = {'type': 'invalid'}
                                 
         if not self.ModifyXMLFile(self.VariantTempFile, '/poker/variant/round[@name="river"]/position', None, round_river_properties):
             self.fail('Error during modification of configuration file ' + self.ConfigTempFile)
@@ -4970,19 +4966,19 @@ class PokerGameTestCase(unittest.TestCase):
         player3 = self.AddPlayerAndSit(3, 7)
         
         round_infos = {
-                            0 :     { 
-                                    'name' : 'pre-flop',
-                                    'position' : 'under-the-gun'
-                                    },
-                            1 :     { 
-                                    'name' : 'flop',
-                                    'position' : 'low'
-                                    },
-                            2 :     { 
-                                    'name' : 'turn',
-                                    'position' : 'under-the-gun'
-                                    }
-                            }
+            0: { 
+                'name' : 'pre-flop',
+                'position' : 'under-the-gun'
+            },
+            1: { 
+                'name' : 'flop',
+                'position' : 'low'
+            },
+            2: { 
+                'name' : 'turn',
+                'position' : 'under-the-gun'
+            }
+        }
                             
         # Change the round flop properties
         round_flop_properties = {  'type' : 'low' }
