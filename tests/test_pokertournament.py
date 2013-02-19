@@ -875,7 +875,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         # Game 2 break
         self.failUnlessEqual(len(tournament.games), 1)
         
-        # All the players of game 1 are borke except one
+        # All players of game 1 are broke except one
         players = game1.playersAll()
         for num in range(len(players) - 1):
             players[num].money = 0

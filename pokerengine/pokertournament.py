@@ -679,13 +679,11 @@ class PokerTournament:
         loosers = game.serialsBroke()
         if len(self.winners) + 1 == self.registered:
             game = self.games[0]
-            player = game.playersAll()[0]
+            remainingPlayers = game.playersAll()
+            player = remainingPlayers[0]
             self._winners_dict_tmp[player.serial] = self._incrementToNextWinnerPosition()
             self.callback_remove_player(self, game.id, player.serial, now=True)
             player.money = 0
-            return True
-        elif len(self.winners) == self.registered:
-            game = self.games[0]
             self.log.debug("winners %s", self.winners)
             self.callback_destroy_game(self, game)
             self.games = []
