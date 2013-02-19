@@ -319,13 +319,14 @@ class PokerTournament:
         it is importent that it is called after the callback_remove_player was called
         """
         assert serial in self._winners_dict_tmp or now, 'player %d not found in winners_dict_tmp' % serial
-        pos = self._winners_dict_tmp.pop(serial) if not now else self._incrementToNextWinnerPosition()
-        self.addWinner(serial, pos)
+        # the numbers in end don't matter since this case occurs only when the tourney winner is removed
+        pos_info = self._winners_dict_tmp.pop(serial) if serial in self._winners_dict_tmp else (self._incrementToNextWinnerPosition(), 42, 0)
+        self.addWinner(serial, pos_info)
 
-    def addWinner(self, serial, pos):
+    def addWinner(self, serial, pos_info):
         """adds the serial to winnerslist"""
         assert serial not in self.winners_dict, 'player %d already part of the winners_dict' % serial
-        self.winners_dict[serial] = pos
+        self.winners_dict[serial] = pos_info
 
     def loadPayouts(self):
         self.prizes_object = pokerprizes.__dict__['PokerPrizes' + self.prizes_specs.capitalize()](buy_in_amount = self.buy_in, player_count = self.registered, guarantee_amount = self.prize_min, config_dirs = self.dirs)
@@ -661,9 +662,13 @@ class PokerTournament:
         game = self.id2game[game_id]
         loosers = game.serialsBroke()
         pos = self._incrementToNextWinnerPosition()
-        new_loosers = (s for s in loosers if s not in self._winners_dict_tmp)
-        for serial in new_loosers:
-            self._winners_dict_tmp[serial] = pos
+        new_loosers = [s for s in loosers if s not in self._winners_dict_tmp]
+        randlist = range(len(new_loosers))
+        shuffler.shuffle(randlist)
+        for serial, tiebreaker in zip(new_loosers, randlist):
+            # the person who had more money before the all in should  get a higher rank
+            lost_chips = - game.showdown_stack[0]['serial2delta'][serial]
+            self._winners_dict_tmp[serial] = (pos, lost_chips, tiebreaker)
             self.callback_remove_player(self, game_id, serial, now=now)
         if loosers:
             self.need_balance = True
@@ -681,7 +686,7 @@ class PokerTournament:
             game = self.games[0]
             remainingPlayers = game.playersAll()
             player = remainingPlayers[0]
-            self._winners_dict_tmp[player.serial] = self._incrementToNextWinnerPosition()
+            self._winners_dict_tmp[player.serial] = (self._incrementToNextWinnerPosition(),0,0)
             self.callback_remove_player(self, game.id, player.serial, now=True)
             player.money = 0
             self.log.debug("winners %s", self.winners)

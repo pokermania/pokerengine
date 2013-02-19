@@ -42,7 +42,12 @@ log = reflogging.root_logger.get_child('test-tournament')
 
 from pokerengine.pokergame import PokerGameServer
 from pokerengine.pokertournament import equalizeGames, breakGames, PokerTournament
-    
+
+try:
+    from nose.plugins.attrib import attr
+except ImportError:
+    attr = lambda *args, **kw: lambda fn: fn
+
 NGAMES = 5
 
 class PokerPredefinedDecks:
@@ -405,7 +410,7 @@ class TestRebuy(unittest.TestCase):
 
         def myremove_player(tournament, game_id, serial, now=False):
             if now:
-                tournament.removePlayer(game_id, serial, now)
+                tournament.finallyRemovePlayer(serial)
 
         tourney.callback_remove_player = myremove_player
         def my_rebuy(tournament, serial, table_id, player_chips, tourney_chips):
@@ -417,15 +422,21 @@ class TestRebuy(unittest.TestCase):
 
         tourney.callback_rebuy = my_rebuy
 
+        def updateShowdownStack(serial, money):
+            if len(game.showdown_stack) == 0:
+                game.showdown_stack.append({'serial2delta':{}})
+
+            game.showdown_stack[0]['serial2delta'][serial] = - money
 
         def looseMoney(serial, set_money_to=0):
             for player in players:
                 if player.serial != serial:
                     continue
-
+                money = set_money_to - player.money
                 player.money = set_money_to
                 if set_money_to == 0:
                     self.assertTrue(game.isBroke(serial))
+                updateShowdownStack(serial, money)
 
         # prizes will be cached, but we have to make sure that the rebuy process 
         # will update the cache.
@@ -533,27 +544,32 @@ class TestRebuy(unittest.TestCase):
         self.test2()
 
     def testGetNextPositionWillReturnCorrectValue(self):
+        game = self.tourney.games[0]
         def sortTmpWinner():
-            return [k for k,_v in sorted(self.tourney._winners_dict_tmp.iteritems() ,key=lambda (a,b):(b,a),reverse=True)]
-            return self.tourney._winners_dict_tmp.keys()
+            return self.tourney.winners
 
         def removePlayer(serials):
             nid = self.tourney._incrementToNextWinnerPosition()
-            for serial in serials:
-                self.tourney._winners_dict_tmp[serial] = nid
+            for serial, money in serials:
+                self.tourney.winners_dict[serial] = (nid,money)
 
         def reenterPlayer(serials):
             for serial in serials:
-                del self.tourney._winners_dict_tmp[serial]
+                del self.tourney.winners_dict[serial]
 
         self.assertEqual(sortTmpWinner(), [])
-        removePlayer([3,4])
+        removePlayer([(3, 200),(4, 200)])
         self.assertEqual(sortTmpWinner(), [4,3])
-        removePlayer([2])
-        self.assertEqual(sortTmpWinner(), [2,4,3])
+
+        reenterPlayer([3,4])
+        removePlayer([(3, 300),(4, 200)])
+        self.assertEqual(sortTmpWinner(), [3,4])
+
+        removePlayer([(2, 200)])
+        self.assertEqual(sortTmpWinner(), [2,3,4])
         reenterPlayer([3,4])
         self.assertEqual(sortTmpWinner(), [2])
-        removePlayer([1])
+        removePlayer([(1, 200)])
         self.assertEqual(sortTmpWinner(), [1,2])
     
     def testUnequalTables(self):

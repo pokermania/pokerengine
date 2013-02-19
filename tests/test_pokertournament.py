@@ -33,8 +33,10 @@ sys.path.insert(0, path.join(TESTS_PATH, ".."))
 import time
 
 class ConstantPlayerShuffler:
+    def __init__(self):
+        self.reverse = False
     def shuffle(self, what):
-        what.sort()
+        what.sort(reverse=self.reverse)
 
 from tests.testmessages import get_messages, clear_all_messages
 from pokerengine import pokertournament
@@ -45,6 +47,34 @@ pokertournament.shuffler = ConstantPlayerShuffler()
 
 import reflogging
 log = reflogging.root_logger.get_child('test-pokertournament')
+
+try:
+    from nose.plugins.attrib import attr
+except ImportError:
+    attr = lambda *args, **kw: lambda fn: fn
+
+
+def updateShowdownStack(tournament, serial, money):
+    for game in tournament.games:
+        if serial in [p.serial for p in game.playersAll()]:
+            if len(game.showdown_stack) == 0:
+                game.showdown_stack.append({'serial2delta':{}})
+
+            game.showdown_stack[0]['serial2delta'][serial] = money
+            return True
+    else:
+        raise Exception("player should be here")
+
+
+def looseMoney(tournament, players, set_money_to=0):
+    for player in players:
+        serial = player.serial
+        money = set_money_to - player.money
+        player.money = set_money_to
+
+        assert (sum([1 for g in tournament.games if g.isBroke(serial)]) == 1 ) if set_money_to == 0 else True
+        updateShowdownStack(tournament, serial, money)
+
 
 class PokerTournamentTestCase(unittest.TestCase):
     
@@ -830,6 +860,56 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         
     # -------------------------------------------------------
+    @attr("og_now")
+    def testWinnersConsiderBet(self):
+        """test 4 corner cases of an all-in with 3 players"""
+        self._test_winners_considers_bet([(1000, 0), (600, 1), (400, 2)])
+        self._test_winners_considers_bet([(1000, 0), (600, 2), (600, 1)])
+        self._test_winners_considers_bet([(1000, 0), (400, 2), (400, 1)], reverse=False)
+        self._test_winners_considers_bet([(1000, 0), (400, 1), (400, 2)], reverse=True)
+
+    def _test_winners_considers_bet(self, money_list, reverse=False):
+        """
+        tests an all-in scenario with 3 players, first player will win,
+        second and third player will go broke in the same time
+
+        the money_list is a list of tuples with the money of the players before the
+        all-in and the predicted rank.
+
+        reverse is Boolean, if set to true the shuffler will sort reverse
+        it is used to test if the winners are chosen randomly if the lost money is the same
+        """
+        orig = pokertournament.shuffler.reverse
+        pokertournament.shuffler.reverse = reverse
+        arguments = {
+            'dirs': self.dirs,
+            'players_quota': 3,
+            'seats_per_game': 3,
+            'sit_n_go': 'y',
+        }
+
+        t = tournament = pokertournament.PokerTournament(**arguments)
+
+        # Register the players
+        for player in range(3):
+            self.failUnless(tournament.register(player))
+
+        game = tournament.games[0]
+        players = game.playersAll()
+
+        for player, (money,idx) in zip(players, money_list):
+            player.money = money
+            player.__idx = idx
+
+        looseMoney(t, game.playersAll()[1:])
+        tournament.removeBrokePlayers(game.id)
+        tournament.tourneyEnd(game.id)
+
+        for player in players:
+            self.assertEqual(tournament.winners.index(player.serial), player.__idx)
+
+        pokertournament.shuffler.reverse = orig
+
     def testEndTurn(self):
         """Test Poker Tournament : End turn"""
         
@@ -840,15 +920,15 @@ class PokerTournamentTestCase(unittest.TestCase):
             'sit_n_go': 'y',
         }
                             
-        tournament = pokertournament.PokerTournament(**arguments)
+        t = tournament = pokertournament.PokerTournament(**arguments)
         
         # Register the players
         for player in range(10):
             self.failUnless(tournament.register(player))
-        
+
         # 2 games (5 players)
         self.failUnlessEqual(len(tournament.games), 2)
-        
+
         # Ten players in the tournament
         self.failUnlessEqual(len(tournament.players), 10)
         
@@ -857,10 +937,8 @@ class PokerTournamentTestCase(unittest.TestCase):
         game2 = tournament.id2game[2]
         
         # Game 2, players 1, 2, 3 broke
-        players = game2.playersAll()
-        for num in range(3):
-            players[num].money = 0
-            self.failUnless(game2.isBroke(players[num].serial))
+        serials = [p.serial for p in game2.playersAll()[:3]]
+        looseMoney(t, game2.playersAll()[:3])
         self.failUnlessEqual(game2.brokeCount(), 3)
         
         # End turn of game 2
@@ -872,11 +950,8 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(len(game1.playersAll()), 3)
         self.failUnlessEqual(len(game2.playersAll()), 4)
         
-        # Game 2 players broke
-        players = game2.playersAll()
-        for num in range(len(players)):
-            players[num].money = 0
-            self.failUnless(game2.isBroke(players[num].serial))
+        # Game 2 players broke except one
+        looseMoney(t, game2.playersAll()[:-1])
             
         # End turn of game 2
         tournament.removeBrokePlayers(2, now=True)
@@ -886,10 +961,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(len(tournament.games), 1)
         
         # All players of game 1 are broke except one
-        players = game1.playersAll()
-        for num in range(len(players) - 1):
-            players[num].money = 0
-            self.failUnless(game1.isBroke(players[num].serial))
+        looseMoney(t, game1.playersAll()[:-1])
             
         # End turn of game 1
         tournament.removeBrokePlayers(1, now=True)
@@ -921,7 +993,7 @@ class PokerTournamentTestCase(unittest.TestCase):
             'breaks_first': 0
         }
                             
-        tournament = pokertournament.PokerTournament(**arguments)
+        t = tournament = pokertournament.PokerTournament(**arguments)
         
         # Register the players
         for player in range(10):
@@ -939,10 +1011,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         game2.state = GAME_STATE_FLOP
         
         # Game 1, players 1 broke
-        players = game1.playersAll()
-        for num in range(1):
-            players[num].money = 0
-            self.failUnless(game1.isBroke(players[num].serial))
+        looseMoney(t, game1.playersAll()[:1])
         self.failUnlessEqual(game1.brokeCount(), 1)
 
         # End turn of game 1
@@ -952,10 +1021,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual([1], tournament.breaks_games_id)
         
         # Game 2, players 1, 2, 3, 4 broke as if 5 got all their chips
-        players = game2.playersAll()
-        for num in range(4):
-            players[num].money = 0
-            self.failUnless(game2.isBroke(players[num].serial))
+        looseMoney(t, game2.playersAll()[:4])
         self.failUnlessEqual(game2.brokeCount(), 4)
         
         # End turn of game 2
@@ -972,10 +1038,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         tournament.state = pokertournament.TOURNAMENT_STATE_RUNNING
         
         # Game 1 players broke
-        players = game1.playersAll()
-        for num in range(len(players) - 1):
-            players[num].money = 0
-            self.failUnless(game1.isBroke(players[num].serial))
+        looseMoney(t, game1.playersAll()[:-1])
             
         # End turn of game 1
         tournament.removeBrokePlayers(1, now=True)
@@ -1009,7 +1072,7 @@ class PokerTournamentTestCase(unittest.TestCase):
             'sit_n_go': 'y',
         }
                             
-        tournament = pokertournament.PokerTournament(**arguments)
+        t = tournament = pokertournament.PokerTournament(**arguments)
         
         # Register the players
         for player in range(4):
@@ -1026,9 +1089,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         game2 = tournament.id2game[2]
         
         # Game 2, players 1 broke as if 2 got all his chips
-        players = game2.playersAll()
-        players[0].money = 0
-        self.failUnless(game2.isBroke(players[0].serial))
+        looseMoney(t, game2.playersAll()[:1])
         self.failUnlessEqual(game2.brokeCount(), 1)
 
         # End turn of game 2
