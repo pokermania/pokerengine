@@ -490,7 +490,7 @@ class PokerTournament:
             self.can_register = False
             self.cancel()
             self.finish_time = tournament_seconds()
-        elif self.state in (TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT) and state == TOURNAMENT_STATE_COMPLETE:
+        elif self.state in (TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT, TOURNAMENT_STATE_BREAK) and state == TOURNAMENT_STATE_COMPLETE:
             self.finish_time = tournament_seconds()
         else:
             self.log.inform("changeState: cannot change from state %s to state %s", self.state, state)

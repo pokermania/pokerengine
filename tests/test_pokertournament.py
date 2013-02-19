@@ -235,6 +235,16 @@ class PokerTournamentTestCase(unittest.TestCase):
         tournament.changeState(pokertournament.TOURNAMENT_STATE_COMPLETE)
         self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_COMPLETE)
         
+        # Go to state TOURNAMENT_STATE_COMPLETE from TOURNAMENT_STATE_BREAK
+        tournament.state = pokertournament.TOURNAMENT_STATE_BREAK
+        tournament.changeState(pokertournament.TOURNAMENT_STATE_COMPLETE)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_COMPLETE)
+
+        # Go to state TOURNAMENT_STATE_COMPLETE from TOURNAMENT_STATE_BREAK_WAIT
+        tournament.state = pokertournament.TOURNAMENT_STATE_BREAK_WAIT
+        tournament.changeState(pokertournament.TOURNAMENT_STATE_COMPLETE)
+        self.failUnlessEqual(tournament.state, pokertournament.TOURNAMENT_STATE_COMPLETE)
+
         
     # -------------------------------------------------------
     def testCanUnregister(self):
