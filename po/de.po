@@ -32,8 +32,8 @@ msgstr "%(name)s verbirgt Verlierer-Hand"
 # Translation #55536 (de)
 #: pokerengine/pokergame.py:433
 #, python-format
-msgid " tie for %(side)s "
-msgstr " Gleichstand für %(side)s "
+msgid " tie %(side)s "
+msgstr " Gleichstand %(side)s "
 
 # Translation #55536 (de)
 #: pokerengine/pokergame.py:435
@@ -300,12 +300,12 @@ msgstr "Straight Flush"
 # Translation #55593 (de)
 #: po/raw.string:1
 msgid "hi"
-msgstr "hoch"
+msgstr "high"
 
 # Translation #55594 (de)
 #: po/raw.string:2
 msgid "low"
-msgstr "niedrig"
+msgstr "low"
 
 # Translation #55595 (de)
 #: po/raw.string:4

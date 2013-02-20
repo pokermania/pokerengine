@@ -32,7 +32,7 @@ msgstr "%(name)s verbergt verliezende hand"
 # Translation #55765 (nl)
 #: pokerengine/pokergame.py:433
 #, python-format
-msgid " tie for %(side)s "
+msgid " tie %(side)s "
 msgstr "wint %(side)s"
 
 # Translation #55765 (nl)

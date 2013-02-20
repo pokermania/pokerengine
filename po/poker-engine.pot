@@ -29,7 +29,7 @@ msgstr ""
 
 #: pokerengine/pokergame.py:433
 #, python-format
-msgid " tie for %(side)s "
+msgid " tie %(side)s "
 msgstr ""
 
 #: pokerengine/pokergame.py:435

@@ -32,7 +32,7 @@ msgstr "%(name)s se couche"
 # Translation #54328 (fr)
 #: pokerengine/pokergame.py:433
 #, python-format
-msgid " tie for %(side)s "
+msgid " tie %(side)s "
 msgstr "gagne avec la %(side)s"
 
 # Translation #54328 (fr)
