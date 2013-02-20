@@ -415,10 +415,11 @@ def __historyResolve2messages(game, hands, serial2name, serial2displayed, frame)
             if show:
                 serial2displayed[serial] = True
                 value = game.readableHandValueLong(side, hand[1][0], hand[1][1:])
-                messages.append(_("%(name)s shows %(value)s for %(side)s ") % {
+                side_fmt = '(%s)' % _(side) if side == 'low' else ''
+                messages.append(_("%(name)s shows %(value)s %(side)s") % {
                     'name': serial2name(serial),
                     'value': value,
-                    'side': _(side)
+                    'side': side_fmt
                 })
             else:
                 messages.append(_("%(name)s mucks loosing hand") % {
