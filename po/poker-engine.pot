@@ -29,12 +29,12 @@ msgstr ""
 
 #: pokerengine/pokergame.py:434
 #, python-format
-msgid " tie %(side)s "
+msgid " tie %(side)s"
 msgstr ""
 
 #: pokerengine/pokergame.py:436
 #, python-format
-msgid " wins %(side)s "
+msgid " wins %(side)s"
 msgstr ""
 
 #: pokerengine/pokergame.py:442 pokerengine/pokergame.py:446

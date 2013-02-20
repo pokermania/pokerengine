@@ -403,11 +403,11 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.failUnlessEqual(subject, '')
         
         self.failUnlessEqual(message, [
-            '1 shows High card Nine for hi ',
-            '1 shows 8, 5, 4, 3, 2 for low ',
-            '2 shows Straight Five to Ace for hi ',
-            '1 2 tie for hi ',
-            '1 wins low ',
+            '1 shows High card Nine ',
+            '1 shows 8, 5, 4, 3, 2 (low)',
+            '2 shows Straight Five to Ace ',
+            '1 2 tie ',
+            '1 wins (low)',
             'winners share a pot of 5 (minus 3 odd chips)',
             '1 receives 3',
             '2 receives 2'
@@ -444,9 +444,9 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
         self.failUnlessEqual(message, [
-            '1 shows Two pairs Aces and Fours, Ten kicker for hi ',
+            '1 shows Two pairs Aces and Fours, Ten kicker ',
             '2 mucks loosing hand',
-            '1 2 tie for hi ',
+            '1 2 tie ',
             'winners share a pot of 5 (minus 3 odd chips)',
             '1 receives 3',
             '2 receives 2'

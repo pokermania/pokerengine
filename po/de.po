@@ -32,13 +32,13 @@ msgstr "%(name)s verbirgt Verlierer-Hand"
 # Translation #55536 (de)
 #: pokerengine/pokergame.py:434
 #, python-format
-msgid " tie %(side)s "
-msgstr " Gleichstand %(side)s "
+msgid " tie %(side)s"
+msgstr " Gleichstand %(side)s"
 
 # Translation #55536 (de)
 #: pokerengine/pokergame.py:436
 #, python-format
-msgid " wins %(side)s "
+msgid " wins %(side)s"
 msgstr " gewinnt %(side)s"
 
 # Translation #55537 (de)

@@ -32,13 +32,13 @@ msgstr "%(name)s mucks loosing hand"
 # Translation #58368 (en)
 #: pokerengine/pokergame.py:434
 #, python-format
-msgid " tie %(side)s "
+msgid " tie %(side)s"
 msgstr "wins %(side)s"
 
 # Translation #58368 (en)
 #: pokerengine/pokergame.py:436
 #, python-format
-msgid " wins %(side)s "
+msgid " wins %(side)s"
 msgstr "wins %(side)s"
 
 # Translation #58369 (en)

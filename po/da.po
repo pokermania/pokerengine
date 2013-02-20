@@ -32,13 +32,13 @@ msgstr "%(name)s mucker tabende hånd"
 # Translation #55105 (da)
 #: pokerengine/pokergame.py:434
 #, python-format
-msgid " tie %(side)s "
+msgid " tie %(side)s"
 msgstr "vinder %(side)s"
 
 # Translation #55105 (da)
 #: pokerengine/pokergame.py:436
 #, python-format
-msgid " wins %(side)s "
+msgid " wins %(side)s"
 msgstr "vinder %(side)s"
 
 # Translation #55106 (da)
