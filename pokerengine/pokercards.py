@@ -26,7 +26,6 @@
 #  Henry Precheur <henry@precheur.org> (2004)
 #
 
-from types import *
 from pokereval import PokerEval
 
 def visible_card(card):
@@ -121,33 +120,25 @@ class PokerCards:
         
     def getValue(self, card):
         value = None
-        if type(card) is StringType:
-            eval = PokerEval()
-            try:
-                value = eval.string2card(card)
-            except RuntimeError:
-                raise UserWarning, "Invalid card %s" %(card)
+        if type(card) is str:
+            poker_eval = PokerEval()
+            try: value = poker_eval.string2card(card)
+            except RuntimeError: raise UserWarning, "Invalid card %s" %(card)
         else:
             if card != PokerCards.NOCARD:
                 value = card & PokerCards.VALUE_CARD_MASK
                 if (value < 0) or (value >= PokerCards.NB_CARD):
                     raise UserWarning, "Invalid card %s" %(card)
-                
             value = card
-                
         return value
         
     def set(self, cards):
-        self.cards = []
-        
-        if isinstance(cards,PokerCards):
+        if isinstance(cards, PokerCards):
             self.cards = cards.cards[:]
             return
-                
-        if not type(cards) is ListType:
+        if type(cards) is not list:
             cards = [cards]
-            
-        self.cards = map(self.getValue,cards)
+        self.cards = [self.getValue(c) for c in cards]
             
     def add(self, card, visible):
         card_value = self.getValue(card)
@@ -189,9 +180,7 @@ class PokerCards:
         return True
         
     def setVisible(self, value, visible):
-        if value == self.nocard():
-            return
-            
+        if value == self.nocard(): return
         for i in xrange(len(self.cards)):
             if self.cards[i] & PokerCards.VALUE_CARD_MASK == value:
                 if visible:
@@ -212,7 +201,7 @@ class PokerCards:
         return self.cards[:]
 
     def getVisible(self):
-        return filter(lambda card: is_visible(card), self.cards)
+        return [c for c in self.cards if is_visible(c)]
     
     def isEmpty(self):
         return len(self.cards) == 0
