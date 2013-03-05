@@ -1,0 +1,361 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR http://www.pokersource.info
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: http://github.com/pokermania/poker-network\n"
+"POT-Creation-Date: 2013-02-20 16:16+0100\n"
+"PO-Revision-Date: 2013-02-27 16:42+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.5\n"
+
+#: pokerengine/pokergame.py:419
+#, python-format
+msgid "%(name)s shows %(value)s %(side)s"
+msgstr "%(name)s показва %(value)s %(side)s"
+
+#: pokerengine/pokergame.py:425
+#, python-format
+msgid "%(name)s mucks loosing hand"
+msgstr "%(name)s не показва губеща ръка"
+
+#: pokerengine/pokergame.py:434
+#, python-format
+msgid " tie %(side)s"
+msgstr "равенство %(side)s"
+
+#: pokerengine/pokergame.py:436
+#, python-format
+msgid " wins %(side)s"
+msgstr "печели %(side)s"
+
+#: pokerengine/pokergame.py:442 pokerengine/pokergame.py:446
+#, python-format
+msgid "winners share a pot of %(pot)s"
+msgstr "победителите печелят пот %(pot)s"
+
+#: pokerengine/pokergame.py:443
+#, python-format
+msgid " (minus %(chips_left)d odd chips)"
+msgstr " (minus %(chips_left)d odd chips)"
+
+#: pokerengine/pokergame.py:449
+#, python-format
+msgid "%(name)s receives %(amount)s"
+msgstr "%(name)s получава %(amount)s"
+
+#: pokerengine/pokergame.py:464
+#, python-format
+msgid "hand #%(hand_serial)d, %(variant)s, %(betting_structure)s"
+msgstr "ръка #%(hand_serial)d, %(variant)s, %(betting_structure)s"
+
+#: pokerengine/pokergame.py:473
+#, python-format
+msgid "%(serial)s waiting for "
+msgstr "%(serial)s чака"
+
+#: pokerengine/pokergame.py:483
+#, python-format
+msgid "%(name)s, %(len_pockets)d players"
+msgstr "%(name)s, %(len_pockets)d играчи"
+
+#: pokerengine/pokergame.py:490
+#, python-format
+msgid "Board: %(board)s"
+msgstr "Борд: %(board)s"
+
+#: pokerengine/pokergame.py:496
+#, python-format
+msgid "Cards player %(name)s: %(card)s"
+msgstr "Карти на играч %(name)s: %(card)s"
+
+#: pokerengine/pokergame.py:503
+#, python-format
+msgid "Board: %(cards)s"
+msgstr "Борд: %(cards)s"
+
+#: pokerengine/pokergame.py:509
+#, python-format
+msgid "Cards player %(name)s: %(cards)s"
+msgstr "Карти на играч %(name)s: %(cards)s"
+
+#: pokerengine/pokergame.py:515
+#, python-format
+msgid "Rake %(amount)s"
+msgstr "Рейк %(amount)s"
+
+#: pokerengine/pokergame.py:529
+#, python-format
+msgid "%(name)s pays %(amount)s blind and %(dead)d dead"
+msgstr "%(name)s плаща %(amount)s блайнд и %(dead)d мъртви чипове"
+
+#: pokerengine/pokergame.py:535
+#, python-format
+msgid "%(name)s pays %(amount)s blind"
+msgstr "%(name)s плаща%(amount)s блайнд"
+
+#: pokerengine/pokergame.py:543
+#, python-format
+msgid "%(name)s pays %(amount)s ante"
+msgstr "%(name)s плаща %(amount)s анте"
+
+#: pokerengine/pokergame.py:549
+#, python-format
+msgid "%(name)s is all in"
+msgstr "%(name)s е ол ин"
+
+#: pokerengine/pokergame.py:552
+#, python-format
+msgid "%(name)s calls %(amount)s"
+msgstr "%(name)s плаща %(amount)s"
+
+#: pokerengine/pokergame.py:558
+#, python-format
+msgid "%(name)s checks"
+msgstr "%(name)s чеква"
+
+#: pokerengine/pokergame.py:561
+#, python-format
+msgid "%(name)s folds"
+msgstr "%(name)s бяга"
+
+#: pokerengine/pokergame.py:564
+#, python-format
+msgid "%(name)s raises %(amount)s"
+msgstr "%(name)s покачва%(amount)s"
+
+#: pokerengine/pokergame.py:571 pokerengine/pokergame.py:576
+msgid "turn canceled"
+msgstr "търнът е отменен"
+
+#: pokerengine/pokergame.py:571
+#, python-format
+msgid " (%(amount)s returned to %(name)s)"
+msgstr " (%(amount)s се връщат на %(name)s)"
+
+#: pokerengine/pokergame.py:583
+#, python-format
+msgid "%(name)s receives %(amount)s (everyone else folded)"
+msgstr "%(name)s получава %(amount)s (всички други бягат)"
+
+#: pokerengine/pokergame.py:593
+#, python-format
+msgid "%(name)s receives %(amount)d odd chips"
+msgstr "%(name)s получава%(amount)d чипове"
+
+#: pokerengine/pokergame.py:598
+#, python-format
+msgid "returning uncalled bet %(amount)s to %(name)s"
+msgstr "връщане на неплатен залог от %(amount)s на %(name)s"
+
+#: pokerengine/pokergame.py:612
+#, python-format
+msgid "%(name)s sits out"
+msgstr "%(name)s става"
+
+#: pokerengine/pokergame.py:3287 pokerengine/pokergame.py:3343
+msgid "The wheel"
+msgstr "Колело"
+
+#: pokerengine/pokergame.py:3291 pokerengine/pokergame.py:3347
+#, python-format
+msgid "High card %(card)s"
+msgstr "Висока карта %(card)s"
+
+#: pokerengine/pokergame.py:3293
+#, python-format
+msgid "A pair of %(card)s"
+msgstr "Чифт %(card)s"
+
+#: pokerengine/pokergame.py:3295 pokerengine/pokergame.py:3302
+#: pokerengine/pokergame.py:3308 pokerengine/pokergame.py:3328
+#, python-format
+msgid ", %(card)s kicker"
+msgstr ", %(card)s кикер"
+
+#: pokerengine/pokergame.py:3299
+#, python-format
+msgid "Two pairs %(card1)s and %(card2)s"
+msgstr "Два чифта %(card1)s и %(card2)s"
+
+#: pokerengine/pokergame.py:3306
+#, python-format
+msgid "Three of a kind %(card)s"
+msgstr "Тройка %(card)s"
+
+#: pokerengine/pokergame.py:3312
+#, python-format
+msgid "Straight %(card1)s to %(card2)s"
+msgstr "Кента %(card1)s до %(card2)s"
+
+#: pokerengine/pokergame.py:3317 pokerengine/pokergame.py:3364
+#, python-format
+msgid "Flush %(card)s"
+msgstr "Флъш %(card)s"
+
+#: pokerengine/pokergame.py:3321 pokerengine/pokergame.py:3368
+#, python-format
+msgid "%(card1)ss full of %(card2)ss"
+msgstr "Фул %(card1)ss и  %(card2)ss"
+
+#: pokerengine/pokergame.py:3326
+#, python-format
+msgid "Four of a kind %(card)s"
+msgstr "Каре %(card)s"
+
+#: pokerengine/pokergame.py:3333 pokerengine/pokergame.py:3380
+msgid "Royal flush"
+msgstr "Кралска кента"
+
+#: pokerengine/pokergame.py:3335
+#, python-format
+msgid "Straight flush %(card)s"
+msgstr "Цветна кента %(card)s"
+
+#: pokerengine/pokergame.py:3349
+#, python-format
+msgid "Pair of %(card)s"
+msgstr "Чифт %(card)s"
+
+#: pokerengine/pokergame.py:3351
+#, python-format
+msgid "Pairs of %(card1)s and %(card2)s"
+msgstr "Чифтове %(card1)s и %(card2)s"
+
+#: pokerengine/pokergame.py:3356
+#, python-format
+msgid "Trips %(card)s"
+msgstr "Тройка %(card)s"
+
+#: pokerengine/pokergame.py:3360
+#, python-format
+msgid "Straight %(card)s"
+msgstr "Кента %(card)s"
+
+#: pokerengine/pokergame.py:3373
+#, python-format
+msgid "Quads %(card)s"
+msgstr "Каре %(card)s"
+
+#: pokerengine/pokergame.py:3382
+msgid "Straight flush"
+msgstr "Цветна кента"
+
+#: po/raw.string:1
+msgid "hi"
+msgstr "високо"
+
+#: po/raw.string:2
+msgid "low"
+msgstr "ниско"
+
+#: po/raw.string:4
+msgid "Ace"
+msgstr "Асо"
+
+#: po/raw.string:5
+msgid "King"
+msgstr "Поп"
+
+#: po/raw.string:6
+msgid "Queen"
+msgstr "Дама"
+
+#: po/raw.string:7
+msgid "Jack"
+msgstr "Вале"
+
+#: po/raw.string:8
+msgid "Ten"
+msgstr "Десетка"
+
+#: po/raw.string:9
+msgid "Nine"
+msgstr "Деветка"
+
+#: po/raw.string:10
+msgid "Eight"
+msgstr "Осмица"
+
+#: po/raw.string:11
+msgid "Seven"
+msgstr "Седмица"
+
+#: po/raw.string:12
+msgid "Six"
+msgstr "Шестица"
+
+#: po/raw.string:13
+msgid "Five"
+msgstr "Петица"
+
+#: po/raw.string:14
+msgid "Four"
+msgstr "Четворка"
+
+#: po/raw.string:15
+msgid "Trey"
+msgstr "Тройка"
+
+#: po/raw.string:16
+msgid "Deuce"
+msgstr "Двойка"
+
+#: po/raw.string:18
+msgid "Aces"
+msgstr "Аса"
+
+#: po/raw.string:19
+msgid "Kings"
+msgstr "Попове"
+
+#: po/raw.string:20
+msgid "Queens"
+msgstr "Дами"
+
+#: po/raw.string:21
+msgid "Jacks"
+msgstr "Валета"
+
+#: po/raw.string:22
+msgid "Tens"
+msgstr "Десетки"
+
+#: po/raw.string:23
+msgid "Nines"
+msgstr "Деветки"
+
+#: po/raw.string:24
+msgid "Eights"
+msgstr "Осмици"
+
+#: po/raw.string:25
+msgid "Sevens"
+msgstr "Седмици"
+
+#: po/raw.string:26
+msgid "Sixes"
+msgstr "Шестици"
+
+#: po/raw.string:27
+msgid "Fives"
+msgstr "Петици"
+
+#: po/raw.string:28
+msgid "Fours"
+msgstr "Четворки"
+
+#: po/raw.string:29
+msgid "Treys"
+msgstr "Тройки"
+
+#: po/raw.string:30
+msgid "Deuces"
+msgstr "Двойки"
