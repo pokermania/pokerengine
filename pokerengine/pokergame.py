@@ -2884,7 +2884,6 @@ class PokerGame:
             serial2delta[serial] = -(share + player_dead)
 
         serial2money = {}
-        print serial2delta
         for player in self.playersAll():
             serial2money[player.serial] = player.money + serial2delta.get(player.serial, 0)
 
