@@ -2883,6 +2883,11 @@ class PokerGame:
             player_dead = self.getPlayer(serial).dead
             serial2delta[serial] = -(share + player_dead)
 
+        serial2money = {}
+        print serial2delta
+        for player in self.playersAll():
+            serial2money[player.serial] = player.money + serial2delta.get(player.serial, 0)
+
         if self.isWinnerBecauseFold():
             serial2rake = {}
             #
@@ -2896,6 +2901,7 @@ class PokerGame:
             
             serial2rake[serial] = self.getRakedAmount()
             serial2delta[serial] += self.pot
+            serial2money[serial] += self.pot - serial2rake[serial]
             
             self.serial2best = self.bestHands([serial])
             self.side2winners = {'hi': [], 'low': []}
@@ -2910,7 +2916,8 @@ class PokerGame:
                     'foldwin': True,
                     'serial2share': {serial: self.pot},
                     'serial2delta': serial2delta,
-                    'serial2rake': serial2rake
+                    'serial2rake': serial2rake,
+                    'serial2money': serial2money
                 },
                 {
                     'type': 'resolve',
@@ -3128,6 +3135,10 @@ class PokerGame:
         for (serial, share) in serial2share.iteritems():
             self.getPlayer(serial).money += share
 
+        serial2money = {}
+        for player in self.playersAll():
+            serial2money[player.serial] = player.money
+
         #
         # The chips left go to the player next to the dealer,
         # regardless of the fact that this player folded.
@@ -3139,6 +3150,7 @@ class PokerGame:
             serial2share.setdefault(player.serial, 0)
             serial2share[player.serial] += chips_left
             serial2delta[player.serial] += chips_left
+            serial2money[player.serial] += chips_left
             showdown_stack.insert(0, {
                 'type': 'left_over',
                  'chips_left': chips_left,
@@ -3164,7 +3176,8 @@ class PokerGame:
             'foldwin': False,
             'serial2share': serial2share,
             'serial2rake': serial2rake,
-            'serial2delta': serial2delta
+            'serial2delta': serial2delta,
+            'serial2money': serial2money
         })
         self.showdown_stack = showdown_stack
         if not self.is_directing:

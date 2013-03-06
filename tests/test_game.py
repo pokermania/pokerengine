@@ -5682,7 +5682,50 @@ class PokerGameTestCase(unittest.TestCase):
         for num in range(1, pokergame.ABSOLUTE_MAX_PLAYERS):
             for attribute, value in blinds.items():
                 self.failUnlessEqual(getattr(self.game.getPlayer(num + 1), attribute), value)
-        
+    
+    def testShowdownstack(self):
+        game = pokergame.PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, '../conf'), PokerGameTestCase.TestConfDirectory])
+        game.setVariant("holdem")
+        game.setBettingStructure("100-200_2000-20000_no-limit")
+
+        player = {}
+
+        money = {
+            66: 30000,
+            76: 10000,
+            77: 20000,
+        }
+
+        for serial in (66, 76, 77):
+            self.assert_(game.addPlayer(serial))
+            player[serial] = game.serial2player[serial]
+            player[serial].money = 2000000
+            player[serial].buy_in_payed = True
+            self.assert_(game.sit(serial))
+            player[serial].auto_blind_ante = True
+            player[serial].money = money[serial]
+            game.autoMuck(serial, pokergame.AUTO_MUCK_ALWAYS)
+
+        game.dealer_seat = 0
+
+        game.beginTurn(1)
+
+        player[66].blind = 'small'
+        player[76].blind = 'big'
+        player[77].blind = None
+
+        game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', '8c', '4h', 'Jh', '4c', '9s', '3h' ]
+
+        game.setPosition(0)
+
+        game.callNraise(66, 20000)
+        self.assertEqual("end", game.state)
+        game_state = game.showdown_stack[0]
+        self.assertEqual(game_state["type"], "game_state")
+
+        for s, p in player.items():
+            self.assertEqual(p.money, game_state["serial2money"][s])
+
     def testAllInWithDead(self):
         """ Test Poker Game : Allin with dead blind and lost to the winner although the winner has less money """
 
