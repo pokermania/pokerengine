@@ -1254,11 +1254,7 @@ class PokerGame:
             if player.isSit() and player.wait_for != 'first_round' and player.missed_blind == None:
                 blind_ok_count += 1
 
-        if self.seatsCount() == 2:
-            first = self.dealer_seat
-        else:
-            first = self.dealer_seat + 1
-
+        first = self.dealer_seat if self.seatsCount() == 2 else self.dealer_seat + 1
         players = seat2player[first:] + seat2player[:first]
 
         #
@@ -1312,9 +1308,7 @@ class PokerGame:
             player = players[index]
             if player.blind == True:
                 done = True
-            elif ((not player.wait_for and
-                     player.missed_blind == None) or
-                   sit_count == 2):
+            elif (not player.wait_for and player.missed_blind == None) or sit_count == 2:
                 player.blind = "small"
                 done = True
             elif player.missed_blind != None:
@@ -1358,6 +1352,10 @@ class PokerGame:
                     elif (player.missed_blind == "n/a" and player.wait_for != "first_round"):
                         player.blind = "late"
                         player.wait_for = False
+                    elif (player.missed_blind == "n/a" and player.wait_for == "first_round"):
+                        # if a player joined during the blind-ante round, he should not participate
+                        # in this round.
+                        pass
                     else:
                         self.log.warn(
                             "updateBlinds statement unexpectedly reached while evaluating "
