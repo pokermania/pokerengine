@@ -2883,7 +2883,7 @@ class PokerGame:
 
         serial2money = {}
         for player in self.playersAll():
-            serial2money[player.serial] = player.money + serial2delta.get(player.serial, 0)
+            serial2money[player.serial] = player.money
 
         if self.isWinnerBecauseFold():
             serial2rake = {}
@@ -2898,7 +2898,7 @@ class PokerGame:
             
             serial2rake[serial] = self.getRakedAmount()
             serial2delta[serial] += self.pot
-            serial2money[serial] += self.pot - serial2rake[serial]
+            serial2money[serial] += self.pot
             
             self.serial2best = self.bestHands([serial])
             self.side2winners = {'hi': [], 'low': []}
@@ -3132,9 +3132,6 @@ class PokerGame:
         for (serial, share) in serial2share.iteritems():
             self.getPlayer(serial).money += share
 
-        serial2money = {}
-        for player in self.playersAll():
-            serial2money[player.serial] = player.money
 
         #
         # The chips left go to the player next to the dealer,
@@ -3147,7 +3144,6 @@ class PokerGame:
             serial2share.setdefault(player.serial, 0)
             serial2share[player.serial] += chips_left
             serial2delta[player.serial] += chips_left
-            serial2money[player.serial] += chips_left
             showdown_stack.insert(0, {
                 'type': 'left_over',
                  'chips_left': chips_left,
@@ -3155,6 +3151,9 @@ class PokerGame:
             })
 
         self.pot = 0
+        serial2money = {}
+        for player in self.playersAll():
+            serial2money[player.serial] = player.money
         #
         # For convenience, build a single list of all winners, regardless
         # of the side of the pot they won. Remove duplicates in all lists.
