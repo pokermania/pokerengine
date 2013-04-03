@@ -2465,7 +2465,6 @@ class PokerGame:
                 self.log.debug("last player in game %d", self.getSerialInPosition())
                 if self.isFirstRound():
                     self.updateStatsFlop(True)
-
                 self.muckState(WON_FOLD)
 
             elif self.inGameCount() < 2:
@@ -2477,8 +2476,8 @@ class PokerGame:
                 while not self.isLastRound():
                     self.nextRound()
                     self.dealCards()
-
                 self.muckState(WON_ALLIN)
+                
             else:
                 #
                 # All bets equal, go to next round
@@ -3221,6 +3220,12 @@ class PokerGame:
                 if hi_value > best_hi_value:
                     best_hi_value = hi_value
                     show = True
+            
+            #
+            # If a player is all-in, he has to show his cards.
+            #
+            if player.isAllIn():
+                show = True
 
             #
             # This is deemed necessary because this simplistic but intuitive

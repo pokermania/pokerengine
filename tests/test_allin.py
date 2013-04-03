@@ -458,9 +458,10 @@ class TestOmaha8AllIn(TestAllIn):
         game.uncalled = 11000
         player = self.player
         game.muckState(pokergame.WON_ALLIN)
+        
         self.assertEqual(game.side2winners["hi"], [2, 3, 4])
         self.assertEqual(game.side2winners["low"], [5])
-        self.assertEqual(player[1].hand.areVisible(), False)
+        self.assertEqual(player[1].hand.areVisible(), True)
         self.assertEqual(player[2].hand.areVisible(), True)
         self.assertEqual(player[3].hand.areVisible(), True)
         self.assertEqual(player[4].hand.areVisible(), True)
@@ -490,15 +491,12 @@ class TestHoldemPlayBoard(TestAllIn):
         Two players play the board
         """
         game = self.game
-        game.side_pots = {'pots': {
-             0: (1000, 1000),
-            },
+        game.side_pots = {
+            'pots': { 0: (1000, 1000), },
             'contributions': {
-            'total': { 1: 500,
-                       2: 500,
-                       }
-                          }
-                          }
+                'total': { 1: 500, 2: 500, }
+            }
+        }
         player = self.player
         game.board = self.make_cards(True, 'As', 'Ac', 'Ad', '7d', '7c')
 
@@ -527,15 +525,12 @@ class TestHoldemSplit(TestAllIn):
         Two players, one 
         """
         game = self.game
-        game.side_pots = {'pots': {
-             0: (1000, 1000),
-            },
+        game.side_pots = {
+            'pots': { 0: (1000, 1000), },
             'contributions': {
-            'total': { 1: 200,
-                       2: 800,
-                       }
-                          }
-                          }
+                'total': { 1: 200, 2: 800, }
+            }
+        }
         player = self.player
         game.board = self.make_cards(True, 'As', 'Ac', 'Ad', '7d', '7c')
 
