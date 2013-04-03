@@ -669,6 +669,7 @@ class PokerTournament:
             # the person who had more money before the all in should  get a higher rank
             lost_chips = - game.showdown_stack[0]['serial2delta'][serial]
             self._winners_dict_tmp[serial] = (pos, lost_chips, tiebreaker)
+        for serial in new_loosers:
             self.callback_remove_player(self, game_id, serial, now=now)
         if loosers:
             self.need_balance = True
