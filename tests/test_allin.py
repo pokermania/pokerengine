@@ -40,7 +40,7 @@ from pokerengine.pokergame import PokerGameServer
 from pokerengine.pokercards import PokerCards
 
 poker_eval = PokerEval()
-_initial_money = 1000
+INITIAL_MONEY = 1000
 
 class TestAllIn(unittest.TestCase):
 
@@ -50,7 +50,7 @@ class TestAllIn(unittest.TestCase):
         self.game.setBettingStructure(betting)
 
     def bestWithStrings(self, side, serial):
-        (value, cards) = self.game.bestHand(side, serial)
+        _value, cards = self.game.bestHand(side, serial)
         return (cards[0], self.game.eval.card2string(cards[1:]))
         
     def tearDown(self):
@@ -67,7 +67,7 @@ class TestAllIn(unittest.TestCase):
             cards.allHidden()
         return cards
     
-    def make_new_player(self, i, initial_money = _initial_money):
+    def make_new_player(self, i, initial_money = INITIAL_MONEY):
         self.assert_(self.game.addPlayer(i))
         player = self.game.serial2player[i]
         player.money = initial_money
@@ -160,29 +160,10 @@ class TestCommonAllIn(TestAllIn):
         for serial in (3, 4, 5, 1):
             self.assertEqual(game.position, player[serial])
             game.callNraise(serial, 100000)
-        self.assertEqual(game.side_pots,
-                         {'building': 0, 'pots': [
-            [5000, 5000],
-            [8000, 13000],
-            [15000, 28000]
-            ],
-                          'last_round': 0,
-                          'contributions': {
-            0: {0:
-                {1: 1000,
-                 2: 1000,
-                 3: 1000,
-                 4: 1000,
-                 5: 1000},
-                1:
-                {1: 4000,
-                 4: 4000},
-                2:
-                {4: 15000}
-                },
-            'total': {1: 5000, 2: 1000, 3: 1000, 4: 20000, 5: 1000}
-            }
-                          })
+        self.assertEqual(
+            game.side_pots,
+            {'building':0,'pots':[[5000,5000],[8000,13000],[15000,28000]],'last_round':0,'contributions':{0:{0:{1:1000,2:1000,3:1000,4:1000,5:1000},1:{1:4000,4:4000},2:{4:15000}},'total':{1:5000,2:1000,3:1000,4:20000,5:1000}}}
+        )
         self.assertEqual(game.serial2player[1].side_pot_index, 1)
         self.assertEqual(game.serial2player[2].side_pot_index, 0)
         self.assertEqual(game.serial2player[3].side_pot_index, 0)
@@ -237,9 +218,10 @@ class TestAllInCase2(TestAllIn):
         game.callNraise(3, 15000)  # raises 150 (20 to call, raise 130)  => all in
         game.call(1)             # calls 30 => all in
 
-        self.assertEqual(game.side_pots,
-                         {'building': 0, 'pots': [[21800, 21800], [6000, 27800], [10000, 37800]], 'last_round': 1, 'contributions': {0: {0: {1: 400, 2: 200, 3: 400, 5: 400}}, 1: {0: {1: 6800, 3: 6800, 5: 6800}, 1: {1: 3000, 3: 3000}, 2: {3: 10000}}, 'total': {1: 10200, 2: 200, 3: 20200, 5: 7200}}}
-)
+        self.assertEqual(
+            game.side_pots,
+            {'building':0,'pots':[[21800,21800],[6000,27800],[10000,37800]],'last_round':1,'contributions':{0:{0:{1:400,2:200,3:400,5:400}},1:{0:{1:6800,3:6800,5:6800},1:{1:3000,3:3000},2:{3:10000}},'total':{1:10200,2:200,3:20200,5:7200}}}
+        )
         self.assertEqual(game.serial2player[1].side_pot_index, 1) # 277
         self.assertEqual(game.serial2player[3].side_pot_index, 2) # 377
         self.assertEqual(game.serial2player[5].side_pot_index, 0) # 217
@@ -286,14 +268,8 @@ class TestHoldemAllIn(TestAllIn):
         game = self.game
         self.prepareGame(2)
         game.pot = 3
-        game.side_pots = {
-            'pots': { 0: (3, 3) },
-            'contributions': {
-            'total': { 1: 2,
-                       2: 1 }
-            }
-            }
-        game.serial2player[1].hand = self.make_cards(False, '7h', '3h')
+        game.side_pots = {'pots':{0:(3,3)},'contributions':{'total':{1:2,2:1}}}
+        game.serial2player[1].hand = self.make_cards(False,'7h','3h')
         game.serial2player[2].hand = self.make_cards(False, '7d', '3s')
         game.board = self.make_cards(True, '6h', '4d', '7s', 'Kc', '7c')
         game.distributeMoney()
@@ -338,53 +314,33 @@ class TestOmaha8AllIn(TestAllIn):
         """
 
         game = self.game
-        game.side_pots = {'pots': {
-            0: (5000, 5000),
-            1: (4000, 9000),
-            2: (11000, 20000)
-            },
-            'contributions': {
-            'total': { 1: 13000,
-                       2: 1000,
-                       3: 2000,
-                       4: 2000,
-                       5: 2000
-                       }
-            }
-            }
+        game.side_pots = {'pots':{0:(5000,5000),1:(4000,9000),2:(11000,20000)},'contributions':{'total':{1:13000,2:1000,3:2000,4:2000,5:2000}}}
         player = self.player
         game.board = self.make_cards(True, 'As', '4d', '5h', '7d', '9c')
 
         player[1].hand = self.make_cards(False, 'Th', 'Js', 'Qs', '2c')
         player[1].side_pot_index = 2
         player[1].all_in = True
-        self.assertEqual(self.bestWithStrings("hi", 1),
-                          ('NoPair', ['As', 'Qs', 'Js', '9c', '7d']))
+        self.assertEqual(self.bestWithStrings("hi", 1), ('NoPair', ['As', 'Qs', 'Js', '9c', '7d']))
         
         player[2].hand = self.make_cards(False, '6c', '8c', 'Qd', 'Kd')
         player[2].side_pot_index= 0
         player[2].all_in = True
-        self.assertEqual(self.bestWithStrings("hi", 2),
-                         ('Straight', ['9c', '8c', '7d', '6c', '5h']))
-        self.assertEqual(self.bestWithStrings("low", 2),
-                         ('NoPair', ['8c', '6c', '5h', '4d', 'As']))
+        self.assertEqual(self.bestWithStrings("hi", 2), ('Straight', ['9c', '8c', '7d', '6c', '5h']))
+        self.assertEqual(self.bestWithStrings("low", 2), ('NoPair', ['8c', '6c', '5h', '4d', 'As']))
 
         player[3].hand = self.make_cards(False, 'Ac', '8s', 'Qh', 'Kh')
         player[3].side_pot_index= 1
-        self.assertEqual(self.bestWithStrings("hi", 3),
-                         ('OnePair', ['As', 'Ac', 'Kh', '9c', '7d']))
-        self.assertEqual(self.bestWithStrings("low", 3),
-                         ('NoPair', ['8s', '7d', '5h', '4d', 'Ac']))
+        self.assertEqual(self.bestWithStrings("hi", 3), ('OnePair', ['As', 'Ac', 'Kh', '9c', '7d']))
+        self.assertEqual(self.bestWithStrings("low", 3), ('NoPair', ['8s', '7d', '5h', '4d', 'Ac']))
         
         player[4].hand = self.make_cards(False, 'Ad', '8d', 'Qc', 'Kc')
         player[4].side_pot_index= 1
-        self.assertEqual(self.bestWithStrings("hi", 4),
-                         ('OnePair', ['As', 'Ad', 'Kc', '9c', '7d']))
+        self.assertEqual(self.bestWithStrings("hi", 4), ('OnePair', ['As', 'Ad', 'Kc', '9c', '7d']))
 
         player[5].hand = self.make_cards(False, '2s', '6s', 'Jd', 'Ks')
         player[5].side_pot_index= 1
-        self.assertEqual(self.bestWithStrings("low", 5),
-                          ('NoPair', ['6s', '5h', '4d', '2s', 'As']))
+        self.assertEqual(self.bestWithStrings("low", 5), ('NoPair', ['6s', '5h', '4d', '2s', 'As']))
 
         
     def dealCardsTwo(self):
@@ -392,50 +348,29 @@ class TestOmaha8AllIn(TestAllIn):
         Simple situation, no all-in, player[3] with straight
         """
         game = self.game
-        game.side_pots = {'pots': {
-            0: (10000, 10000)
-            },
-            'contributions': {
-            'total': { 1: 2000,
-                       2: 2000,
-                       3: 2000,
-                       4: 2000,
-                       5: 2000
-                       }
-            }
-                          }
+        game.side_pots = {'pots':{0:(10000,10000)},'contributions':{'total':{1:2000,2:2000,3:2000,4:2000,5:2000}}}
         player = self.player
         game.board = self.make_cards(True, 'As', '4d', '5h', '7d', '9c')
 
         player[1].hand = self.make_cards(False, 'Th', 'Js', 'Qs', '2c')
-        self.assertEqual(self.bestWithStrings("hi", 1),
-                         ('NoPair', ['As', 'Qs', 'Js', '9c', '7d']))
-        self.assertEqual(self.bestWithStrings("low", 1),
-                         ('Nothing', []))
+        self.assertEqual(self.bestWithStrings("hi", 1), ('NoPair', ['As', 'Qs', 'Js', '9c', '7d']))
+        self.assertEqual(self.bestWithStrings("low", 1), ('Nothing', []))
         
         player[2].hand = self.make_cards(False, 'Ac', '8s', 'Qh', 'Kh')
-        self.assertEqual(self.bestWithStrings("hi", 2),
-                         ('OnePair', ['As', 'Ac', 'Kh', '9c', '7d']))
-        self.assertEqual(self.bestWithStrings("low", 2),
-                         ('NoPair', ['8s', '7d', '5h', '4d', 'Ac']))
+        self.assertEqual(self.bestWithStrings("hi", 2), ('OnePair', ['As', 'Ac', 'Kh', '9c', '7d']))
+        self.assertEqual(self.bestWithStrings("low", 2), ('NoPair', ['8s', '7d', '5h', '4d', 'Ac']))
         
         player[3].hand = self.make_cards(False, '6c', '8c', 'Qd', 'Kd')
-        self.assertEqual(self.bestWithStrings("hi", 3),
-                         ('Straight', ['9c', '8c', '7d', '6c', '5h']))
-        self.assertEqual(self.bestWithStrings("low", 3),
-                         ('NoPair', ['8c', '6c', '5h', '4d', 'As']))
+        self.assertEqual(self.bestWithStrings("hi", 3), ('Straight', ['9c', '8c', '7d', '6c', '5h']))
+        self.assertEqual(self.bestWithStrings("low", 3), ('NoPair', ['8c', '6c', '5h', '4d', 'As']))
 
         player[4].hand = self.make_cards(False, '2s', 'Ts', 'Jd', '3s')
-        self.assertEqual(self.bestWithStrings("hi", 4),
-                         ('Straight', ['5h', '4d', '3s', '2s', 'As']))
-        self.assertEqual(self.bestWithStrings("low", 4),
-                         ('NoPair', ['5h', '4d', '3s', '2s', 'As']))
+        self.assertEqual(self.bestWithStrings("hi", 4), ('Straight', ['5h', '4d', '3s', '2s', 'As']))
+        self.assertEqual(self.bestWithStrings("low", 4), ('NoPair', ['5h', '4d', '3s', '2s', 'As']))
 
         player[5].hand = self.make_cards(False, 'Ad', '8d', 'Qc', 'Kc')
-        self.assertEqual(self.bestWithStrings("hi", 5),
-                         ('OnePair', ['As', 'Ad', 'Kc', '9c', '7d']))
-        self.assertEqual(self.bestWithStrings("low", 5),
-                         ('NoPair', ['8d', '7d', '5h', '4d', 'Ad']))
+        self.assertEqual(self.bestWithStrings("hi", 5), ('OnePair', ['As', 'Ad', 'Kc', '9c', '7d']))
+        self.assertEqual(self.bestWithStrings("low", 5), ('NoPair', ['8d', '7d', '5h', '4d', 'Ad']))
 
     def test1_distributeMoney(self):
         self.prepareGame(5)
@@ -491,22 +426,15 @@ class TestHoldemPlayBoard(TestAllIn):
         Two players play the board
         """
         game = self.game
-        game.side_pots = {
-            'pots': { 0: (1000, 1000), },
-            'contributions': {
-                'total': { 1: 500, 2: 500, }
-            }
-        }
+        game.side_pots = {'pots':{0:(1000,1000),},'contributions':{'total':{1:500,2:500,}}}
         player = self.player
         game.board = self.make_cards(True, 'As', 'Ac', 'Ad', '7d', '7c')
 
         player[1].hand = self.make_cards(False, 'Th', 'Js')
-        self.assertEqual(self.bestWithStrings("hi", 1),
-                         ('FlHouse', ['As', 'Ac', 'Ad', '7c', '7d']))
+        self.assertEqual(self.bestWithStrings("hi", 1), ('FlHouse', ['As', 'Ac', 'Ad', '7c', '7d']))
         
         player[2].hand = self.make_cards(False, '9c', '8s')
-        self.assertEqual(self.bestWithStrings("hi", 2),
-                         ('FlHouse', ['As', 'Ac', 'Ad', '7c', '7d']))
+        self.assertEqual(self.bestWithStrings("hi", 2), ('FlHouse', ['As', 'Ac', 'Ad', '7c', '7d']))
         
     def test1_showdown(self):
         self.prepareGame(2)
@@ -525,22 +453,15 @@ class TestHoldemSplit(TestAllIn):
         Two players, one 
         """
         game = self.game
-        game.side_pots = {
-            'pots': { 0: (1000, 1000), },
-            'contributions': {
-                'total': { 1: 200, 2: 800, }
-            }
-        }
+        game.side_pots = {'pots':{0:(1000,1000),},'contributions':{'total':{1:200,2:800,}}}
         player = self.player
         game.board = self.make_cards(True, 'As', 'Ac', 'Ad', '7d', '7c')
 
         player[1].hand = self.make_cards(False, 'Th', 'Js')
-        self.assertEqual(self.bestWithStrings("hi", 1),
-                         ('FlHouse', ['As', 'Ac', 'Ad', '7c', '7d']))
+        self.assertEqual(self.bestWithStrings("hi", 1), ('FlHouse', ['As', 'Ac', 'Ad', '7c', '7d']))
         
         player[2].hand = self.make_cards(False, '9c', '8s')
-        self.assertEqual(self.bestWithStrings("hi", 2),
-                         ('FlHouse', ['As', 'Ac', 'Ad', '7c', '7d']))
+        self.assertEqual(self.bestWithStrings("hi", 2), ('FlHouse', ['As', 'Ac', 'Ad', '7c', '7d']))
         
     def test1_showdown(self):
         self.prepareGame(2)
