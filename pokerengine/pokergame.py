@@ -2130,21 +2130,15 @@ class PokerGame:
 
     @update_player_last_auto_move
     def call(self, serial):
-        player = self.serial2player[serial]
         if self.isBlindAnteRound() or not self.canAct(serial):
             self.log.inform("player %d cannot call. state = %s", serial, self.state)
             return False
-
-        amount = min(
-            max(
-                self.highestBetNotFold(),
-                self.bigBlind() if self.state == GAME_STATE_PRE_FLOP and not self.inSmallBlindPosition() else 0
-            ) - player.bet,
-            player.money
-        )
-        self.log.debug("player %d calls %d", serial, amount)
-        self.historyAdd("call", serial, amount)
-        self.bet(serial, amount)
+        
+        _min_bet, _max_bet, to_call = self.betLimits(serial)
+        
+        self.log.debug("player %d calls %d", serial, to_call)
+        self.historyAdd("call", serial, to_call)
+        self.bet(serial, to_call)
         return True
 
     @update_player_last_auto_move
@@ -2165,9 +2159,9 @@ class PokerGame:
                 self.log.warn("round cap below zero")
             return False
 
-        (min_bet, max_bet, _to_call) = self.betLimits(serial)
-        if amount < min_bet: amount = min_bet
-        elif amount > max_bet: amount = max_bet
+        min_raise, max_raise, _to_call = self.betLimits(serial)
+        if amount < min_raise: amount = min_raise
+        elif amount > max_raise: amount = max_raise
         
         self.log.debug("player %d raises %d", serial, amount)
         self.historyAdd("raise", serial, amount)
@@ -3893,19 +3887,19 @@ class PokerGame:
         player = self.serial2player[serial]
         money = player.money
         bet = player.bet
-        to_call = highest_bet - bet
+        highest_bet_diff = highest_bet - bet
         if self.round_cap_left <= 0:
-            return (0, 0, to_call)
+            return (0, 0, highest_bet_diff)
         #
         # Figure out the theorical max/min bet, regarless of the
         # player[serial] bet/money status
         #
         if 'fixed' in info:
             fixed = int(info["fixed"])
-            (min_bet, max_bet) = (fixed, fixed)
+            min_bet, max_bet = fixed, fixed
         elif 'pow_level' in info:
             fixed = int(info["pow_level"]) * pow(2, self.getLevel() - 1)
-            (min_bet, max_bet) = (fixed, fixed)
+            min_bet, max_bet = fixed, fixed
         else:
             if 'min' in info:
                 if info["min"] == "big":
@@ -3923,15 +3917,17 @@ class PokerGame:
                 if re.match("[0-9]+$", info["max"]):
                     max_bet = int(info["max"])
                 elif info["max"] == "pot":
-                    max_bet = max(self.potAndBetsAmount() + to_call, min_bet)
+                    max_bet = max(self.potAndBetsAmount() + highest_bet_diff, min_bet)
             else:
                 max_bet = money
         #
-        # A player can't bet more than he has
+        # A player can't bet more than he has.
+        # After calling, the amount of money a player has bet is at least min_bet.
         #
-        min_bet = min(money, min_bet + to_call)
-        max_bet = min(money, max_bet + to_call)
-        return (min_bet, max_bet, to_call)
+        to_call = min(money, max(min_bet - bet, highest_bet_diff))
+        min_raise = min(money, min_bet + highest_bet_diff)
+        max_raise = min(money, max_bet + highest_bet_diff)
+        return (min_raise, max_raise, to_call)
 
     def potAndBetsAmount(self):
         pot = self.pot

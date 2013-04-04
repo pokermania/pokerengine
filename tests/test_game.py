@@ -28,18 +28,20 @@
 #  Loic Dachary <loic@dachary.org>
 #
 
-import unittest, sys
-from os import path
-
-TESTS_PATH = path.dirname(path.realpath(__file__))
-sys.path.insert(0, path.join(TESTS_PATH, ".."))
-
 import os
+import sys
 import shutil
 import libxml2
 import string
 import tempfile
 import math
+import unittest
+ 
+from os import path
+TESTS_PATH = path.dirname(path.realpath(__file__))
+sys.path.insert(0, path.join(TESTS_PATH, ".."))
+
+from tests.log_history import log_history 
 
 from collections import namedtuple
 
@@ -1713,11 +1715,11 @@ class PokerGameTestCase(unittest.TestCase):
             
         # Reload the betting structure
         self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
-        self.failUnlessEqual(self.game.betLimits(1), (100, 300 , 0))
+        self.failUnlessEqual(self.game.betLimits(1), (100, 300, 100))
         
         self.failUnless(self.game.callNraise(1, 50))
         self.failUnlessEqual(player1.bet, 100)
-        self.failUnlessEqual(self.game.betLimits(2), (200, 400 , 100))
+        self.failUnlessEqual(self.game.betLimits(2), (200, 400, 100))
         
         self.failUnless(self.game.canAct(2))
         
@@ -1968,7 +1970,7 @@ class PokerGameTestCase(unittest.TestCase):
         
         # Check the bet limts
         player1.bet = 400        
-        self.failUnlessEqual(self.game.betLimits(2), (1400, 1400, 400))
+        self.failUnlessEqual(self.game.betLimits(2), (1400, 1400, 1000))
         
         
         # POW LEVEL limits
@@ -3699,10 +3701,6 @@ class PokerGameTestCase(unittest.TestCase):
         
         self.game.setVariant('holdem')
 
-        # Blinds are skipped below, so i hard disable them here. Fix this and nextRound below if this is wrong.
-        self.game.blind_info["small"] = 0
-        self.game.blind_info["big"] = 0
-
         # Create players
         player1 = self.AddPlayerAndSit(1, 2)
         player2 = self.AddPlayerAndSit(2, 7)
@@ -3744,6 +3742,7 @@ class PokerGameTestCase(unittest.TestCase):
         except UserWarning, arg:
             self.failUnlessEqual(str(arg), "serial2side_pot[winner.serial] != self.uncalled (1600 != 42)")
 
+    
     # ---------------------------------------------------------
     def testRakeContributions(self):
         """Test Poker Game: rake contributions"""
@@ -3890,30 +3889,34 @@ class PokerGameTestCase(unittest.TestCase):
     # ---------------------------------------------------------
 
     def testShortStackAtBigBlind(self):
-        PlayerMock = namedtuple('PlayerMock', ('serial','seat','money'))
-        players_simple = [
-            PlayerMock(1, 1, 2000),
-            PlayerMock(2, 3, 2000),
-            PlayerMock(3, 6, 947),
-            PlayerMock(4, 8, 2000),
+        
+        # Include a min_bet in the betting structure
+        game = self.game
+        self.ModifyXMLFile(self.ConfigTempFile, '/bet/variants/round', None, {'min': str(game.bigBlind())})
+        game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
+        game.setMaxPlayers(4)
+
+        players_info = [
+            (1, 1, 2000),
+            (2, 3, 2000),
+            (3, 6, 947),
+            (4, 8, 2000),
         ]
+        
         players = {}
-        self.game.setMaxPlayers(4)
-        for p in players_simple:
-            self.game.addPlayer(p.serial, p.seat)
-            self.game.payBuyIn(p.serial,2000)
-            self.game.sit(p.serial)
-            players[p.serial] = self.GetPlayer(p.serial)
-            players[p.serial].money = p.money
-            players[p.serial].missed_blind = None
-            self.game.autoBlindAnte(p.serial)
-
-        self.game.beginTurn(1)
-        self.game.call(4)
-        self.failUnlessEqual(players[4].bet, self.game.bigBlind())
-
-    # ---------------------------------------------------------
-
+        for (serial,seat,money) in players_info:
+            players[serial] = game.addPlayer(serial, seat)
+            game.payBuyIn(serial, 2000)
+            game.sit(serial)
+            players[serial] = self.GetPlayer(serial)
+            players[serial].money = money
+            game.autoBlindAnte(serial)
+        
+        game.beginTurn(1)
+        self.assertEqual(players[3].bet, 947)
+        game.call(4)
+        self.failUnlessEqual(players[4].bet, game.bigBlind())
+        
     def testFlushes(self):
         g = pokergame.PokerGame('poker.%s.xml', True, [path.join(TESTS_PATH, '../conf'), PokerGameTestCase.TestConfDirectory])
         g.setVariant('holdem')
@@ -4268,10 +4271,6 @@ class PokerGameTestCase(unittest.TestCase):
         """Test Poker Game: Muck state won regular"""
         
         self.game.setVariant('holdem')
-        
-        # Blinds are skipped below, so i hard disable them here. Fix this and nextRound below if this is wrong.
-        self.game.blind_info["small"] = 0
-        self.game.blind_info["big"] = 0
         
         # Create players
         player1 = self.AddPlayerAndSit(1, 2)
@@ -5079,7 +5078,7 @@ class PokerGameTestCase(unittest.TestCase):
         #
         self.assertEqual(0, self.game.position)
         self.assertEqual(2, self.game.last_to_talk)
-        
+    
     # ---------------------------------------------------------
     def testMuck(self):
         """Test Poker Game: Muck"""
@@ -6106,7 +6105,7 @@ class PokerGameTestCase(unittest.TestCase):
         game.beginTurn(1)
         game.callNraise(20, 20000)
         game.call(10)
-        
+    
     def testSitBeforeBlindAndAllSitOutAfterwards(self):
         game = self.game
         game.variant = 'holdem'
