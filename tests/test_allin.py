@@ -254,7 +254,7 @@ class TestRaise(TestAllIn):
         game.call(2)
 
         game.callNraise(1, 50000) 
-        self.assertEqual(game.betLimits(2), (100000, 198000, 50000))
+        self.assertEqual(game.betLimitsForSerial(2), (100000, 198000, 50000))
         
 class TestHoldemAllIn(TestAllIn):
 

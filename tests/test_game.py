@@ -1715,11 +1715,11 @@ class PokerGameTestCase(unittest.TestCase):
             
         # Reload the betting structure
         self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
-        self.failUnlessEqual(self.game.betLimits(1), (100, 300, 100))
+        self.failUnlessEqual(self.game.betLimitsForSerial(1), (100, 300, 100))
         
         self.failUnless(self.game.callNraise(1, 50))
         self.failUnlessEqual(player1.bet, 100)
-        self.failUnlessEqual(self.game.betLimits(2), (200, 400, 100))
+        self.failUnlessEqual(self.game.betLimitsForSerial(2), (200, 400, 100))
         
         self.failUnless(self.game.canAct(2))
         
@@ -1934,7 +1934,7 @@ class PokerGameTestCase(unittest.TestCase):
         player2 = self.AddPlayerAndSit(2, 7)
         
         # The game is not running
-        self.failUnlessEqual(self.game.betLimits(1), 0)
+        self.failUnlessEqual(self.game.betLimitsForSerial(1), 0)
         
         # Blind and ante turn
         self.game.beginTurn(1)
@@ -1947,7 +1947,7 @@ class PokerGameTestCase(unittest.TestCase):
         
         # No limit set in the configuration file
         player1.bet = 1000
-        self.failUnlessEqual(self.game.betLimits(2), (1000, 1600 , 1000))
+        self.failUnlessEqual(self.game.betLimitsForSerial(2), (1000, 1600 , 1000))
         
         # MIN and MAX limits
         # Change the bet infos
@@ -1958,7 +1958,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
         
         # Check the bet limits
-        self.failUnlessEqual(self.game.betLimits(2), (1100, 1300 , 1000))
+        self.failUnlessEqual(self.game.betLimitsForSerial(2), (1100, 1300 , 1000))
         
         
         # MIN and POT limits
@@ -1970,7 +1970,7 @@ class PokerGameTestCase(unittest.TestCase):
         
         # Check the bet limts
         player1.bet = 400        
-        self.failUnlessEqual(self.game.betLimits(2), (1400, 1400, 1000))
+        self.failUnlessEqual(self.game.betLimitsForSerial(2), (1400, 1400, 1000))
         
         
         # POW LEVEL limits
@@ -1983,7 +1983,7 @@ class PokerGameTestCase(unittest.TestCase):
         
         # Check the bet limits for level 0
         self.failUnlessEqual(self.game.getLevel(), 0)
-        self.failUnlessEqual(self.game.betLimits(2), (400 + 100 * math.pow(2,-1), 400 + 100 * math.pow(2,-1), 400))
+        self.failUnlessEqual(self.game.betLimitsForSerial(2), (400 + 100 * math.pow(2,-1), 400 + 100 * math.pow(2,-1), 400))
         
         
         # FIXED limits
@@ -1995,13 +1995,13 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
         
         # Check the bet limits
-        self.failUnlessEqual(self.game.betLimits(2), (500, 500, 400))
+        self.failUnlessEqual(self.game.betLimitsForSerial(2), (500, 500, 400))
         
         # ROUND CAP LEFT 0
         self.game.round_cap_left = 0
         
         # Check the bet limits
-        self.failUnlessEqual(self.game.betLimits(2), (0, 0, 400))
+        self.failUnlessEqual(self.game.betLimitsForSerial(2), (0, 0, 400))
         
     # ---------------------------------------------------------
     def testBestHand(self):

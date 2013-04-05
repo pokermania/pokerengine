@@ -1151,11 +1151,11 @@ class PokerGame:
             self.moneyMap())
         self.resetRound()
         self.side_pots = {
-          'contributions': {'total': {}},
-          'pots': [[0, 0]],
-          'building': 0,
-          'last_round': self.current_round,
-          }
+            'contributions': {'total': {}},
+            'pots': [[0, 0]],
+            'building': 0,
+            'last_round': self.current_round,
+        }
         self.initBlindAnte()
         if self.is_directing:
             self.deck = self.eval.deck()
@@ -2019,10 +2019,10 @@ class PokerGame:
         self.endTurn()
 
     def roundInfo(self):
-        return self.round_info[self.current_round]
+        return self.round_info[max(self.current_round,0)]
 
     def betInfo(self):
-        return self.bet_info[self.current_round]
+        return self.bet_info[max(self.current_round,0)]
 
     def getChipUnit(self):
         return self.unit
@@ -2134,7 +2134,7 @@ class PokerGame:
             self.log.inform("player %d cannot call. state = %s", serial, self.state)
             return False
         
-        _min_bet, _max_bet, to_call = self.betLimits(serial)
+        _min_bet, _max_bet, to_call = self.betLimitsForSerial(serial)
         
         self.log.debug("player %d calls %d", serial, to_call)
         self.historyAdd("call", serial, to_call)
@@ -2159,7 +2159,7 @@ class PokerGame:
                 self.log.warn("round cap below zero")
             return False
 
-        min_raise, max_raise, _to_call = self.betLimits(serial)
+        min_raise, max_raise, _to_call = self.betLimitsForSerial(serial)
         if amount < min_raise: amount = min_raise
         elif amount > max_raise: amount = max_raise
         
@@ -2270,7 +2270,7 @@ class PokerGame:
             )
             return False
         if self.is_directing and amount == 0:
-            (amount, dead, _state) = self.blindAmount(serial)
+            amount, dead, _state = self.blindAmount(serial)
         self.payBlind(serial, amount, dead)
         if self.is_directing:
             self.__talkedBlindAnte()
@@ -3879,21 +3879,13 @@ class PokerGame:
             return self.betInfo()["cap"]
         return 0
 
-    def betLimits(self, serial):
-        if not self.isRunning():
-            return 0
-        info = self.betInfo()
-        highest_bet = self.highestBetNotFold()
-        player = self.serial2player[serial]
-        money = player.money
-        bet = player.bet
-        highest_bet_diff = highest_bet - bet
-        if self.round_cap_left <= 0:
-            return (0, 0, highest_bet_diff)
+    def betLimits(self):
         #
         # Figure out the theorical max/min bet, regarless of the
         # player[serial] bet/money status
         #
+        info = self.betInfo()
+
         if 'fixed' in info:
             fixed = int(info["fixed"])
             min_bet, max_bet = fixed, fixed
@@ -3917,9 +3909,28 @@ class PokerGame:
                 if re.match("[0-9]+$", info["max"]):
                     max_bet = int(info["max"])
                 elif info["max"] == "pot":
-                    max_bet = max(self.potAndBetsAmount() + highest_bet_diff, min_bet)
+                    max_bet = "pot"
             else:
-                max_bet = money
+                max_bet = "money"
+                
+        return (min_bet, max_bet)
+    
+    def betLimitsForSerial(self, serial):
+        if not self.isRunning():
+            return 0
+        highest_bet = self.highestBetNotFold()
+        player = self.serial2player[serial]
+        money = player.money
+        bet = player.bet
+        highest_bet_diff = highest_bet - bet
+        
+        if self.round_cap_left <= 0:
+            return (0, 0, highest_bet_diff)
+        
+        min_bet, max_bet = self.betLimits()
+
+        if max_bet == "money": max_bet = money
+        elif max_bet == "pot": max_bet = max(self.potAndBetsAmount() + highest_bet_diff, min_bet) 
         #
         # A player can't bet more than he has.
         # After calling, the amount of money a player has bet is at least min_bet.
@@ -4051,7 +4062,7 @@ class PokerGame:
     def historyAdd(self, *args):
         self.runCallbacks(*args)
         self.turn_history.append(args)
-
+        
     def updateHistoryEnd(self, winners, showdown_stack):
         for index in range(-1, -len(self.turn_history), -1):
             if self.turn_history and self.turn_history[index][0] == "end":
