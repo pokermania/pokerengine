@@ -363,14 +363,15 @@ class PokerTournament:
             return True
         else:
             explain = "start(%s), delay(%s) == remaining(%s)" %(self.start_time, self.rebuy_delay, time_remaining)
-            self.log.warn("rebuy during tourney %s not allowed: player %s [%s]" % (self.serial, serial, explain))
+            self.log.warn("rebuy during tourney %s not allowed: player %s [%s]" % (self.serial, serial, explain),
+                refs=[('User', serial, int)])
             return False
 
     def isRebuyAllowedForUser(self, serial, game):
         """return True if User could rebuy but ignores if tourney would allow a rebuy"""
         maximum = game.maxBuyIn() - (game.getPlayerMoney(serial) + game.buyIn())
         if maximum < 0:
-            self.log.warn("player %d can't bring more money to the table", serial)
+            self.log.warn("player %d can't bring more money to the table", serial, refs=[('User', serial, int), ('Game', game.id, int)])
             return False
         return True
 
@@ -641,13 +642,13 @@ class PokerTournament:
             player_chips=self.buy_in + self.rake, tourney_chips=game.buyIn())
         
         if amount == 0:
-            self.log.warn("player %d  has not enough money, tourney rebuy denied", serial)
+            self.log.warn("player %d  has not enough money, tourney rebuy denied", serial, refs=[('User', serial, int), ('Game', game.id, int)])
             return (False, None, TOURNEY_REBUY_ERROR_MONEY)
 
         if not game.rebuy(serial, game.buyIn()):
             # This should never happen! We need to give the user the money back
             # and the winner of the tourney would get too much chips
-            self.log.error("rebuy denied for user %s" % serial)
+            self.log.error("rebuy denied for user %s" % serial, refs=[('User', serial, int), ('Game', game.id, int)])
             return (False, None, TOURNEY_REBUY_ERROR_OTHER)
 
         
