@@ -41,6 +41,8 @@ def getVsize():
 
 class LeakTestCase(unittest.TestCase):
 
+    iterations = 50
+
     def leakWatch(self, func, message):
         #
         # check for memory usage every <chunk> iteration and iterate <chunk>*<iterations> times
@@ -136,21 +138,10 @@ class LeakTestCase(unittest.TestCase):
             config.headerGetProperties("/poker")
         self.leakWatch(func, "Config.headerGetProperties")
 
-class QuickLeakTestCase(LeakTestCase):
-
-    iterations = 30
-
-    
-class LongLeakTestCase(LeakTestCase):
-
-    iterations = 1000
-
-
 # ---------------------------------------------------------
 def GetTestSuite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(QuickLeakTestCase)) # , prefix = "test08"))
-#    suite.addTest(unittest.makeSuite(LongLeakTestCase)) # , prefix = "test08"))
+    suite.addTest(unittest.makeSuite(LeakTestCase))
     return suite
     
 # ---------------------------------------------------------
