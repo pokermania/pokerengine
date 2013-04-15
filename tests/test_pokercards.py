@@ -83,7 +83,7 @@ class PokerCardsTestCase(unittest.TestCase):
         cards = pokercards.PokerCards()
         self.failUnlessEqual(cards.getValue(12), 12)
         self.failUnlessEqual(cards.getValue('Ah'), 12)
-        self.failUnlessEqual(cards.getValue(PokerCards.NOCARD))
+        self.failUnlessEqual(cards.getValue(pokercards.PokerCards.NOCARD), 255)
         self.failUnlessRaises(UserWarning, cards.add, 52, True)
         self.failUnlessRaises(UserWarning, cards.add, -1, True)
         self.failUnlessRaises(UserWarning, cards.add, 'Aa', True)
