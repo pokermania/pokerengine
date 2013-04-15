@@ -44,7 +44,8 @@ TOURNAMENT_STATE_BREAK_WAIT = "breakwait"
 TOURNAMENT_STATE_BREAK = "break"
 TOURNAMENT_STATE_COMPLETE = "complete"
 TOURNAMENT_STATE_CANCELED = "canceled"
-TOURNAMENT_STATE_MOVED = "moved"
+TOURNAMENT_STATE_LOADING = "loading"
+
 
 TOURNEY_REBUY_ERROR_TIMEOUT = "timeout"
 TOURNEY_REBUY_ERROR_USER = "user"
@@ -272,8 +273,7 @@ class PokerTournament:
         self.registered = 0
         self.winners_dict = {}
         self._winners_dict_tmp = {}
-        self.state = TOURNAMENT_STATE_ANNOUNCED
-        self.can_register = False
+        self.state = kwargs.get("state", TOURNAMENT_STATE_ANNOUNCED)
         self.games = []
         self.id2game = {}
         self.stats = PokerTournamentStats(self)
@@ -295,7 +295,8 @@ class PokerTournament:
         self.callback_cancel = lambda tournament: True
         self.callback_rebuy = lambda tournament, serial, table_id, player_chips, tourney_chips: tourney_chips 
         self.loadPayouts()
-        self.updateRegistering()
+        if self.state == TOURNAMENT_STATE_ANNOUNCED:
+            self.updateRegistering()
 
     
     def _getWinners(self):
@@ -332,7 +333,7 @@ class PokerTournament:
         self.prizes_object = pokerprizes.__dict__['PokerPrizes' + self.prizes_specs.capitalize()](buy_in_amount = self.buy_in, player_count = self.registered, guarantee_amount = self.prize_min, config_dirs = self.dirs)
 
     def canRun(self):
-        if self.start_time < tournament_seconds():
+        if self.state != TOURNAMENT_STATE_LOADING and self.start_time < tournament_seconds():
             if self.sit_n_go == 'y' and self.registered >= self.players_quota:
                 return True
             elif self.sit_n_go == 'n':
@@ -474,8 +475,10 @@ class PokerTournament:
         return True
         
     def changeState(self, state):
+        if self.state == state:
+            return
         if self.state == TOURNAMENT_STATE_ANNOUNCED and state == TOURNAMENT_STATE_REGISTERING:
-            self.can_register = True
+            pass
         elif self.state == TOURNAMENT_STATE_RUNNING and state == TOURNAMENT_STATE_BREAK_WAIT:
             pass
         elif self.state == TOURNAMENT_STATE_BREAK_WAIT and state == TOURNAMENT_STATE_BREAK:
@@ -487,9 +490,7 @@ class PokerTournament:
             self.start_time = tournament_seconds()
             self.breaks_running_since = self.start_time
             self.createGames()
-            self.can_register = False
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_CANCELED:
-            self.can_register = False
             self.cancel()
             self.finish_time = tournament_seconds()
         elif self.state in (TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT, TOURNAMENT_STATE_BREAK) and state == TOURNAMENT_STATE_COMPLETE:
@@ -506,7 +507,7 @@ class PokerTournament:
         return serial in self.players
         
     def canRegister(self, serial):
-        if self.can_register and self.registered < self.players_quota:
+        if self.state in (TOURNAMENT_STATE_REGISTERING, TOURNAMENT_STATE_LOADING) and self.registered < self.players_quota:
             return not self.isRegistered(serial)
         else:
             return False
@@ -515,7 +516,7 @@ class PokerTournament:
         return self.isRegistered(serial) and self.state == TOURNAMENT_STATE_REGISTERING
         
     def register(self, serial, name=None):
-        if self.can_register:
+        if self.canRegister(serial):
             self.players[serial] = name
             self.registered += 1
             self.rank2prize = None
@@ -529,7 +530,7 @@ class PokerTournament:
             return False
 
     def unregister(self, serial):
-        if self.state == TOURNAMENT_STATE_REGISTERING:
+        if self.canUnregister(serial):
             del self.players[serial]
             self.registered -= 1
             self.prizes_object.removePlayer()
