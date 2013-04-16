@@ -3903,8 +3903,6 @@ class PokerGame:
             else:
                 min_bet = 0
 
-            min_bet = max(min_bet, self.last_bet)
-
             if 'max' in info:
                 if re.match("[0-9]+$", info["max"]):
                     max_bet = int(info["max"])
@@ -3928,7 +3926,8 @@ class PokerGame:
             return (0, 0, highest_bet_diff)
         
         min_bet, max_bet = self.betLimits()
-
+        min_bet = max(min_bet, self.last_bet)
+        
         if max_bet == "money": max_bet = money
         elif max_bet == "pot": max_bet = max(self.potAndBetsAmount() + highest_bet_diff, min_bet) 
         #
