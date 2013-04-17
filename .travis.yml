@@ -9,10 +9,15 @@ virtualenv:
 before_install: sudo apt-get update -qq
 
 install:
- - sudo apt-get install -qq python-libxml2 python-libxslt1 python-pypoker-eval python-cjson bc
+ - sudo apt-get install python-libxml2
+ - sudo apt-get install python-libxslt1
+ - sudo apt-get install python-pypoker-eval
+ - sudo apt-get install python-cjson bc
+ - pip install nose
+ - pip install rednose
  - pip install http://github.com/pokermania/pokerdistutils/archive/master.zip
  - pip install http://github.com/pokermania/reflogging/archive/master.zip
 
 # command to run tests, e.g. python setup.py test
 before_script: python setup.py build
-script:  python setup.py test -p
+script: nosetests --exe --rednose tests
