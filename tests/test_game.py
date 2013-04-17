@@ -126,44 +126,6 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(pokergame.uniq([1, 4, 4, 7, 3, 3, 3, 9, 7]).sort(), [1, 3, 4, 7, 9].sort())
         
     # ---------------------------------------------------------    
-    def testPokerRandom(self):
-        """Test Poker Game: Poker Random"""
-        
-        # Only available on unix like systems
-        if os.name != "posix": return
-            
-        # Standard random dev
-        random1 = pokergame.PokerRandom(False)
-        # Paranoid random dev
-        random2 = pokergame.PokerRandom(True)
-        
-        # These functions are not implemented
-        self.failUnlessEqual(random1.getstate(), None)
-        self.failUnlessEqual(random1.setstate('Ignore'), None)
-        self.failUnlessEqual(random1.jumpahead('Ignore'), None)
-        
-        # Re open the random dev
-        random1.seed(None)
-        random2.seed(None)
-                
-        numbers1 = []
-        numbers2 = []
-        for num in range(20):
-            numbers1.append(random1.random())
-            numbers2.append(random2.random())
-        
-        # All the numbers should be different
-        pokergame.uniq(numbers1)
-        pokergame.uniq(numbers2)
-        
-        self.failUnlessEqual(len(numbers1), 20)
-        self.failUnlessEqual(len(numbers2), 20)
-
-        # Set file to None and re-seed
-        random1._file = None
-        random1.seed(None)
-        
-    # ---------------------------------------------------------    
     def testGetSerialByNameNoCase(self):
         """Test Poker Game: Get serial by name no case sensitive"""
         

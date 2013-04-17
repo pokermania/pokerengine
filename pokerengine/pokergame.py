@@ -31,7 +31,6 @@
 import sys
 import re
 import struct
-import random
 import platform
 
 import pokereval
@@ -52,6 +51,12 @@ from pprint import pformat
 from copy import deepcopy
 from collections import defaultdict
 from functools import wraps
+
+try:
+    from random import SystemRandom as Shuffler
+except ImportError:
+    from random import Random as Shuffler
+shuffler = Shuffler()
 
 def update_player_last_auto_move(fn):
     @wraps(fn)
@@ -123,38 +128,6 @@ def find(fn,seq):
     """Return first item in sequence where f(item) == True."""
     for item in seq:
         if fn(item): return item
-
-class PokerRandom(random.Random):
-    def __init__(self, paranoid=False):
-        self._file = None
-        self._paranoid = paranoid
-        self.seed(None)
-
-    def seed(self, ignore):
-        if self._file:
-            try:
-                self._file.close()
-            except:
-                pass
-        self._file = open('/dev/urandom', 'r')
-
-    def getstate(self):
-        return None
-
-    def setstate(self, ignore):
-        pass
-
-    def jumpahead(self, ignore):
-        pass
-
-    def random(self):
-        lsize = struct.calcsize('l')
-        return abs(struct.unpack('l', self._file.read(lsize))[0]) / (0. + (~(1L << ((8 * lsize) - 1))))
-
-if platform.system() == "Linux":
-    random._inst = PokerRandom()
-
-shuffler = random
 
 # muck constants
 AUTO_MUCK_NEVER = 0x00
