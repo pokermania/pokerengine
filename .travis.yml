@@ -5,16 +5,18 @@ python:
 virtualenv:
   system_site_packages: true
 
-before_install: sudo apt-get update -qq
+before_install: sudo apt-get update
 
 install:
- - sudo apt-get install python-libxml2 \
-    python-libxslt1 \
-    python-pypoker-eval \
+ - sudo apt-get install
+    python-libxml2
+    python-libxslt1
+    python-pypoker-eval
     python-cjson bc
- - pip install nose \
-    rednose \
-    http://github.com/pokermania/pokerdistutils/archive/master.zip \
+ - pip install
+    nose
+    rednose
+    http://github.com/pokermania/pokerdistutils/archive/master.zip
     http://github.com/pokermania/reflogging/archive/master.zip
 
 before_script: python setup.py build
