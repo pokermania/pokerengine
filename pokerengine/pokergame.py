@@ -42,7 +42,7 @@ from pokerengine.pokercards import *
 from pokerengine.pokerengineconfig import Config
 from pokerengine.pokerchips import PokerChips
 from pokerengine import pokerrake
-import random
+from random import Random as Shuffler
 
 import locale
 import gettext
@@ -675,7 +675,7 @@ class PokerGame:
 
         self.eval = pokereval.PokerEval()
         if self.is_directing:
-            self.shuffler = random.Random()
+            self.shuffler = Shuffler()
         self.reset()
         self.rake = None
         self.raked_amount = 0
