@@ -42,6 +42,7 @@ from pokerengine.pokercards import *
 from pokerengine.pokerengineconfig import Config
 from pokerengine.pokerchips import PokerChips
 from pokerengine import pokerrake
+import random
 
 import locale
 import gettext
@@ -51,12 +52,6 @@ from pprint import pformat
 from copy import deepcopy
 from collections import defaultdict
 from functools import wraps
-
-try:
-    from random import SystemRandom as Shuffler
-except ImportError:
-    from random import Random as Shuffler
-shuffler = Shuffler()
 
 def update_player_last_auto_move(fn):
     @wraps(fn)
@@ -680,7 +675,7 @@ class PokerGame:
 
         self.eval = pokereval.PokerEval()
         if self.is_directing:
-            self.shuffler = shuffler
+            self.shuffler = random.Random()
         self.reset()
         self.rake = None
         self.raked_amount = 0
