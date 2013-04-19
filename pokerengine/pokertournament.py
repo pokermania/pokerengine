@@ -249,6 +249,7 @@ class PokerTournament:
         self.sit_n_go = kwargs.get('sit_n_go', 'y')
         self.register_time = kwargs.get('register_time', 0)
         self.start_time = kwargs.get('start_time', 0)
+        self.last_action = tournament_seconds() #instatiation or, player registration
         self.breaks_first = kwargs.get('breaks_first', 7200)
         self.breaks_interval = kwargs.get('breaks_interval', 3600)
         self.breaks_duration = kwargs.get('breaks_duration', 300)
@@ -525,6 +526,7 @@ class PokerTournament:
                 self.updateRunning()
             if self.state == TOURNAMENT_STATE_RUNNING:
                 self.sitPlayer(serial)
+            self.last_action = tournament_seconds()
             return True
         else:
             return False
