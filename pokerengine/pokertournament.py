@@ -249,7 +249,7 @@ class PokerTournament:
         self.sit_n_go = kwargs.get('sit_n_go', 'y')
         self.register_time = kwargs.get('register_time', 0)
         self.start_time = kwargs.get('start_time', 0)
-        self.last_action = tournament_seconds() #instatiation or, player registration
+        self.last_registered = None
         self.breaks_first = kwargs.get('breaks_first', 7200)
         self.breaks_interval = kwargs.get('breaks_interval', 3600)
         self.breaks_duration = kwargs.get('breaks_duration', 300)
@@ -526,7 +526,7 @@ class PokerTournament:
                 self.updateRunning()
             if self.state == TOURNAMENT_STATE_RUNNING:
                 self.sitPlayer(serial)
-            self.last_action = tournament_seconds()
+            self.last_registered = tournament_seconds()
             return True
         else:
             return False
@@ -535,6 +535,8 @@ class PokerTournament:
         if self.canUnregister(serial):
             del self.players[serial]
             self.registered -= 1
+            if self.registered == 0:
+                self.last_registered = None
             self.prizes_object.removePlayer()
             self.rank2prize = None
             return True
