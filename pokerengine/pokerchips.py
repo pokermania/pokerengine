@@ -25,8 +25,6 @@
 #  Loic Dachary <loic@dachary.org>
 #  Henry Precheur <henry@precheur.org> (2004)
 #
-import sys
-from types import *
 
 MAX_CHIPS_PER_STACK = 23
 INT2CHIPS_FACTOR = 0.3
@@ -41,10 +39,10 @@ class PokerChips:
             self.reset()
             return
         
-        if type(what) is IntType or type(what) is LongType:
+        if type(what) in (int, long):
             ( self.chips, self.remainder ) = PokerChips.int2chips(values, INT2CHIPS_FACTOR, what)
             self.limitChips()
-        elif type(what) is ListType:
+        elif type(what) is list:
             self.chips = what[:]
             self.remainder = 0
             self.limitChips()
@@ -90,9 +88,9 @@ class PokerChips:
 
     def convert(values, what):
         remainder = 0
-        if type(what) is IntType or type(what) is LongType:
+        if type(what) in (int, long):
             ( what, remainder ) = PokerChips.int2chips(values, INT2CHIPS_FACTOR, what)
-        if type(what) is ListType:
+        if type(what) is list:
             chips = PokerChips(values, what)
             chips.remainder += remainder
             return chips
