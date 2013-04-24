@@ -620,6 +620,8 @@ class PokerTournament:
         """
         if serial in self._winners_dict_tmp:
             del self._winners_dict_tmp[serial]
+        game = (g for g in self.games if g.id == game_id).next()
+        game.sit(serial)
         self.callback_reenter_game(self.serial, serial)
 
     def rebuy(self, serial):
