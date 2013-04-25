@@ -2858,12 +2858,22 @@ class PokerGameTestCase(unittest.TestCase):
         # The player 3 is unknown so it can not rebuy
         self.failIf(self.game.rebuy(3, 100))
         
+        # The player money + the rebuy amount is too low
+        player1.money = 10
+        self.failIf(self.game.rebuy(1, 10))
+        
         # The player money + the rebuy amount is too high
         player1.money = 5000
         self.failIf(self.game.rebuy(1, 5001))
         
-        # The player money + the rebuy amount is too high, but game is not directing
+        # Test rebuy when game is not directing
         self.game.is_directing = False
+        
+        # The player money + the rebuy amount is too low, but game is not directing
+        player1.money = 10
+        self.failUnless(self.game.rebuy(1, 10))
+        
+        # The player money + the rebuy amount is too high, but game is not directing
         player1.money = 5000
         self.failUnless(self.game.rebuy(1, 5001))
         
