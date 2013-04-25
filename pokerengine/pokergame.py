@@ -3945,14 +3945,18 @@ class PokerGame:
         if not player:
             return False
         
-        # if the game is directing, check if the player has already more money than the 
-        # max buyin. if this is the case, he is not allowed to rebuy.
+        # if the game is directing, check if the player will have more money than the 
+        # max buyin after the rebuy. if this is the case, he is not allowed to rebuy.
         # if the game is not directing, this check should not be made, as the player who
         # made the rebuy could have won in the current round, while still getting a delayed
         # rebuy at the end of the current round.
-        if self.is_directing and player.money + amount + player.rebuy > self.maxBuyIn():
+        if self.is_directing and player.money + player.rebuy + amount > self.maxBuyIn():
             return False
 
+        # similarly, the player should have at least the minimum buy-in after a rebuy
+        if self.is_directing and player.money + player.rebuy + amount < self.buyIn():
+            return False
+        
         if self.isPlaying(serial):
             # the rebuy happens at the end of the round
             player.rebuy += amount
