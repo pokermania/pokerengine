@@ -13,11 +13,12 @@ install:
     python-libxslt1
     python-pypoker-eval
     python-cjson bc
+ - pip install -U pip
  - pip install
     nose
     rednose
-    http://github.com/pokermania/pokerdistutils/archive/master.zip
-    http://github.com/pokermania/reflogging/archive/master.zip
+    git+git://github.com/pokermania/pokerdistutils.git#egg=poker-distutils
+    git+git://github.com/pokermania/reflogging.git#egg=reflogging
 
 before_script: python setup.py build
 script: nosetests --exe --rednose tests
