@@ -1762,8 +1762,14 @@ class PokerGame:
     def isBroke(self, serial):
         player = self.getPlayer(serial)
         if player:
-            money = player.money
-            return money <= 0 or (not self.isTournament() and money < self.minMoney())
+            return player.money <= 0
+        else:
+            return False
+
+    def shouldRebuy(self, serial):
+        player = self.getPlayer(serial)
+        if player:
+            return player.money <= self.minMoney()
         else:
             return False
 
@@ -1786,7 +1792,6 @@ class PokerGame:
 
         #
         # Players who are broke automatically sit out.
-        # In live games, one cannot play with less than one big blind + dead.
         #
         for player in self.playersSit():
             if self.isBroke(player.serial):
@@ -2073,7 +2078,7 @@ class PokerGame:
             if not self.isTournament() and player:
                 if not player.isBuyInPayed():
                     return "buy-in"
-                elif self.isBroke(serial):
+                elif self.shouldRebuy(serial):
                     return "rebuy"
                 else:
                     return None

@@ -3629,11 +3629,11 @@ class PokerGameTestCase(unittest.TestCase):
         # Reload the betting structure
         self.game.setBettingStructure(PokerGameTestCase.TestConfigTemporaryFile)
         
-        # All the players are broke
-        self.failUnless(self.game.isBroke(2))
-        self.failUnlessEqual(self.game.brokeCount(), 2)
-        self.failUnlessEqual(self.game.serialsBroke(), [1, 2])
-        self.failUnlessEqual(self.game.playersBroke(), [player1, player2])
+        # Nothing should have changed
+        self.failIf(self.game.isBroke(2))
+        self.failUnlessEqual(self.game.brokeCount(), 1)
+        self.failUnlessEqual(self.game.serialsBroke(), [1])
+        self.failUnlessEqual(self.game.playersBroke(), [player1])
         
     # ---------------------------------------------------------
     def testAllIn(self):
