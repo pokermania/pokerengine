@@ -177,7 +177,6 @@ class PokerPlayer:
         self.seat = -1
         self.hand = PokerCards()
         self.money = 0
-        self.rebuy = 0
         self.rebuy_given = 0
         self.bet = 0
         self.dead = 0
@@ -209,7 +208,6 @@ class PokerPlayer:
         other.seat = self.seat
         other.hand = self.hand.copy()
         other.money = self.money
-        other.rebuy = self.rebuy
         other.rebuy_given = self.rebuy_given
         other.bet = self.bet
         other.dead = self.dead
@@ -240,7 +238,6 @@ class PokerPlayer:
             "seat = %d, "
             "hand = %s, "
             "money = %d, "
-            "rebuy = %d, "
             "rebuy_given = %d, "
             "bet = %d, "
             "dead = %d, "
@@ -270,7 +267,6 @@ class PokerPlayer:
             self.side_pot_index,
             self.seat, self.hand,
             self.money,
-            self.rebuy,
             self.rebuy_given,
             self.bet,
             self.dead,
@@ -953,7 +949,7 @@ class PokerGame:
     def getPlayerMoney(self, serial):
         player = self.getPlayer(serial)
         if player:
-            return player.money + player.rebuy
+            return player.money
 
     def getSitOut(self, serial):
         return self.serial2player[serial].sit_out
@@ -1785,10 +1781,6 @@ class PokerGame:
 
         for player in self.playersAll():
             player.rebuy_given = 0
-            if player.rebuy > 0:
-                player.money += player.rebuy
-                self.historyAdd("rebuy", player.serial, player.rebuy)
-                player.rebuy = 0
 
         #
         # Players who are broke automatically sit out.
@@ -1853,6 +1845,9 @@ class PokerGame:
 
     def isLastRound(self):
         return self.current_round == len(self.round_info) - 1
+
+    def isRebuyPossible(self):
+        return not self.isRunning() or self.state in (GAME_STATE_BLIND_ANTE,)
 
     def resetRound(self):
         self.current_round = -1
@@ -3955,24 +3950,24 @@ class PokerGame:
         # if the game is not directing, this check should not be made, as the player who
         # made the rebuy could have won in the current round, while still getting a delayed
         # rebuy at the end of the current round.
-        if self.is_directing and player.money + player.rebuy + amount > self.maxBuyIn():
+        if self.is_directing and player.money + amount > self.maxBuyIn():
             return False
 
         # similarly, the player should have at least the minimum buy-in after a rebuy
-        if self.is_directing and player.money + player.rebuy + amount < self.buyIn():
+        if self.is_directing and player.money + amount < self.buyIn():
+            return False
+
+        if not self.isRebuyPossible():
+            # The rebuy is not allowed
             return False
         
-        if self.isPlaying(serial):
-            # the rebuy happens at the end of the round
-            player.rebuy += amount
-        else:
-            # player can rebuy right now
-            player.money += amount
-            self.historyAdd("rebuy", serial, amount)
-            
-            # memorize the rebuy given if the game is running in order to subtract it if
-            # the chips of the players are loaded afterwards
-            if self.isRunning(): player.rebuy_given += amount
+        # player can rebuy right now
+        player.money += amount
+        self.historyAdd("rebuy", serial, amount)
+
+        # memorize the rebuy given if the game is running in order to subtract it if
+        # the chips of the players are loaded afterwards
+        if self.isRunning(): player.rebuy_given += amount
         return True
 
     def buyIn(self):

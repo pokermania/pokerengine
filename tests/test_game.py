@@ -2881,14 +2881,9 @@ class PokerGameTestCase(unittest.TestCase):
         self.game.is_directing = True
         player1.money = 5000
         
-        # The player money + the player rebuy + the rebuy amount is too high
-        player1.rebuy = 2000
-        self.failIf(self.game.rebuy(1, 3001))
-        
         # The player 1 rebuy 1000 but the game is not running so the money is added to it rebuy amount
         self.failIf(self.game.isPlaying(1))
         self.failUnless(self.game.rebuy(1, 1000))
-        self.failUnless(player1.rebuy, 3000)
         self.failUnless(self.game.getPlayerMoney(1), 5000)
         
         # Blind and ante turn
@@ -2898,7 +2893,6 @@ class PokerGameTestCase(unittest.TestCase):
         # The player 1 rebuy 1000 and the game is not running so the money is added directly to its money amount
         self.failUnless(self.game.isPlaying(1))
         self.failUnless(self.game.rebuy(1, 1000))
-        self.failUnless(player1.rebuy, 3000)
         self.failUnless(self.game.getPlayerMoney(1), 6000)
         
     # ---------------------------------------------------------
@@ -4688,21 +4682,46 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnlessEqual(self.game.getPlayerMoney(2), 600)
         
         # Set a rebuy amount for each player
-        self.game.rebuy(1, 400)
-        self.game.rebuy(2, 600)
-        self.failUnlessEqual(player1.rebuy, 400)
-        self.failUnlessEqual(player2.rebuy, 600)
+        self.failIf(self.game.rebuy(1, 400))
+        self.failIf(self.game.rebuy(2, 600))
+
         
         # The rebuy is credited to the player
-        self.game.endTurn()
+        wascalled = {"p1": False, "p2": False}
+        def P1rebuy400(game_id,game_type,*args):
+            if game_type == "end":
+                self.assertEqual(self.game.id, game_id)
+                self.failUnless(self.game.rebuy(1, 400))
+                wascalled["p1"] = True
+            
+        def P2rebuy600(game_id,game_type,*args):
+            if game_type == "end":
+                self.assertEqual(self.game.id, game_id)
+                self.failUnless(self.game.rebuy(2, 600))
+                wascalled["p2"] = True
+
+        self.game.state = pokergame.GAME_STATE_MUCK
+        self.game.registerCallback(P1rebuy400)
+        self.game.registerCallback(P2rebuy600)
+        self.game.endState()
+        self.assertTrue(wascalled["p1"])
+        self.assertTrue(wascalled["p2"])
+        self.game.unregisterCallback(P1rebuy400)
+        self.game.unregisterCallback(P2rebuy600)
         
-        self.failUnlessEqual(player1.rebuy, 0)
-        self.failUnlessEqual(player2.rebuy, 0)
         self.failUnlessEqual(self.game.getPlayerMoney(1), 1500)
         self.failUnlessEqual(self.game.getPlayerMoney(2), 1200)
         
         # The hand count is incremented
         self.failUnlessEqual(self.game.hands_count, 1)
+
+        # import rpdb2; rpdb2.start_embedded_debugger("bla")
+        # self.game.sit(1)
+        # self.game.sit(2)
+
+        self.game.beginTurn(2)
+
+
         
         # The player 1 is broke
         player1.money = 0
@@ -4710,6 +4729,7 @@ class PokerGameTestCase(unittest.TestCase):
         
         # Remove the player 2
         self.game.removePlayer(2)
+        # This fails because of the Error #8737
         self.failUnless(player2.remove_next_turn)
         
         # Make the player remove needed
