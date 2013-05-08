@@ -166,6 +166,8 @@ class PokerPlayer:
         self.auto_play = AUTO_PLAY_NO
         self.auto_player_policy = DEFAULT_AUTOPLAYER_POLICY
         self.auto_player_fold_next_turn = False
+        self.auto_refill = 0
+        self.auto_rebuy = 0
         self.wait_for = False  # True, False, "late", "big", "first_round" ##
         self.missed_blind = "n/a"  # None, "n/a", "big", "small"
         self.missed_big_blind_count = 0
@@ -197,6 +199,8 @@ class PokerPlayer:
         other.auto_muck = self.auto_muck
         other.auto_player_policy = self.auto_player_policy
         other.auto_player_fold_next_turn = self.auto_player_fold_next_turn
+        other.auto_refill = self.auto_refill
+        other.auto_rebuy = self.auto_rebuy
         other.wait_for = self.wait_for
         other.missed_blind = self.missed_blind
         other.missed_big_blind_count = self.missed_big_blind_count
@@ -228,6 +232,8 @@ class PokerPlayer:
             "auto_muck = %d, "
             "auto_player_policy = %s, "
             "auto_player_fold_next_turn = %s, "
+            "auto_refill = %s, "
+            "auto_rebuy = %s, "
             "missed_blind = %s, "
             "missed_big_blind_count = %d, "
             "blind = %s, "
@@ -258,6 +264,8 @@ class PokerPlayer:
             self.auto_muck,
             self.auto_player_policy,
             self.auto_player_fold_next_turn,
+            self.auto_refill,
+            self.auto_rebuy,
             self.missed_blind,
             self.missed_big_blind_count,
             self.blind,
