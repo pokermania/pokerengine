@@ -23,13 +23,14 @@ MOFILES=$(patsubst %.po,../locale/%/LC_MESSAGES/$(DOMAIN).mo,$(POFILES))
 all: update-mo
 
 $(DOMAIN).pot: remove-potcdate.sed $(POTFILES_DEP)
-	$(XGETTEXT) \
+	@$(XGETTEXT) \
 	    --default-domain=$(DOMAIN) \
 	    --directory=.. \
 	    --copyright-holder='$(COPYRIGHT_HOLDER)' \
 	    --msgid-bugs-address='$(MSGID_BUGS_ADDRESS)' \
+	    --no-location \
 	    $(POTFILES)
-	if test -f $(DOMAIN).pot ; then \
+	@if test -f $(DOMAIN).pot ; then \
 	    sed -f remove-potcdate.sed < $(DOMAIN).pot > $(DOMAIN).po1 && \
 	    sed -f remove-potcdate.sed < $(DOMAIN).po > $(DOMAIN).po2 && \
 	    if cmp $(DOMAIN).po{1,2} > /dev/null 2>&1; then \
@@ -43,12 +44,12 @@ $(DOMAIN).pot: remove-potcdate.sed $(POTFILES_DEP)
 	fi
 
 %.po: $(DOMAIN).pot
-	@echo -n "msgmerge $@ "
-	@$(MSGMERGE) -U $@ poker-engine.pot
+	@#echo -n "msgmerge $@ "
+	@$(MSGMERGE) -qU $@ poker-engine.pot
 	@#sed -i -f remove-potcdate.sed $@
 
 %.gmo: %.po
-	@echo msgfmt $@
+	@#echo msgfmt $@
 	@$(MSGFMT) -v -c --statistics -o $@ $<
 
 ../locale/%/LC_MESSAGES/$(DOMAIN).mo: %.gmo
