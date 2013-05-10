@@ -44,7 +44,7 @@ class TestDeal(unittest.TestCase):
     def setUp(self):
         self.game = PokerGameServer("poker.%s.xml", [path.join(TESTS_PATH, '../conf')])
         self.game.setVariant("7stud")
-        self.game.setBettingStructure("5-10_50-1000000_ante-limit")
+        self.game.setBettingStructure("10-20_100-2000000_ante-limit")
 
     def tearDown(self):
         del self.game
@@ -72,7 +72,7 @@ class TestDeal(unittest.TestCase):
             if game.isLastRound():
                 self.assertEqual(len(game.board.tolist(True)), 1)
 
-            for x in xrange(1,9):
+            for _x in xrange(1,9):
                 serial = game.getSerialInPosition()
                 self.assertEqual(game.check(serial), True)
                     

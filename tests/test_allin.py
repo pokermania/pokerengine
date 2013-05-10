@@ -40,7 +40,7 @@ from pokerengine.pokergame import PokerGameServer
 from pokerengine.pokercards import PokerCards
 
 poker_eval = PokerEval()
-INITIAL_MONEY = 1000
+INITIAL_MONEY = 10
 
 class TestAllIn(unittest.TestCase):
 
@@ -77,7 +77,7 @@ class TestAllIn(unittest.TestCase):
         self.game.autoMuck(i, pokergame.AUTO_MUCK_ALWAYS)
 
     def prepareGame(self, nplayers):
-        pot = 9100
+        pot = 91
         self.money = 1
         self.player = {}
         money = self.money
@@ -119,9 +119,9 @@ class TestCommonAllIn(TestAllIn):
         player = {}
         for serial in xrange(1,6):
             player[serial] = serial - 1
-            self.make_new_player(serial, 1000)
-        game.serial2player[1].money = 5000
-        game.serial2player[4].money = 20000
+            self.make_new_player(serial, 10)
+        game.serial2player[1].money = 50
+        game.serial2player[4].money = 200
         game.beginTurn(1)
         self.assertEqual(game.state, "pre-flop")
 
@@ -131,14 +131,14 @@ class TestCommonAllIn(TestAllIn):
         #
         # player 2 goes all in
         #
-        game.callNraise(2, 1000) 
+        game.callNraise(2, 10) 
         self.assertEqual(game.inGameCount(), 4)
         self.assertEqual(game.notFoldCount(), 5)
         player2 = game.serial2player[2]
-        self.assertEqual(player2.bet, 1000)
+        self.assertEqual(player2.bet, 10)
         self.assertEqual(player2.money, 0)
-        self.assertEqual(game.highestBetNotFold(), 1000)
-        self.assertEqual(game.highestBetInGame(), 400)
+        self.assertEqual(game.highestBetNotFold(), 10)
+        self.assertEqual(game.highestBetInGame(), 4)
         self.assertEqual(game.position, player[3])
         self.assertEqual(game.serialsInGame(), [1, 3, 4, 5])
         self.assertEqual(game.serialsNotFold(), [1, 2, 3, 4, 5])
@@ -159,10 +159,10 @@ class TestCommonAllIn(TestAllIn):
         #
         for serial in (3, 4, 5, 1):
             self.assertEqual(game.position, player[serial])
-            game.callNraise(serial, 100000)
+            game.callNraise(serial, 1000)
         self.assertEqual(
             game.side_pots,
-            {'building':0,'pots':[[5000,5000],[8000,13000],[15000,28000]],'last_round':0,'contributions':{0:{0:{1:1000,2:1000,3:1000,4:1000,5:1000},1:{1:4000,4:4000},2:{4:15000}},'total':{1:5000,2:1000,3:1000,4:20000,5:1000}}}
+            {'building':0,'pots':[[50,50],[80,130],[150,280]],'last_round':0,'contributions':{0:{0:{1:10,2:10,3:10,4:10,5:10},1:{1:40,4:40},2:{4:150}},'total':{1:50,2:10,3:10,4:200,5:10}}}
         )
         self.assertEqual(game.serial2player[1].side_pot_index, 1)
         self.assertEqual(game.serial2player[2].side_pot_index, 0)
@@ -191,10 +191,10 @@ class TestAllInCase2(TestAllIn):
         player = {}
         for serial in xrange(1,6):
             player[serial] = serial - 1
-            self.make_new_player(serial, 5200)
-        game.serial2player[3].money = 20200
-        game.serial2player[5].money = 7200
-        game.serial2player[1].money = 10200
+            self.make_new_player(serial, 52)
+        game.serial2player[3].money = 202
+        game.serial2player[5].money = 72
+        game.serial2player[1].money = 102
         game.beginTurn(2)
 
         self.assertEqual(game.state, "pre-flop")
@@ -212,15 +212,15 @@ class TestAllInCase2(TestAllIn):
         game.is_directing = False
 
         self.assertEqual(game.state, "flop")
-        game.callNraise(3, 5000)   # bet 50 (200 - 50 = 150 remaining)
-        game.callNraise(5, 7000)   # raises 70 (50 to call, raise 20) => all in
+        game.callNraise(3, 50)   # bet 50 (200 - 50 = 150 remaining)
+        game.callNraise(5, 70)   # raises 70 (50 to call, raise 20) => all in
         game.call(1)             # calls 70 (70 to call, 100 - 70 = 30 remaining)
-        game.callNraise(3, 15000)  # raises 150 (20 to call, raise 130)  => all in
+        game.callNraise(3, 150)  # raises 150 (20 to call, raise 130)  => all in
         game.call(1)             # calls 30 => all in
 
         self.assertEqual(
             game.side_pots,
-            {'building':0,'pots':[[21800,21800],[6000,27800],[10000,37800]],'last_round':1,'contributions':{0:{0:{1:400,2:200,3:400,5:400}},1:{0:{1:6800,3:6800,5:6800},1:{1:3000,3:3000},2:{3:10000}},'total':{1:10200,2:200,3:20200,5:7200}}}
+            {'building':0,'pots':[[218,218],[60,278],[100,378]],'last_round':1,'contributions':{0:{0:{1:4,2:2,3:4,5:4}},1:{0:{1:68,3:68,5:68},1:{1:30,3:30},2:{3:100}},'total':{1:102,2:2,3:202,5:72}}}
         )
         self.assertEqual(game.serial2player[1].side_pot_index, 1) # 277
         self.assertEqual(game.serial2player[3].side_pot_index, 2) # 377
@@ -246,15 +246,15 @@ class TestRaise(TestAllIn):
         player = {}
         for serial in xrange(1,3):
             player[serial] = serial - 1
-            self.make_new_player(serial, 200000)
+            self.make_new_player(serial, 2000)
         game.beginTurn(1)
         self.assertEqual(game.state, "pre-flop")
 
         self.assertEqual(game.position, player[2])
         game.call(2)
 
-        game.callNraise(1, 50000) 
-        self.assertEqual(game.betLimitsForSerial(2), (100000, 198000, 50000))
+        game.callNraise(1, 500) 
+        self.assertEqual(game.betLimitsForSerial(2), (1000, 1980, 500))
         
 class TestHoldemAllIn(TestAllIn):
 
@@ -314,7 +314,7 @@ class TestOmaha8AllIn(TestAllIn):
         """
 
         game = self.game
-        game.side_pots = {'pots':{0:(5000,5000),1:(4000,9000),2:(11000,20000)},'contributions':{'total':{1:13000,2:1000,3:2000,4:2000,5:2000}}}
+        game.side_pots = {'pots':{0:(50,50),1:(40,90),2:(110,200)},'contributions':{'total':{1:130,2:10,3:20,4:20,5:20}}}
         player = self.player
         game.board = self.make_cards(True, 'As', '4d', '5h', '7d', '9c')
 
@@ -348,7 +348,7 @@ class TestOmaha8AllIn(TestAllIn):
         Simple situation, no all-in, player[3] with straight
         """
         game = self.game
-        game.side_pots = {'pots':{0:(10000,10000)},'contributions':{'total':{1:2000,2:2000,3:2000,4:2000,5:2000}}}
+        game.side_pots = {'pots':{0:(100,100)},'contributions':{'total':{1:20,2:20,3:20,4:20,5:20}}}
         player = self.player
         game.board = self.make_cards(True, 'As', '4d', '5h', '7d', '9c')
 
@@ -377,20 +377,20 @@ class TestOmaha8AllIn(TestAllIn):
         self.dealCardsOne()
         game = self.game
         game.uncalled_serial = 1
-        game.uncalled = 11000
+        game.uncalled = 110
         game.distributeMoney()
         self.assertEqual(len(game.winners), 4)
         self.assertEqual(game.pot, 0)
         game_state = game.showdown_stack[0]
-        self.assertEqual(game_state['serial2delta'], {1: -2000, 2: 1500, 3: -1000, 4: -1000, 5: 2500})
-        self.assertEqual(game_state['serial2share'], {1: 11000, 2: 2500, 3: 1000, 4: 1000, 5: 4500})
+        self.assertEqual(game_state['serial2delta'], {1: -20, 2: 15, 3: -10, 4: -10, 5: 25})
+        self.assertEqual(game_state['serial2share'], {1: 110, 2: 25, 3: 10, 4: 10, 5: 45})
 
     def test2_showdown(self):
         self.prepareGame(5)
         self.dealCardsOne()
         game = self.game
         game.uncalled_serial = 1
-        game.uncalled = 11000
+        game.uncalled = 110
         player = self.player
         game.muckState(pokergame.WON_ALLIN)
         
@@ -426,7 +426,7 @@ class TestHoldemPlayBoard(TestAllIn):
         Two players play the board
         """
         game = self.game
-        game.side_pots = {'pots':{0:(1000,1000),},'contributions':{'total':{1:500,2:500,}}}
+        game.side_pots = {'pots':{0:(10,10),},'contributions':{'total':{1:5,2:5,}}}
         player = self.player
         game.board = self.make_cards(True, 'As', 'Ac', 'Ad', '7d', '7c')
 
@@ -453,7 +453,7 @@ class TestHoldemSplit(TestAllIn):
         Two players, one 
         """
         game = self.game
-        game.side_pots = {'pots':{0:(1000,1000),},'contributions':{'total':{1:200,2:800,}}}
+        game.side_pots = {'pots':{0:(10,10),},'contributions':{'total':{1:2,2:8,}}}
         player = self.player
         game.board = self.make_cards(True, 'As', 'Ac', 'Ad', '7d', '7c')
 

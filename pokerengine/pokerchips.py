@@ -145,25 +145,10 @@ class PokerChips:
         return list
 
     def tostring(value):
-        string = str(value)
-        if value == 0:
-            return string
-        elif value < 10:
-            return "0.0" + string
-        elif value < 100:
-            return "0." + string
-        elif value % 100 == 0:
-            return string[:-2]
-        else:
-            return string[:-2] + '.' + string[-2:]
+        return str(value)
 
     tostring = staticmethod(tostring)
                      
-    def tofloat(value):
-        return value / 100.0
-
-    tofloat = staticmethod(tofloat)
-    
     def int2chips(values, factor, money):
 
         if len(values) > 0:

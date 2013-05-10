@@ -185,7 +185,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
     def testHistory2messagesRaise(self):
         """Test Poker Game History to message Raise"""
         
-        history = [('raise', 1, 500)]
+        history = [('raise', 1, 5)]
         
         subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
@@ -215,7 +215,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
     def testHistory2messagesAnte(self):
         """Test Poker Game History to message Ante"""
         
-        history = [('ante', 1, 500)]
+        history = [('ante', 1, 5)]
         
         subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
@@ -226,8 +226,8 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         """Test Poker Game History to message blind"""
         
         history = [
-            ('blind', 1, 1000, 5),
-            ('blind', 1, 1000, 0)
+            ('blind', 1, 10, 5),
+            ('blind', 1, 10, 0)
         ]
         
         subject, message = self.GetMessagesFromHistory(history)
@@ -242,8 +242,8 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         """Test Poker Game History to message blind"""
         
         history = [
-            ('canceled', 1, 100),
-            ('canceled', 0, 100),
+            ('canceled', 1, 1),
+            ('canceled', 0, 1),
             ('canceled', 0, 0)
         ]
         
@@ -313,7 +313,7 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         self.game.variant = 'holdem'
         
         # The player 1 wins because all the other players are fold
-        game_state ={'serial2share': {1: 500 }, 'foldwin': True}
+        game_state = {'serial2share': {1: 5}, 'foldwin': True}
         
         history = [ ('end', [1], [game_state]) ]
         
@@ -361,22 +361,22 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         frame = { 
         'type': 'uncalled',
         'serial' : 1,
-        'uncalled' : 10
+        'uncalled' : 1
         }
                 
         history = [ ('end', [1], [game_state, frame]) ]
         subject, message = self.GetMessagesFromHistory(history)
         self.failUnlessEqual(subject, '')
-        self.failUnlessEqual(message, ['returning uncalled bet 0.10 to 1'])
+        self.failUnlessEqual(message, ['returning uncalled bet 1 to 1'])
         
         # Resolve frame 1
         frame = { 
         'type': 'resolve',
         'serials' : [1, 2, 3],
-        'serial2share': { 1: 300, 2 : 200 },
+        'serial2share': {1: 3, 2: 2},
         'hi' : [1, 2],
         'low' : [1],
-        'pot' : 500,
+        'pot' : 5,
         'chips_left' : 3
         }
                     
@@ -417,9 +417,9 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         frame = { 
              'type': 'resolve',
              'serials' : [1, 2],
-             'serial2share': { 1: 300, 2 : 200 },
+             'serial2share': {1: 3, 2: 2},
              'hi' : [1, 2],
-             'pot' : 500,
+             'pot' : 5,
              'chips_left' : 3
         }
                     
@@ -459,10 +459,10 @@ class PokerGameHistoryTestCase(unittest.TestCase):
         history = [
             ('player_list', [1, 2]),
             ('position', 1, 1),
-            ('blind_request', 1, 1000, 100, 'big_and_dead'),
+            ('blind_request', 1, 10, 1, 'big_and_dead'),
             ('wait_blind', 1),
-            ('rebuy', 1, 500),
-            ('ante_request', 1, 100),
+            ('rebuy', 1, 5),
+            ('ante_request', 1, 1),
             ('leave', [(1, 2), (2, 7)]),
             ('finish', 1),
             ('muck', (1,2)),

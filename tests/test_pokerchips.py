@@ -132,22 +132,7 @@ class PokerChipsTestCase(unittest.TestCase):
         """Test Poker Chips : String representation"""
         
         self.failUnlessEqual(pokerchips.PokerChips.tostring(0), '0')
-        self.failUnlessEqual(pokerchips.PokerChips.tostring(1), '0.01')
-        self.failUnlessEqual(pokerchips.PokerChips.tostring(10), '0.10')
-        self.failUnlessEqual(pokerchips.PokerChips.tostring(99), '0.99')
-        self.failUnlessEqual(pokerchips.PokerChips.tostring(200), '2')
-        self.failUnlessEqual(pokerchips.PokerChips.tostring(220), '2.20')
-        self.failUnlessEqual(pokerchips.PokerChips.tostring(1000), '10')
-        self.failUnlessEqual(pokerchips.PokerChips.tostring(1333), '13.33')
-        
-    # -----------------------------------------------------------------------------------------------------    
-    def testToFloat(self):
-        """Test Poker Chips : To float"""
-        
-        self.failUnlessEqual(pokerchips.PokerChips.tofloat(0), 0)
-        self.failUnlessEqual(pokerchips.PokerChips.tofloat(1), 0.01)
-        self.failUnlessEqual(pokerchips.PokerChips.tofloat(133), 1.33)
-        self.failUnlessEqual(pokerchips.PokerChips.tofloat(1333), 13.33)
+        self.failUnlessEqual(pokerchips.PokerChips.tostring(1), '1')
         
     # -----------------------------------------------------------------------------------------------------    
     def testInt2Chips(self):

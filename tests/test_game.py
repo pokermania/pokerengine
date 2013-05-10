@@ -552,8 +552,8 @@ class PokerGameTestCase(unittest.TestCase):
         
         self.game.current_round = 0
         for round_properties in rounds_properties:
-            for property, value in round_properties.items():
-                self.failUnlessEqual(self.game.betInfo()[property], value)
+            for prop, value in round_properties.items():
+                self.failUnlessEqual(self.game.betInfo()[prop], value)
             
             self.game.current_round += 1
         
@@ -5664,15 +5664,15 @@ class PokerGameTestCase(unittest.TestCase):
         player = {}
 
         money = {
-            66: 30000,
-            76: 10000,
-            77: 20000,
+            66: 300,
+            76: 100,
+            77: 200,
         }
 
         for serial in (66, 76, 77):
             self.assert_(game.addPlayer(serial))
             player[serial] = game.serial2player[serial]
-            player[serial].money = 2000000
+            player[serial].money = 20000
             player[serial].buy_in_payed = True
             self.assert_(game.sit(serial))
             player[serial].auto_blind_ante = True
@@ -5691,7 +5691,7 @@ class PokerGameTestCase(unittest.TestCase):
 
         game.setPosition(0)
 
-        game.callNraise(66, 20000)
+        game.callNraise(66, 200)
         self.assertEqual("end", game.state)
         game_state = game.showdown_stack[0]
         self.assertEqual(game_state["type"], "game_state")
@@ -5709,14 +5709,14 @@ class PokerGameTestCase(unittest.TestCase):
         player = {}
 
         money = {}
-        money[66] = 30000
-        money[76] = 10000
-        money[77] = 20000
+        money[66] = 300
+        money[76] = 100
+        money[77] = 200
 
         for serial in (66, 76, 77):
             self.assert_(game.addPlayer(serial))
             player[serial] = game.serial2player[serial]
-            player[serial].money = 2000000
+            player[serial].money = 20000
             player[serial].buy_in_payed = True
             self.assert_(game.sit(serial))
             #player[serial].auto_blind_ante = True
@@ -5739,14 +5739,14 @@ class PokerGameTestCase(unittest.TestCase):
         game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', '8c', '4h', 'Jh', '4c', '9s', '3h' ]
 
         game.setPosition(0)
-        game.blind(66, 20000, 10000)
-        game.blind(76, 10000, 0)
-        game.blind(77, 20000, 0)
+        game.blind(66, 200, 100)
+        game.blind(76, 100, 0)
+        game.blind(77, 200, 0)
 
         self.assertEqual("end", game.state)
         rake = game.getRakedAmount()
-        self.failUnlessEqual(3000, rake)
-        self.assertEqual(40000 - rake, game.showdown_stack[0]['serial2delta'][77])
+        self.failUnlessEqual(30, rake)
+        self.assertEqual(400 - rake, game.showdown_stack[0]['serial2delta'][77])
 
     def testDeadWithUncalled(self):
         """ Test Poker Game: dead blind + a player has uncalled bet and is not the winner.
@@ -5758,14 +5758,14 @@ class PokerGameTestCase(unittest.TestCase):
         player = {}
 
         money = {}
-        money[66] = 2000000
-        money[76] = 1000000 
-        money[77] = 1000000 
+        money[66] = 20000
+        money[76] = 10000 
+        money[77] = 10000 
 
         for serial in (66, 76, 77):
             self.assert_(game.addPlayer(serial))
             player[serial] = game.serial2player[serial]
-            player[serial].money = 200000
+            player[serial].money = 2000
             player[serial].buy_in_payed = True
             self.assert_(game.sit(serial))
             #player[serial].auto_blind_ante = True
@@ -5788,13 +5788,13 @@ class PokerGameTestCase(unittest.TestCase):
         game.deck = ['7c', 'Qs', '6c', 'Qc', '2h', '4h', 'Jh', '8c', '9s', '3h', '4c' ]
 
         game.setPosition(0)
-        game.blind(66, 20000, 10000)
-        game.blind(76, 10000, 0)
-        game.blind(77, 20000, 0)
+        game.blind(66, 200, 100)
+        game.blind(76, 100, 0)
+        game.blind(77, 200, 0)
 
         self.assertEqual(game.state, "pre-flop")
 
-        game.callNraise(66, 2000000)
+        game.callNraise(66, 20000)
         game.call(76)
         game.fold(77)
 
@@ -5809,14 +5809,14 @@ class PokerGameTestCase(unittest.TestCase):
         player = {}
 
         money = {}
-        money[66] = 200000
-        money[76] = 3000000 
-        money[77] = 100000 
+        money[66] = 2000
+        money[76] = 30000 
+        money[77] = 1000 
 
         for serial in (66, 76, 77):
             self.assert_(game.addPlayer(serial))
             player[serial] = game.serial2player[serial]
-            player[serial].money = 200000
+            player[serial].money = 2000
             player[serial].buy_in_payed = True
             self.assert_(game.sit(serial))
             #player[serial].auto_blind_ante = True
@@ -5842,7 +5842,7 @@ class PokerGameTestCase(unittest.TestCase):
         game.check(77)
         self.assertEqual(game.state, "flop")
 
-        game.callNraise(76, 150000)
+        game.callNraise(76, 1500)
         game.call(77)
         game.call(66)
         self.assertEqual(game.state, "turn")
@@ -5863,14 +5863,14 @@ class PokerGameTestCase(unittest.TestCase):
         player = {}
 
         money = {}
-        money[66] = 200000
-        money[76] = 3000000 
-        money[77] = 100000 
+        money[66] = 2000
+        money[76] = 30000 
+        money[77] = 1000 
 
         for serial in (66, 76, 77):
             self.assert_(game.addPlayer(serial))
             player[serial] = game.serial2player[serial]
-            player[serial].money = 200000
+            player[serial].money = 2000
             player[serial].buy_in_payed = True
             self.assert_(game.sit(serial))
             #player[serial].auto_blind_ante = True
@@ -5896,12 +5896,12 @@ class PokerGameTestCase(unittest.TestCase):
         game.check(77)
         self.assertEqual(game.state, "flop")
 
-        game.callNraise(76, 150000)
+        game.callNraise(76, 1500)
         game.call(77)
         game.call(66)
         self.assertEqual(game.state, "turn")
 
-        game.callNraise(76, 150000)
+        game.callNraise(76, 1500)
         game.fold(66)
         self.assertEqual(game.state, "end")
 
@@ -6033,7 +6033,6 @@ class PokerGameTestCase(unittest.TestCase):
         )
 
     def testHistoryReduceError(self):
-        histories = []
         self.game.variant = 'holdem'
         self.game.setMaxPlayers(9)
         player_serials = [100, 200, 300, 400, 500, 600, 700]
@@ -6082,20 +6081,20 @@ class PokerGameTestCase(unittest.TestCase):
         game.variant = 'holdem'
         game.setMaxPlayers(9)
         game.blind_info = False
-        game.blind_info = {'small': 2000,'big': 4000,'change': False}
-        game.ante_info = {'value': 100, 'bring-in': 500, 'change': False}
-        game.best_buy_in = 10000
+        game.blind_info = {'small': 20,'big': 40,'change': False}
+        game.ante_info = {'value': 1, 'bring-in': 5, 'change': False}
+        game.best_buy_in = 100
 
         players = {}
         serials = [10, 20]
-        money = [5000, 10000]
+        money = [50, 100]
         for s,m in zip(serials,money):
             players[s] = self.AddPlayerAndSit(s)
             game.autoBlindAnte(s)
             players[s].money = m
         
         game.beginTurn(1)
-        game.callNraise(20, 20000)
+        game.callNraise(20, 200)
         game.call(10)
     
     def testSitBeforeBlindAndAllSitOutAfterwards(self):
@@ -6180,7 +6179,7 @@ class PokerGameTestCase(unittest.TestCase):
         players = {}
         for serial in player_serials:
             players[serial] = self.AddPlayerAndSit(serial)
-            players[serial].money = 200000000
+            players[serial].money = 2000000
             players[serial].auto_play = pokergame.AUTO_PLAY_YES
             game.noAutoBlindAnte(serial)
 
@@ -6192,9 +6191,9 @@ class PokerGameTestCase(unittest.TestCase):
         self._autoPlayTurn(default_action='blind', expect=None)
 
         doits = [
-            dict(actions={26:'autoPlayer', 13:('raise', (800,))}),
-            dict(actions={13:('raise', (900,)), 26:'call'}),
-            dict(actions={13:('raise', (1900,)), 26:'call'}),
+            dict(actions={26:'autoPlayer', 13:('raise', (8,))}),
+            dict(actions={13:('raise', (9,)), 26:'call'}),
+            dict(actions={13:('raise', (19,)), 26:'call'}),
             dict(actions={13:'check', 26:'check'}),
         ]
 
