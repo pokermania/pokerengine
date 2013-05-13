@@ -4,28 +4,24 @@
   <level small="25" big="50"/>
   <level small="50" big="100"/>
   <level small="75" big="150"/>
-
   <level small="100" big="200"/>
   <level small="150" big="300"/>
   <level small="250" big="500"/>
   <level small="350" big="700"/>
   <level small="500" big="1000"/>
   <level small="750" big="1500"/>
-
   <level small="1000" big="2000"/>
   <level small="1500" big="3000"/>
   <level small="2500" big="5000"/>
   <level small="3500" big="7000"/>
   <level small="5000" big="10000"/>
   <level small="7500" big="15000"/>
-
   <level small="10000" big="20000"/>
   <level small="15000" big="30000"/>
   <level small="25000" big="30000"/>
   <level small="35000" big="70000"/>
   <level small="50000" big="100000"/>
   <level small="75000" big="150000"/>
-
   <level small="100000" big="200000"/>
   <level small="150000" big="300000"/>
   <level small="250000" big="300000"/>
