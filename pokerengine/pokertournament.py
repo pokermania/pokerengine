@@ -595,7 +595,7 @@ class PokerTournament:
             buy_in = game.buyIn()
             for _seat in xrange(self.seats_per_game):
                 if not players: break
-                serial,name = players.pop()
+                serial, name = players.pop()
                 game.addPlayer(serial,name=name)
                 game.payBuyIn(serial, buy_in)
                 game.sit(serial)
