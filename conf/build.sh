@@ -59,35 +59,35 @@ pokermania () {
         pokermania.template > poker.${name}_pokermania.xml
     echo poker.${name}_pokermania.xml
 }
-#             small      big     buyin buyin_max
-pokermania      1      2      10     100
-pokermania      2      4      10     100
-pokermania      2      4     100     200
-pokermania      5     10     200     500
-pokermania      5     10     500    1000
-pokermania     20     40    1000    2000
-pokermania     20     40    2000    4000
-pokermania     60    120    4000    6000
-pokermania     60    120    6000    8000
-pokermania    100    200    8000   10000
-pokermania    100    200   10000   15000
-pokermania    200    400   15000   20000
-pokermania    200    400   20000   25000
-pokermania    300    600   25000   30000
-pokermania    300    600   30000   40000
-pokermania    500   1000   40000   50000
-pokermania    500   1000   50000  100000
-pokermania   1500   3000  100000  150000
-pokermania   1500   3000  150000  200000
-pokermania   2500   5000  200000  250000
-pokermania   2500   5000  250000  300000
-pokermania   4000   8000  300000  400000
-pokermania   4000   8000  400000  600000
-pokermania   8000  16000  600000  800000
-pokermania   8000  16000  800000 1000000
-pokermania  15000  30000 1000000 1500000
-pokermania  15000  30000 1500000 2000000
-pokermania 100000 200000 6000000 8000000
+#           small    big   buyin buyin_max
+pokermania      1      2      10       100
+pokermania      2      4      10       100
+pokermania      2      4     100       200
+pokermania      5     10     200       500
+pokermania      5     10     500      1000
+pokermania     20     40    1000      2000
+pokermania     20     40    2000      4000
+pokermania     60    120    4000      6000
+pokermania     60    120    6000      8000
+pokermania    100    200    8000     10000
+pokermania    100    200   10000     15000
+pokermania    200    400   15000     20000
+pokermania    200    400   20000     25000
+pokermania    300    600   25000     30000
+pokermania    300    600   30000     40000
+pokermania    500   1000   40000     50000
+pokermania    500   1000   50000    100000
+pokermania   1500   3000  100000    150000
+pokermania   1500   3000  150000    200000
+pokermania   2500   5000  200000    250000
+pokermania   2500   5000  250000    300000
+pokermania   4000   8000  300000    400000
+pokermania   4000   8000  400000    600000
+pokermania   8000  16000  600000    800000
+pokermania   8000  16000  800000   1000000
+pokermania  15000  30000 1000000   1500000
+pokermania  15000  30000 1500000   2000000
+pokermania 100000 200000 6000000   8000000
 
 #
 # no-limit
@@ -114,15 +114,15 @@ no_limit () {
         no-limit.template > poker.${name}_no-limit.xml
     echo poker.${name}_no-limit.xml
 }
-#        small   big  unit
-no_limit   1   2   1
-no_limit   2   4   1
-no_limit   3   6   1
-no_limit   5  10   5
-no_limit  10  20  10
-no_limit  30  60  10
-no_limit  50 100  50
-no_limit 100 200 100
+#        small big unit
+no_limit     1   2    1
+no_limit     2   4    1
+no_limit     3   6    1
+no_limit     5  10    5
+no_limit    10  20   10
+no_limit    30  60   10
+no_limit    50 100   50
+no_limit   100 200  100
 
 
 #
@@ -150,15 +150,15 @@ pot_limit () {
         pot-limit.template > poker.${name}_pot-limit.xml
     echo poker.${name}_pot-limit.xml
 }
-#         small   big  unit
-pot_limit   1   2   1
-pot_limit   2   4   1
-pot_limit   3   6   1
-pot_limit   5  10   5
-pot_limit  10  20  10
-pot_limit  30  60  10
-pot_limit  50 100  50
-pot_limit 100 200 100
+#         small big unit
+pot_limit     1   2    1
+pot_limit     2   4    1
+pot_limit     3   6    1
+pot_limit     5  10    5
+pot_limit    10  20   10
+pot_limit    30  60   10
+pot_limit    50 100   50
+pot_limit   100 200  100
 
 #
 # limit
@@ -187,12 +187,12 @@ limit () {
         limit.template > poker.${name}_limit.xml
     echo poker.${name}_limit.xml
 }
-#     small   big unit
-limit   1   2  1
-limit   5  10  5
-limit  15  30  5
-limit  25  50  5
-limit  50 100 50
+#     small big unit
+limit     1   2    1
+limit     5  10    5
+limit    15  30    5
+limit    25  50    5
+limit    50 100   50
 
 #
 # no blinds no ante limit
@@ -238,7 +238,7 @@ ante_limit () {
         ante-limit.template > poker.${name}_ante-limit.xml
     echo poker.${name}_ante-limit.xml
 }
-#          ante bringin small  big unit
-ante_limit  1     5  10 20  1
-ante_limit  5    15  30 60  5
+#          ante bringin small big unit
+ante_limit    1       5    10  20    1
+ante_limit    5      15    30  60    5
 
