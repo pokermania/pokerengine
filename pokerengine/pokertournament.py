@@ -620,7 +620,7 @@ class PokerTournament:
         """
         if serial in self._winners_dict_tmp:
             del self._winners_dict_tmp[serial]
-        game = (g for g in self.games if g.id == game_id).next()
+        game = next(g for g in self.games if g.id == game_id)
         game.sit(serial)
         self.callback_reenter_game(self.serial, serial)
 
@@ -637,7 +637,7 @@ class PokerTournament:
         e.g. (True, 13, None) # successful returncode
              (False, None, "money") # unsuccessful, the user has not enough money
         """
-        game = (g for g in self.games if g.getPlayer(serial)).next()
+        game = next(g for g in self.games if g.getPlayer(serial))
 
         if not self.isRebuyAllowed(serial):
             return (False, None, TOURNEY_REBUY_ERROR_TIMEOUT)
