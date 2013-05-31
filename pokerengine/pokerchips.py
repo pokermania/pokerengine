@@ -38,6 +38,10 @@ class PokerChips:
         if what == False:
             self.reset()
             return
+
+        # TODO get rid of this dirty fix (there should be no float to begin with)
+        if type(what) is float:
+            what = int(what)
         
         if type(what) in (int, long):
             ( self.chips, self.remainder ) = PokerChips.int2chips(values, INT2CHIPS_FACTOR, what)
