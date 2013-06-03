@@ -1648,7 +1648,6 @@ class PokerGame:
             player.talked_once = False
 
         self.log.debug("dealer %d, in position %d, last to talk %d", self.dealer, self.position, self.last_to_talk)
-        self.historyAdd("round", self.state, self.board.copy(), self.handsMap())
         self.historyAdd("position", self.position, self.player_list[self.position])
         self.__autoPlay()
 
@@ -2797,6 +2796,11 @@ class PokerGame:
                 self.log.debug("player %d cards: %s", serial, self.getHandAsString(serial))
         if len(info["board"]):
             self.log.debug("board: " + self.getBoardAsString())
+
+        # the history event name round is a bit confusing since its main purpose is to send
+        # the (board and player) card packets.
+        self.historyAdd("round", self.state, self.board.copy(), self.handsMap())
+
 
     def __roundFinished(self, serial):
         #
