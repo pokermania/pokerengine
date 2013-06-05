@@ -6149,6 +6149,7 @@ class PokerGameTestCase(unittest.TestCase):
 
         i = 0
         while self.game.state == state:
+            i += 1
             if i > 20: raise Exception('Loop')
             player = self.game.getPlayerInPosition()
             serial = player.serial
@@ -6166,7 +6167,6 @@ class PokerGameTestCase(unittest.TestCase):
             self.game.log.debug('%s > %s %s %r -> %s' %(state, action, serial, params, retval))
             if retval in (True, False):
                 self.failUnless(retval == expect)
-            i += 1            
 
     def _autoPlayInit(self):
         clear_all_messages()
