@@ -503,6 +503,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         player.setUserData('UserData')
         player.sit_out = True
         player.bot = True
+        player.auto_policy = 'TEST'
         
         self.failUnlessEqual(from_game.allCount(), 4)
         self.failUnlessEqual(to_game.allCount(), 2)
@@ -517,6 +518,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         self.failUnlessEqual(player.getUserData(), 'UserData')
         self.failUnless(player.isSitOut())
         self.failUnless(player.isBot())
+        self.failUnlessEqual(player.auto_policy, 'TEST')
         
     # -------------------------------------------------------
     def testEqualizeCandidates(self):

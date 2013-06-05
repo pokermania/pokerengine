@@ -572,8 +572,10 @@ class PokerTournament:
         to_game.sit(serial)
         to_game.autoBlindAnte(serial)
         to_player.name = from_player.name
+        to_player.auto_policy = from_player.auto_policy
         to_player.setUserData(from_player.getUserData())
         if(from_player.isSitOut()): to_game.sitOut(serial)
+        if(from_player.isAuto()): to_game.autoPlayer(serial)
         if(from_player.isBot()): to_game.botPlayer(serial)
         from_game.removePlayer(serial)
         from_game.close()

@@ -6147,11 +6147,9 @@ class PokerGameTestCase(unittest.TestCase):
                 retval = getattr(self.game, packet)(*args)
                 self.game.log.debug( '%s > %s %r -> %r' % (state, packet, args, retval))
 
-        i=0
+        i = 0
         while self.game.state == state:
-            i += 1
-            if i > 20:
-                raise Exception('Infinity Loop')
+            if i > 20: raise Exception('Loop')
             player = self.game.getPlayerInPosition()
             serial = player.serial
             if isinstance(actions, dict):
@@ -6168,6 +6166,7 @@ class PokerGameTestCase(unittest.TestCase):
             self.game.log.debug('%s > %s %s %r -> %s' %(state, action, serial, params, retval))
             if retval in (True, False):
                 self.failUnless(retval == expect)
+            i += 1            
 
     def _autoPlayInit(self):
         clear_all_messages()
@@ -6180,7 +6179,7 @@ class PokerGameTestCase(unittest.TestCase):
         for serial in player_serials:
             players[serial] = self.AddPlayerAndSit(serial)
             players[serial].money = 2000000
-            players[serial].auto_play = pokergame.AUTO_PLAY_YES
+            players[serial].auto = False
             game.noAutoBlindAnte(serial)
 
         return players
@@ -6199,9 +6198,8 @@ class PokerGameTestCase(unittest.TestCase):
 
         states = ['pre-flop','flop','turn','river']
 
-        for idx,(doit,doitfallback,additional_packet,state) in enumerate(map(None,doitL,doits,additional_packets,states)):
+        for (doit,doitfallback,additional_packet,state) in zip(doitL,doits,additional_packets,states):
             if state != game.state:
-                #print 'oO', state, game.state
                 continue
             doitdict = doit if doit else doitfallback
             self._autoPlayTurn(additional_packets=additional_packet, **doitdict)
@@ -6210,45 +6208,31 @@ class PokerGameTestCase(unittest.TestCase):
 
     def _didPlayerFold(self, player_id, allow_other_actions=True):
         hist = self.game.historyGet()
-        didPlayerFold = False
+        player_folded = False
         other_actions = False
         for line in hist:
             if line[1] == player_id:
-                if line[0] in ('call','check','raise'):
+                if line[0] in ('call', 'check', 'raise'):
                     other_actions = True
                 if line[0] == 'fold':
-                    didPlayerFold = True
-        if didPlayerFold:
+                    player_folded = True
+        if player_folded:
             if not allow_other_actions and other_actions:
                 return False
             return True
         return False
 
-    def testAutoPlayTourneyShouldFoldAfterSecondHand(self):
-        players = self._autoPlayInit()
-        self._autoPlay(doitL=(dict(actions={26:'autoPlayer',13:'autoPlayer'},),),
-            additional_packets=([('autoPlayerFoldNextTurn',(26,))],),
-            expectedPlayers=2)
-        self.game.beginTurn(2)
-        self._autoPlay(expectedPlayers=2)
-
-        self.failUnless(self._didPlayerFold(26, False))
-
-    def testAutoPlayPlayerShouldFoldIfSettingIsNotActive(self):
+    def testAutoPlayPlayerShouldFoldAsDefault(self):
         self._autoPlayInit()
-        self._autoPlay(additional_packets=(
-            [
-                ('sitOutNextTurn',(26,)),
-                ('autoPlay',(26, pokergame.AUTO_PLAY_NO))
-            ],
-            None,[('sit',(26,))]),expectedPlayers=1)
+        self._autoPlay(additional_packets=([('sitOutNextTurn',(26,)),],None,[('sit',(26,))]),expectedPlayers=1)
         self.failIfEqual(self._didPlayerFold(26), False)
-
         self.failUnless(self._didPlayerFold(26))
 
-    def testAutoPlayPlayerShouldBeAbleToGetBackToTheGame(self):
+    def testAutoPlayPlayerShouldBeAbleToGetBackToTheGameIfBotPolicyIsSet(self):
         self._autoPlayInit()
+        self.game.serial2player[26].auto_policy = pokergame.AUTO_POLICY_BOT
         self._autoPlay(additional_packets=([('sitOutNextTurn',(26,))],None,[('sit',(26,))]),expectedPlayers=2)
+        self.failIf(self._didPlayerFold(26))
 
     def testAutoPlayShouldEndAfterOneHandTournament(self):
         self._autoPlayInit()
