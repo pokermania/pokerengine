@@ -56,8 +56,7 @@ class PokerPlayerTestCase(unittest.TestCase):
                                     'auto_blind_ante' , \
                                     'wait_for' , \
                                     'auto_muck' , \
-                                    'auto_player_policy' ,\
-                                    'auto_player_fold_next_turn' ,\
+                                    'auto_policy' ,\
                                     'auto_refill',
                                     'auto_rebuy',
                                     'missed_blind' , \
