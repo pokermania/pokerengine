@@ -240,7 +240,43 @@ class PokerGameTestCase(unittest.TestCase):
         
         self.game.setSeats(seats)
         self.failUnlessEqual(self.GetPlayer(3).seat, -1) 
-            
+
+    def testGetBestSeat(self):
+        self.game.setMaxPlayers(6)
+        # seats_left: 0, 2, 4, 5, 7, 8
+        #                D     S     B
+
+        # Test for empty game
+        self.assertTrue(self.game.getBestSeat() is not None)
+
+        # Test with one player
+        dealer_seat = 2
+        small_blind_seat = 5
+        big_blind_seat = 8
+        self.assertTrue(self.game.addPlayer(1, seat=dealer_seat, name="dealer") is not None)
+        self.game.isRunning = lambda : True
+
+        best_seat = self.game.getBestSeat()
+        self.assertTrue(best_seat in self.game.seats_left and best_seat != dealer_seat)
+
+        self.assertTrue(self.game.addPlayer(2, seat=small_blind_seat, name="small") is not None)
+        self.game.player_list = [1,2]
+        self.game.dealer = 0
+
+        self.assertEqual(self.game.getBestSeat(), 4)
+
+        self.assertTrue(self.game.addPlayer(3, seat=big_blind_seat, name="big") is not None)
+        self.game.player_list = [1,2,3]
+
+        self.assertTrue(self.game.addPlayer(10, name="whatever") is not None)
+        self.assertEqual(self.game.getPlayer(10).seat, 0)
+        self.assertTrue(self.game.addPlayer(20, name="whatever") is not None)
+        self.assertEqual(self.game.getPlayer(20).seat, 4)
+        self.assertEqual(self.game.getBestSeat(), 7)
+
+
+
+
     # ---------------------------------------------------------    
     def testPokerGameOpen(self):
         """Test Poker Game: Open and close"""

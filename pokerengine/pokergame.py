@@ -965,7 +965,7 @@ class PokerGame:
                 return None
             return player
 
-        # check if seats left and game open
+        # check if some seats are left and game open
         if not self.canAddPlayer(serial):
             return None
 
@@ -976,7 +976,7 @@ class PokerGame:
 
         # get seat if not given
         elif seat == -1:
-            seat = self.seats_left[0]
+            seat = self.getBestSeat()#self.seats_left[0]
 
         # check if seat is amongst left seats
         elif seat not in self.seats_left:
@@ -985,9 +985,11 @@ class PokerGame:
 
         # finally add player
         player = PokerPlayer(serial, name, self)
-        player.seat = seat
         self.seats_left.remove(seat)
         self.serial2player[serial] = player
+        if seat == -1:
+            seat = self.getBestSeat()#self.seats_left[0]
+        player.seat = seat
         self.log.debug("player %d gets seat %d", serial, seat)
         return player
 
@@ -1061,6 +1063,34 @@ class PokerGame:
             seat += 1
         if self.seats() != seats:
             self.log.inform("seatSeats: wanted %s but got %s", seats, self.seats())
+
+    def getBestSeat(self):
+        if self.playingCount() <= 1:
+            return self.seats_left[0]
+
+        dealer = self.getPlayerDealer().seat
+        small = self.serial2player[self.player_list[(self.dealer+1)%len(self.player_list)]].seat
+        big = None
+
+        if self.playingCount() >= 3:
+            big = self.serial2player[self.player_list[(self.dealer+2)%len(self.player_list)]].seat
+
+        def getFreeSeatsBetween(seat_a, seat_b):
+            if seat_a < seat_b:
+                return [s for s in self.seats_left if s > seat_a and s < seat_b]
+            else:
+                return [s for s in self.seats_left if s > seat_a or s < seat_b]
+
+        if big is None:
+            free_seats = getFreeSeatsBetween(dealer, small)
+            if free_seats: return free_seats[0]
+            return self.seats_left[0]
+
+        for seat_a, seat_b in [(big, dealer),(dealer, small), (small, big)]:
+            free_seats = getFreeSeatsBetween(seat_a, seat_b)
+            if free_seats: return free_seats[0]
+        else:
+            self.log.error("getBestSeat: No free seat found")
 
     def beginTurn(self, hand_serial):
         if not self.isEndOrNull():
