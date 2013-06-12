@@ -30,7 +30,7 @@ no_limit_levels () {
 no_limit_levels 10-20-no-limit-lsng9 poker.levels-blinds-lsng9.xml 1000 6 minutes 5
 no_limit_levels 15-30-no-limit-wfrmtt poker.levels-blinds-colin.xml 1500 10 minutes 5
 no_limit_levels 15-30-no-limit-wsop poker.levels-blinds-colin.xml 1500 6 minutes 5
-no_limit_levels 50-100-no-limit-wsop-deep-stack poker.levels-blinds-deep-stack.xml 10000 6 minutes 5
+no_limit_levels 50-100-no-limit-deep-stack poker.levels-blinds-deep-stack.xml 10000 6 minutes 5
 
 #
 # pokermania
