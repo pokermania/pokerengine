@@ -33,6 +33,36 @@ no_limit_levels 15-30-no-limit-wsop poker.levels-blinds-colin.xml 1500 6 minutes
 no_limit_levels 50-100-no-limit-deep-stack poker.levels-blinds-deep-stack.xml 10000 6 minutes 5
 
 #
+# no limit level ante
+no_limit_levels_ante () {
+    local name="$1" ; shift
+    local levels_file="$1" ; shift
+    local ante_levels_file="$1" ; shift
+    local buyin_min=$1 ; shift
+    local buyin_max=$(((buyin_min*2)-1));
+    local blind_frequency=$1 ; shift
+    local blind_frequency_unit="$1" ; shift
+    local unit=$1 ; shift
+
+    sed \
+        -e "s;_NAME_;$name;g" \
+        -e "s;_MAX_BUY_IN_;$buyin_max;g" \
+        -e "s;_BUY_IN_;$buyin_min;g" \
+        -e "s/_BLIND_LEVEL_FILE_/$levels_file/g" \
+        -e "s/_ANTE_LEVEL_FILE_/$ante_levels_file/g" \
+        -e "s/_BLIND_FREQUENCY_/$blind_frequency/g" \
+        -e "s/_BLIND_UNIT_/$blind_frequency_unit/g" \
+        -e "s/_ANTE_FREQUENCY_/$blind_frequency/g" \
+        -e "s/_ANTE_UNIT_/$blind_frequency_unit/g" \
+        -e "s/_UNIT_/$unit/g" \
+        no-limit-levels-blind-ante.template > poker.level-${name}.xml
+    echo poker.level-${name}.xml
+}
+
+no_limit_levels_ante 15-30-no-limit-ante poker.levels-blinds-colin.xml poker.levels-ante-colin.xml 1500 6 minutes 5
+
+
+#
 # pokermania
 pokermania () {
     local blind_small=$1 ; shift
