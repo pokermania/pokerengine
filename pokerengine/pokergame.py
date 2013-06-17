@@ -1510,10 +1510,10 @@ class PokerGame:
             return (0, 0, False)
 
     def smallBlind(self):
-        return self.blind_info["small"] if self.blind_info else None
+        return self.blind_info["small"] if self.blind_info and "small" in self.blind_info else None
 
     def bigBlind(self):
-        return self.blind_info["big"] if self.blind_info else None
+        return self.blind_info["big"] if self.blind_info and "big" in self.blind_info else None
 
     def autoPayBlindAnte(self):
         if not self.is_directing:

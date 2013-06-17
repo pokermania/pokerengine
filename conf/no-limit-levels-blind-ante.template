@@ -4,7 +4,7 @@
     <description>No limit _NAME_</description>
 
     <blind change="levels" levels="_BLIND_LEVEL_FILE_" frequency="_BLIND_FREQUENCY_" unit="_BLIND_UNIT_"/>
-    <blind change="levels" levels="_ANTE_LEVEL_FILE_" frequency="_ANTE_FREQUENCY_" unit="_ANTE_UNIT_"/>
+    <ante change="levels" levels="_ANTE_LEVEL_FILE_" frequency="_ANTE_FREQUENCY_" unit="_ANTE_UNIT_"/>
     <all_in method="side"/> 
 
     <variants ids="omaha omaha8 holdem">
