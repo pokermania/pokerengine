@@ -60,6 +60,7 @@ no_limit_levels_ante () {
 }
 
 no_limit_levels_ante 15-30-no-limit-ante poker.levels-blinds-colin.xml poker.levels-ante-colin.xml 1500 6 minutes 5
+no_limit_levels_ante 15-30-no-limit-late-ante poker.levels-blinds-colin.xml poker.levels-late-ante.xml 1500 6 minutes 5
 
 
 #

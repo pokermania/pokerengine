@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<levels xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="levels.xsd" poker_engine_version="1.3.6">
+  <level value="0" bring-in="0"/>
+  <level value="0" bring-in="0"/>
+  <level value="0" bring-in="0"/>
+  <level value="0" bring-in="0"/>
+  <level value="0" bring-in="0"/>
+  <level value="0" bring-in="0"/>
+  <level value="0" bring-in="0"/>
+  <level value="0" bring-in="0"/>
+  <level value="0" bring-in="0"/>
+  <level value="0" bring-in="25"/>
+  <level value="0" bring-in="50"/>
+  <level value="5" bring-in="75"/>
+  <level value="5" bring-in="100"/>
+  <level value="5" bring-in="150"/>
+  <level value="5" bring-in="200"/>
+  <level value="5" bring-in="300"/>
+  <level value="5" bring-in="400"/>
+  <level value="5" bring-in="500"/>
+  <level value="5" bring-in="750"/>
+  <level value="5" bring-in="1000"/>
+  <level value="5" bring-in="1500"/>
+  <level value="5" bring-in="2000"/>
+  <level value="5" bring-in="3000"/>
+  <level value="5" bring-in="4000"/>
+  <level value="5" bring-in="5000"/>
+  <level value="5" bring-in="7500"/>
+  <level value="5" bring-in="10000"/>
+  <level value="5" bring-in="20000"/>
+  <level value="5" bring-in="40000"/>
+  <level value="5" bring-in="50000"/>
+</levels>
+
