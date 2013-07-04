@@ -62,6 +62,36 @@ no_limit_levels_ante () {
 no_limit_levels_ante 15-30-no-limit-ante poker.levels-blinds-colin.xml poker.levels-ante-colin.xml 1500 6 minutes 5
 no_limit_levels_ante 15-30-no-limit-late-ante poker.levels-blinds-colin.xml poker.levels-late-ante.xml 1500 6 minutes 5
 
+#
+# no limit level ante with fixed_blind
+no_limit_levels_ante_fixed_blind () {
+    local name="$1" ; shift
+    local blind_small="$1" ; shift
+    local blind_big="$1" ; shift
+    local ante_levels_file="$1" ; shift
+    local buyin_min=$1 ; shift
+    local buyin_max=$(((buyin_min*2)-1));
+    local blind_frequency=$1 ; shift
+    local blind_frequency_unit="$1" ; shift
+    local unit=$1 ; shift
+
+    sed \
+        -e "s;_NAME_;$name;g" \
+        -e "s/_SMALL_/$blind_small/" \
+        -e "s/_BIG_/$blind_big/" \
+        -e "s;_MAX_BUY_IN_;$buyin_max;g" \
+        -e "s;_BUY_IN_;$buyin_min;g" \
+        -e "s/_ANTE_LEVEL_FILE_/$ante_levels_file/g" \
+        -e "s/_BLIND_FREQUENCY_/$blind_frequency/g" \
+        -e "s/_BLIND_UNIT_/$blind_frequency_unit/g" \
+        -e "s/_ANTE_FREQUENCY_/$blind_frequency/g" \
+        -e "s/_ANTE_UNIT_/$blind_frequency_unit/g" \
+        -e "s/_UNIT_/$unit/g" \
+        no-limit-levels-ante-blind-fixed.template > poker.level-ante-fixed-blind-${name}.xml
+    echo poker.level-ante-fixed-blind-${name}.xml
+}
+
+no_limit_levels_ante_fixed_blind 10-20-no-limit-raising 10 20 poker.levels-ante-raising.xml 1500 6 minutes 5
 
 #
 # pokermania
