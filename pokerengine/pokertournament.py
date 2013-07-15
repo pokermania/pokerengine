@@ -46,7 +46,6 @@ TOURNAMENT_STATE_COMPLETE = "complete"
 TOURNAMENT_STATE_CANCELED = "canceled"
 TOURNAMENT_STATE_LOADING = "loading"
 
-
 TOURNEY_REBUY_ERROR_TIMEOUT = "timeout"
 TOURNEY_REBUY_ERROR_USER = "user"
 TOURNEY_REBUY_ERROR_MONEY = "money"
@@ -261,6 +260,7 @@ class PokerTournament:
         self.rebuy_delay = kwargs.get('rebuy_delay', 0)
         self.add_on = kwargs.get('add_on', 0)
         self.add_on_delay = kwargs.get('add_on_delay', 60)
+        self.inactive_delay = kwargs.get('inactive_delay', 300)
         self.prize_min = kwargs.get('prize_min', 0)
         self.prizes_specs = kwargs.get('prizes_specs', "table")
         self.rank2prize = None
@@ -321,8 +321,10 @@ class PokerTournament:
         it is importent that it is called after the callback_remove_player was called
         """
         assert serial in self._winners_dict_tmp or now, 'player %d not found in winners_dict_tmp' % serial
-        # the numbers in end don't matter since this case occurs only when the tourney winner is removed
-        pos_info = self._winners_dict_tmp.pop(serial) if serial in self._winners_dict_tmp else (self._incrementToNextWinnerPosition(), 42, 0)
+        # 
+        # pos_info is always (pos, lost_chips, tiebreaker). 
+        # if the user was not in the winners_dict_tmp then the last two position don't matter
+        pos_info = self._winners_dict_tmp.pop(serial) if serial in self._winners_dict_tmp else (self._incrementToNextWinnerPosition(), 0, 0)
         self.addWinner(serial, pos_info)
 
     def addWinner(self, serial, pos_info):
@@ -354,6 +356,12 @@ class PokerTournament:
             return int(remainingTime)
         else:
             return 0
+        
+    def remainingInactiveSeconds(self):
+        if self.inactive_delay > 0:
+            return tournament_seconds() >= self.start_time + self.inactive_delay 
+        else:
+            return None
         
     def isRebuyAllowed(self, serial="unknown"):
         """
@@ -412,7 +420,7 @@ class PokerTournament:
             return self.breaks_duration - ( tournament_seconds() - self.breaks_since )
         else:
             return None
-        
+
     def updateBreak(self, game_id = None):
         if self.breaks_duration <= 0:
             return False
@@ -610,7 +618,7 @@ class PokerTournament:
             for _seat in xrange(self.seats_per_game):
                 if not players: break
                 serial, name = players.pop()
-                game.addPlayer(serial,name=name)
+                game.addPlayer(serial, name=name)
                 game.payBuyIn(serial, buy_in)
                 game.sit(serial)
                 game.autoBlindAnte(serial)
@@ -672,11 +680,9 @@ class PokerTournament:
             self.log.error("rebuy denied for user %s" % serial, refs=[('User', serial, int), ('Game', game.id, int)])
             return (False, None, TOURNEY_REBUY_ERROR_OTHER)
 
-        
         self.reenterGame(game.id, serial)
         self.prizes_object.rebuy()
         return (True, game.id, None)
-
 
 
     def removeBrokePlayers(self, game_id, now=False):
@@ -698,8 +704,16 @@ class PokerTournament:
 
         return len(loosers)
 
+    def removeInactivePlayers(self, game_id):
+        game = self.id2game[game_id]
+        inactive_players = [s for (s,p) in game.serial2player.items() if not p.action_issued]
+        for serial in inactive_players:
+            self.callback_remove_player(self, game_id, serial, now=True)
+        
     def endTurn(self, game_id):
         """endTurn(game_id) is called by the game each time a hand ends."""
+        if self.remainingInactiveSeconds(): 
+            self.removeInactivePlayers(game_id)
         return self.removeBrokePlayers(game_id)
 
     def tourneyEnd(self, game_id):

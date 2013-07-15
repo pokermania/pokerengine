@@ -73,7 +73,9 @@ class PokerPlayerTestCase(unittest.TestCase):
                                     'bet' , \
                                     'dead' , \
                                     'talked_once' ,\
-                                    'user_data',
+                                    'user_data', \
+                                    'raise_count', \
+                                    'action_issued'
                                     ]
                                 
     # -----------------------------------------------------------------------------------------------------

@@ -30,7 +30,6 @@
 
 import sys
 import re
-import struct
 import platform
 
 import pokereval
@@ -58,7 +57,9 @@ def update_player_last_auto_move(fn):
     def new_function(self_, serial, *args, **kw):
         player = self_.serial2player.get(serial)
         if player:
-            if 'raise' in fn.__name__:
+            if not player.auto and not player.action_issued:
+                player.action_issued = True
+            if fn.__name__ == 'callNraise':
                 player.raise_count += 1
             else:
                 player.raise_count = 0
@@ -178,6 +179,7 @@ class PokerPlayer:
         self.talked_once = False
         self.user_data = None
         self.raise_count = 0
+        self.action_issued = False
 
     def copy(self):
         other = PokerPlayer(self.serial, self.name, self.game)
@@ -209,6 +211,8 @@ class PokerPlayer:
         other.dead = self.dead
         other.talked_once = self.talked_once
         other.user_data = self.user_data
+        other.raise_count = self.raise_count
+        other.action_issued = self.action_issued
         return other
 
     def __str__(self):
@@ -239,7 +243,9 @@ class PokerPlayer:
             "bet = %d, "
             "dead = %d, "
             "talked_once = %s, "
-            "user_data = %s"
+            "user_data = %s, "
+            "raise_count = %s, "
+            "action_issued = %s"
         ) % (
             self.serial,
             self.name,
@@ -269,7 +275,9 @@ class PokerPlayer:
             self.bet,
             self.dead,
             self.talked_once,
-            self.user_data
+            self.user_data,
+            self.raise_count,
+            self.action_issued
         )
 
     def setUserData(self, user_data):
