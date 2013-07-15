@@ -402,6 +402,7 @@ class TestRebuy(unittest.TestCase):
 
         self.tourney.winners = []
         self.assertEqual(self.tourney.winners, [])
+        
     def test2(self):
         tourney = self.tourney
         game = self.game
@@ -411,7 +412,7 @@ class TestRebuy(unittest.TestCase):
 
         def myremove_player(tournament, game_id, serial, now=False):
             if now:
-                tournament.finallyRemovePlayer(serial)
+                tournament.finallyRemovePlayer(serial, now)
 
         tourney.callback_remove_player = myremove_player
         def my_rebuy(tournament, serial, table_id, player_chips, tourney_chips):
@@ -641,7 +642,8 @@ class TestRebuy(unittest.TestCase):
         
         tourney.start_time = 0
         
-        for s in serials: game.autoPlayer(s)
+        game.autoPlayer(game.getSerialInPosition())
+        game.autoPlayer(game.getSerialInPosition())
         
         self.assertTrue(tourney.state == TOURNAMENT_STATE_COMPLETE)
         
@@ -672,11 +674,13 @@ class TestRebuy(unittest.TestCase):
         
         tourney.start_time = 0
         
-        for s in serials[:-1]: game.autoPlayer(s)
-        game.fold(serials[-1])
+        winner = game.getSerialInPosition()
+        game.call(winner)
+        game.autoPlayer(game.getSerialInPosition())
+        game.autoPlayer(game.getSerialInPosition())
         
         self.assertTrue(tourney.state == TOURNAMENT_STATE_COMPLETE)
-        self.assertEqual(tourney.winners[0], serials[-1])
+        self.assertEqual(tourney.winners[0], winner)
         
 
 class TestCreate(unittest.TestCase):

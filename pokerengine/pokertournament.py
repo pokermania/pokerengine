@@ -291,7 +291,7 @@ class PokerTournament:
         self.callback_game_filled = lambda tournament, game: True
         self.callback_destroy_game = lambda tournament, game: True
         self.callback_move_player = lambda tournament, from_game_id, to_game_id, serial: self.movePlayer(from_game_id, to_game_id, serial)
-        self.callback_remove_player = lambda tournament, game_id, serial, *rest, **kw: self.removePlayer(game_id, serial, *rest, **kw)
+        self.callback_remove_player = lambda tournament, game_id, serial, now: self.removePlayer(game_id, serial, now)
         self.callback_reenter_game = lambda tourney_serial, serial: True
         self.callback_cancel = lambda tournament: True
         self.callback_rebuy = lambda tournament, serial, table_id, player_chips, tourney_chips: tourney_chips 

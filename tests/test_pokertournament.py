@@ -26,7 +26,6 @@
 
 import unittest, sys
 from os import path
-from tests.log_history import log_history
 
 TESTS_PATH = path.dirname(path.realpath(__file__))
 sys.path.insert(0, path.join(TESTS_PATH, ".."))
