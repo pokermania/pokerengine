@@ -41,7 +41,8 @@ import reflogging
 log = reflogging.root_logger.get_child('test-tournament')
 
 from pokerengine.pokergame import PokerGameServer
-from pokerengine.pokertournament import equalizeGames, breakGames, PokerTournament
+from pokerengine.pokertournament import equalizeGames, breakGames, PokerTournament,\
+    TOURNAMENT_STATE_COMPLETE
 
 try:
     from nose.plugins.attrib import attr
@@ -612,7 +613,70 @@ class TestRebuy(unittest.TestCase):
             g.fold(serial)
         
         self.assertEquals(len(tourney.games),1,'there should be only one game left (games: %s)' % tourney.id2game.keys())
+
+    def testInactivePlayersAllInactive(self):
+        arguments = {
+            'dirs': [path.join(TESTS_PATH, '../conf')],
+            'players_quota': 3,
+            'seats_per_game': 3,
+            'sit_n_go': 'y',
+            'inactive_delay': 1
+        }
+
+        tourney = PokerTournament(**arguments)
         
+        def gameCallbackTourneyEndTurn(game_id, game_type, *args):
+            if game_type == 'end':
+                tourney.endTurn(game_id)
+                tourney.tourneyEnd(game_id)
+                            
+        serials = range(3)
+        for s in serials: tourney.register(s)
+        
+        game = tourney.games[0]
+        game.registerCallback(gameCallbackTourneyEndTurn)
+        
+        game.beginTurn(1)
+        self.assertTrue(game.isFirstRound())
+        
+        tourney.start_time = 0
+        
+        for s in serials: game.autoPlayer(s)
+        
+        self.assertTrue(tourney.state == TOURNAMENT_STATE_COMPLETE)
+        
+    def testInactivePlayersAllInactiveButOne(self):
+        arguments = {
+            'dirs': [path.join(TESTS_PATH, '../conf')],
+            'players_quota': 3,
+            'seats_per_game': 3,
+            'sit_n_go': 'y',
+            'inactive_delay': 1
+        }
+
+        tourney = PokerTournament(**arguments)
+        
+        def gameCallbackTourneyEndTurn(game_id, game_type, *args):
+            if game_type == 'end':
+                tourney.endTurn(game_id)
+                tourney.tourneyEnd(game_id)
+                            
+        serials = range(3)
+        for s in serials: tourney.register(s)
+        
+        game = tourney.games[0]
+        game.registerCallback(gameCallbackTourneyEndTurn)
+        
+        game.beginTurn(1)
+        self.assertTrue(game.isFirstRound())
+        
+        tourney.start_time = 0
+        
+        for s in serials[:-1]: game.autoPlayer(s)
+        game.fold(serials[-1])
+        
+        self.assertTrue(tourney.state == TOURNAMENT_STATE_COMPLETE)
+        self.assertEqual(tourney.winners[0], serials[-1])
         
 
 class TestCreate(unittest.TestCase):

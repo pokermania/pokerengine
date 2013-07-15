@@ -359,9 +359,9 @@ class PokerTournament:
         
     def remainingInactiveSeconds(self):
         if self.inactive_delay > 0:
-            return tournament_seconds() >= self.start_time + self.inactive_delay 
+            return int(self.start_time + self.inactive_delay - tournament_seconds())  
         else:
-            return None
+            return 0
         
     def isRebuyAllowed(self, serial="unknown"):
         """
@@ -706,24 +706,42 @@ class PokerTournament:
 
     def removeInactivePlayers(self, game_id):
         game = self.id2game[game_id]
-        inactive_players = [s for (s,p) in game.serial2player.items() if not p.action_issued]
+        
+        inactive_players = [p.serial for p in game.playersAll() if not p.action_issued]
+        
+        # if all players are inactive, the last player will not be removed
+        if len(self.id2game) == 1 and len(inactive_players) == len(game.playersAll()):
+            inactive_players.pop()
+        
         for serial in inactive_players:
             self.callback_remove_player(self, game_id, serial, now=True)
+            
+        if inactive_players:
+            self.need_balance = True
+            
+        return len(inactive_players)
         
     def endTurn(self, game_id):
         """endTurn(game_id) is called by the game each time a hand ends."""
-        if self.remainingInactiveSeconds(): 
-            self.removeInactivePlayers(game_id)
-        return self.removeBrokePlayers(game_id)
+        players_removed = 0
+        if self.remainingInactiveSeconds() < 0: 
+            players_removed += self.removeInactivePlayers(game_id)
+
+        # if the tourney ended after removing all inactive players, there are no games
+        # anymore, so we have to explicitely check this scenario.
+        if game_id in self.id2game:
+            players_removed += self.removeBrokePlayers(game_id)
+            
+        return players_removed
 
     def tourneyEnd(self, game_id):
+        
         game = self.id2game[game_id]
         loosers = game.serialsBroke()
         if len(self.winners) + 1 == self.registered:
             game = self.games[0]
             remainingPlayers = game.playersAll()
             player = remainingPlayers[0]
-            self._winners_dict_tmp[player.serial] = (self._incrementToNextWinnerPosition(),0,0)
             self.callback_remove_player(self, game.id, player.serial, now=True)
             player.money = 0
             self.log.debug("winners %s", self.winners)

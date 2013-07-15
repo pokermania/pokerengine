@@ -26,6 +26,7 @@
 
 import unittest, sys
 from os import path
+from tests.log_history import log_history
 
 TESTS_PATH = path.dirname(path.realpath(__file__))
 sys.path.insert(0, path.join(TESTS_PATH, ".."))
@@ -1214,6 +1215,7 @@ class PokerTournamentTestCase(unittest.TestCase):
         tournament.removePlayer(game.id,1, now=True)
         self.assertTrue(game.historyCanBeReduced())
         game.historyReduce()
+        
         
 
 class Breaks(unittest.TestCase):
