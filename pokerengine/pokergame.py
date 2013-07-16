@@ -3989,7 +3989,14 @@ class PokerGame:
         # the chips of the players are loaded afterwards
         if self.isRunning(): player.rebuy_given += amount
         return True
-
+    
+    def receiveBuyOut(self, serial):
+        if not self.is_directing: return
+        player = self.getPlayer(serial)
+        money, player.money = player.money, 0
+        self.historyAdd("buyOut", serial, money, player.bet)
+        return money
+    
     def buyIn(self):
         return self.buy_in
 
