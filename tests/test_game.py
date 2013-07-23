@@ -2982,6 +2982,26 @@ class PokerGameTestCase(unittest.TestCase):
         
         # The dealer can not be the player 2
         self.failUnlessEqual(self.game.serialsAllSorted(), [3, 2])
+    
+    # ---------------------------------------------------------
+    def testSerialsInactive(self):
+        self.game.setMaxPlayers(3)
+
+        player1 = self.AddPlayerAndSit(1, 2)
+        player2 = self.AddPlayerAndSit(2, 5)
+        player3 = self.AddPlayerAndSit(3, 7)
+
+        # pre-test: all players should not be on auto when started
+        self.assertEquals(player3.auto, False)
+                
+        self.assertEquals(self.game.serialsInactive(), [])
+        
+        player1.auto = True
+        self.assertEquals(self.game.serialsInactive(), [player1.serial])
+        
+        player2.auto = True
+        player2.action_issued = True
+        self.assertEquals(self.game.serialsInactive(), [player1.serial])
         
     # ---------------------------------------------------------
     def testBlind(self):

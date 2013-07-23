@@ -691,14 +691,21 @@ class PokerTournament:
         loosers = game.serialsBroke()
         pos = self._incrementToNextWinnerPosition()
         new_loosers = [s for s in loosers if s not in self._winners_dict_tmp]
-        randlist = range(len(new_loosers))
-        shuffler.shuffle(randlist)
-        for serial, tiebreaker in zip(new_loosers, randlist):
-            # the person who had more money before the all in should  get a higher rank
-            lost_chips = - game.showdown_stack[0]['serial2delta'][serial]
-            self._winners_dict_tmp[serial] = (pos, lost_chips, tiebreaker)
+        
+        if new_loosers:
+            self.log.debug('removeBrokePlayers: serials: %s. game_id: %d. now: %s', new_loosers, game_id, now)
+        
+        if not now:
+            randlist = range(len(new_loosers))
+            shuffler.shuffle(randlist)
+            for serial, tiebreaker in zip(new_loosers, randlist):
+                # the person who had more money before the all in should  get a higher rank
+                lost_chips = -game.showdown_stack[0]['serial2delta'][serial]
+                self._winners_dict_tmp[serial] = (pos, lost_chips, tiebreaker)
+                
         for serial in new_loosers:
             self.callback_remove_player(self, game_id, serial, now=now)
+            
         if loosers:
             self.need_balance = True
 
@@ -706,12 +713,14 @@ class PokerTournament:
 
     def removeInactivePlayers(self, game_id):
         game = self.id2game[game_id]
-        
-        inactive_players = [p.serial for p in game.playersAll() if not p.action_issued]
+        inactive_players = game.serialsInactive()
         
         # if all players are inactive, the last player will not be removed
-        if len(self.id2game) == 1 and len(inactive_players) == len(game.playersAll()):
+        if len(self.id2game) == 1 and len(inactive_players) == len(game.serialsAll()):
             inactive_players.pop()
+        
+        if inactive_players:
+            self.log.debug('removeInactivePlayers: serials: %s. game_id: %d.', inactive_players, game_id)
         
         for serial in inactive_players:
             self.callback_remove_player(self, game_id, serial, now=True)
@@ -735,7 +744,9 @@ class PokerTournament:
         return players_removed
 
     def tourneyEnd(self, game_id):
-        
+        if game_id not in self.id2game:
+            self.log.error("tourneyEnd: game %d not available. available games: %s",game_id,sorted(self.id2game))
+            return
         game = self.id2game[game_id]
         loosers = game.serialsBroke()
         if len(self.winners) + 1 == self.registered:
@@ -781,6 +792,7 @@ class PokerTournament:
                 self.callback_destroy_game(self, game)
                 self.games.remove(game)
                 del self.id2game[game.id]
+                self.log.debug("balanceGames: removed game %d", game_id)
             self.log.inform("balanceGames: broken tables %s", to_break)
             return True
         

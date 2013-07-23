@@ -3851,6 +3851,9 @@ class PokerGame:
     def playersWinner(self):
         return map(lambda serial: self.serial2player[serial], self.winners)
 
+    def serialsInactive(self):
+        return [p.serial for p in self.playersAll() if not p.action_issued and p.auto]
+    
     def isGameEndInformationValid(self):
         #
         # Only relevant for a game that has ended and for which we want to know
