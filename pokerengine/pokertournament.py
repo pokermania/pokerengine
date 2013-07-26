@@ -194,7 +194,7 @@ class PokerTournamentStats:
                 if serial not in inactive_players
             )
         if not active_player_ranks:
-            self._tourney.log.warn("updateStats: need players in games for tourney %d", self._tourney.serial)
+            self._tourney.log.debug("updateStats: need players in games for tourney %d", self._tourney.serial)
             return False
         
         active_player_ranks.sort(key=lambda player: player.money, reverse=True)
@@ -792,7 +792,6 @@ class PokerTournament:
                 self.callback_destroy_game(self, game)
                 self.games.remove(game)
                 del self.id2game[game.id]
-                self.log.debug("balanceGames: removed game %d", game_id)
             self.log.inform("balanceGames: broken tables %s", to_break)
             return True
         
