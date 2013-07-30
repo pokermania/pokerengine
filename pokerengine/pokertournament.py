@@ -483,6 +483,7 @@ class PokerTournament:
         
         return True
 
+    # FIXME this is quite hacky in several ways
     def filluptheMoney(self):
         if "strip" not in self.betting_structure.lower():
             return
@@ -698,8 +699,11 @@ class PokerTournament:
         randlist = range(len(new_loosers))
         shuffler.shuffle(randlist)
         
+        # the person who had more money before the all in should get a higher rank
+        # if the amount is equal, use a 'random card', in this case the tiebreaker
+        # as a means to differentiate between positions
         values = dict(
-            (serial, (pos,-game.showdown_stack[0]['serial2delta'][serial], tiebreaker)) 
+            (serial, (pos, -game.showdown_stack[0]['serial2delta'][serial], tiebreaker)) 
             for (serial,tiebreaker) in zip(new_loosers, randlist)
         )
         
@@ -707,7 +711,6 @@ class PokerTournament:
         
         if not now:
             for serial in new_loosers:
-                # the person who had more money before the all in should get a higher rank
                 self._winners_dict_tmp[serial] = values[serial]
                 
         for serial in new_loosers:
@@ -723,7 +726,7 @@ class PokerTournament:
         inactive_players = game.serialsInactive()
         
         # if all players are inactive, the last player will not be removed
-        if len(self.id2game) == 1 and len(inactive_players) == len(game.serialsAll()):
+        if len(inactive_players) == len(game.serialsAll()):
             inactive_players.pop()
         
         if inactive_players:
