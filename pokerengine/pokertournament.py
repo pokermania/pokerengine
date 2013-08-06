@@ -223,6 +223,7 @@ class PokerTournamentStats:
             "players_active":  self.players_active,
             "player_chips_max_serial": self.player_chips_max["serial"],
             "player_chips_max_name": self.player_chips_max["name"],
+            "table_count": len(self._tourney.games),
         }
         return ret
         
