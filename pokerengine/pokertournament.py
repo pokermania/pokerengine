@@ -214,13 +214,15 @@ class PokerTournamentStats:
         self.players_money_rank = players_money_rank
         
     def __call__(self,user_serial):
+        if self.chips_avg == 0:
+            self.update(self._tourney.games[0].id)
         ret = {
             "serial": user_serial,
             "tourney_serial": self._tourney.serial,
             "rank": self.players_money_rank.get(user_serial,0),   
             "chips_avg": self.chips_avg,
             "chips_max": self.chips_max,
-            "players_active":  self.players_active,
+            "players_active": self.players_active,
             "player_chips_max_serial": self.player_chips_max["serial"],
             "player_chips_max_name": self.player_chips_max["name"],
             "table_count": len(self._tourney.games),
