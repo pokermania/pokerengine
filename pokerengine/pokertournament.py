@@ -486,18 +486,6 @@ class PokerTournament:
         
         return True
 
-    # FIXME this is quite hacky in several ways
-    def filluptheMoney(self):
-        if "strip" not in self.betting_structure.lower():
-            return
-
-        for game in self.games:
-            for player in game.playersAll():
-                if "BOT" in player.name:
-                    #TODO we need another way to distinguish between the bot an the Player
-                    player.money = game.maxBuyIn()
-                    game.botPlayer(player.serial)
-
     def changeState(self, state):
         if self.state == state:
             return
@@ -514,7 +502,6 @@ class PokerTournament:
             self.start_time = tournament_seconds()
             self.breaks_running_since = self.start_time
             self.createGames()
-            self.filluptheMoney()
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_CANCELED:
             self.cancel()
             self.finish_time = tournament_seconds()
