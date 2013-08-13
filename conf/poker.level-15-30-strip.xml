@@ -3,23 +3,23 @@
 
     <description>Strip Poker 15/30</description>
 
-    <blind small="15" big="30" change="levels" levels="poker.levels-strip.xml" frequency="6" unit="minutes" />
+    <blind small="15" big="30" change="levels" levels="poker.levels-strip.xml" frequency="60" unit="minutes" />
 
     <all_in method="side"/>
 
     <variants ids="omaha omaha8 holdem">
-      <round name="pre-flop" min_pow_level="20" cap="-1"/>
-      <round name="flop" min_pow_level="20" cap="-1"/>
-      <round name="turn" min_pow_level="20" cap="-1"/>
-      <round name="river" min_pow_level="20" cap="-1"/>
+      <round name="pre-flop" fixed="30" cap="3"/>
+      <round name="flop" fixed="30" cap="3"/>
+      <round name="turn" fixed="60" cap="3"/>
+      <round name="river" fixed="60" cap="3"/>
     </variants>
 
     <variants ids="7stud 7stud8">
-      <round name="pre-flop" min_pow_level="20" cap="-1"/>
-      <round name="third" min_pow_level="20" cap="-1"/>
-      <round name="fourth" min_pow_level="20" cap="-1"/>
-      <round name="fifth" min_pow_level="20" cap="-1"/>
-      <round name="sixth" min_pow_level="20" cap="-1"/>
-      <round name="seventh" min_pow_level="20" cap="-1"/>
+      <round name="pre-flop" fixed="30" cap="3"/>
+      <round name="third" fixed="30" cap="3"/>
+      <round name="fourth" fixed="30" cap="3"/>
+      <round name="fifth" fixed="60" cap="3"/>
+      <round name="sixth" fixed="60" cap="3"/>
+      <round name="seventh" fixed="60" cap="3"/>
     </variants>
 </bet>
