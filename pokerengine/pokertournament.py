@@ -46,10 +46,10 @@ TOURNAMENT_STATE_COMPLETE = "complete"
 TOURNAMENT_STATE_CANCELED = "canceled"
 TOURNAMENT_STATE_LOADING = "loading"
 
-TOURNEY_REBUY_ERROR_TIMEOUT = "timeout"
-TOURNEY_REBUY_ERROR_USER = "user"
-TOURNEY_REBUY_ERROR_MONEY = "money"
-TOURNEY_REBUY_ERROR_OTHER = "other"
+TOURNAMENT_REBUY_ERROR_TIMEOUT = "timeout"
+TOURNAMENT_REBUY_ERROR_USER = "user"
+TOURNAMENT_REBUY_ERROR_MONEY = "money"
+TOURNAMENT_REBUY_ERROR_OTHER = "other"
             
 def equalizeCandidates(games):
     #
@@ -275,6 +275,8 @@ class PokerTournament:
         self.players = {}
         self.need_balance = False
         self.registered = 0
+        self._rebuy_stack = set()
+        
         self.winners_dict = {}
         self._winners_dict_tmp = {}
         self.state = kwargs.get("state", TOURNAMENT_STATE_ANNOUNCED)
@@ -297,7 +299,8 @@ class PokerTournament:
         self.callback_remove_player = lambda tournament, game_id, serial, now: self.removePlayer(game_id, serial, now)
         self.callback_reenter_game = lambda tourney_serial, serial: True
         self.callback_cancel = lambda tournament: True
-        self.callback_rebuy = lambda tournament, serial, table_id, player_chips, tourney_chips: tourney_chips 
+        self.callback_rebuy_payment = lambda tournament, serial, game_id, player_chips, tourney_chips: tourney_chips
+        self.callback_rebuy = lambda tournament, serial, game_id, success, error: True 
         self.loadPayouts()
 
         if self.state == TOURNAMENT_STATE_ANNOUNCED:
@@ -633,47 +636,82 @@ class PokerTournament:
         """
         if serial in self._winners_dict_tmp:
             del self._winners_dict_tmp[serial]
-        game = next(g for g in self.games if g.id == game_id)
+        game = self.id2game[game_id]
         game.sit(serial)
         self.callback_reenter_game(self.serial, serial)
 
-    def rebuy(self, serial):
+    def isRebuying(self, serial):
+        return serial in self._rebuy_stack
+    
+    def rebuyPlayerRequest(self, game_id, serial):
+        game = self.id2game[game_id]
+        
+        if not self.isRebuyAllowed(serial):
+            return False, TOURNAMENT_REBUY_ERROR_TIMEOUT
+        
+        if not self.isRebuyAllowedForUser(serial, game):
+            return False, TOURNAMENT_REBUY_ERROR_USER
+        
+        if serial in self._rebuy_stack:
+            return False, TOURNAMENT_REBUY_ERROR_OTHER
+        
+        if game.isRebuyPossible():
+            success, error = self._rebuy(game_id, serial)
+            return success, error
+        
+        self._rebuy_stack.add(serial)
+        return True, None
+    
+    def rebuyAllPlayers(self, game_id):
+        game = self.id2game[game_id]
+        serials_rebuying = set(game.serialsAll()) & self._rebuy_stack
+        
+        for serial in serials_rebuying:
+            self._rebuy_stack.remove(serial)
+            self._rebuy(game_id, serial)
+        
+    def _rebuy(self, game_id, serial):
         """
         performs a tourney rebuy for the player with the given serial
 
-        returns a triplet (success_state, game_id, reason)
+        returns a tuple (success_state, reason)
 
         success_state is either True or False
         game_id is the game_id if the success_state is True otherwise None
         reason is None if success_state is True otherwise a short StringType
 
-        e.g. (True, 13, None) # successful returncode
-             (False, None, "money") # unsuccessful, the user has not enough money
+        e.g. (True, None) # successful returncode
+             (False, "money") # unsuccessful, the user has not enough money
         """
-        game = next(g for g in self.games if g.getPlayer(serial))
+        error = None
+        game = self.id2game[game_id]
 
         if not self.isRebuyAllowed(serial):
-            return (False, None, TOURNEY_REBUY_ERROR_TIMEOUT)
+            error = TOURNAMENT_REBUY_ERROR_TIMEOUT
 
-        if not self.isRebuyAllowedForUser(serial, game):
-            return (False, None, TOURNEY_REBUY_ERROR_USER)
+        elif not self.isRebuyAllowedForUser(serial, game):
+            error = TOURNAMENT_REBUY_ERROR_USER
 
-        amount = self.callback_rebuy(self, serial=serial, table_id=game.id, 
-            player_chips=self.buy_in + self.rake, tourney_chips=game.buyIn())
+        else:
+            amount = self.callback_rebuy_payment(self, serial, game_id, self.buy_in+self.rake, game.buyIn())
         
-        if amount == 0:
-            self.log.warn("player %d  has not enough money, tourney rebuy denied", serial, refs=[('User', serial, int), ('Game', game.id, int)])
-            return (False, None, TOURNEY_REBUY_ERROR_MONEY)
-
-        if not game.rebuy(serial, game.buyIn()):
-            # This should never happen! We need to give the user the money back
-            # and the winner of the tourney would get too much chips
-            self.log.error("rebuy denied for user %s" % serial, refs=[('User', serial, int), ('Game', game.id, int)])
-            return (False, None, TOURNEY_REBUY_ERROR_OTHER)
-
-        self.reenterGame(game.id, serial)
-        self.prizes_object.rebuy()
-        return (True, game.id, None)
+            if amount == 0:
+                self.log.warn("player %d  has not enough money, tourney rebuy denied", serial, refs=[('User', serial, int), ('Game', game_id, int)])
+                error = TOURNAMENT_REBUY_ERROR_MONEY
+    
+            elif not game.rebuy(serial, game.buyIn()):
+                # This should never happen! We need to give the user the money back
+                # and the winner of the tourney would get too much chips
+                self.log.error("rebuy denied for user %s" % serial, refs=[('User', serial, int), ('Game', game_id, int)])
+                error = TOURNAMENT_REBUY_ERROR_OTHER
+                
+            else:
+                self.reenterGame(game_id, serial)
+                self.prizes_object.rebuy()
+        
+        success = error is None
+        self.callback_rebuy(self, serial, game_id, success, error)
+        return success, error
 
 
     def removeBrokePlayers(self, game_id, now=False):
@@ -733,6 +771,10 @@ class PokerTournament:
     def endTurn(self, game_id):
         """endTurn(game_id) is called by the game each time a hand ends."""
         players_removed = 0
+        
+        if self._rebuy_stack:
+            self.rebuyAllPlayers(game_id)
+            
         if self.remainingInactiveSeconds() < 0: 
             players_removed += self.removeInactivePlayers(game_id)
 
@@ -740,7 +782,7 @@ class PokerTournament:
         # anymore, so we have to explicitely check this scenario.
         if game_id in self.id2game:
             players_removed += self.removeBrokePlayers(game_id)
-            
+        
         return players_removed
 
     def tourneyEnd(self, game_id):

@@ -422,7 +422,7 @@ class TestRebuy(unittest.TestCase):
                 return 0
             return tourney_chips
 
-        tourney.callback_rebuy = my_rebuy
+        tourney.callback_rebuy_payment = my_rebuy
 
         def updateShowdownStack(serial, money):
             if len(game.showdown_stack) == 0:
@@ -462,9 +462,9 @@ class TestRebuy(unittest.TestCase):
         self.assertEqual(tourney.getRank(2), 4)
 
         # Player 1 tries to rebuy but has not enough money
-        err, game_id, reason = tourney.rebuy(1)
-        self.assertFalse(err)
-        self.assertEquals(reason, "money")
+        success, error = tourney.rebuyPlayerRequest(game.id, 1)
+        self.assertFalse(success)
+        self.assertEquals(error, "money")
 
         # After Player 1 Timed out, he will be also removed
         # Note: this changes the rank for player 2
@@ -483,8 +483,8 @@ class TestRebuy(unittest.TestCase):
             tourney.tourneyEnd(1)
             self.assertEqual(tourney.winners, [2, 1])
 
-            err, game_id, reason = tourney.rebuy(3)
-            self.assertTrue(err, reason)
+            success, error = tourney.rebuyPlayerRequest(game.id, 3)
+            self.assertTrue(success, error)
 
             tourney.removeBrokePlayers(1)
             tourney.tourneyEnd(1)
@@ -496,15 +496,14 @@ class TestRebuy(unittest.TestCase):
 
         looseMoney(4, set_money_to=game.buyIn())
 
-        #import rpdb2; rpdb2.start_embedded_debugger("haha")
-        # rebuy will fail because users money plus the new game.buyIn() is bigger than game.maxBuyIn() 
-        err, game_id, reason = tourney.rebuy(4)
-        self.assertFalse(err)
-        self.assertEqual(reason, "user")
+        # rebuy will fail because users money plus the new game.buyIn() is bigger than game.maxBuyIn()
+        success, error = tourney.rebuyPlayerRequest(game.id, 4)
+        self.assertFalse(success)
+        self.assertEqual(error, "user")
 
         looseMoney(4, set_money_to=game.buyIn()-1)
-        err, game_id, reason = tourney.rebuy(4)
-        self.assertTrue(err)
+        success, error = tourney.rebuyPlayerRequest(game.id, 4)
+        self.assertTrue(success)
         
         looseMoney(4)
         tourney.removeBrokePlayers(1)
@@ -515,14 +514,13 @@ class TestRebuy(unittest.TestCase):
         self.assertEqual(log_history.get_all(), [])
         old_rebuy = game.rebuy
         game.rebuy = lambda *args, **kw: False
-        err, game_id, reason = tourney.rebuy(4)
-        self.assertFalse(err)
+        success, error = tourney.rebuyPlayerRequest(game.id, 4)
+        self.assertFalse(success)
         self.assertEqual(len(log_history.get_all()), 1)
 
         game.rebuy = old_rebuy
-        err, game_id, reason = tourney.rebuy(4)
-        self.assertTrue(err, reason)
-        self.assertEqual(game_id, game.id)
+        success, error = tourney.rebuyPlayerRequest(game.id, 4)
+        self.assertTrue(success, error)
 
         tourney.removeBrokePlayers(1)
         tourney.tourneyEnd(1)
