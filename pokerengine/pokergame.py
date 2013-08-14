@@ -1871,7 +1871,7 @@ class PokerGame:
         return self.current_round == len(self.round_info) - 1
 
     def isRebuyPossible(self):
-        return not self.isRunning() or self.state in (GAME_STATE_BLIND_ANTE,)
+        return not self.isRunning() or self.state == GAME_STATE_BLIND_ANTE
 
     def resetRound(self):
         self.current_round = -1

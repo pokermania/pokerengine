@@ -643,6 +643,11 @@ class PokerTournament:
     def isRebuying(self, serial):
         return serial in self._rebuy_stack
     
+    def serialsRebuying(self, game_id):
+        game = self.id2game[game_id]
+        serials_rebuying = set(game.serialsAll()) & self._rebuy_stack
+        return serials_rebuying  
+    
     def rebuyPlayerRequest(self, game_id, serial):
         game = self.id2game[game_id]
         
@@ -663,8 +668,7 @@ class PokerTournament:
         return True, None
     
     def rebuyAllPlayers(self, game_id):
-        game = self.id2game[game_id]
-        serials_rebuying = set(game.serialsAll()) & self._rebuy_stack
+        serials_rebuying = self.serialsRebuying(game_id)
         
         for serial in serials_rebuying:
             self._rebuy_stack.remove(serial)
@@ -772,9 +776,6 @@ class PokerTournament:
         """endTurn(game_id) is called by the game each time a hand ends."""
         players_removed = 0
         
-        if self._rebuy_stack:
-            self.rebuyAllPlayers(game_id)
-            
         if self.remainingInactiveSeconds() < 0: 
             players_removed += self.removeInactivePlayers(game_id)
 
