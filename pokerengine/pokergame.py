@@ -2985,7 +2985,7 @@ class PokerGame:
                 # In this case the uncalled_serial is zero.
                 #
                 if self.uncalled_serial != 0 and winner.serial != self.uncalled_serial:
-                    self.log.warn("%", lambda: pformat(self.showdown_stack))
+                    self.log.warn("%s", lambda: pformat(self.showdown_stack))
                     raise UserWarning("distributeMoney: unexpected winner.serial != uncalled_serial / %d != %d" % (
                         winner.serial,
                         self.uncalled_serial
