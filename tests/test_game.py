@@ -6177,6 +6177,14 @@ class PokerGameTestCase(unittest.TestCase):
             5: {'seat':5, 'serial': 236131, 'money': 2683, 'blind':'small', 'missed_blind':None, 'wait_for':False},
         }
 
+        construction = {
+            1: {'seat':1, 'serial': 1, 'money': 18,   'blind':'big', 'missed_blind':None, 'wait_for':False},
+            2: {'seat':2, 'serial': 2, 'money': 2000, 'blind':False, 'missed_blind':None, 'wait_for':False},
+            3: {'seat':3, 'serial': 3, 'money': 2000, 'blind':'late', 'missed_blind':'small', 'wait_for':False},
+            4: {'seat':4, 'serial': 4, 'money': 2000, 'blind':False, 'missed_blind':None, 'wait_for':False},
+            5: {'seat':5, 'serial': 5, 'money': 2000, 'blind':'small', 'missed_blind':None, 'wait_for':False},
+        }
+
         for info in construction.values():
             s = info["serial"]
             players[s] = self.AddPlayerAndSit(s, info['seat'])
@@ -6209,10 +6217,13 @@ class PokerGameTestCase(unittest.TestCase):
         self.assertEqual(game_state['type'], 'game_state')
         self.assertEqual(len(game_state['side_pots']['contributions'][0].keys()), 3)
 
-        # the big blind wins twice his money
-        self.assertEqual(game_state['serial2delta'][construction[1]['serial']], 36)
-        self.assertEqual(game_state['serial2delta'][construction[5]['serial']], 4)
-        self.assertEqual(game_state['serial2delta'][construction[1]['serial']], -20)
+        print "\n".join(log_history.get_all())
+        # the big blind wins twice his money minus the rake
+        # self.assertEqual(game_state['serial2delta'][construction[1]['serial']], 34)
+        self.assertEqual(game_state['serial2money'][construction[1]['serial']], players[construction[1]['serial']].money)
+        self.assertEqual(game_state['serial2delta'][construction[5]['serial']], 3)
+        # the late blind only loses the small blind, because nobody called his late blind
+        self.assertEqual(game_state['serial2delta'][construction[3]['serial']], -20)
 
         # TODO assert winner is on seat 1
         raise AttributeError("sorry")
