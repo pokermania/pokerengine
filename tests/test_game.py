@@ -49,6 +49,10 @@ from pokerengine import pokercards
 from pokerengine import pokergame
 
 from tests.testmessages import search_output, clear_all_messages, get_messages
+try:
+    from nose.plugins.attrib import attr
+except ImportError, e:
+    def attr(fn): return fn
 
 CallbackIds = None
 CallbackArgs = None
@@ -6152,7 +6156,60 @@ class PokerGameTestCase(unittest.TestCase):
         game.beginTurn(1)
         game.callNraise(20, 200)
         game.call(10)
-    
+
+    @attr("og-now")
+    def testDistributeMoneyUnexpectedWinnerSerial(self):
+        game = self.game
+        game.variant = 'holdem'
+        game.setMaxPlayers(9)
+        game.blind_info = False
+        game.blind_info = {'small': 20,'big': 40,'change': False}
+        game.ante_info = None
+        game.best_buy_in = 100
+
+        players = {}
+
+        construction = {
+            1: {'seat':1, 'serial': 142,    'money': 18,   'blind':'big', 'missed_blind':None, 'wait_for':False},
+            2: {'seat':2, 'serial': 270559, 'money': 1191, 'blind':False, 'missed_blind':None, 'wait_for':False},
+            3: {'seat':3, 'serial': 227853, 'money': 6584, 'blind':'late', 'missed_blind':'small', 'wait_for':False},
+            4: {'seat':4, 'serial': 270757, 'money': 2043, 'blind':False, 'missed_blind':None, 'wait_for':False},
+            5: {'seat':5, 'serial': 236131, 'money': 2683, 'blind':'small', 'missed_blind':None, 'wait_for':False},
+        }
+
+        serials = [236131, 270757, 227853, 142L, 270559]
+        money = [50, 100]
+
+        for info in construction.values():
+            s = info["serial"]
+            players[s] = self.AddPlayerAndSit(s, info['seat'])
+            players[s].money = info["money"]
+            players[s].missed_blind = info["missed_blind"]
+
+        game.dealer_seat = 3
+        game.first_turn = False
+        log_history.reset()
+
+        game.beginTurn(1)
+        for info in construction.values():
+            _p_ = game.serial2player[info['serial']]
+            self.assertEqual(_p_.blind, info['blind'], "player %s has blind %r but should have %r" % (_p_.serial, _p_.blind, info['blind'])) 
+
+        # Pay the blinds
+        i = 0
+        while game.state == "blindAnte":
+            i += 1
+            assert i <= 3, "Too many Blinds to pay"
+            game.blind(game.getSerialInPosition())
+
+        game.fold(270559)#construction[1]['serial'])#270559)
+        game.fold(227853)#construction[3]['serial'])#227853)
+        game.fold(270757)#construction[4]['serial'])#270757)
+
+        # TODO assert winner is on seat 1
+        # print "\n".join(history_log.get_all())
+        raise AttributeError("sorry")
+
     def testSitBeforeBlindAndAllSitOutAfterwards(self):
         game = self.game
         game.variant = 'holdem'
