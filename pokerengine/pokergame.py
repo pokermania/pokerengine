@@ -3587,17 +3587,17 @@ class PokerGame:
         pots[last_pot_index][total_index] += self.side_pots['building']  # total
         self.side_pots['building'] = 0
         current_pot_index = len(pots) - 1
-        players = filter(lambda player: player.side_pot_index == current_pot_index, self.playersAllIn())
-        if not players:
+        players = filter(lambda player: player.side_pot_index == current_pot_index, self.playersAll())
+        if not players or not round_contributions:
             return
-        players.sort(key=lambda i: i.bet)
+        # we need to sort by the pot contribution amount
+        # it is possible that someone folded a blind but the big blind is allready all in
+        # because of this, it is possible that the person who is all in didn't contributet the most money
+        # so we need to check also all players.
+        players.sort(key=lambda player: round_contributions[len(pots) - 1].get(player.serial,0))
         for player in players:
             pot_contributions = round_contributions[len(pots) - 1]
             if player.serial not in pot_contributions:
-                #
-                # This may happen if two players are all in for exactly
-                # the same amount.
-                #
                 continue
             if len(pot_contributions) == 1:
                 #
