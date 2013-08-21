@@ -6177,9 +6177,6 @@ class PokerGameTestCase(unittest.TestCase):
             5: {'seat':5, 'serial': 236131, 'money': 2683, 'blind':'small', 'missed_blind':None, 'wait_for':False},
         }
 
-        serials = [236131, 270757, 227853, 142L, 270559]
-        money = [50, 100]
-
         for info in construction.values():
             s = info["serial"]
             players[s] = self.AddPlayerAndSit(s, info['seat'])
@@ -6199,15 +6196,25 @@ class PokerGameTestCase(unittest.TestCase):
         i = 0
         while game.state == "blindAnte":
             i += 1
-            assert i <= 3, "Too many Blinds to pay"
-            game.blind(game.getSerialInPosition())
+            self.assertTrue(i <= 3, "Too many Blinds to pay")
+            player_serial = game.getSerialInPosition()
+            game.blind(player_serial)
+            self.assertTrue(players[player_serial].bet > 0)
 
-        game.fold(270559)#construction[1]['serial'])#270559)
-        game.fold(227853)#construction[3]['serial'])#227853)
-        game.fold(270757)#construction[4]['serial'])#270757)
+        game.fold(construction[2]['serial'])
+        game.fold(construction[3]['serial'])
+        game.fold(construction[4]['serial'])
+
+        game_state = game.showdown_stack[0]
+        self.assertEqual(game_state['type'], 'game_state')
+        self.assertEqual(len(game_state['side_pots']['contributions'][0].keys()), 3)
+
+        # the big blind wins twice his money
+        self.assertEqual(game_state['serial2delta'][construction[1]['serial']], 36)
+        self.assertEqual(game_state['serial2delta'][construction[5]['serial']], 4)
+        self.assertEqual(game_state['serial2delta'][construction[1]['serial']], -20)
 
         # TODO assert winner is on seat 1
-        # print "\n".join(history_log.get_all())
         raise AttributeError("sorry")
 
     def testSitBeforeBlindAndAllSitOutAfterwards(self):
