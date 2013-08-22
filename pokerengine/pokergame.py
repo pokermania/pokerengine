@@ -2953,7 +2953,7 @@ class PokerGame:
         # While there is some money left at the table
         #
         while True:
-            potential_winners = filter(lambda player: serial2side_pot[player.serial] > 0, self.playersNotFoldShowdownSorted())
+            potential_winners = filter(lambda player: serial2side_pot.get(player.serial,0) > 0, self.playersNotFoldShowdownSorted())
             #
             # Loop ends when there is no more money, i.e. no more
             # players with a side_pot greater than 0
@@ -2979,7 +2979,6 @@ class PokerGame:
             if len(potential_winners) == 1:
                 winner = potential_winners[0]
                 frame['type'] = 'uncalled'
-                frame['serial'] = self.uncalled_serial
                 #
                 # Special case : a player folds on the turn and the only other player left in the game
                 # did not bet. There is no reason for the player to fold : he forfeits a pot that
@@ -3009,20 +3008,25 @@ class PokerGame:
                 pot = serial2side_pot[winner.serial]
                 serial2share[winner.serial] += pot
                 serial2delta[winner.serial] += pot
-                for player_serial in serial2side_pot.keys():
-                    serial2side_pot[player_serial] -= pot
-                    if serial2side_pot[player_serial] <= 0: del serial2side_pot[player_serial]
                 
-                if self.uncalled:
+                if self.uncalled_serial != 0 and winner.serial != self.uncalled_serial:
+                    for player_serial in serial2side_pot.keys():
+                        if serial2side_pot[player_serial] > 0: serial2side_pot[player_serial] -= pot
+                        if serial2side_pot[player_serial] <= 0:
+                            del serial2side_pot[player_serial]
+
                     if sum(serial2side_pot.values()) != self.uncalled:
                         raise UserWarning("sum(serial2side_pot.values()) != self.uncalled (%s != %s)" % (sum(serial2side_pot.values()), self.uncalled))
                     for player_serial in serial2side_pot.keys():
                         serial2delta[player_serial] += serial2side_pot[player_serial]
                         # del serial2side_pot[player_serial]
+                    frame['serial'] = self.uncalled_serial
                     frame['uncalled'] = serial2side_pot[self.uncalled_serial]
-                    showdown_stack.insert(0, frame)
                 else:
-                    frame = {}
+                    frame['serial'] = winner.serial
+                    frame['uncalled'] = serial2side_pot[winner.serial]
+
+                showdown_stack.insert(0, frame)
                 # serial2side_pot[winner.serial] = 0
                 break
 
@@ -3107,7 +3111,8 @@ class PokerGame:
             # for player in potential_winners:
             #     serial2side_pot[player.serial] -= pot
             for player_serial in serial2side_pot.keys():
-                serial2side_pot[player_serial] -= pot
+                if serial2side_pot[player_serial] > 0:
+                    serial2side_pot[player_serial] -= pot
 
             showdown_stack.append(frame)
 
