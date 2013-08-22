@@ -2921,6 +2921,7 @@ class PokerGame:
                 for player_serial in side_pots['contributions'][r][pot_idx].keys():
                     if player_serial not in serial2side_pot:
                         serial2side_pot[player_serial] = side_pots['pots'][pot_idx][1]
+
         self.log.debug("distribute a pot of %d", self.pot)
         #
         # Keep track of the best hands (high and low) for information
@@ -3014,7 +3015,7 @@ class PokerGame:
                 
                 if self.uncalled:
                     if sum(serial2side_pot.values()) != self.uncalled:
-                        raise UserWarning("Foooo")
+                        raise UserWarning("sum(serial2side_pot.values()) != self.uncalled (%s != %s)" % (sum(serial2side_pot.values()), self.uncalled))
                     for player_serial in serial2side_pot.keys():
                         serial2delta[player_serial] += serial2side_pot[player_serial]
                         # del serial2side_pot[player_serial]
