@@ -40,6 +40,11 @@ from string import split
 import reflogging
 log = reflogging.root_logger.get_child('test_blinds')
 
+try:
+    from nose.plugins.attrib import attr
+except ImportError, e:
+    def attr(fn): return fn
+
 class PokerPredefinedDecks:
 
     def __init__(self, decks):
@@ -380,6 +385,7 @@ class TestBlinds(unittest.TestCase):
         self.confirm_blind(self.game.turn_history, [(3, small, 0), (4, big, 0)])
 
     # --------------------------------------------------------------------------
+    @attr("og-now")
     def test5_sixPlayers_missedBothBlinds_bothRequired(self):
         """
         At six players, player 4 missed the big and small blinds and
