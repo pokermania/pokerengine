@@ -2987,24 +2987,8 @@ class PokerGame:
                 # bet.
                 # In this case the uncalled_serial is zero.
                 #
-                if self.uncalled_serial != 0 and winner.serial != self.uncalled_serial:
-                    self.log.warn("%s", lambda: pformat(self.showdown_stack))
-                    # raise UserWarning("distributeMoney: unexpected winner.serial != uncalled_serial / %d != %d" % (
-                    #     winner.serial,
-                    #     self.uncalled_serial
-                    # ))
-                # frame = {}
+
                 serial2share.setdefault(winner.serial, 0)
-                if self.uncalled_serial != 0 and \
-                    side_pots and \
-                    'last_round' in side_pots and \
-                    side_pots['last_round'] >= 0:
-                        if serial2side_pot[winner.serial] < self.uncalled:
-                            self.log.warn("%s", lambda: pformat(self.showdown_stack))
-                            # raise UserWarning("serial2side_pot[winner.serial] < self.uncalled (%d != %d)" % (
-                            #         serial2side_pot[winner.serial],
-                            #         self.uncalled
-                            # ))
                 pot = serial2side_pot[winner.serial]
                 serial2share[winner.serial] += pot
                 serial2delta[winner.serial] += pot
@@ -3019,15 +3003,23 @@ class PokerGame:
                         raise UserWarning("sum(serial2side_pot.values()) != self.uncalled (%s != %s)" % (sum(serial2side_pot.values()), self.uncalled))
                     for player_serial in serial2side_pot.keys():
                         serial2delta[player_serial] += serial2side_pot[player_serial]
-                        # del serial2side_pot[player_serial]
                     frame['serial'] = self.uncalled_serial
                     frame['uncalled'] = serial2side_pot[self.uncalled_serial]
                 else:
+                    if self.uncalled_serial != 0 and \
+                        side_pots and \
+                        'last_round' in side_pots and \
+                        side_pots['last_round'] >= 0:
+                            if serial2side_pot[winner.serial] < self.uncalled:
+                                self.log.warn("%s", lambda: pformat(self.showdown_stack))
+                                raise UserWarning("serial2side_pot[winner.serial] < self.uncalled (%d != %d)" % (
+                                        serial2side_pot[winner.serial],
+                                        self.uncalled
+                                ))
                     frame['serial'] = winner.serial
                     frame['uncalled'] = serial2side_pot[winner.serial]
 
                 showdown_stack.insert(0, frame)
-                # serial2side_pot[winner.serial] = 0
                 break
 
             for key in (self.win_orders + ['pot', 'chips_left']):
