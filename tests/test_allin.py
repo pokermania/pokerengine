@@ -39,6 +39,11 @@ from pokerengine import pokergame
 from pokerengine.pokergame import PokerGameServer
 from pokerengine.pokercards import PokerCards
 
+try:
+    from nose.plugins.attrib import attr
+except ImportError, e:
+    def attr(fn): return fn
+
 poker_eval = PokerEval()
 INITIAL_MONEY = 10
 
@@ -268,7 +273,7 @@ class TestHoldemAllIn(TestAllIn):
         game = self.game
         self.prepareGame(2)
         game.pot = 3
-        game.side_pots = {'pots':{0:(3,3)},'contributions':{'total':{1:2,2:1}}}
+        game.side_pots = {'pots':[(3,3)],'contributions':{0:{0:{1:2,2:1}},'total':{1:2,2:1}}}
         game.serial2player[1].hand = self.make_cards(False,'7h','3h')
         game.serial2player[2].hand = self.make_cards(False, '7d', '3s')
         game.board = self.make_cards(True, '6h', '4d', '7s', 'Kc', '7c')
@@ -314,7 +319,14 @@ class TestOmaha8AllIn(TestAllIn):
         """
 
         game = self.game
-        game.side_pots = {'pots':{0:(50,50),1:(40,90),2:(110,200)},'contributions':{'total':{1:130,2:10,3:20,4:20,5:20}}}
+        game.side_pots = {'pots':{0:(50,50),1:(40,90),2:(110,200)},'contributions':{
+            0:{
+                0:{1:10,2:10,3:10,4:10,5:10},
+                1:{1:10,3:10,4:10,5:10},
+                2:{1:110}
+            },
+            'total':{1:130,2:10,3:20,4:20,5:20}}
+        }
         player = self.player
         game.board = self.make_cards(True, 'As', '4d', '5h', '7d', '9c')
 
@@ -348,7 +360,10 @@ class TestOmaha8AllIn(TestAllIn):
         Simple situation, no all-in, player[3] with straight
         """
         game = self.game
-        game.side_pots = {'pots':{0:(100,100)},'contributions':{'total':{1:20,2:20,3:20,4:20,5:20}}}
+        game.side_pots = {'pots':{0:(100,100)},'contributions':{
+            0:{0:{1:20,2:20,3:20,4:20,5:20}},
+            'total':{1:20,2:20,3:20,4:20,5:20}}
+        }
         player = self.player
         game.board = self.make_cards(True, 'As', '4d', '5h', '7d', '9c')
 
@@ -426,7 +441,7 @@ class TestHoldemPlayBoard(TestAllIn):
         Two players play the board
         """
         game = self.game
-        game.side_pots = {'pots':{0:(10,10),},'contributions':{'total':{1:5,2:5,}}}
+        game.side_pots = {'pots':{0:(10,10),},'contributions':{0:{0:{1:5,2:5,}},'total':{1:5,2:5,}}}
         player = self.player
         game.board = self.make_cards(True, 'As', 'Ac', 'Ad', '7d', '7c')
 
@@ -453,7 +468,7 @@ class TestHoldemSplit(TestAllIn):
         Two players, one 
         """
         game = self.game
-        game.side_pots = {'pots':{0:(10,10),},'contributions':{'total':{1:2,2:8,}}}
+        game.side_pots = {'pots':{0:(10,10),},'contributions':{0:{0:{1:2,2:8}},'total':{1:2,2:8,}}}
         player = self.player
         game.board = self.make_cards(True, 'As', 'Ac', 'Ad', '7d', '7c')
 
