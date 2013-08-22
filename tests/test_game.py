@@ -6217,16 +6217,15 @@ class PokerGameTestCase(unittest.TestCase):
         self.assertEqual(game_state['type'], 'game_state')
         self.assertEqual(len(game_state['side_pots']['contributions'][0].keys()), 3)
 
-        print "\n".join(log_history.get_all())
+
         # the big blind wins twice his money minus the rake
-        # self.assertEqual(game_state['serial2delta'][construction[1]['serial']], 34)
-        self.assertEqual(game_state['serial2money'][construction[1]['serial']], players[construction[1]['serial']].money)
-        self.assertEqual(game_state['serial2delta'][construction[5]['serial']], 3)
+        self.assertEqual(game_state['serial2rake'][construction[1]['serial']], 1)
+        self.assertEqual(game_state['serial2delta'][construction[1]['serial']], 35)
+        self.assertEqual(game_state['serial2delta'][construction[5]['serial']], -17)
         # the late blind only loses the small blind, because nobody called his late blind
         self.assertEqual(game_state['serial2delta'][construction[3]['serial']], -20)
 
         # TODO assert winner is on seat 1
-        raise AttributeError("sorry")
 
     def testSitBeforeBlindAndAllSitOutAfterwards(self):
         game = self.game
