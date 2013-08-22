@@ -6170,16 +6170,7 @@ class PokerGameTestCase(unittest.TestCase):
         players = {}
 
         construction = {
-            1: {'seat':1, 'serial': 142,    'money': 18,   'blind':'big', 'missed_blind':None, 'wait_for':False},
-            2: {'seat':2, 'serial': 270559, 'money': 1191, 'blind':False, 'missed_blind':None, 'wait_for':False},
-            3: {'seat':3, 'serial': 227853, 'money': 6584, 'blind':'late', 'missed_blind':'small', 'wait_for':False},
-            4: {'seat':4, 'serial': 270757, 'money': 2043, 'blind':False, 'missed_blind':None, 'wait_for':False},
-            5: {'seat':5, 'serial': 236131, 'money': 2683, 'blind':'small', 'missed_blind':None, 'wait_for':False},
-        }
-
-        construction = {
             1: {'seat':1, 'serial': 1, 'money': 18,   'blind':'big', 'missed_blind':None, 'wait_for':False},
-            2: {'seat':2, 'serial': 2, 'money': 2000, 'blind':False, 'missed_blind':None, 'wait_for':False},
             3: {'seat':3, 'serial': 3, 'money': 2000, 'blind':'late', 'missed_blind':'small', 'wait_for':False},
             4: {'seat':4, 'serial': 4, 'money': 2000, 'blind':False, 'missed_blind':None, 'wait_for':False},
             5: {'seat':5, 'serial': 5, 'money': 2000, 'blind':'small', 'missed_blind':None, 'wait_for':False},
@@ -6209,7 +6200,6 @@ class PokerGameTestCase(unittest.TestCase):
             game.blind(player_serial)
             self.assertTrue(players[player_serial].bet > 0)
 
-        game.fold(construction[2]['serial'])
         game.fold(construction[3]['serial'])
         game.fold(construction[4]['serial'])
 
@@ -6224,8 +6214,6 @@ class PokerGameTestCase(unittest.TestCase):
         self.assertEqual(game_state['serial2delta'][construction[5]['serial']], -17)
         # the late blind only loses the small blind, because nobody called his late blind
         self.assertEqual(game_state['serial2delta'][construction[3]['serial']], -20)
-
-        # TODO assert winner is on seat 1
 
     def testSitBeforeBlindAndAllSitOutAfterwards(self):
         game = self.game
