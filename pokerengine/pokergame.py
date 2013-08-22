@@ -2915,18 +2915,11 @@ class PokerGame:
             return
 
         serial2side_pot = {}
-        # for player in self.playersNotFold():
-        #     serial2side_pot[player.serial] = side_pots['pots'][player.side_pot_index][1]
-        # for player in self.playersAll():
-        #     serial2side_pot[player.serial] = side_pots['pots'][player.side_pot_index][1]
-        # print side_pots['contributions'].keys()
         for r in sorted(side_pots['contributions'].keys(), reverse=True):
             if r == "total": continue
             for pot_idx in sorted(side_pots['contributions'][r].keys(), reverse=True):
-                print side_pots['contributions'][r].keys()
                 for player_serial in side_pots['contributions'][r][pot_idx].keys():
                     if player_serial not in serial2side_pot:
-                        print "."
                         serial2side_pot[player_serial] = side_pots['pots'][pot_idx][1]
         self.log.debug("distribute a pot of %d", self.pot)
         #
@@ -3113,10 +3106,6 @@ class PokerGame:
             for player_serial in serial2side_pot.keys():
                 serial2side_pot[player_serial] -= pot
 
-            print
-            print "rm", pot, "from pot"
-            print
-
             showdown_stack.append(frame)
 
         #
@@ -3191,9 +3180,6 @@ class PokerGame:
         self.showdown_stack = showdown_stack
         if not self.is_directing:
             self.updateHistoryEnd(self.winners, showdown_stack)
-        print 
-        print serial2side_pot, self.uncalled
-        print 
         self.log.debug("%s", lambda: pformat(self.showdown_stack))
 
     def divideChips(self, amount, divider):
