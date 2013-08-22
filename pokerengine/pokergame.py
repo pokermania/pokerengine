@@ -3012,7 +3012,7 @@ class PokerGame:
                         side_pots['last_round'] >= 0:
                             if serial2side_pot[winner.serial] < self.uncalled:
                                 self.log.warn("%s", lambda: pformat(self.showdown_stack))
-                                raise UserWarning("serial2side_pot[winner.serial] < self.uncalled (%d != %d)" % (
+                                raise UserWarning("serial2side_pot[winner.serial] < self.uncalled (%d < %d)" % (
                                         serial2side_pot[winner.serial],
                                         self.uncalled
                                 ))
