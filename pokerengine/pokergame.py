@@ -2978,8 +2978,7 @@ class PokerGame:
             if len(potential_winners) == 1:
                 winner = potential_winners[0]
                 frame['type'] = 'uncalled'
-                frame['serial'] = winner.serial
-                frame['uncalled'] = serial2side_pot[winner.serial]
+                frame['serial'] = self.uncalled_serial
                 #
                 # Special case : a player folds on the turn and the only other player left in the game
                 # did not bet. There is no reason for the player to fold : he forfeits a pot that
@@ -2994,7 +2993,6 @@ class PokerGame:
                     #     winner.serial,
                     #     self.uncalled_serial
                     # ))
-                showdown_stack.insert(0, frame)
                 # frame = {}
                 serial2share.setdefault(winner.serial, 0)
                 if self.uncalled_serial != 0 and \
@@ -3019,7 +3017,11 @@ class PokerGame:
                         raise UserWarning("Foooo")
                     for player_serial in serial2side_pot.keys():
                         serial2delta[player_serial] += serial2side_pot[player_serial]
-                        del serial2side_pot[player_serial]
+                        # del serial2side_pot[player_serial]
+                    frame['uncalled'] = serial2side_pot[self.uncalled_serial]
+                    showdown_stack.insert(0, frame)
+                else:
+                    frame = {}
                 # serial2side_pot[winner.serial] = 0
                 break
 
@@ -3116,10 +3118,12 @@ class PokerGame:
 #
         if showdown_stack[0]['type'] == 'uncalled':
             uncalled = showdown_stack[0]
-            serial2rackable[uncalled['serial']] -= uncalled['uncalled']
             pot_rackable -= uncalled['uncalled']
-            if serial2rackable[uncalled['serial']] <= 0:
-                del serial2rackable[uncalled['serial']]
+            # it is possible, that the uncalled amount doesen't belong to someone who won anything
+            if uncalled['serial'] in serial2rackable:
+                serial2rackable[uncalled['serial']] -= uncalled['uncalled']
+                if serial2rackable[uncalled['serial']] <= 0:
+                    del serial2rackable[uncalled['serial']]
 
         #
         # reset raked amount
