@@ -3610,8 +3610,33 @@ class PokerGame:
         pots[last_pot_index][total_index] += self.side_pots['building']  # total
         self.side_pots['building'] = 0
         current_pot_index = len(pots) - 1
-        players = filter(lambda player: player.side_pot_index == current_pot_index, self.playersAll())
-        if not players or not round_contributions:
+        if not round_contributions:
+            return
+
+        serials_by_contribution = round_contributions[len(pots) - 1].items()[:]
+        serials_by_contribution.sort(key=lambda s: s[1], reverse=True)
+        max_contribution_not_fold = 0
+
+        for serial, contribution in serials_by_contribution:
+            if not self.getPlayer(serial).isFold():
+                max_contribution_not_fold = contribution
+                break
+        else:
+            # for: ... else
+            raise UserWarning("every user is fold")
+
+        def filterPlayers(player):
+            if player.side_pot_index == current_pot_index:
+                if not player.isAllIn():
+                    if max_contribution_not_fold != serials_by_contribution[0][1] and round_contributions[len(pots) - 1].get(player.serial,0) >= max_contribution_not_fold:
+                        return True
+                    return False
+                return True
+            return False
+
+        players = filter(filterPlayers, self.playersAll())
+
+        if not players:
             return
         # we need to sort by the pot contribution amount
         # it is possible that someone folded a blind but the big blind is allready all in
