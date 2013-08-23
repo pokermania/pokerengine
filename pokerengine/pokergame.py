@@ -4085,6 +4085,9 @@ class PokerGame:
     def isRunning(self):
         return not (self.isEndOrNull() or self.state == GAME_STATE_MUCK)
 
+    def isEndOrMuck(self):
+        return self.state in (GAME_STATE_END, GAME_STATE_MUCK)
+
     def isEndOrNull(self):
         return self.state == GAME_STATE_NULL or self.state == GAME_STATE_END
 
