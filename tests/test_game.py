@@ -6157,7 +6157,6 @@ class PokerGameTestCase(unittest.TestCase):
         game.callNraise(20, 200)
         game.call(10)
 
-    @attr("og-now")
     def testDistributeMoneyUnexpectedWinnerSerial(self):
         game = self.game
         game.variant = 'holdem'

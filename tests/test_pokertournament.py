@@ -862,7 +862,6 @@ class PokerTournamentTestCase(unittest.TestCase):
         
         
     # -------------------------------------------------------
-    @attr("og_now")
     def testWinnersConsiderBet(self):
         """test 4 corner cases of an all-in with 3 players"""
         self._test_winners_considers_bet([(1000, 0), (600, 1), (400, 2)])

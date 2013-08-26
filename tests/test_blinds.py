@@ -385,7 +385,6 @@ class TestBlinds(unittest.TestCase):
         self.confirm_blind(self.game.turn_history, [(3, small, 0), (4, big, 0)])
 
     # --------------------------------------------------------------------------
-    @attr("og-now")
     def test5_sixPlayers_missedBothBlinds_bothRequired(self):
         """
         At six players, player 4 missed the big and small blinds and
