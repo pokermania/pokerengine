@@ -644,9 +644,13 @@ class PokerTournament:
         return serial in self._rebuy_stack
     
     def serialsRebuying(self, game_id):
-        game = self.id2game[game_id]
-        serials_rebuying = set(game.serialsAll()) & self._rebuy_stack
-        return serials_rebuying  
+        try:
+            game = self.id2game[game_id]
+            serials_rebuying = set(game.serialsAll()) & self._rebuy_stack
+            return serials_rebuying
+        except KeyError:
+            self.log.warn("serialsRebuying: game_id %d not found", game_id)
+            return set()
     
     def rebuyPlayerRequest(self, game_id, serial):
         game = self.id2game[game_id]
