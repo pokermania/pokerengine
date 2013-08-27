@@ -669,9 +669,13 @@ class PokerTournament:
             return success, error
         
         self._rebuy_stack.add(serial)
+
+        if self.id2game[game_id].isEndOrMuck():
+            self.rebuyAllPlayers(game_id)
         return True, None
     
     def rebuyAllPlayers(self, game_id):
+        self.log.inform("rebuyAllPlayers now")
         serials_rebuying = self.serialsRebuying(game_id)
         
         for serial in serials_rebuying:
