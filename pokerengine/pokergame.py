@@ -3954,7 +3954,7 @@ class PokerGame:
     
     def betLimitsForSerial(self, serial):
         if not self.isRunning():
-            return 0
+            return 0,0,0
         highest_bet = self.highestBetNotFold()
         player = self.serial2player[serial]
         money = player.money
