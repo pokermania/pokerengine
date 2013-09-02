@@ -1936,7 +1936,7 @@ class PokerGameTestCase(unittest.TestCase):
         player2 = self.AddPlayerAndSit(2, 7)
         
         # The game is not running
-        self.failUnlessEqual(self.game.betLimitsForSerial(1), 0)
+        self.failUnlessEqual(self.game.betLimitsForSerial(1), (0,0,0))
         
         # Blind and ante turn
         self.game.beginTurn(1)
