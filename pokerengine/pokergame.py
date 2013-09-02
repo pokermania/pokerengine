@@ -1727,7 +1727,9 @@ class PokerGame:
                     blind_info["small"] = level_info["small"]
                     blind_info["big"] = level_info["big"]
                 else:
-                    self.log.warn("unexpected blind change level %d ", level)
+                    pass
+                    # nothing todo here
+                    # self.log.warn("unexpected blind change level %d ", level)
             else:
                 blind_info = None
                 self.log.warn("unexpected blind change method %s ", info["change"])
