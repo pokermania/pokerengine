@@ -1357,6 +1357,7 @@ class PokerTournamentStatsTestCase(unittest.TestCase):
     class MockTourney(MockObj):
         pass
     class MockGame(MockObj):
+        pot=0
         pass
     class MockPlayer(MockObj):
         pass

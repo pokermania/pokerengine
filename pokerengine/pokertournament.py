@@ -204,7 +204,8 @@ class PokerTournamentStats:
             in enumerate([player.serial for player in active_player_ranks] + self._tourney.winners)
         )
         
-        self.chips_avg = sum(player.money for player in active_player_ranks) / len(active_player_ranks)
+        self.chips_avg = int(sum(player.money for player in active_player_ranks) / float(len(active_player_ranks)) +\
+            sum(game.pot for game in self._tourney.games) / float(len(active_player_ranks)))
         self.chips_max = active_player_ranks[0].money
         self.player_chips_max = {
             "serial": active_player_ranks[0].serial, 
