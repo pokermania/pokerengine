@@ -195,8 +195,10 @@ class PokerTournamentStats:
             )
         if not active_player_ranks:
             self._tourney.log.debug("updateStats: need players in games for tourney %d", self._tourney.serial)
+            # this will only occour when when the game is over. So we could just say there is just one player left (the winner)
+            self.players_active = 1
             return False
-        
+
         active_player_ranks.sort(key=lambda player: player.money, reverse=True)
         
         players_money_rank = dict(
