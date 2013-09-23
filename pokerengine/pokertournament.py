@@ -505,7 +505,7 @@ class PokerTournament:
             self.breaks_since = -1
             self.breaks_running_since = tournament_seconds()
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_RUNNING:
-            self.start_time = tournament_seconds()
+            self.start_time = int(tournament_seconds())
             self.breaks_running_since = self.start_time
             self.createGames()
         elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_CANCELED:
