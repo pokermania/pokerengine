@@ -301,9 +301,10 @@ class PokerTournament:
         self.callback_move_player = lambda tournament, from_game_id, to_game_id, serial: self.movePlayer(from_game_id, to_game_id, serial)
         self.callback_remove_player = lambda tournament, game_id, serial, now: self.removePlayer(game_id, serial, now)
         self.callback_reenter_game = lambda tourney_serial, serial: True
-        self.callback_cancel = lambda tournament: True
+        self.callback_cancel = lambda tournament, force=False: True
         self.callback_rebuy_payment = lambda tournament, serial, game_id, player_chips, tourney_chips: tourney_chips
-        self.callback_rebuy = lambda tournament, serial, game_id, success, error: True 
+        self.callback_rebuy = lambda tournament, serial, game_id, success, error: True
+        self.callback_user_action = lambda tournament, serial: None
         self.loadPayouts()
 
         if self.state == TOURNAMENT_STATE_ANNOUNCED:
@@ -492,7 +493,7 @@ class PokerTournament:
         
         return True
 
-    def changeState(self, state):
+    def changeState(self, state, force=False):
         if self.state == state:
             return
         if self.state == TOURNAMENT_STATE_ANNOUNCED and state == TOURNAMENT_STATE_REGISTERING:
@@ -508,8 +509,8 @@ class PokerTournament:
             self.start_time = int(tournament_seconds())
             self.breaks_running_since = self.start_time
             self.createGames()
-        elif self.state == TOURNAMENT_STATE_REGISTERING and state == TOURNAMENT_STATE_CANCELED:
-            self.cancel()
+        elif state == TOURNAMENT_STATE_CANCELED and (self.state == TOURNAMENT_STATE_REGISTERING or force):
+            self.cancel(force=force)
             self.finish_time = tournament_seconds()
         elif self.state in (TOURNAMENT_STATE_RUNNING, TOURNAMENT_STATE_BREAK_WAIT, TOURNAMENT_STATE_BREAK) and state == TOURNAMENT_STATE_COMPLETE:
             self.finish_time = tournament_seconds()
@@ -530,8 +531,8 @@ class PokerTournament:
         else:
             return False
 
-    def canUnregister(self, serial):
-        return self.isRegistered(serial) and self.state == TOURNAMENT_STATE_REGISTERING
+    def canUnregister(self, serial, force=False):
+        return self.isRegistered(serial) and (self.state == TOURNAMENT_STATE_REGISTERING or force)
         
     def register(self, serial, name=None):
         if self.canRegister(serial):
@@ -548,8 +549,8 @@ class PokerTournament:
         else:
             return False
 
-    def unregister(self, serial):
-        if self.canUnregister(serial):
+    def unregister(self, serial, force=False):
+        if self.canUnregister(serial, force):
             del self.players[serial]
             self.registered -= 1
             if self.registered == 0:
@@ -560,9 +561,9 @@ class PokerTournament:
         else:
             return False
 
-    def cancel(self):
-        if self.state == TOURNAMENT_STATE_REGISTERING:
-            self.callback_cancel(self)
+    def cancel(self, force=False):
+        if self.state == TOURNAMENT_STATE_REGISTERING or force:
+            self.callback_cancel(self, force)
             self.players = {}
             self.registered = 0
             return True
@@ -609,6 +610,7 @@ class PokerTournament:
             game.setVariant(self.variant)
             game.setBettingStructure(self.betting_structure)
             game.setMaxPlayers(self.seats_per_game)
+            game.registerCallback(self.gameAction)
             if game.id == 0: game.id = game_id
 
             buy_in = game.buyIn()
@@ -632,6 +634,14 @@ class PokerTournament:
             self.callback_game_filled(self, game)
             game.close()
     
+    def gameAction(self, game_id, event_type, *args):
+        if event_type in ("call", "raise", "check"):
+            self.callback_user_action(self, args[0])
+
+        # just fire the callback_user_action if fold was not an autoplay
+        elif event_type == "fold" and not args[1]:
+            self.callback_user_action(self, args[0])
+
     def reenterGame(self, game_id, serial):
         """
         reenterGame(game_id, serial) will be called when a player buys in. So he could reenter the game.

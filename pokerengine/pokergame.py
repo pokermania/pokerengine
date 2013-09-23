@@ -2220,7 +2220,7 @@ class PokerGame:
             return True
 
         self.log.debug("player %d folds", serial)
-        self.historyAdd("fold", serial)
+        self.historyAdd("fold", serial, player.auto)
         player.fold = True
         #
         # His money goes to the pot
