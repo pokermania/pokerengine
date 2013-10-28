@@ -757,7 +757,7 @@ class PokerTournament:
         # if the amount is equal, use a 'random card', in this case the tiebreaker
         # as a means to differentiate between positions
         values = dict(
-            (serial, (pos, -game.showdown_stack[0]['serial2delta'][serial], tiebreaker)) 
+            (serial, (pos, -game.showdown_stack[0]['serial2delta'].get(serial,0), tiebreaker)) 
             for (serial,tiebreaker) in zip(new_loosers, randlist)
         )
         
