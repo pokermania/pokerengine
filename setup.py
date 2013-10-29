@@ -88,7 +88,7 @@ setup(
             'conf/poker.level-15-30-no-limit.xml',
             'conf/poker.level-2-4-limit.xml',
             'conf/poker.level-50-100-no-limit-deep-stack.xml',
-            'conf/poker.level-10-20-no-limit-ante-mtt.xml'
+            'conf/poker.level-10-20-no-limit-ante-mtt.xml',
             'conf/poker.levels-ante-colin.xml',
             'conf/poker.levels-blinds-colin.xml',
             'conf/poker.levels-ante-mtt.xml',
