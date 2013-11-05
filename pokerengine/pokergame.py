@@ -4044,7 +4044,8 @@ class PokerGame:
         if not self.is_directing: return
         player = self.getPlayer(serial)
         money, player.money = player.money, 0
-        self.historyAdd("buyOut", serial, money, player.bet)
+        if money != 0:
+            self.historyAdd("buyOut", serial, money, player.bet)
         return money
     
     def buyIn(self):
