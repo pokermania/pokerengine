@@ -663,7 +663,7 @@ class PokerTournament:
             serials_rebuying = set(game.serialsAll()) & self._rebuy_stack
             return serials_rebuying
         except KeyError:
-            self.log.warn("serialsRebuying: game_id %d not found", game_id)
+            self.log.warn("serialsRebuying: game_id %d not found", game_id, refs=[('Game', game_id, int)])
             return set()
     
     def rebuyPlayerRequest(self, game_id, serial):
