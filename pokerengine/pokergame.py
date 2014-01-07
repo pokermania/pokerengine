@@ -2129,7 +2129,17 @@ class PokerGame:
             return False
         
         _min_bet, _max_bet, to_call = self.betLimitsForSerial(serial)
-        
+        if self.highestBetNotFold() == 0:
+            if not self.canCheck(serial):
+                self.log.error(
+                    "player %d tries to call 0 but cannot check. last_auto_action = %s (ignored)",
+                    serial, self.last_auto_action.get(serial)
+                )
+                return False
+            self.log.debug("player %d checks" % serial)
+            self.historyAdd("check", serial)
+            self.__talked(serial)
+            return True
         self.log.debug("player %d calls %d", serial, to_call)
         self.historyAdd("call", serial, to_call)
         self.bet(serial, to_call)

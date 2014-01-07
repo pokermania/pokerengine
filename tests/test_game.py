@@ -1489,7 +1489,7 @@ class PokerGameTestCase(unittest.TestCase):
         self.failUnless(player2.talked_once)
         
         self.failUnless(self.game.canAct(3))
-        
+
     # ---------------------------------------------------------
     def testCanCheck(self):
         """Test Poker Game: Can check"""
