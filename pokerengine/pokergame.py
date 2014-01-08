@@ -834,6 +834,7 @@ class PokerGame:
         player.sit_out_next_turn = False
         player.sit_requested = False
         player.wait_for = False
+        player.auto_refill = 0
         if self.is_directing and self.isBlindAnteRound():
             player.blind = False
             self.updateBlinds()
