@@ -1816,7 +1816,7 @@ class PokerGame:
         #
         # Players who are broke automatically sit out if auto_rebuy is not activated.
         for player in self.playersSit():
-            if self.isBroke(player.serial) and player.auto_rebuy == 0:
+            if self.isBroke(player.serial) and player.auto_rebuy == 0 and player.auto_refill == 0:
                 player.sit_out_next_turn = True
 
         #
